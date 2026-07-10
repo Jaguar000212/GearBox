@@ -20,21 +20,33 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.jaguar.gearbox.data.ChessMatch
+import com.jaguar.gearbox.data.ChessMatchStore
 import com.jaguar.gearbox.data.Tools
 import com.jaguar.gearbox.ui.components.ToolScaffold
 
 @Composable
 fun ChessScoreboardScreen(onNavigateBack: () -> Unit) {
-    var whiteName by rememberSaveable { mutableStateOf("White") }
-    var blackName by rememberSaveable { mutableStateOf("Black") }
-    var whiteScore by rememberSaveable { mutableFloatStateOf(0f) }
-    var blackScore by rememberSaveable { mutableFloatStateOf(0f) }
-    var gamesPlayed by rememberSaveable { mutableIntStateOf(0) }
+    val context = LocalContext.current
+    val store = remember { ChessMatchStore(context) }
+    val initial = remember { store.load() }
+
+    var whiteName by rememberSaveable { mutableStateOf(initial.whiteName) }
+    var blackName by rememberSaveable { mutableStateOf(initial.blackName) }
+    var whiteScore by rememberSaveable { mutableFloatStateOf(initial.whiteScore) }
+    var blackScore by rememberSaveable { mutableFloatStateOf(initial.blackScore) }
+    var gamesPlayed by rememberSaveable { mutableIntStateOf(initial.gamesPlayed) }
+
+    fun persist() {
+        store.save(ChessMatch(whiteName, blackName, whiteScore, blackScore, gamesPlayed))
+    }
 
     ToolScaffold(
         title = "Chess Scoreboard",
@@ -47,14 +59,14 @@ fun ChessScoreboardScreen(onNavigateBack: () -> Unit) {
         ) {
             OutlinedTextField(
                 value = whiteName,
-                onValueChange = { whiteName = it },
+                onValueChange = { whiteName = it; persist() },
                 label = { Text("White player") },
                 singleLine = true,
                 modifier = Modifier.weight(1f),
             )
             OutlinedTextField(
                 value = blackName,
-                onValueChange = { blackName = it },
+                onValueChange = { blackName = it; persist() },
                 label = { Text("Black player") },
                 singleLine = true,
                 modifier = Modifier.weight(1f),
@@ -92,15 +104,15 @@ fun ChessScoreboardScreen(onNavigateBack: () -> Unit) {
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             OutlinedButton(
-                onClick = { whiteScore += 1f; gamesPlayed++ },
+                onClick = { whiteScore += 1f; gamesPlayed++; persist() },
                 modifier = Modifier.weight(1f),
             ) { Text("$whiteName wins") }
             OutlinedButton(
-                onClick = { whiteScore += 0.5f; blackScore += 0.5f; gamesPlayed++ },
+                onClick = { whiteScore += 0.5f; blackScore += 0.5f; gamesPlayed++; persist() },
                 modifier = Modifier.weight(1f),
             ) { Text("Draw") }
             OutlinedButton(
-                onClick = { blackScore += 1f; gamesPlayed++ },
+                onClick = { blackScore += 1f; gamesPlayed++; persist() },
                 modifier = Modifier.weight(1f),
             ) { Text("$blackName wins") }
         }
@@ -111,6 +123,7 @@ fun ChessScoreboardScreen(onNavigateBack: () -> Unit) {
                 whiteScore = 0f
                 blackScore = 0f
                 gamesPlayed = 0
+                persist()
             },
             modifier = Modifier.fillMaxWidth(),
         ) {

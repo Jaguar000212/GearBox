@@ -24,36 +24,23 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.Saver
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshots.SnapshotStateList
-import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import com.jaguar.gearbox.data.ScorePlayer
+import com.jaguar.gearbox.data.ScoreboardStore
 import com.jaguar.gearbox.data.Tools
 import com.jaguar.gearbox.ui.components.ToolScaffold
 
-/** A single competitor tracked on the scoreboard. */
-private data class Player(val name: String, val score: Int)
-
-/**
- * Saver that serialises the player list to a flat list of [name, score, name, score, ...] so the
- * scoreboard survives configuration changes and process death.
- */
-private val playersSaver: Saver<SnapshotStateList<Player>, List<Any>> = Saver(
-    save = { list -> list.flatMap { listOf(it.name, it.score) } },
-    restore = { flat ->
-        flat.chunked(2)
-            .map { Player(it[0] as String, it[1] as Int) }
-            .toMutableStateList()
-    },
-)
-
 @Composable
 fun ScoreboardScreen(onNavigateBack: () -> Unit) {
-    val players = rememberSaveable(saver = playersSaver) { emptyList<Player>().toMutableStateList() }
+    val context = LocalContext.current
+    val store = remember { ScoreboardStore(context, "scoreboard_players") }
+    val players = store.players
     var newName by rememberSaveable { mutableStateOf("") }
 
     ToolScaffold(
@@ -77,7 +64,7 @@ fun ScoreboardScreen(onNavigateBack: () -> Unit) {
                 onClick = {
                     val name = newName.trim()
                     if (name.isNotEmpty()) {
-                        players.add(Player(name, 0))
+                        store.add(ScorePlayer(name, 0))
                         newName = ""
                     }
                 },
@@ -109,13 +96,13 @@ fun ScoreboardScreen(onNavigateBack: () -> Unit) {
                             style = MaterialTheme.typography.headlineMedium,
                         )
                     }
-                    IconButton(onClick = { players[index] = player.copy(score = player.score - 1) }) {
+                    IconButton(onClick = { store.update(index, player.copy(score = player.score - 1)) }) {
                         Icon(Icons.Filled.Remove, contentDescription = "Decrease score")
                     }
-                    IconButton(onClick = { players[index] = player.copy(score = player.score + 1) }) {
+                    IconButton(onClick = { store.update(index, player.copy(score = player.score + 1)) }) {
                         Icon(Icons.Filled.Add, contentDescription = "Increase score")
                     }
-                    IconButton(onClick = { players.removeAt(index) }) {
+                    IconButton(onClick = { store.removeAt(index) }) {
                         Icon(Icons.Filled.Delete, contentDescription = "Remove player")
                     }
                 }
@@ -129,18 +116,14 @@ fun ScoreboardScreen(onNavigateBack: () -> Unit) {
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 OutlinedButton(
-                    onClick = {
-                        for (i in players.indices) {
-                            players[i] = players[i].copy(score = 0)
-                        }
-                    },
+                    onClick = { store.resetScores() },
                     modifier = Modifier.weight(1f),
                 ) {
                     Icon(Icons.Filled.Refresh, contentDescription = null)
                     Text(" Reset scores")
                 }
                 OutlinedButton(
-                    onClick = { players.clear() },
+                    onClick = { store.clear() },
                     modifier = Modifier.weight(1f),
                 ) {
                     Icon(Icons.Filled.Delete, contentDescription = null)

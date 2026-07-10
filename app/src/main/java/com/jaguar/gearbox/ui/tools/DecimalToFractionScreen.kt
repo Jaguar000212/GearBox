@@ -20,14 +20,21 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.jaguar.gearbox.data.Tools
 import com.jaguar.gearbox.ui.components.ToolScaffold
+import java.util.Locale
+import kotlin.math.pow
 
 @Composable
 fun DecimalToFractionScreen(onNavigateBack: () -> Unit) {
     var input by rememberSaveable { mutableStateOf("") }
 
-    val parsed = input.trim().toDoubleOrNull()
+    val parsed = input.trim().toDoubleOrNull()?.takeIf { it.isFinite() }
     val fraction = parsed?.let { decimalToFraction(it) }
-    val error = if (input.isNotBlank() && parsed == null) "Enter a valid decimal number." else ""
+    val error = when {
+        input.isBlank() -> ""
+        parsed == null -> "Enter a valid decimal number."
+        fraction == null -> "Number is too large to convert."
+        else -> ""
+    }
 
     ToolScaffold(
         title = "Decimal to Fraction",
@@ -59,18 +66,24 @@ fun DecimalToFractionScreen(onNavigateBack: () -> Unit) {
     }
 }
 
-/** Converts a finite decimal to a simplified fraction, e.g. 0.75 -> "3/4". */
-private fun decimalToFraction(value: Double): String {
+/** Converts a finite decimal to a simplified fraction, e.g. 0.75 -> "3/4". Returns null on overflow. */
+private fun decimalToFraction(value: Double): String? {
+    // abs() is safe here: any Double surviving isFinite() is well within Long range for its
+    // magnitude to be negated without the two's-complement overflow that bites kotlin.math.abs(Long).
     val isNegative = value < 0
     val absValue = kotlin.math.abs(value)
+    if (absValue > 1e15) return null // too large to represent exactly as a Long-based fraction
+
     val whole = absValue.toLong()
     val fractionalPart = absValue - whole
 
     if (fractionalPart == 0.0) return (if (isNegative) -whole else whole).toString()
 
-    val text = fractionalPart.toString().substringAfter('.').take(9)
+    // Fixed-point formatting avoids Double.toString()'s scientific notation for small magnitudes
+    // (e.g. 0.0001 -> "1.0E-4"), which would otherwise fail to parse as a fraction digit string.
+    val text = String.format(Locale.ROOT, "%.9f", fractionalPart).substringAfter('.').take(9)
     var numerator = text.toLong()
-    var denominator = Math.pow(10.0, text.length.toDouble()).toLong()
+    var denominator = 10.0.pow(text.length.toDouble()).toLong()
 
     val divisor = gcd(numerator, denominator)
     if (divisor != 0L) {
@@ -78,9 +91,13 @@ private fun decimalToFraction(value: Double): String {
         denominator /= divisor
     }
 
-    val totalNumerator = whole * denominator + numerator
-    val sign = if (isNegative) "-" else ""
-    return "$sign$totalNumerator/$denominator"
+    return try {
+        val totalNumerator = Math.addExact(Math.multiplyExact(whole, denominator), numerator)
+        val sign = if (isNegative) "-" else ""
+        "$sign$totalNumerator/$denominator"
+    } catch (_: ArithmeticException) {
+        null
+    }
 }
 
 private tailrec fun gcd(x: Long, y: Long): Long = if (y == 0L) x else gcd(y, x % y)

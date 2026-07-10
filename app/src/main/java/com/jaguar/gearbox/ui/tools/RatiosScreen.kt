@@ -30,8 +30,8 @@ fun RatiosScreen(onNavigateBack: () -> Unit) {
     var partA by rememberSaveable { mutableStateOf("") }
     var partB by rememberSaveable { mutableStateOf("") }
 
-    val a = partA.trim().toDoubleOrNull()
-    val b = partB.trim().toDoubleOrNull()
+    val a = partA.trim().toDoubleOrNull()?.takeIf { it.isFinite() }
+    val b = partB.trim().toDoubleOrNull()?.takeIf { it.isFinite() }
 
     ToolScaffold(
         title = "Ratios",
@@ -78,10 +78,20 @@ fun RatiosScreen(onNavigateBack: () -> Unit) {
 /** Simplifies a:b to lowest whole-number terms, scaling up first if either value has decimals. */
 private fun simplifyRatio(a: Double, b: Double): String {
     val decimalPlaces = maxOf(decimalPlacesOf(a), decimalPlacesOf(b))
-    val scale = Math.pow(10.0, decimalPlaces.toDouble())
+
+    // Cap the scale so a*scale/b*scale can't overflow Long (Math.round() silently clamps to
+    // Long.MAX_VALUE/MIN_VALUE on overflow instead of throwing, which would corrupt the ratio).
+    val maxMagnitude = maxOf(abs(a), abs(b), 1.0)
+    val maxSafeExponent = kotlin.math.floor(kotlin.math.log10(Long.MAX_VALUE / maxMagnitude / 10.0))
+        .toInt()
+        .coerceIn(0, decimalPlaces)
+    val scale = Math.pow(10.0, maxSafeExponent.toDouble())
+
     var scaledA = Math.round(a * scale)
     var scaledB = Math.round(b * scale)
 
+    // Safe now: scaledA/scaledB are bounded well within Long range by the exponent cap above, so
+    // this can't hit the kotlin.math.abs(Long.MIN_VALUE) overflow that stays negative.
     val divisor = gcd(abs(scaledA), abs(scaledB))
     if (divisor != 0L) {
         scaledA /= divisor

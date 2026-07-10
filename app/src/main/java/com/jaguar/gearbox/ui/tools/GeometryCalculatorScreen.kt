@@ -131,24 +131,24 @@ private fun computeResult(shape: Shape, f1: String, f2: String, f3: String): Str
 
     return when (shape) {
         Shape.CIRCLE -> {
-            val r = f1.toDoubleOrNull() ?: return null
+            val r = f1.toDoubleOrNull()?.takeIf { it.isFinite() } ?: return null
             if (r <= 0) return null
             val area = PI * r * r
             val circumference = 2 * PI * r
             "Area: ${fmt(area)}\nCircumference: ${fmt(circumference)}"
         }
         Shape.RECTANGLE -> {
-            val w = f1.toDoubleOrNull() ?: return null
-            val h = f2.toDoubleOrNull() ?: return null
+            val w = f1.toDoubleOrNull()?.takeIf { it.isFinite() } ?: return null
+            val h = f2.toDoubleOrNull()?.takeIf { it.isFinite() } ?: return null
             if (w <= 0 || h <= 0) return null
             val area = w * h
             val perimeter = 2 * (w + h)
             "Area: ${fmt(area)}\nPerimeter: ${fmt(perimeter)}"
         }
         Shape.TRIANGLE -> {
-            val a = f1.toDoubleOrNull() ?: return null
-            val b = f2.toDoubleOrNull() ?: return null
-            val c = f3.toDoubleOrNull() ?: return null
+            val a = f1.toDoubleOrNull()?.takeIf { it.isFinite() } ?: return null
+            val b = f2.toDoubleOrNull()?.takeIf { it.isFinite() } ?: return null
+            val c = f3.toDoubleOrNull()?.takeIf { it.isFinite() } ?: return null
             if (a <= 0 || b <= 0 || c <= 0) return null
             if (a + b <= c || a + c <= b || b + c <= a) return null
             val perimeter = a + b + c

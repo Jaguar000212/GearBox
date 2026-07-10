@@ -154,7 +154,7 @@ fun UnitConverterScreen(onNavigateBack: () -> Unit) {
             )
         }
 
-        val value = input.trim().toDoubleOrNull()
+        val value = input.trim().toDoubleOrNull()?.takeIf { it.isFinite() }
         Spacer(Modifier.height(20.dp))
         if (value != null) {
             val fromFactor = units.first { it.label == fromUnit }.factorToBase

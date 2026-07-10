@@ -109,8 +109,8 @@ fun PercentageCalculatorScreen(onNavigateBack: () -> Unit) {
 private fun computePercentResult(mode: PercentMode, f1: String, f2: String): String? {
     fun fmt(value: Double) = String.format(Locale.getDefault(), "%.4f", value).trimEnd('0').trimEnd('.')
 
-    val x = f1.trim().toDoubleOrNull() ?: return null
-    val y = f2.trim().toDoubleOrNull() ?: return null
+    val x = f1.trim().toDoubleOrNull()?.takeIf { it.isFinite() } ?: return null
+    val y = f2.trim().toDoubleOrNull()?.takeIf { it.isFinite() } ?: return null
 
     return when (mode) {
         PercentMode.OF_VALUE -> "Result: ${fmt(x / 100 * y)}"

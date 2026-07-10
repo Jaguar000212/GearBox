@@ -105,20 +105,25 @@ private fun numberToWords(number: Long): String {
     if (number == 0L) return "Zero"
 
     val isNegative = number < 0
-    var n = kotlin.math.abs(number)
+    // BigInteger.abs() avoids the Long.MIN_VALUE overflow that kotlin.math.abs() has (its magnitude
+    // has no positive Long representation), and the grouping below never overflows either.
+    var magnitude = java.math.BigInteger.valueOf(number).abs()
+    val thousand = java.math.BigInteger.valueOf(1000)
 
-    val groups = mutableListOf<Long>()
-    while (n > 0) {
-        groups.add(n % 1000)
-        n /= 1000
+    val groups = mutableListOf<Int>()
+    while (magnitude > java.math.BigInteger.ZERO) {
+        groups.add(magnitude.mod(thousand).toInt())
+        magnitude /= thousand
     }
 
-    val scales = arrayOf("", "Thousand", "Million", "Billion", "Trillion")
+    // Long.MAX_VALUE has 19 digits, i.e. up to 7 groups of three (index 0-6), so this must cover
+    // through "Quintillion" or grouping into it throws ArrayIndexOutOfBoundsException.
+    val scales = arrayOf("", "Thousand", "Million", "Billion", "Trillion", "Quadrillion", "Quintillion")
     val parts = mutableListOf<String>()
     for (i in groups.indices.reversed()) {
         val group = groups[i]
-        if (group == 0L) continue
-        val groupWords = threeDigitsToWords(group.toInt())
+        if (group == 0) continue
+        val groupWords = threeDigitsToWords(group)
         parts.add(if (scales[i].isNotEmpty()) "$groupWords ${scales[i]}" else groupWords)
     }
 

@@ -127,9 +127,13 @@ fun DateCalculatorScreen(onNavigateBack: () -> Unit) {
                     readOnly = true,
                     label = { Text("Direction") },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = directionExpanded) },
-                    modifier = Modifier.fillMaxWidth().menuAnchor(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .menuAnchor(),
                 )
-                DropdownMenu(expanded = directionExpanded, onDismissRequest = { directionExpanded = false }) {
+                DropdownMenu(
+                    expanded = directionExpanded,
+                    onDismissRequest = { directionExpanded = false }) {
                     DateDirection.entries.forEach { entry ->
                         DropdownMenuItem(
                             text = { Text(entry.label) },
@@ -161,7 +165,9 @@ fun DateCalculatorScreen(onNavigateBack: () -> Unit) {
                 readOnly = true,
                 label = { Text("Unit") },
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = unitExpanded) },
-                modifier = Modifier.fillMaxWidth().menuAnchor(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .menuAnchor(),
             )
             DropdownMenu(expanded = unitExpanded, onDismissRequest = { unitExpanded = false }) {
                 DateUnit.entries.forEach { entry ->
@@ -182,7 +188,9 @@ fun DateCalculatorScreen(onNavigateBack: () -> Unit) {
                 Text(
                     text = formatDate(result),
                     style = MaterialTheme.typography.headlineSmall,
-                    modifier = Modifier.fillMaxWidth().padding(24.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(24.dp),
                 )
             }
             Spacer(Modifier.height(12.dp))
@@ -194,14 +202,23 @@ fun DateCalculatorScreen(onNavigateBack: () -> Unit) {
             }
         } else if (amountInput.isNotBlank()) {
             Spacer(Modifier.height(12.dp))
-            Text("Enter a valid amount that keeps the date in range.", color = MaterialTheme.colorScheme.error)
+            Text(
+                "Enter a valid amount that keeps the date in range.",
+                color = MaterialTheme.colorScheme.error
+            )
         }
     }
 }
 
-private fun formatDate(date: LocalDate): String = "${date.dayOfMonth}/${date.monthValue}/${date.year}"
+private fun formatDate(date: LocalDate): String =
+    "${date.dayOfMonth}/${date.monthValue}/${date.year}"
 
-private fun computeResultDate(base: LocalDate, amount: Long, unit: DateUnit, direction: DateDirection): LocalDate {
+private fun computeResultDate(
+    base: LocalDate,
+    amount: Long,
+    unit: DateUnit,
+    direction: DateDirection
+): LocalDate {
     val signedAmount = if (direction == DateDirection.SUBTRACT) -amount else amount
     return when (unit) {
         DateUnit.DAYS -> base.plusDays(signedAmount)

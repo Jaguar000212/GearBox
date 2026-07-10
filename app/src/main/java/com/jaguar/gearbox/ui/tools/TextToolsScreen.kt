@@ -53,7 +53,8 @@ fun TextToolsScreen(onNavigateBack: () -> Unit) {
     val words = input.trim().split(Regex("\\s+")).filter { it.isNotEmpty() }
     val converted = convertCase(input, selectedCase)
     val normalizedForPalindrome = input.filter { it.isLetterOrDigit() }.lowercase(Locale.ROOT)
-    val isPalindrome = normalizedForPalindrome.isNotEmpty() && normalizedForPalindrome == normalizedForPalindrome.reversed()
+    val isPalindrome =
+        normalizedForPalindrome.isNotEmpty() && normalizedForPalindrome == normalizedForPalindrome.reversed()
 
     ToolScaffold(
         title = "Text Tools",
@@ -73,7 +74,9 @@ fun TextToolsScreen(onNavigateBack: () -> Unit) {
             Spacer(Modifier.height(16.dp))
             Card(modifier = Modifier.fillMaxWidth()) {
                 Row(
-                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
                     horizontalArrangement = Arrangement.SpaceEvenly,
                 ) {
                     StatColumn("Words", words.size.toString())
@@ -100,7 +103,9 @@ fun TextToolsScreen(onNavigateBack: () -> Unit) {
                     readOnly = true,
                     label = { Text("Convert to") },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = caseExpanded) },
-                    modifier = Modifier.fillMaxWidth().menuAnchor(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .menuAnchor(),
                 )
                 DropdownMenu(expanded = caseExpanded, onDismissRequest = { caseExpanded = false }) {
                     TextCase.entries.forEach { entry ->
@@ -120,7 +125,9 @@ fun TextToolsScreen(onNavigateBack: () -> Unit) {
                 Text(
                     text = converted,
                     style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
                 )
             }
         }
@@ -165,6 +172,7 @@ private fun convertCase(input: String, case: TextCase): String = when (case) {
     TextCase.TITLE -> input.split(" ").joinToString(" ") { word ->
         word.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString() }
     }
+
     TextCase.CAMEL -> {
         val parts = input.split(Regex("[^A-Za-z0-9]+")).filter { it.isNotEmpty() }
         parts.mapIndexed { index, word ->

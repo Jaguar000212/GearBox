@@ -63,7 +63,9 @@ fun NumberToWordsScreen(onNavigateBack: () -> Unit) {
                 Text(
                     text = words,
                     style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
                 )
             }
         }
@@ -93,8 +95,26 @@ fun NumberToWordsScreen(onNavigateBack: () -> Unit) {
 }
 
 private val ones = arrayOf(
-    "", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine",
-    "Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen",
+    "",
+    "One",
+    "Two",
+    "Three",
+    "Four",
+    "Five",
+    "Six",
+    "Seven",
+    "Eight",
+    "Nine",
+    "Ten",
+    "Eleven",
+    "Twelve",
+    "Thirteen",
+    "Fourteen",
+    "Fifteen",
+    "Sixteen",
+    "Seventeen",
+    "Eighteen",
+    "Nineteen",
 )
 private val tens = arrayOf(
     "", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety",
@@ -118,7 +138,8 @@ private fun numberToWords(number: Long): String {
 
     // Long.MAX_VALUE has 19 digits, i.e. up to 7 groups of three (index 0-6), so this must cover
     // through "Quintillion" or grouping into it throws ArrayIndexOutOfBoundsException.
-    val scales = arrayOf("", "Thousand", "Million", "Billion", "Trillion", "Quadrillion", "Quintillion")
+    val scales =
+        arrayOf("", "Thousand", "Million", "Billion", "Trillion", "Quadrillion", "Quintillion")
     val parts = mutableListOf<String>()
     for (i in groups.indices.reversed()) {
         val group = groups[i]

@@ -59,7 +59,9 @@ fun CounterScreen(onNavigateBack: () -> Unit) {
         Spacer(Modifier.height(12.dp))
         Button(
             onClick = { count = 0 },
-            modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 4.dp),
         ) {
             Icon(Icons.Filled.Refresh, contentDescription = null)
             Text("  Reset")

@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Casino
 import androidx.compose.material.icons.filled.ContentCopy
@@ -22,7 +23,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
@@ -72,10 +72,12 @@ fun RandomNumberScreen(onNavigateBack: () -> Unit) {
                         error = "Enter valid whole numbers for both bounds."
                         result = ""
                     }
+
                     low > high -> {
                         error = "Minimum must not be greater than maximum."
                         result = ""
                     }
+
                     else -> {
                         error = ""
                         result = randomLongInclusive(low, high).toString()
@@ -104,7 +106,9 @@ fun RandomNumberScreen(onNavigateBack: () -> Unit) {
                     text = result,
                     style = MaterialTheme.typography.displayMedium,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth().padding(24.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(24.dp),
                 )
             }
             Spacer(Modifier.height(16.dp))

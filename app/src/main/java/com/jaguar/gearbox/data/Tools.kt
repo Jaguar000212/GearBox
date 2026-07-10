@@ -11,8 +11,8 @@ import androidx.compose.material.icons.filled.Casino
 import androidx.compose.material.icons.filled.Colorize
 import androidx.compose.material.icons.filled.EditCalendar
 import androidx.compose.material.icons.filled.EmojiEvents
-import androidx.compose.material.icons.filled.Functions
 import androidx.compose.material.icons.filled.FrontHand
+import androidx.compose.material.icons.filled.Functions
 import androidx.compose.material.icons.filled.Grid4x4
 import androidx.compose.material.icons.filled.HistoryEdu
 import androidx.compose.material.icons.filled.MonetizationOn

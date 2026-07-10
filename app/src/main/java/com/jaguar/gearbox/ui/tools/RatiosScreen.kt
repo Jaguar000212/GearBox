@@ -65,7 +65,9 @@ fun RatiosScreen(onNavigateBack: () -> Unit) {
                     text = simplifyRatio(a, b),
                     style = MaterialTheme.typography.headlineSmall,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth().padding(24.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(24.dp),
                 )
             }
         } else if (partA.isNotBlank() || partB.isNotBlank()) {

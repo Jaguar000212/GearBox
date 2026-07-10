@@ -51,7 +51,8 @@ fun AgeCalculatorScreen(onNavigateBack: () -> Unit) {
             confirmButton = {
                 TextButton(onClick = {
                     state.selectedDateMillis?.let { millis ->
-                        val picked = Instant.ofEpochMilli(millis).atZone(ZoneOffset.UTC).toLocalDate()
+                        val picked =
+                            Instant.ofEpochMilli(millis).atZone(ZoneOffset.UTC).toLocalDate()
                         if (pickerTarget == 1) laterDate = picked else earlierDate = picked
                     }
                     pickerTarget = 0
@@ -96,7 +97,9 @@ fun AgeCalculatorScreen(onNavigateBack: () -> Unit) {
                 Text(
                     text = result,
                     style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
                 )
             }
             Spacer(Modifier.height(12.dp))

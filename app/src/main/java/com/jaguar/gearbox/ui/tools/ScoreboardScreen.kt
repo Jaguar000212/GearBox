@@ -86,7 +86,9 @@ fun ScoreboardScreen(onNavigateBack: () -> Unit) {
             Spacer(Modifier.height(12.dp))
             Card(modifier = Modifier.fillMaxWidth()) {
                 Row(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
@@ -96,10 +98,20 @@ fun ScoreboardScreen(onNavigateBack: () -> Unit) {
                             style = MaterialTheme.typography.headlineMedium,
                         )
                     }
-                    IconButton(onClick = { store.update(index, player.copy(score = player.score - 1)) }) {
+                    IconButton(onClick = {
+                        store.update(
+                            index,
+                            player.copy(score = player.score - 1)
+                        )
+                    }) {
                         Icon(Icons.Filled.Remove, contentDescription = "Decrease score")
                     }
-                    IconButton(onClick = { store.update(index, player.copy(score = player.score + 1)) }) {
+                    IconButton(onClick = {
+                        store.update(
+                            index,
+                            player.copy(score = player.score + 1)
+                        )
+                    }) {
                         Icon(Icons.Filled.Add, contentDescription = "Increase score")
                     }
                     IconButton(onClick = { store.removeAt(index) }) {

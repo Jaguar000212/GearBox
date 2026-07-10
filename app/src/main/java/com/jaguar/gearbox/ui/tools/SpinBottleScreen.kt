@@ -42,7 +42,9 @@ fun SpinBottleScreen(onNavigateBack: () -> Unit) {
     ) {
         Spacer(Modifier.height(32.dp))
         Box(
-            modifier = Modifier.fillMaxWidth().height(240.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(240.dp),
             contentAlignment = Alignment.Center,
         ) {
             Icon(

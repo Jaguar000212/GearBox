@@ -76,7 +76,9 @@ fun ChessScoreboardScreen(onNavigateBack: () -> Unit) {
         Spacer(Modifier.height(20.dp))
         Card(modifier = Modifier.fillMaxWidth()) {
             Row(
-                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly,
             ) {
                 ScoreColumn(whiteName, whiteScore)
@@ -143,7 +145,8 @@ private fun ScoreColumn(name: String, score: Float) {
             modifier = Modifier.fillMaxWidth(),
         )
         Text(
-            text = if (score == score.toInt().toFloat()) score.toInt().toString() else score.toString(),
+            text = if (score == score.toInt().toFloat()) score.toInt()
+                .toString() else score.toString(),
             style = MaterialTheme.typography.headlineMedium,
             textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth(),

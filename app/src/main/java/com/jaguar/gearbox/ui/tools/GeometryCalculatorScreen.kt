@@ -60,7 +60,9 @@ fun GeometryCalculatorScreen(onNavigateBack: () -> Unit) {
                 readOnly = true,
                 label = { Text("Shape") },
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = shapeExpanded) },
-                modifier = Modifier.fillMaxWidth().menuAnchor(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .menuAnchor(),
             )
             DropdownMenu(expanded = shapeExpanded, onDismissRequest = { shapeExpanded = false }) {
                 Shape.entries.forEach { entry ->
@@ -81,11 +83,13 @@ fun GeometryCalculatorScreen(onNavigateBack: () -> Unit) {
             Shape.CIRCLE -> {
                 NumberField("Radius", field1) { field1 = it }
             }
+
             Shape.RECTANGLE -> {
                 NumberField("Width", field1) { field1 = it }
                 Spacer(Modifier.height(12.dp))
                 NumberField("Height", field2) { field2 = it }
             }
+
             Shape.TRIANGLE -> {
                 NumberField("Side A", field1) { field1 = it }
                 Spacer(Modifier.height(12.dp))
@@ -102,7 +106,9 @@ fun GeometryCalculatorScreen(onNavigateBack: () -> Unit) {
                 Text(
                     text = result,
                     style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
                 )
             }
         } else if (field1.isNotBlank() || field2.isNotBlank() || field3.isNotBlank()) {
@@ -127,7 +133,8 @@ private fun NumberField(label: String, value: String, onValueChange: (String) ->
 }
 
 private fun computeResult(shape: Shape, f1: String, f2: String, f3: String): String? {
-    fun fmt(value: Double) = String.format(Locale.getDefault(), "%.4f", value).trimEnd('0').trimEnd('.')
+    fun fmt(value: Double) =
+        String.format(Locale.getDefault(), "%.4f", value).trimEnd('0').trimEnd('.')
 
     return when (shape) {
         Shape.CIRCLE -> {
@@ -137,6 +144,7 @@ private fun computeResult(shape: Shape, f1: String, f2: String, f3: String): Str
             val circumference = 2 * PI * r
             "Area: ${fmt(area)}\nCircumference: ${fmt(circumference)}"
         }
+
         Shape.RECTANGLE -> {
             val w = f1.toDoubleOrNull()?.takeIf { it.isFinite() } ?: return null
             val h = f2.toDoubleOrNull()?.takeIf { it.isFinite() } ?: return null
@@ -145,6 +153,7 @@ private fun computeResult(shape: Shape, f1: String, f2: String, f3: String): Str
             val perimeter = 2 * (w + h)
             "Area: ${fmt(area)}\nPerimeter: ${fmt(perimeter)}"
         }
+
         Shape.TRIANGLE -> {
             val a = f1.toDoubleOrNull()?.takeIf { it.isFinite() } ?: return null
             val b = f2.toDoubleOrNull()?.takeIf { it.isFinite() } ?: return null

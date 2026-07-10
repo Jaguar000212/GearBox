@@ -22,12 +22,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.jaguar.gearbox.data.Tools
 import com.jaguar.gearbox.ui.components.ToolScaffold
-import kotlin.random.Random
 
-private enum class Move(val label: String, val emoji: String) {
-    ROCK("Rock", "✊"),
-    PAPER("Paper", "✋"),
-    SCISSORS("Scissors", "✌"),
+private enum class Move(val emoji: String) {
+    ROCK("✊"),
+    PAPER("✋"),
+    SCISSORS("✌"),
 }
 
 private fun Move.beats(other: Move): Boolean = when (this) {
@@ -51,8 +50,13 @@ fun RockPaperScissorsScreen(onNavigateBack: () -> Unit) {
         onNavigateBack = onNavigateBack,
     ) {
         Card(modifier = Modifier.fillMaxWidth()) {
-            Column(modifier = Modifier.fillMaxWidth().padding(all = 16.dp)) {
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+            Column(modifier = Modifier
+                .fillMaxWidth()
+                .padding(all = 16.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
                     MoveDisplay("You", playerMove)
                     MoveDisplay("CPU", computerMove)
                 }
@@ -82,10 +86,12 @@ fun RockPaperScissorsScreen(onNavigateBack: () -> Unit) {
                                 draws++
                                 "Draw"
                             }
+
                             move.beats(computer) -> {
                                 wins++
                                 "You win!"
                             }
+
                             else -> {
                                 losses++
                                 "You lose"

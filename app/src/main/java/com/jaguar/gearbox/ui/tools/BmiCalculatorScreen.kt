@@ -70,7 +70,9 @@ fun BmiCalculatorScreen(onNavigateBack: () -> Unit) {
                     text = "BMI: ${result.first}\n${result.second}",
                     style = MaterialTheme.typography.headlineSmall,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth().padding(24.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(24.dp),
                 )
             }
         } else if (error.isNotEmpty()) {

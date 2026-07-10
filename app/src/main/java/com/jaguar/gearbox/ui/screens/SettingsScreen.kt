@@ -19,7 +19,9 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun SettingsScreen() {
     Column(
-        modifier = Modifier.fillMaxSize().padding(16.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Text("Settings", style = MaterialTheme.typography.headlineSmall)

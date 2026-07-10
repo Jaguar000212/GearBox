@@ -80,7 +80,9 @@ fun DiceRollScreen(onNavigateBack: () -> Unit) {
                             text = value.toString(),
                             style = MaterialTheme.typography.headlineMedium,
                             textAlign = TextAlign.Center,
-                            modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 16.dp),
                         )
                     }
                 }

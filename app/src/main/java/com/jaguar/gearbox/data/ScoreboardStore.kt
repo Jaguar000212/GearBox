@@ -61,12 +61,14 @@ class ScoreboardStore(context: Context, private val key: String) {
     }
 
     private fun persist() {
-        val encoded = players.joinToString(ENTRY_SEPARATOR) { "${it.name}$FIELD_SEPARATOR${it.score}" }
+        val encoded =
+            players.joinToString(ENTRY_SEPARATOR) { "${it.name}$FIELD_SEPARATOR${it.score}" }
         prefs.edit { putString(key, encoded) }
     }
 
     private companion object {
         const val PREFS_NAME = "gearbox_prefs"
+
         // Control characters, so a player-entered name can never collide with the delimiters.
         const val FIELD_SEPARATOR = ""
         const val ENTRY_SEPARATOR = ""

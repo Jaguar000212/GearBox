@@ -59,7 +59,9 @@ fun DecimalToFractionScreen(onNavigateBack: () -> Unit) {
                     text = fraction,
                     style = MaterialTheme.typography.headlineSmall,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth().padding(24.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(24.dp),
                 )
             }
         }

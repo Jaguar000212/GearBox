@@ -96,7 +96,9 @@ fun PasswordGeneratorScreen(onNavigateBack: () -> Unit) {
                     text = password,
                     style = MaterialTheme.typography.titleLarge,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
                 )
             }
 

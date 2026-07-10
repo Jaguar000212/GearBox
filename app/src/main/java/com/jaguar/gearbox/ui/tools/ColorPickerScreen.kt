@@ -2,6 +2,7 @@ package com.jaguar.gearbox.ui.tools
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,8 +11,9 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.clickable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BookmarkAdd
 import androidx.compose.material.icons.filled.ContentCopy
@@ -32,8 +34,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -61,7 +61,8 @@ fun ColorPickerScreen(onNavigateBack: () -> Unit) {
     var recentColors by rememberSaveable(saver = recentColorsSaver) { mutableStateOf(emptyList()) }
 
     val color = Color(red / 255f, green / 255f, blue / 255f)
-    val hex = String.format("#%02X%02X%02X", red.roundToInt(), green.roundToInt(), blue.roundToInt())
+    val hex =
+        String.format("#%02X%02X%02X", red.roundToInt(), green.roundToInt(), blue.roundToInt())
     val hsl = rgbToHsl(red.roundToInt(), green.roundToInt(), blue.roundToInt())
 
     ToolScaffold(
@@ -82,7 +83,8 @@ fun ColorPickerScreen(onNavigateBack: () -> Unit) {
             )
             IconButton(
                 onClick = {
-                    recentColors = (listOf(hex) + recentColors.filterNot { it == hex }).take(MAX_RECENT_COLORS)
+                    recentColors =
+                        (listOf(hex) + recentColors.filterNot { it == hex }).take(MAX_RECENT_COLORS)
                 },
             ) {
                 Icon(Icons.Filled.BookmarkAdd, contentDescription = "Save this color")
@@ -101,7 +103,13 @@ fun ColorPickerScreen(onNavigateBack: () -> Unit) {
                         Box(
                             modifier = Modifier
                                 .size(32.dp)
-                                .background(Color(parsed.first / 255f, parsed.second / 255f, parsed.third / 255f), CircleShape)
+                                .background(
+                                    Color(
+                                        parsed.first / 255f,
+                                        parsed.second / 255f,
+                                        parsed.third / 255f
+                                    ), CircleShape
+                                )
                                 .border(1.dp, MaterialTheme.colorScheme.outline, CircleShape)
                                 .clickable {
                                     red = parsed.first.toFloat()
@@ -150,7 +158,9 @@ fun ColorPickerScreen(onNavigateBack: () -> Unit) {
         val rgbText = "rgb(${red.roundToInt()}, ${green.roundToInt()}, ${blue.roundToInt()})"
         val hslText = "hsl(${hsl.first}, ${hsl.second}%, ${hsl.third}%)"
         Card(modifier = Modifier.fillMaxWidth()) {
-            Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+            Column(modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)) {
                 ValueRow("HEX", hex)
                 Spacer(Modifier.height(8.dp))
                 ValueRow("RGB", rgbText)

@@ -101,9 +101,13 @@ fun UnitConverterScreen(onNavigateBack: () -> Unit) {
                 readOnly = true,
                 label = { Text("Category") },
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = categoryExpanded) },
-                modifier = Modifier.fillMaxWidth().menuAnchor(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .menuAnchor(),
             )
-            DropdownMenu(expanded = categoryExpanded, onDismissRequest = { categoryExpanded = false }) {
+            DropdownMenu(
+                expanded = categoryExpanded,
+                onDismissRequest = { categoryExpanded = false }) {
                 UnitCategory.entries.forEach { entry ->
                     DropdownMenuItem(
                         text = { Text(entry.label) },
@@ -162,9 +166,18 @@ fun UnitConverterScreen(onNavigateBack: () -> Unit) {
             val result = value * fromFactor / toFactor
             Card(modifier = Modifier.fillMaxWidth()) {
                 Text(
-                    text = String.format(Locale.getDefault(), "%s %s = %s %s", trimNumber(value), fromUnit, trimNumber(result), toUnit),
+                    text = String.format(
+                        Locale.getDefault(),
+                        "%s %s = %s %s",
+                        trimNumber(value),
+                        fromUnit,
+                        trimNumber(result),
+                        toUnit
+                    ),
                     style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
                 )
             }
         } else if (input.isNotBlank()) {
@@ -195,7 +208,9 @@ private fun UnitDropdown(
             readOnly = true,
             label = { Text(label) },
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-            modifier = Modifier.fillMaxWidth().menuAnchor(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .menuAnchor(),
         )
         DropdownMenu(expanded = expanded, onDismissRequest = { onExpandedChange(false) }) {
             units.forEach { unit ->

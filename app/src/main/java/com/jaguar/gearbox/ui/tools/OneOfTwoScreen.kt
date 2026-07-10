@@ -73,7 +73,9 @@ fun OneOfTwoScreen(onNavigateBack: () -> Unit) {
                     text = chosen,
                     style = MaterialTheme.typography.headlineMedium,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth().padding(24.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(24.dp),
                 )
             }
         }

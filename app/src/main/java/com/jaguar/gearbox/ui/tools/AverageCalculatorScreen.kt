@@ -60,7 +60,9 @@ fun AverageCalculatorScreen(onNavigateBack: () -> Unit) {
                 Text(
                     text = output,
                     style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
                 )
             }
         }
@@ -105,7 +107,7 @@ private fun computeAverageResult(input: String): String {
             .map { it.trim() }
             .filter { it.isNotEmpty() }
             .map { it.toDouble() }
-    } catch (e: NumberFormatException) {
+    } catch (_: NumberFormatException) {
         return "Error: Format is not correct. Separate numbers with commas."
     }
 

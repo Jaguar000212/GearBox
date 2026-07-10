@@ -69,7 +69,9 @@ fun BaseConverterScreen(onNavigateBack: () -> Unit) {
                 readOnly = true,
                 label = { Text("From base") },
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = fromExpanded) },
-                modifier = Modifier.fillMaxWidth().menuAnchor(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .menuAnchor(),
             )
             DropdownMenu(expanded = fromExpanded, onDismissRequest = { fromExpanded = false }) {
                 NumberBase.entries.forEach { base ->
@@ -99,7 +101,8 @@ fun BaseConverterScreen(onNavigateBack: () -> Unit) {
             Spacer(Modifier.height(20.dp))
             NumberBase.entries.forEach { base ->
                 Spacer(Modifier.height(8.dp))
-                val converted = parsed.toString(base.radix).let { if (base.radix == 16) it.uppercase() else it }
+                val converted =
+                    parsed.toString(base.radix).let { if (base.radix == 16) it.uppercase() else it }
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -126,7 +129,10 @@ fun BaseConverterScreen(onNavigateBack: () -> Unit) {
                 onClick = {
                     if (parsed != null) {
                         val summary = NumberBase.entries.joinToString("\n") { base ->
-                            "${base.label}: ${parsed.toString(base.radix).let { s -> if (base.radix == 16) s.uppercase() else s }}"
+                            "${base.label}: ${
+                                parsed.toString(base.radix)
+                                    .let { s -> if (base.radix == 16) s.uppercase() else s }
+                            }"
                         }
                         context.copyToClipboard("Base Conversion", summary)
                     }

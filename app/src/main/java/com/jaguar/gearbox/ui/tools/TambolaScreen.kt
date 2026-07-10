@@ -52,7 +52,9 @@ fun TambolaScreen(onNavigateBack: () -> Unit) {
                 text = if (lastCalled == 0) "-" else lastCalled.toString(),
                 style = MaterialTheme.typography.displayLarge,
                 textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth().padding(24.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(24.dp),
             )
         }
 
@@ -119,7 +121,9 @@ fun TambolaScreen(onNavigateBack: () -> Unit) {
         Spacer(Modifier.height(20.dp))
         LazyVerticalGrid(
             columns = GridCells.Fixed(10),
-            modifier = Modifier.fillMaxWidth().height(360.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(360.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp),
             horizontalArrangement = Arrangement.spacedBy(4.dp),
         ) {
@@ -137,7 +141,9 @@ fun TambolaScreen(onNavigateBack: () -> Unit) {
                         style = MaterialTheme.typography.labelSmall,
                         color = if (called) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth().padding(top = 6.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 6.dp),
                     )
                 }
             }

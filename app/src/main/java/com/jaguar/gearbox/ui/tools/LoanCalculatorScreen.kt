@@ -82,7 +82,9 @@ fun LoanCalculatorScreen(onNavigateBack: () -> Unit) {
                 Text(
                     text = result,
                     style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
                 )
             }
         }
@@ -101,7 +103,10 @@ fun LoanCalculatorScreen(onNavigateBack: () -> Unit) {
             }
             OutlinedButton(
                 onClick = {
-                    if (result.isNotEmpty()) context.copyToClipboard("Loan Calculator", shareBody(principal, rate, time, result))
+                    if (result.isNotEmpty()) context.copyToClipboard(
+                        "Loan Calculator",
+                        shareBody(principal, rate, time, result)
+                    )
                 },
                 modifier = Modifier.weight(1f),
             ) {
@@ -110,7 +115,14 @@ fun LoanCalculatorScreen(onNavigateBack: () -> Unit) {
             }
             OutlinedButton(
                 onClick = {
-                    if (result.isNotEmpty()) context.shareText(shareBody(principal, rate, time, result))
+                    if (result.isNotEmpty()) context.shareText(
+                        shareBody(
+                            principal,
+                            rate,
+                            time,
+                            result
+                        )
+                    )
                 },
                 modifier = Modifier.weight(1f),
             ) {
@@ -123,9 +135,9 @@ fun LoanCalculatorScreen(onNavigateBack: () -> Unit) {
 
 private fun shareBody(principal: String, rate: String, time: String, result: String): String =
     "Principal Amount: $principal\n" +
-        "Rate of Interest: $rate%\n" +
-        "Loan Term: ${time}Years\n" +
-        result
+            "Rate of Interest: $rate%\n" +
+            "Loan Term: ${time}Years\n" +
+            result
 
 /** Replicates the EMI/interest math from the Java `LoanCalculator`. */
 private fun computeLoanResult(principalText: String, rateText: String, timeText: String): String {
@@ -140,7 +152,7 @@ private fun computeLoanResult(principalText: String, rateText: String, timeText:
         val monthlyInterestRate = interestRate / 100 / 12
         val tenure = loanTerm * 12
         val emi = loanAmount * monthlyInterestRate * (1 + monthlyInterestRate).pow(tenure) /
-            ((1 + monthlyInterestRate).pow(tenure) - 1)
+                ((1 + monthlyInterestRate).pow(tenure) - 1)
 
         val totalAmount = emi * loanTerm * 12
         val totalInterest = totalAmount - loanAmount
@@ -151,7 +163,7 @@ private fun computeLoanResult(principalText: String, rateText: String, timeText:
             "Monthly Installment: %.2f\nTotal Amount Repayable: %.2f\nTotal Interest Repayable: %.2f\nInterest Percentage: %.2f%%",
             emi, totalAmount, totalInterest, interestPercentage,
         )
-    } catch (e: NumberFormatException) {
+    } catch (_: NumberFormatException) {
         "Invalid input"
     }
 }

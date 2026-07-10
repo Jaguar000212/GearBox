@@ -76,7 +76,9 @@ fun HomeScreen(
                     }
                 },
                 singleLine = true,
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp, vertical = 8.dp),
             )
         }
         item {
@@ -95,7 +97,8 @@ fun HomeScreen(
                     FilterChip(
                         selected = selectedCategory == category.name,
                         onClick = {
-                            selectedCategory = if (selectedCategory == category.name) null else category.name
+                            selectedCategory =
+                                if (selectedCategory == category.name) null else category.name
                         },
                         label = { Text(category.label) },
                     )
@@ -106,7 +109,9 @@ fun HomeScreen(
         if (grouped.isEmpty()) {
             item {
                 Box(
-                    modifier = Modifier.fillMaxWidth().padding(32.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(32.dp),
                     contentAlignment = Alignment.Center,
                 ) {
                     Text("No tools match your search.", style = MaterialTheme.typography.bodyLarge)
@@ -124,7 +129,9 @@ fun HomeScreen(
             }
             items(toolsInCategory.chunked(2)) { row ->
                 Row(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 6.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 12.dp, vertical = 6.dp),
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     row.forEach { tool ->

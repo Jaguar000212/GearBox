@@ -3,21 +3,44 @@ package com.jaguar.gearbox.ui.screens
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.jaguar.gearbox.data.FavoritesStore
 import com.jaguar.gearbox.data.Tool
+import com.jaguar.gearbox.data.ToolCategory
 import com.jaguar.gearbox.ui.components.ToolCard
 
-/** Home screen: a 2-column grid of every available tool (Compose port of the `AllTools` fragment). */
+/**
+ * Home screen: a searchable, category-grouped view of every available tool (Compose port of the
+ * `AllTools` fragment, extended with search and grouping since the tool count has grown).
+ */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     tools: List<Tool>,
@@ -25,16 +48,105 @@ fun HomeScreen(
     onOpenTool: (Tool) -> Unit,
     onShowDescription: (Tool) -> Unit,
 ) {
-    ToolGrid(
-        tools = tools,
-        favorites = favorites,
-        onOpenTool = onOpenTool,
-        onShowDescription = onShowDescription,
-        emptyMessage = "No tools available.",
-    )
+    var query by rememberSaveable { mutableStateOf("") }
+    var selectedCategory by rememberSaveable { mutableStateOf<String?>(null) }
+
+    val filtered = tools.filter { tool ->
+        val matchesQuery = query.isBlank() || tool.name.contains(query, ignoreCase = true)
+        val matchesCategory = selectedCategory == null || tool.category.name == selectedCategory
+        matchesQuery && matchesCategory
+    }
+    val grouped = ToolCategory.entries.mapNotNull { category ->
+        val toolsInCategory = filtered.filter { it.category == category }
+        if (toolsInCategory.isEmpty()) null else category to toolsInCategory
+    }
+
+    LazyColumn(modifier = Modifier.fillMaxSize()) {
+        item {
+            OutlinedTextField(
+                value = query,
+                onValueChange = { query = it },
+                placeholder = { Text("Search tools") },
+                leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
+                trailingIcon = {
+                    if (query.isNotEmpty()) {
+                        IconButton(onClick = { query = "" }) {
+                            Icon(Icons.Filled.Clear, contentDescription = "Clear search")
+                        }
+                    }
+                },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp),
+            )
+        }
+        item {
+            LazyRow(
+                contentPadding = PaddingValues(horizontal = 12.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                item {
+                    FilterChip(
+                        selected = selectedCategory == null,
+                        onClick = { selectedCategory = null },
+                        label = { Text("All") },
+                    )
+                }
+                items(ToolCategory.entries) { category ->
+                    FilterChip(
+                        selected = selectedCategory == category.name,
+                        onClick = {
+                            selectedCategory = if (selectedCategory == category.name) null else category.name
+                        },
+                        label = { Text(category.label) },
+                    )
+                }
+            }
+        }
+
+        if (grouped.isEmpty()) {
+            item {
+                Box(
+                    modifier = Modifier.fillMaxWidth().padding(32.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text("No tools match your search.", style = MaterialTheme.typography.bodyLarge)
+                }
+            }
+        }
+
+        grouped.forEach { (category, toolsInCategory) ->
+            item {
+                Text(
+                    text = category.label,
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(start = 12.dp, top = 16.dp, bottom = 8.dp),
+                )
+            }
+            items(toolsInCategory.chunked(2)) { row ->
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 6.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    row.forEach { tool ->
+                        ToolCard(
+                            tool = tool,
+                            isFavorite = favorites.isFavorite(tool.route),
+                            onClick = { onOpenTool(tool) },
+                            onLongClick = { onShowDescription(tool) },
+                            onToggleFavorite = { favorites.toggle(tool.route) },
+                            modifier = Modifier.weight(1f),
+                        )
+                    }
+                    if (row.size == 1) {
+                        Box(modifier = Modifier.weight(1f))
+                    }
+                }
+            }
+        }
+    }
 }
 
-/** Shared grid used by both the home and favourites screens. */
+/** Shared grid used by the favourites screen (ungrouped, since favourites are usually few). */
 @Composable
 fun ToolGrid(
     tools: List<Tool>,

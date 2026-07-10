@@ -14,4 +14,13 @@ data class Tool(
     val description: String,
     val icon: ImageVector,
     val route: String,
+    val category: ToolCategory,
 )
+
+/** Groups tools shown on the home screen so similar tools appear together. */
+enum class ToolCategory(val label: String) {
+    CALCULATORS("Calculators"),
+    CONVERTERS("Converters"),
+    GAMES_AND_RANDOM("Games & Randomizers"),
+    UTILITIES("Utilities"),
+}

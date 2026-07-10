@@ -3,6 +3,7 @@ package com.jaguar.gearbox
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -42,9 +43,11 @@ import com.jaguar.gearbox.ui.theme.AppTheme
 import com.jaguar.gearbox.ui.tools.AgeCalculatorScreen
 import com.jaguar.gearbox.ui.tools.AverageCalculatorScreen
 import com.jaguar.gearbox.ui.tools.BaseConverterScreen
+import com.jaguar.gearbox.ui.tools.BmiCalculatorScreen
 import com.jaguar.gearbox.ui.tools.ChessScoreboardScreen
 import com.jaguar.gearbox.ui.tools.ColorPickerScreen
 import com.jaguar.gearbox.ui.tools.CounterScreen
+import com.jaguar.gearbox.ui.tools.DateCalculatorScreen
 import com.jaguar.gearbox.ui.tools.DecimalToFractionScreen
 import com.jaguar.gearbox.ui.tools.DiceRollScreen
 import com.jaguar.gearbox.ui.tools.FlipCoinScreen
@@ -53,6 +56,7 @@ import com.jaguar.gearbox.ui.tools.LoanCalculatorScreen
 import com.jaguar.gearbox.ui.tools.NumberToRomanScreen
 import com.jaguar.gearbox.ui.tools.NumberToWordsScreen
 import com.jaguar.gearbox.ui.tools.OneOfTwoScreen
+import com.jaguar.gearbox.ui.tools.PasswordGeneratorScreen
 import com.jaguar.gearbox.ui.tools.PercentageCalculatorScreen
 import com.jaguar.gearbox.ui.tools.RandomNumberScreen
 import com.jaguar.gearbox.ui.tools.RatiosScreen
@@ -60,12 +64,16 @@ import com.jaguar.gearbox.ui.tools.RockPaperScissorsScreen
 import com.jaguar.gearbox.ui.tools.ScoreboardScreen
 import com.jaguar.gearbox.ui.tools.SpinBottleScreen
 import com.jaguar.gearbox.ui.tools.TambolaScreen
+import com.jaguar.gearbox.ui.tools.TextToolsScreen
+import com.jaguar.gearbox.ui.tools.TimerStopwatchScreen
+import com.jaguar.gearbox.ui.tools.TipCalculatorScreen
 import com.jaguar.gearbox.ui.tools.UnitConverterScreen
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
         setContent {
             AppTheme {
                 Surface(
@@ -161,6 +169,12 @@ fun GearBoxApp() {
                 composable(Tools.ROUTE_ONE_OF_TWO) { OneOfTwoScreen { navController.popBackStack() } }
                 composable(Tools.ROUTE_RATIOS) { RatiosScreen { navController.popBackStack() } }
                 composable(Tools.ROUTE_DECIMAL_TO_FRACTION) { DecimalToFractionScreen { navController.popBackStack() } }
+                composable(Tools.ROUTE_TEXT_TOOLS) { TextToolsScreen { navController.popBackStack() } }
+                composable(Tools.ROUTE_TIMER_STOPWATCH) { TimerStopwatchScreen { navController.popBackStack() } }
+                composable(Tools.ROUTE_BMI) { BmiCalculatorScreen { navController.popBackStack() } }
+                composable(Tools.ROUTE_TIP) { TipCalculatorScreen { navController.popBackStack() } }
+                composable(Tools.ROUTE_PASSWORD_GENERATOR) { PasswordGeneratorScreen { navController.popBackStack() } }
+                composable(Tools.ROUTE_DATE_CALCULATOR) { DateCalculatorScreen { navController.popBackStack() } }
             }
         }
     }

@@ -5,7 +5,7 @@ GearBox is the Kotlin + Jetpack Compose rewrite of the original Java
 
 ## Tools
 
-22 tools, grouped into four categories on the home screen.
+28 tools, grouped into four categories on the home screen.
 
 #### Calculators
 
@@ -17,6 +17,9 @@ GearBox is the Kotlin + Jetpack Compose rewrite of the original Java
 | Geometry Calculator | Area/perimeter for circles, rectangles and triangles. |
 | Percentage Calculator | X% of Y, what % X is of Y, and percentage change. |
 | Ratios | Simplify a ratio to lowest whole-number terms. |
+| BMI Calculator | Body mass index and weight category from height and weight. |
+| Tip Calculator | Bill + tip % split across any number of people. |
+| Date Calculator | Add or subtract days/weeks/months/years from a date. |
 
 #### Converters
 
@@ -45,9 +48,12 @@ GearBox is the Kotlin + Jetpack Compose rewrite of the original Java
 | Tool | Description |
 | --- | --- |
 | Counter | A simple increment / decrement / reset counter. |
-| Scoreboard | Track scores for any number of players/teams. |
-| Chess Scoreboard | Win/draw/loss tracking with standard chess scoring (1 / ½ / 0). |
-| Color Picker | Pick a color via RGB sliders or a HEX input; view HEX, RGB and HSL. |
+| Scoreboard | Track scores for any number of players/teams, persisted across app restarts. |
+| Chess Scoreboard | Win/draw/loss tracking with standard chess scoring (1 / ½ / 0), persisted across app restarts. |
+| Color Picker | Pick a color via RGB sliders or a HEX input; view HEX, RGB and HSL; save recent colors. |
+| Text Tools | Word/character counts, case conversion (upper/lower/title/camel), and palindrome checking. |
+| Timer / Stopwatch | Stopwatch with laps, or a countdown timer from a set duration. |
+| Password Generator | Random password with configurable length and character types, plus a strength meter. |
 
 ## Features
 

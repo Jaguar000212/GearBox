@@ -1,6 +1,7 @@
 package com.jaguar.gearbox.data
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Article
 import androidx.compose.material.icons.automirrored.filled.CallSplit
 import androidx.compose.material.icons.automirrored.filled.RotateRight
 import androidx.compose.material.icons.filled.Balance
@@ -8,12 +9,16 @@ import androidx.compose.material.icons.filled.Cake
 import androidx.compose.material.icons.filled.Calculate
 import androidx.compose.material.icons.filled.Casino
 import androidx.compose.material.icons.filled.Colorize
+import androidx.compose.material.icons.filled.EditCalendar
 import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.Functions
 import androidx.compose.material.icons.filled.FrontHand
 import androidx.compose.material.icons.filled.Grid4x4
 import androidx.compose.material.icons.filled.HistoryEdu
 import androidx.compose.material.icons.filled.MonetizationOn
+import androidx.compose.material.icons.filled.MonitorWeight
+import androidx.compose.material.icons.filled.Password
+import androidx.compose.material.icons.filled.Payments
 import androidx.compose.material.icons.filled.Percent
 import androidx.compose.material.icons.filled.PieChart
 import androidx.compose.material.icons.filled.PlusOne
@@ -23,6 +28,7 @@ import androidx.compose.material.icons.filled.Straighten
 import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.material.icons.filled.Tag
 import androidx.compose.material.icons.filled.TextFields
+import androidx.compose.material.icons.filled.Timer
 
 /**
  * Central registry of the tools shown on the home screen. This is the Compose equivalent of the
@@ -52,6 +58,12 @@ object Tools {
     const val ROUTE_ONE_OF_TWO = "tool/one_of_two"
     const val ROUTE_RATIOS = "tool/ratios"
     const val ROUTE_DECIMAL_TO_FRACTION = "tool/decimal_to_fraction"
+    const val ROUTE_TEXT_TOOLS = "tool/text_tools"
+    const val ROUTE_TIMER_STOPWATCH = "tool/timer_stopwatch"
+    const val ROUTE_BMI = "tool/bmi"
+    const val ROUTE_TIP = "tool/tip"
+    const val ROUTE_PASSWORD_GENERATOR = "tool/password_generator"
+    const val ROUTE_DATE_CALCULATOR = "tool/date_calculator"
 
     val all: List<Tool> = listOf(
         Tool(
@@ -94,6 +106,27 @@ object Tools {
             description = "Calculate and simplify ratios.",
             icon = Icons.Filled.Balance,
             route = ROUTE_RATIOS,
+            category = ToolCategory.CALCULATORS,
+        ),
+        Tool(
+            name = "BMI Calculator",
+            description = "Calculate body mass index and weight category from height and weight.",
+            icon = Icons.Filled.MonitorWeight,
+            route = ROUTE_BMI,
+            category = ToolCategory.CALCULATORS,
+        ),
+        Tool(
+            name = "Tip Calculator",
+            description = "Split a bill with a tip across any number of people.",
+            icon = Icons.Filled.Payments,
+            route = ROUTE_TIP,
+            category = ToolCategory.CALCULATORS,
+        ),
+        Tool(
+            name = "Date Calculator",
+            description = "Add or subtract days, weeks, months, or years from a date.",
+            icon = Icons.Filled.EditCalendar,
+            route = ROUTE_DATE_CALCULATOR,
             category = ToolCategory.CALCULATORS,
         ),
         Tool(
@@ -206,6 +239,27 @@ object Tools {
             description = "Identify and select colors using HEX, RGB, or HSL values.",
             icon = Icons.Filled.Colorize,
             route = ROUTE_COLOR_PICKER,
+            category = ToolCategory.UTILITIES,
+        ),
+        Tool(
+            name = "Text Tools",
+            description = "Word/character counts, case conversion, and palindrome checking.",
+            icon = Icons.AutoMirrored.Filled.Article,
+            route = ROUTE_TEXT_TOOLS,
+            category = ToolCategory.UTILITIES,
+        ),
+        Tool(
+            name = "Timer / Stopwatch",
+            description = "Count up with lap times or count down from a set duration.",
+            icon = Icons.Filled.Timer,
+            route = ROUTE_TIMER_STOPWATCH,
+            category = ToolCategory.UTILITIES,
+        ),
+        Tool(
+            name = "Password Generator",
+            description = "Generate a random password with configurable length and character types.",
+            icon = Icons.Filled.Password,
+            route = ROUTE_PASSWORD_GENERATOR,
             category = ToolCategory.UTILITIES,
         ),
     )

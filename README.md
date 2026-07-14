@@ -1,6 +1,8 @@
-<img src="docs/icon.svg" width="96" height="96" alt="GearBox icon" align="left" />
-
-# GearBox
+<div align='center'>
+  <img src="docs/icon.svg" width="96" height="96" alt="GearBox icon" />
+  <h1>GearBox</h1>
+  <img src="https://img.shields.io/github/v/release/Jaguar000212/GearBox" alt="release badge" />
+</div>
 
 GearBox is the Kotlin + Jetpack Compose rewrite of the original Java
 [Tool-Kit](https://github.com/Jaguar000212/Tool-Kit) Android app — a suite of handy mini-tools.

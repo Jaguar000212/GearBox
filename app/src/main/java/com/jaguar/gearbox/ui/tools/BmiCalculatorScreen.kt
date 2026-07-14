@@ -22,8 +22,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.jaguar.gearbox.data.Tools
+import com.jaguar.gearbox.logic.computeBmi
 import com.jaguar.gearbox.ui.components.ToolScaffold
-import java.util.Locale
 
 private enum class BmiUnitSystem(val label: String) {
     METRIC("Metric (cm / kg)"),
@@ -161,17 +161,4 @@ fun BmiCalculatorScreen(onNavigateBack: () -> Unit) {
             Text(error, color = MaterialTheme.colorScheme.error)
         }
     }
-}
-
-/** Returns the BMI value (formatted) and its WHO weight-status category. */
-private fun computeBmi(heightM: Double, weightKg: Double): Pair<String, String> {
-    val bmi = weightKg / (heightM * heightM)
-    val category = when {
-        bmi < 18.5 -> "Underweight"
-        bmi < 25.0 -> "Normal weight"
-        bmi < 30.0 -> "Overweight"
-        else -> "Obese"
-    }
-    val formatted = String.format(Locale.US, "%.1f", bmi)
-    return formatted to category
 }

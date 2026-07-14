@@ -22,11 +22,9 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -35,12 +33,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.jaguar.gearbox.data.SimplePrefsStore
 import com.jaguar.gearbox.data.Tools
+import com.jaguar.gearbox.ui.components.IntListSaver
 import com.jaguar.gearbox.ui.components.ToolScaffold
-
-private val calledNumbersSaver: Saver<MutableState<List<Int>>, IntArray> = Saver(
-    save = { it.value.toIntArray() },
-    restore = { mutableStateOf(it.toList()) },
-)
 
 private const val KEY_CALLED = "tambola.called"
 private const val KEY_LAST_CALLED = "tambola.last_called"
@@ -49,7 +43,7 @@ private const val KEY_LAST_CALLED = "tambola.last_called"
 fun TambolaScreen(onNavigateBack: () -> Unit) {
     val context = LocalContext.current
     val store = remember { SimplePrefsStore(context) }
-    var calledNumbers by rememberSaveable(saver = calledNumbersSaver) {
+    var calledNumbers by rememberSaveable(stateSaver = IntListSaver) {
         mutableStateOf(store.getIntList(KEY_CALLED))
     }
     var lastCalled by rememberSaveable { mutableStateOf(store.getInt(KEY_LAST_CALLED, 0)) }

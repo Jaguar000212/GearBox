@@ -40,34 +40,6 @@ import com.jaguar.gearbox.ui.screens.FavoritesScreen
 import com.jaguar.gearbox.ui.screens.HomeScreen
 import com.jaguar.gearbox.ui.screens.SettingsScreen
 import com.jaguar.gearbox.ui.theme.AppTheme
-import com.jaguar.gearbox.ui.tools.AgeCalculatorScreen
-import com.jaguar.gearbox.ui.tools.AverageCalculatorScreen
-import com.jaguar.gearbox.ui.tools.BaseConverterScreen
-import com.jaguar.gearbox.ui.tools.BmiCalculatorScreen
-import com.jaguar.gearbox.ui.tools.ChessScoreboardScreen
-import com.jaguar.gearbox.ui.tools.ColorPickerScreen
-import com.jaguar.gearbox.ui.tools.CounterScreen
-import com.jaguar.gearbox.ui.tools.DateCalculatorScreen
-import com.jaguar.gearbox.ui.tools.DecimalToFractionScreen
-import com.jaguar.gearbox.ui.tools.DiceRollScreen
-import com.jaguar.gearbox.ui.tools.FlipCoinScreen
-import com.jaguar.gearbox.ui.tools.GeometryCalculatorScreen
-import com.jaguar.gearbox.ui.tools.LoanCalculatorScreen
-import com.jaguar.gearbox.ui.tools.NumberToRomanScreen
-import com.jaguar.gearbox.ui.tools.NumberToWordsScreen
-import com.jaguar.gearbox.ui.tools.OneOfTwoScreen
-import com.jaguar.gearbox.ui.tools.PasswordGeneratorScreen
-import com.jaguar.gearbox.ui.tools.PercentageCalculatorScreen
-import com.jaguar.gearbox.ui.tools.RandomNumberScreen
-import com.jaguar.gearbox.ui.tools.RatiosScreen
-import com.jaguar.gearbox.ui.tools.RockPaperScissorsScreen
-import com.jaguar.gearbox.ui.tools.ScoreboardScreen
-import com.jaguar.gearbox.ui.tools.SpinBottleScreen
-import com.jaguar.gearbox.ui.tools.TambolaScreen
-import com.jaguar.gearbox.ui.tools.TextToolsScreen
-import com.jaguar.gearbox.ui.tools.TimerStopwatchScreen
-import com.jaguar.gearbox.ui.tools.TipCalculatorScreen
-import com.jaguar.gearbox.ui.tools.UnitConverterScreen
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
@@ -147,34 +119,11 @@ fun GearBoxApp() {
                 }
                 composable(ROUTE_SETTINGS) { SettingsScreen() }
 
-                composable(Tools.ROUTE_AVERAGE) { AverageCalculatorScreen { navController.popBackStack() } }
-                composable(Tools.ROUTE_LOAN) { LoanCalculatorScreen { navController.popBackStack() } }
-                composable(Tools.ROUTE_COUNTER) { CounterScreen { navController.popBackStack() } }
-                composable(Tools.ROUTE_AGE) { AgeCalculatorScreen { navController.popBackStack() } }
-                composable(Tools.ROUTE_SCOREBOARD) { ScoreboardScreen { navController.popBackStack() } }
-                composable(Tools.ROUTE_RANDOM) { RandomNumberScreen { navController.popBackStack() } }
-                composable(Tools.ROUTE_BASE_CONVERTER) { BaseConverterScreen { navController.popBackStack() } }
-                composable(Tools.ROUTE_COLOR_PICKER) { ColorPickerScreen { navController.popBackStack() } }
-                composable(Tools.ROUTE_UNIT_CONVERTER) { UnitConverterScreen { navController.popBackStack() } }
-                composable(Tools.ROUTE_NUMBER_TO_WORDS) { NumberToWordsScreen { navController.popBackStack() } }
-                composable(Tools.ROUTE_NUMBER_TO_ROMAN) { NumberToRomanScreen { navController.popBackStack() } }
-                composable(Tools.ROUTE_GEOMETRY) { GeometryCalculatorScreen { navController.popBackStack() } }
-                composable(Tools.ROUTE_PERCENTAGE) { PercentageCalculatorScreen { navController.popBackStack() } }
-                composable(Tools.ROUTE_TAMBOLA) { TambolaScreen { navController.popBackStack() } }
-                composable(Tools.ROUTE_FLIP_COIN) { FlipCoinScreen { navController.popBackStack() } }
-                composable(Tools.ROUTE_SPIN_BOTTLE) { SpinBottleScreen { navController.popBackStack() } }
-                composable(Tools.ROUTE_RPS) { RockPaperScissorsScreen { navController.popBackStack() } }
-                composable(Tools.ROUTE_DICE) { DiceRollScreen { navController.popBackStack() } }
-                composable(Tools.ROUTE_CHESS_SCOREBOARD) { ChessScoreboardScreen { navController.popBackStack() } }
-                composable(Tools.ROUTE_ONE_OF_TWO) { OneOfTwoScreen { navController.popBackStack() } }
-                composable(Tools.ROUTE_RATIOS) { RatiosScreen { navController.popBackStack() } }
-                composable(Tools.ROUTE_DECIMAL_TO_FRACTION) { DecimalToFractionScreen { navController.popBackStack() } }
-                composable(Tools.ROUTE_TEXT_TOOLS) { TextToolsScreen { navController.popBackStack() } }
-                composable(Tools.ROUTE_TIMER_STOPWATCH) { TimerStopwatchScreen { navController.popBackStack() } }
-                composable(Tools.ROUTE_BMI) { BmiCalculatorScreen { navController.popBackStack() } }
-                composable(Tools.ROUTE_TIP) { TipCalculatorScreen { navController.popBackStack() } }
-                composable(Tools.ROUTE_PASSWORD_GENERATOR) { PasswordGeneratorScreen { navController.popBackStack() } }
-                composable(Tools.ROUTE_DATE_CALCULATOR) { DateCalculatorScreen { navController.popBackStack() } }
+                // Every tool destination registers itself here - adding a new tool only means
+                // adding one Tool(...) entry to Tools.all, not a new composable(...) line too.
+                Tools.all.forEach { tool ->
+                    composable(tool.route) { tool.content { navController.popBackStack() } }
+                }
             }
         }
     }

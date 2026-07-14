@@ -1,5 +1,6 @@
 package com.jaguar.gearbox.data
 
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.vector.ImageVector
 
 /**
@@ -7,7 +8,9 @@ import androidx.compose.ui.graphics.vector.ImageVector
  *
  * In the original Java Tool-Kit each tool was a separate [android.app.Activity] and a [Tool]
  * held a [Class] reference to it. In the Compose version every tool is just a destination in the
- * navigation graph, so a tool is identified by its [route].
+ * navigation graph, identified by its [route] - and [content] is the screen itself, so
+ * registering a new tool's navigation destination is a one-line addition to [Tools.all] instead
+ * of touching a separate `NavHost` registration for every tool.
  */
 data class Tool(
     val name: String,
@@ -15,6 +18,7 @@ data class Tool(
     val icon: ImageVector,
     val route: String,
     val category: ToolCategory,
+    val content: @Composable (onNavigateBack: () -> Unit) -> Unit,
 )
 
 /** Groups tools shown on the home screen so similar tools appear together. */

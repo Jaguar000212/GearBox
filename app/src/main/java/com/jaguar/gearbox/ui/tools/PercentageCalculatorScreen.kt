@@ -20,10 +20,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.jaguar.gearbox.data.Tools
+import com.jaguar.gearbox.logic.formatTrimmed
 import com.jaguar.gearbox.ui.components.DecimalField
 import com.jaguar.gearbox.ui.components.ResultCard
 import com.jaguar.gearbox.ui.components.ToolScaffold
-import java.util.Locale
 
 private enum class PercentMode(val label: String, val hint1: String, val hint2: String) {
     OF_VALUE("X% of Y", "Percentage (X)", "Value (Y)"),
@@ -106,8 +106,7 @@ fun PercentageCalculatorScreen(onNavigateBack: () -> Unit) {
 }
 
 private fun computePercentResult(mode: PercentMode, f1: String, f2: String): String? {
-    fun fmt(value: Double) =
-        String.format(Locale.US, "%.4f", value).trimEnd('0').trimEnd('.')
+    fun fmt(value: Double) = formatTrimmed(value, decimals = 4)
 
     val x = f1.trim().toDoubleOrNull()?.takeIf { it.isFinite() } ?: return null
     val y = f2.trim().toDoubleOrNull()?.takeIf { it.isFinite() } ?: return null

@@ -23,8 +23,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.jaguar.gearbox.data.Tools
+import com.jaguar.gearbox.logic.formatTrimmed
 import com.jaguar.gearbox.ui.components.ToolScaffold
-import java.util.Locale
 import kotlin.math.PI
 import kotlin.math.sqrt
 
@@ -141,8 +141,7 @@ private fun NumberField(label: String, value: String, onValueChange: (String) ->
 }
 
 private fun computeResult(shape: Shape, f1: String, f2: String, f3: String): String? {
-    fun fmt(value: Double) =
-        String.format(Locale.US, "%.4f", value).trimEnd('0').trimEnd('.')
+    fun fmt(value: Double) = formatTrimmed(value, decimals = 4)
 
     return when (shape) {
         Shape.CIRCLE -> {

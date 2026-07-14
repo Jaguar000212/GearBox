@@ -20,11 +20,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -32,18 +30,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.jaguar.gearbox.data.Tools
+import com.jaguar.gearbox.ui.components.IntListSaver
 import com.jaguar.gearbox.ui.components.ToolScaffold
 import kotlin.random.Random
-
-private val diceValuesSaver: Saver<MutableState<List<Int>>, IntArray> = Saver(
-    save = { it.value.toIntArray() },
-    restore = { mutableStateOf(it.toList()) },
-)
 
 @Composable
 fun DiceRollScreen(onNavigateBack: () -> Unit) {
     var diceCount by rememberSaveable { mutableIntStateOf(1) }
-    var values by rememberSaveable(saver = diceValuesSaver) { mutableStateOf(emptyList()) }
+    var values by rememberSaveable(stateSaver = IntListSaver) { mutableStateOf(emptyList()) }
 
     ToolScaffold(
         title = "Dice Roll",

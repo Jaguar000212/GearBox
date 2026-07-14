@@ -29,6 +29,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.jaguar.gearbox.data.Tools
+import com.jaguar.gearbox.logic.formatTrimmed
 import com.jaguar.gearbox.ui.components.ResultCard
 import com.jaguar.gearbox.ui.components.ToolScaffold
 import java.util.Locale
@@ -198,9 +199,9 @@ fun UnitConverterScreen(onNavigateBack: () -> Unit) {
             String.format(
                 Locale.US,
                 "%s %s = %s %s",
-                trimNumber(value),
+                formatTrimmed(value),
                 fromUnit,
-                trimNumber(result),
+                formatTrimmed(result),
                 toUnit,
             )
         } else null
@@ -257,7 +258,3 @@ private fun UnitDropdown(
     }
 }
 
-private fun trimNumber(value: Double): String {
-    val rounded = String.format(Locale.US, "%.6f", value).trimEnd('0').trimEnd('.')
-    return rounded.ifEmpty { "0" }
-}

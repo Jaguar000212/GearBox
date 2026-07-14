@@ -32,6 +32,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.jaguar.gearbox.data.Tools
 import com.jaguar.gearbox.ui.components.ToolScaffold
+import com.jaguar.gearbox.ui.components.ValueRow
 import java.util.Locale
 
 @Composable
@@ -136,17 +137,6 @@ fun TipCalculatorScreen(onNavigateBack: () -> Unit) {
             Spacer(Modifier.height(12.dp))
             Text("Enter a valid bill amount and tip %.", color = MaterialTheme.colorScheme.error)
         }
-    }
-}
-
-@Composable
-private fun ValueRow(label: String, value: String) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-    ) {
-        Text(label, style = MaterialTheme.typography.labelLarge)
-        Text(value, style = MaterialTheme.typography.bodyLarge)
     }
 }
 

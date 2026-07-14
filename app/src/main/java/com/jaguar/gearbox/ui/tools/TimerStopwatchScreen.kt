@@ -22,12 +22,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -37,6 +35,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.jaguar.gearbox.data.SimplePrefsStore
 import com.jaguar.gearbox.data.Tools
+import com.jaguar.gearbox.ui.components.LongListSaver
 import com.jaguar.gearbox.ui.components.ToolScaffold
 import kotlinx.coroutines.delay
 import java.util.Locale
@@ -46,11 +45,6 @@ private enum class ClockMode(val label: String) {
     STOPWATCH("Stopwatch"),
     TIMER("Timer"),
 }
-
-private val lapsSaver: Saver<MutableState<List<Long>>, LongArray> = Saver(
-    save = { it.value.toLongArray() },
-    restore = { mutableStateOf(it.toList()) },
-)
 
 private const val KEY_MODE = "timer_stopwatch.mode"
 private const val KEY_SW_ELAPSED = "timer_stopwatch.sw_elapsed"
@@ -133,7 +127,7 @@ fun TimerStopwatchScreen(onNavigateBack: () -> Unit) {
     // the active `when` branch, so the other clock silently froze while claiming to be running.
     var stopwatchElapsedMillis by rememberSaveable { mutableLongStateOf(initial.stopwatchElapsedMillis) }
     var stopwatchRunning by rememberSaveable { mutableStateOf(initial.stopwatchRunning) }
-    var laps by rememberSaveable(saver = lapsSaver) { mutableStateOf(initial.laps) }
+    var laps by rememberSaveable(stateSaver = LongListSaver) { mutableStateOf(initial.laps) }
 
     var timerRemainingMillis by rememberSaveable { mutableLongStateOf(initial.timerRemainingMillis) }
     var timerRunning by rememberSaveable { mutableStateOf(initial.timerRunning) }

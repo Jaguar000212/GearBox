@@ -21,9 +21,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.jaguar.gearbox.data.Tools
+import com.jaguar.gearbox.logic.formatTrimmed
 import com.jaguar.gearbox.ui.components.ResultCard
 import com.jaguar.gearbox.ui.components.ToolScaffold
-import java.util.Locale
 import kotlin.math.pow
 
 @Composable
@@ -103,7 +103,7 @@ private fun computeAverageResult(input: String): String? {
     val harmonicMeanText = if (numbers.any { it == 0.0 }) {
         "N/A (list contains zero)"
     } else {
-        formatNumber(numbers.size / numbers.sumOf { 1 / it })
+        formatTrimmed(numbers.size / numbers.sumOf { 1 / it })
     }
 
     // A fractional power of a negative base is NaN in Java/Kotlin regardless of whether the
@@ -111,20 +111,15 @@ private fun computeAverageResult(input: String): String? {
     val geometricMeanText = if (numbers.any { it < 0.0 }) {
         "N/A (list contains a negative number)"
     } else {
-        formatNumber(numbers.fold(1.0) { acc, n -> acc * n }.pow(1.0 / numbers.size))
+        formatTrimmed(numbers.fold(1.0) { acc, n -> acc * n }.pow(1.0 / numbers.size))
     }
 
     val largest = numbers.max()
     val smallest = numbers.min()
 
-    return "Result: ${formatNumber(average)}\n\n" +
+    return "Result: ${formatTrimmed(average)}\n\n" +
             "Geometric Mean: $geometricMeanText\nHarmonic Mean: $harmonicMeanText\n\n" +
-            "Sum: ${formatNumber(sum)}\nCount: ${numbers.size}\n" +
-            "Largest: ${formatNumber(largest)}\nSmallest: ${formatNumber(smallest)}"
+            "Sum: ${formatTrimmed(sum)}\nCount: ${numbers.size}\n" +
+            "Largest: ${formatTrimmed(largest)}\nSmallest: ${formatTrimmed(smallest)}"
 }
 
-/** Formats without %f's fixed trailing zeros (e.g. "7.000000"), matching the app's other tools. */
-private fun formatNumber(value: Double): String {
-    val rounded = String.format(Locale.US, "%.6f", value).trimEnd('0').trimEnd('.')
-    return rounded.ifEmpty { "0" }
-}

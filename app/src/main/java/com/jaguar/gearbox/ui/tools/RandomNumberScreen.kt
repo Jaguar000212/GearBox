@@ -30,8 +30,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.jaguar.gearbox.data.Tools
+import com.jaguar.gearbox.logic.randomLongInclusive
 import com.jaguar.gearbox.ui.components.ToolScaffold
-import kotlin.random.Random
 
 @Composable
 fun RandomNumberScreen(onNavigateBack: () -> Unit) {
@@ -166,18 +166,4 @@ private fun SignedNumberField(
 private fun toggleSign(text: String): String = when {
     text.startsWith("-") -> text.removePrefix("-")
     else -> "-$text"
-}
-
-/**
- * Returns a random Long in [low, high] inclusive. Random.nextLong(from, until) takes an exclusive
- * upper bound, so the naive `high + 1` overflows to Long.MIN_VALUE when high == Long.MAX_VALUE,
- * which throws (until <= from). Shifting the range down by one avoids that overflow.
- */
-private fun randomLongInclusive(low: Long, high: Long): Long {
-    if (low == high) return low
-    return when {
-        low == Long.MIN_VALUE && high == Long.MAX_VALUE -> Random.nextLong()
-        high == Long.MAX_VALUE -> Random.nextLong(low - 1, high) + 1
-        else -> Random.nextLong(low, high + 1)
-    }
 }

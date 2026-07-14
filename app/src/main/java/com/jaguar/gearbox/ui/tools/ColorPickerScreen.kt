@@ -29,12 +29,10 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -45,13 +43,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.jaguar.gearbox.data.SimplePrefsStore
 import com.jaguar.gearbox.data.Tools
+import com.jaguar.gearbox.logic.parseHex
+import com.jaguar.gearbox.logic.rgbToHsl
+import com.jaguar.gearbox.ui.components.StringListSaver
 import com.jaguar.gearbox.ui.components.ToolScaffold
+import com.jaguar.gearbox.ui.components.ValueRow
 import kotlin.math.roundToInt
-
-private val recentColorsSaver: Saver<MutableState<List<String>>, Array<String>> = Saver(
-    save = { it.value.toTypedArray() },
-    restore = { mutableStateOf(it.toList()) },
-)
 
 private const val MAX_RECENT_COLORS = 8
 private const val KEY_RECENT_COLORS = "color_picker.recent"
@@ -65,7 +62,7 @@ fun ColorPickerScreen(onNavigateBack: () -> Unit) {
     var blue by rememberSaveable { mutableFloatStateOf(164f) }
     var hexInput by rememberSaveable { mutableStateOf("") }
     var hexError by rememberSaveable { mutableStateOf("") }
-    var recentColors by rememberSaveable(saver = recentColorsSaver) {
+    var recentColors by rememberSaveable(stateSaver = StringListSaver) {
         mutableStateOf(store.getString(KEY_RECENT_COLORS, "").split(",").filter { it.isNotBlank() })
     }
 
@@ -202,17 +199,6 @@ fun ColorPickerScreen(onNavigateBack: () -> Unit) {
 }
 
 @Composable
-private fun ValueRow(label: String, value: String) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-    ) {
-        Text(label, style = MaterialTheme.typography.labelLarge)
-        Text(value, style = MaterialTheme.typography.bodyLarge)
-    }
-}
-
-@Composable
 private fun ColorSlider(label: String, value: Float, onValueChange: (Float) -> Unit) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -222,38 +208,4 @@ private fun ColorSlider(label: String, value: Float, onValueChange: (Float) -> U
         Text(value.roundToInt().toString(), style = MaterialTheme.typography.bodyMedium)
     }
     Slider(value = value, onValueChange = onValueChange, valueRange = 0f..255f)
-}
-
-private fun parseHex(input: String): Triple<Int, Int, Int>? {
-    val cleaned = input.trim().removePrefix("#")
-    if (cleaned.length != 6 || cleaned.any { it !in "0123456789abcdefABCDEF" }) return null
-    return try {
-        val r = cleaned.substring(0, 2).toInt(16)
-        val g = cleaned.substring(2, 4).toInt(16)
-        val b = cleaned.substring(4, 6).toInt(16)
-        Triple(r, g, b)
-    } catch (_: NumberFormatException) {
-        null
-    }
-}
-
-private fun rgbToHsl(r: Int, g: Int, b: Int): Triple<Int, Int, Int> {
-    val rf = r / 255f
-    val gf = g / 255f
-    val bf = b / 255f
-    val max = maxOf(rf, gf, bf)
-    val min = minOf(rf, gf, bf)
-    val lightness = (max + min) / 2f
-
-    if (max == min) return Triple(0, 0, (lightness * 100).roundToInt())
-
-    val delta = max - min
-    val saturation = if (lightness > 0.5f) delta / (2f - max - min) else delta / (max + min)
-    val hue = when (max) {
-        rf -> ((gf - bf) / delta + (if (gf < bf) 6f else 0f))
-        gf -> ((bf - rf) / delta + 2f)
-        else -> ((rf - gf) / delta + 4f)
-    } * 60f
-
-    return Triple(hue.roundToInt(), (saturation * 100).roundToInt(), (lightness * 100).roundToInt())
 }

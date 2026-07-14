@@ -29,10 +29,40 @@ import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.material.icons.filled.Tag
 import androidx.compose.material.icons.filled.TextFields
 import androidx.compose.material.icons.filled.Timer
+import com.jaguar.gearbox.ui.tools.AgeCalculatorScreen
+import com.jaguar.gearbox.ui.tools.AverageCalculatorScreen
+import com.jaguar.gearbox.ui.tools.BaseConverterScreen
+import com.jaguar.gearbox.ui.tools.BmiCalculatorScreen
+import com.jaguar.gearbox.ui.tools.ChessScoreboardScreen
+import com.jaguar.gearbox.ui.tools.ColorPickerScreen
+import com.jaguar.gearbox.ui.tools.CounterScreen
+import com.jaguar.gearbox.ui.tools.DateCalculatorScreen
+import com.jaguar.gearbox.ui.tools.DecimalToFractionScreen
+import com.jaguar.gearbox.ui.tools.DiceRollScreen
+import com.jaguar.gearbox.ui.tools.FlipCoinScreen
+import com.jaguar.gearbox.ui.tools.GeometryCalculatorScreen
+import com.jaguar.gearbox.ui.tools.LoanCalculatorScreen
+import com.jaguar.gearbox.ui.tools.NumberToRomanScreen
+import com.jaguar.gearbox.ui.tools.NumberToWordsScreen
+import com.jaguar.gearbox.ui.tools.OneOfTwoScreen
+import com.jaguar.gearbox.ui.tools.PasswordGeneratorScreen
+import com.jaguar.gearbox.ui.tools.PercentageCalculatorScreen
+import com.jaguar.gearbox.ui.tools.RandomNumberScreen
+import com.jaguar.gearbox.ui.tools.RatiosScreen
+import com.jaguar.gearbox.ui.tools.RockPaperScissorsScreen
+import com.jaguar.gearbox.ui.tools.ScoreboardScreen
+import com.jaguar.gearbox.ui.tools.SpinBottleScreen
+import com.jaguar.gearbox.ui.tools.TambolaScreen
+import com.jaguar.gearbox.ui.tools.TextToolsScreen
+import com.jaguar.gearbox.ui.tools.TimerStopwatchScreen
+import com.jaguar.gearbox.ui.tools.TipCalculatorScreen
+import com.jaguar.gearbox.ui.tools.UnitConverterScreen
 
 /**
  * Central registry of the tools shown on the home screen. This is the Compose equivalent of the
- * Java `ToolList` class.
+ * Java `ToolList` class. Each [Tool] carries its own screen composable, so registering a new
+ * destination in [com.jaguar.gearbox.GearBoxApp]'s `NavHost` is a one-line loop over [all]
+ * instead of a separate `composable(...)` call per tool.
  */
 object Tools {
 
@@ -72,6 +102,7 @@ object Tools {
             icon = Icons.Filled.Calculate,
             route = ROUTE_AVERAGE,
             category = ToolCategory.CALCULATORS,
+            content = { onNavigateBack -> AverageCalculatorScreen(onNavigateBack) },
         ),
         Tool(
             name = "Interest Calculator",
@@ -79,6 +110,7 @@ object Tools {
             icon = Icons.Filled.Percent,
             route = ROUTE_LOAN,
             category = ToolCategory.CALCULATORS,
+            content = { onNavigateBack -> LoanCalculatorScreen(onNavigateBack) },
         ),
         Tool(
             name = "Age Calculator",
@@ -86,6 +118,7 @@ object Tools {
             icon = Icons.Filled.Cake,
             route = ROUTE_AGE,
             category = ToolCategory.CALCULATORS,
+            content = { onNavigateBack -> AgeCalculatorScreen(onNavigateBack) },
         ),
         Tool(
             name = "Geometry Calculator",
@@ -93,6 +126,7 @@ object Tools {
             icon = Icons.Filled.Straighten,
             route = ROUTE_GEOMETRY,
             category = ToolCategory.CALCULATORS,
+            content = { onNavigateBack -> GeometryCalculatorScreen(onNavigateBack) },
         ),
         Tool(
             name = "Percentage Calculator",
@@ -100,6 +134,7 @@ object Tools {
             icon = Icons.Filled.PieChart,
             route = ROUTE_PERCENTAGE,
             category = ToolCategory.CALCULATORS,
+            content = { onNavigateBack -> PercentageCalculatorScreen(onNavigateBack) },
         ),
         Tool(
             name = "Ratios",
@@ -107,6 +142,7 @@ object Tools {
             icon = Icons.Filled.Balance,
             route = ROUTE_RATIOS,
             category = ToolCategory.CALCULATORS,
+            content = { onNavigateBack -> RatiosScreen(onNavigateBack) },
         ),
         Tool(
             name = "BMI Calculator",
@@ -114,6 +150,7 @@ object Tools {
             icon = Icons.Filled.MonitorWeight,
             route = ROUTE_BMI,
             category = ToolCategory.CALCULATORS,
+            content = { onNavigateBack -> BmiCalculatorScreen(onNavigateBack) },
         ),
         Tool(
             name = "Tip Calculator",
@@ -121,6 +158,7 @@ object Tools {
             icon = Icons.Filled.Payments,
             route = ROUTE_TIP,
             category = ToolCategory.CALCULATORS,
+            content = { onNavigateBack -> TipCalculatorScreen(onNavigateBack) },
         ),
         Tool(
             name = "Date Calculator",
@@ -128,6 +166,7 @@ object Tools {
             icon = Icons.Filled.EditCalendar,
             route = ROUTE_DATE_CALCULATOR,
             category = ToolCategory.CALCULATORS,
+            content = { onNavigateBack -> DateCalculatorScreen(onNavigateBack) },
         ),
         Tool(
             name = "Base Converter",
@@ -135,6 +174,7 @@ object Tools {
             icon = Icons.Filled.Tag,
             route = ROUTE_BASE_CONVERTER,
             category = ToolCategory.CONVERTERS,
+            content = { onNavigateBack -> BaseConverterScreen(onNavigateBack) },
         ),
         Tool(
             name = "Unit Converters",
@@ -142,6 +182,7 @@ object Tools {
             icon = Icons.Filled.SwapHoriz,
             route = ROUTE_UNIT_CONVERTER,
             category = ToolCategory.CONVERTERS,
+            content = { onNavigateBack -> UnitConverterScreen(onNavigateBack) },
         ),
         Tool(
             name = "Number to Words",
@@ -149,6 +190,7 @@ object Tools {
             icon = Icons.Filled.TextFields,
             route = ROUTE_NUMBER_TO_WORDS,
             category = ToolCategory.CONVERTERS,
+            content = { onNavigateBack -> NumberToWordsScreen(onNavigateBack) },
         ),
         Tool(
             name = "Number to Roman",
@@ -156,6 +198,7 @@ object Tools {
             icon = Icons.Filled.HistoryEdu,
             route = ROUTE_NUMBER_TO_ROMAN,
             category = ToolCategory.CONVERTERS,
+            content = { onNavigateBack -> NumberToRomanScreen(onNavigateBack) },
         ),
         Tool(
             name = "Decimal to Fraction Converter",
@@ -163,6 +206,7 @@ object Tools {
             icon = Icons.Filled.Functions,
             route = ROUTE_DECIMAL_TO_FRACTION,
             category = ToolCategory.CONVERTERS,
+            content = { onNavigateBack -> DecimalToFractionScreen(onNavigateBack) },
         ),
         Tool(
             name = "Random Number Generator",
@@ -170,6 +214,7 @@ object Tools {
             icon = Icons.Filled.Shuffle,
             route = ROUTE_RANDOM,
             category = ToolCategory.GAMES_AND_RANDOM,
+            content = { onNavigateBack -> RandomNumberScreen(onNavigateBack) },
         ),
         Tool(
             name = "Tambola Numbers",
@@ -177,6 +222,7 @@ object Tools {
             icon = Icons.Filled.Grid4x4,
             route = ROUTE_TAMBOLA,
             category = ToolCategory.GAMES_AND_RANDOM,
+            content = { onNavigateBack -> TambolaScreen(onNavigateBack) },
         ),
         Tool(
             name = "Flip Coin",
@@ -184,6 +230,7 @@ object Tools {
             icon = Icons.Filled.MonetizationOn,
             route = ROUTE_FLIP_COIN,
             category = ToolCategory.GAMES_AND_RANDOM,
+            content = { onNavigateBack -> FlipCoinScreen(onNavigateBack) },
         ),
         Tool(
             name = "Spin the Bottle",
@@ -191,6 +238,7 @@ object Tools {
             icon = Icons.AutoMirrored.Filled.RotateRight,
             route = ROUTE_SPIN_BOTTLE,
             category = ToolCategory.GAMES_AND_RANDOM,
+            content = { onNavigateBack -> SpinBottleScreen(onNavigateBack) },
         ),
         Tool(
             name = "Rock Paper Scissors",
@@ -198,6 +246,7 @@ object Tools {
             icon = Icons.Filled.FrontHand,
             route = ROUTE_RPS,
             category = ToolCategory.GAMES_AND_RANDOM,
+            content = { onNavigateBack -> RockPaperScissorsScreen(onNavigateBack) },
         ),
         Tool(
             name = "Dice Roll",
@@ -205,6 +254,7 @@ object Tools {
             icon = Icons.Filled.Casino,
             route = ROUTE_DICE,
             category = ToolCategory.GAMES_AND_RANDOM,
+            content = { onNavigateBack -> DiceRollScreen(onNavigateBack) },
         ),
         Tool(
             name = "1 of 2",
@@ -212,6 +262,7 @@ object Tools {
             icon = Icons.AutoMirrored.Filled.CallSplit,
             route = ROUTE_ONE_OF_TWO,
             category = ToolCategory.GAMES_AND_RANDOM,
+            content = { onNavigateBack -> OneOfTwoScreen(onNavigateBack) },
         ),
         Tool(
             name = "Counter",
@@ -219,6 +270,7 @@ object Tools {
             icon = Icons.Filled.PlusOne,
             route = ROUTE_COUNTER,
             category = ToolCategory.UTILITIES,
+            content = { onNavigateBack -> CounterScreen(onNavigateBack) },
         ),
         Tool(
             name = "Scoreboard",
@@ -226,6 +278,7 @@ object Tools {
             icon = Icons.Filled.Scoreboard,
             route = ROUTE_SCOREBOARD,
             category = ToolCategory.UTILITIES,
+            content = { onNavigateBack -> ScoreboardScreen(onNavigateBack) },
         ),
         Tool(
             name = "Chess Scoreboard",
@@ -233,6 +286,7 @@ object Tools {
             icon = Icons.Filled.EmojiEvents,
             route = ROUTE_CHESS_SCOREBOARD,
             category = ToolCategory.UTILITIES,
+            content = { onNavigateBack -> ChessScoreboardScreen(onNavigateBack) },
         ),
         Tool(
             name = "Color Picker",
@@ -240,6 +294,7 @@ object Tools {
             icon = Icons.Filled.Colorize,
             route = ROUTE_COLOR_PICKER,
             category = ToolCategory.UTILITIES,
+            content = { onNavigateBack -> ColorPickerScreen(onNavigateBack) },
         ),
         Tool(
             name = "Text Tools",
@@ -247,6 +302,7 @@ object Tools {
             icon = Icons.AutoMirrored.Filled.Article,
             route = ROUTE_TEXT_TOOLS,
             category = ToolCategory.UTILITIES,
+            content = { onNavigateBack -> TextToolsScreen(onNavigateBack) },
         ),
         Tool(
             name = "Timer / Stopwatch",
@@ -254,6 +310,7 @@ object Tools {
             icon = Icons.Filled.Timer,
             route = ROUTE_TIMER_STOPWATCH,
             category = ToolCategory.UTILITIES,
+            content = { onNavigateBack -> TimerStopwatchScreen(onNavigateBack) },
         ),
         Tool(
             name = "Password Generator",
@@ -261,6 +318,7 @@ object Tools {
             icon = Icons.Filled.Password,
             route = ROUTE_PASSWORD_GENERATOR,
             category = ToolCategory.UTILITIES,
+            content = { onNavigateBack -> PasswordGeneratorScreen(onNavigateBack) },
         ),
     )
 

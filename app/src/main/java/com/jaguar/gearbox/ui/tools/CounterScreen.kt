@@ -17,9 +17,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -27,12 +29,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import com.jaguar.gearbox.data.SimplePrefsStore
 import com.jaguar.gearbox.data.Tools
 import com.jaguar.gearbox.ui.components.ToolScaffold
 import com.jaguar.gearbox.ui.theme.LocalHapticsEnabled
+import androidx.glance.appwidget.updateAll
+import com.jaguar.gearbox.widget.CounterWidget
+import kotlinx.coroutines.launch
 
 private const val KEY_COUNT = "counter.count"
 private val STEP_OPTIONS = listOf(1, 5, 10)
@@ -42,14 +50,29 @@ fun CounterScreen(onNavigateBack: () -> Unit) {
     val context = LocalContext.current
     val haptic = LocalHapticFeedback.current
     val hapticsEnabled = LocalHapticsEnabled.current
+    val scope = rememberCoroutineScope()
     val store = remember { SimplePrefsStore(context) }
     var count by rememberSaveable { mutableIntStateOf(store.getInt(KEY_COUNT, 0)) }
     var step by rememberSaveable { mutableIntStateOf(1) }
+
+    // The Counter home-screen widget writes to the same key while this screen is backgrounded;
+    // pick that up as soon as the user returns instead of showing a stale in-memory value.
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                count = store.getInt(KEY_COUNT, count)
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
 
     fun update(newCount: Int) {
         if (hapticsEnabled) haptic.performHapticFeedback(HapticFeedbackType.LongPress)
         count = newCount
         store.putInt(KEY_COUNT, newCount)
+        scope.launch { CounterWidget().updateAll(context) }
     }
 
     ToolScaffold(

@@ -1,5 +1,6 @@
 package com.jaguar.gearbox
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -22,6 +23,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,6 +36,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.jaguar.gearbox.data.EXTRA_SHORTCUT_ROUTE
 import com.jaguar.gearbox.data.FavoritesStore
 import com.jaguar.gearbox.data.RecentToolsStore
 import com.jaguar.gearbox.data.SimplePrefsStore
@@ -52,9 +55,12 @@ private const val KEY_DYNAMIC_COLOR = "settings.dynamic_color"
 private const val KEY_HAPTICS = "settings.haptics"
 
 class MainActivity : ComponentActivity() {
+    private var pendingRoute by mutableStateOf<String?>(null)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        pendingRoute = intent?.getStringExtra(EXTRA_SHORTCUT_ROUTE)
         setContent {
             val context = LocalContext.current
             val prefs = remember { SimplePrefsStore(context) }
@@ -97,11 +103,19 @@ class MainActivity : ComponentActivity() {
                                 hapticsEnabled = it
                                 prefs.putBoolean(KEY_HAPTICS, it)
                             },
+                            pendingRoute = pendingRoute,
+                            onPendingRouteConsumed = { pendingRoute = null },
                         )
                     }
                 }
             }
         }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        pendingRoute = intent.getStringExtra(EXTRA_SHORTCUT_ROUTE)
     }
 }
 
@@ -126,6 +140,8 @@ fun GearBoxApp(
     onDynamicColorChange: (Boolean) -> Unit,
     hapticsEnabled: Boolean,
     onHapticsChange: (Boolean) -> Unit,
+    pendingRoute: String? = null,
+    onPendingRouteConsumed: () -> Unit = {},
 ) {
     val navController = rememberNavController()
     val context = LocalContext.current
@@ -139,6 +155,16 @@ fun GearBoxApp(
     val openTool: (Tool) -> Unit = { tool ->
         recentTools.recordOpened(tool.route)
         navController.navigate(tool.route)
+    }
+
+    // Deep-links straight into a tool when GearBox is launched from one of its own app shortcuts.
+    LaunchedEffect(pendingRoute) {
+        val route = pendingRoute ?: return@LaunchedEffect
+        if (Tools.byRoute(route) != null) {
+            recentTools.recordOpened(route)
+            navController.navigate(route)
+        }
+        onPendingRouteConsumed()
     }
 
     Scaffold(

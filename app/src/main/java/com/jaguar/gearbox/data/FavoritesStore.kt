@@ -15,12 +15,17 @@ import androidx.core.content.edit
  */
 class FavoritesStore(context: Context) {
 
-    private val prefs = context.applicationContext
-        .getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+    private val appContext = context.applicationContext
+    private val prefs = appContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
     /** Observable list of favourited routes, in display order; recomposes automatically on change. */
     val favorites: SnapshotStateList<String> =
         mutableStateListOf<String>().also { it.addAll(readFromPrefs()) }
+
+    init {
+        // Re-sync on cold start too, e.g. after a reinstall wiped the launcher's own shortcut state.
+        updateDynamicShortcuts(appContext, favorites)
+    }
 
     fun isFavorite(route: String): Boolean = favorites.contains(route)
 
@@ -55,6 +60,7 @@ class FavoritesStore(context: Context) {
 
     private fun persist() {
         prefs.edit { putString(KEY_FAVORITES, favorites.joinToString(",")) }
+        updateDynamicShortcuts(appContext, favorites)
     }
 
     private companion object {

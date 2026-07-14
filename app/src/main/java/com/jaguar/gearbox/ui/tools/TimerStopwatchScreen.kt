@@ -26,6 +26,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -35,9 +36,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.jaguar.gearbox.data.SimplePrefsStore
 import com.jaguar.gearbox.data.Tools
+import com.jaguar.gearbox.logic.catchUpTimerState
 import com.jaguar.gearbox.ui.components.LongListSaver
 import com.jaguar.gearbox.ui.components.ToolScaffold
+import com.jaguar.gearbox.widget.TimerWidget
+import androidx.glance.appwidget.updateAll
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.util.Locale
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -77,36 +82,29 @@ private class TimerLoadResult(
  */
 private fun loadTimerState(store: SimplePrefsStore): TimerLoadResult {
     val mode = store.getString(KEY_MODE, ClockMode.STOPWATCH.name)
-    var stopwatchElapsed = store.getLong(KEY_SW_ELAPSED, 0L)
     val stopwatchRunning = store.getBoolean(KEY_SW_RUNNING, false)
     val laps = store.getLongList(KEY_LAPS)
-    var timerRemaining = store.getLong(KEY_TIMER_REMAINING, 0L)
-    var timerRunning = store.getBoolean(KEY_TIMER_RUNNING, false)
-    var timerFinished = store.getBoolean(KEY_TIMER_FINISHED, false)
     val minutesInput = store.getString(KEY_MINUTES, "5")
     val secondsInput = store.getString(KEY_SECONDS, "0")
-    val savedAt = store.getLong(KEY_SAVED_AT, 0L)
 
-    if (savedAt > 0L) {
-        val gap = (System.currentTimeMillis() - savedAt).coerceAtLeast(0L)
-        if (stopwatchRunning) stopwatchElapsed += gap
-        if (timerRunning) {
-            timerRemaining = (timerRemaining - gap).coerceAtLeast(0L)
-            if (timerRemaining == 0L) {
-                timerRunning = false
-                timerFinished = true
-            }
-        }
-    }
+    val caughtUp = catchUpTimerState(
+        stopwatchElapsedMillis = store.getLong(KEY_SW_ELAPSED, 0L),
+        stopwatchRunning = stopwatchRunning,
+        timerRemainingMillis = store.getLong(KEY_TIMER_REMAINING, 0L),
+        timerRunning = store.getBoolean(KEY_TIMER_RUNNING, false),
+        timerFinished = store.getBoolean(KEY_TIMER_FINISHED, false),
+        savedAt = store.getLong(KEY_SAVED_AT, 0L),
+        now = System.currentTimeMillis(),
+    )
 
     return TimerLoadResult(
         mode = mode,
-        stopwatchElapsedMillis = stopwatchElapsed,
+        stopwatchElapsedMillis = caughtUp.stopwatchElapsedMillis,
         stopwatchRunning = stopwatchRunning,
         laps = laps,
-        timerRemainingMillis = timerRemaining,
-        timerRunning = timerRunning,
-        timerFinished = timerFinished,
+        timerRemainingMillis = caughtUp.timerRemainingMillis,
+        timerRunning = caughtUp.timerRunning,
+        timerFinished = caughtUp.timerFinished,
         minutesInput = minutesInput,
         secondsInput = secondsInput,
     )
@@ -115,6 +113,7 @@ private fun loadTimerState(store: SimplePrefsStore): TimerLoadResult {
 @Composable
 fun TimerStopwatchScreen(onNavigateBack: () -> Unit) {
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
     val store = remember { SimplePrefsStore(context) }
     val initial = remember { loadTimerState(store) }
 
@@ -150,6 +149,13 @@ fun TimerStopwatchScreen(onNavigateBack: () -> Unit) {
         }
     }
 
+    // Refreshes the home-screen widget's snapshot on real interactions (start/pause/reset/mode
+    // switch), not on the periodic 1s auto-save tick below - Glance can't animate a live countdown
+    // anyway, so there's nothing to gain from pushing an update every second while it's running.
+    fun syncWidget() {
+        scope.launch { TimerWidget().updateAll(context) }
+    }
+
     // Saves whatever state exists the moment this screen leaves composition (back-navigation),
     // so a running clock isn't silently forgotten even if the user never pauses it first.
     DisposableEffect(Unit) {
@@ -175,6 +181,7 @@ fun TimerStopwatchScreen(onNavigateBack: () -> Unit) {
                     timerFinished = true
                     playTimerAlert(context)
                     persistState()
+                    syncWidget()
                 }
             }
 
@@ -197,7 +204,7 @@ fun TimerStopwatchScreen(onNavigateBack: () -> Unit) {
             ClockMode.entries.forEach { entry ->
                 Tab(
                     selected = entry == selectedMode,
-                    onClick = { mode = entry.name; persistState() },
+                    onClick = { mode = entry.name; persistState(); syncWidget() },
                     text = { Text(entry.label) },
                 )
             }
@@ -209,13 +216,14 @@ fun TimerStopwatchScreen(onNavigateBack: () -> Unit) {
                 elapsedMillis = stopwatchElapsedMillis,
                 isRunning = stopwatchRunning,
                 laps = laps,
-                onToggleRunning = { stopwatchRunning = !stopwatchRunning; persistState() },
+                onToggleRunning = { stopwatchRunning = !stopwatchRunning; persistState(); syncWidget() },
                 onLap = { laps = laps + stopwatchElapsedMillis; persistState() },
                 onReset = {
                     stopwatchRunning = false
                     stopwatchElapsedMillis = 0L
                     laps = emptyList()
                     persistState()
+                    syncWidget()
                 },
             )
             ClockMode.TIMER -> TimerSection(
@@ -239,12 +247,14 @@ fun TimerStopwatchScreen(onNavigateBack: () -> Unit) {
                         if (timerRemainingMillis > 0) timerRunning = true
                     }
                     persistState()
+                    syncWidget()
                 },
                 onReset = {
                     timerRunning = false
                     timerRemainingMillis = 0L
                     timerFinished = false
                     persistState()
+                    syncWidget()
                 },
             )
         }

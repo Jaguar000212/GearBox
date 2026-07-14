@@ -5,12 +5,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.SwapVert
-import androidx.compose.material3.Card
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -19,7 +16,6 @@ import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -33,6 +29,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.jaguar.gearbox.data.Tools
+import com.jaguar.gearbox.ui.components.ResultCard
 import com.jaguar.gearbox.ui.components.ToolScaffold
 import java.util.Locale
 
@@ -209,23 +206,11 @@ fun UnitConverterScreen(onNavigateBack: () -> Unit) {
         } else null
 
         if (resultText != null) {
-            Card(modifier = Modifier.fillMaxWidth()) {
-                Text(
-                    text = resultText,
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                )
-            }
-            Spacer(Modifier.height(12.dp))
-            OutlinedButton(
-                onClick = { context.copyToClipboard("Unit conversion", resultText) },
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Icon(Icons.Filled.ContentCopy, contentDescription = null)
-                Text(" Copy")
-            }
+            ResultCard(
+                text = resultText,
+                onCopy = { context.copyToClipboard("Unit conversion", resultText) },
+                onShare = { context.shareText(resultText) },
+            )
         } else if (input.isNotBlank()) {
             Text("Enter a valid number.", color = MaterialTheme.colorScheme.error)
         }

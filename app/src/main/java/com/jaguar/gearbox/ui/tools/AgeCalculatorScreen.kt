@@ -1,16 +1,10 @@
 package com.jaguar.gearbox.ui.tools
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -29,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.jaguar.gearbox.data.Tools
+import com.jaguar.gearbox.ui.components.ResultCard
 import com.jaguar.gearbox.ui.components.ToolScaffold
 import java.time.Instant
 import java.time.LocalDate
@@ -41,7 +36,6 @@ fun AgeCalculatorScreen(onNavigateBack: () -> Unit) {
     val context = LocalContext.current
     var laterDate by rememberSaveable { mutableStateOf<LocalDate?>(null) }
     var earlierDate by rememberSaveable { mutableStateOf<LocalDate?>(null) }
-    var result by rememberSaveable { mutableStateOf("") }
     // 0 = none, 1 = later, 2 = earlier
     var pickerTarget by rememberSaveable { mutableStateOf(0) }
 
@@ -67,6 +61,22 @@ fun AgeCalculatorScreen(onNavigateBack: () -> Unit) {
         }
     }
 
+    // Live compute, like the rest of the app's calculators - recomputes as soon as both dates
+    // are picked instead of requiring a separate Calculate press (which could go stale after
+    // reopening a date picker and changing a date).
+    val later = laterDate
+    val earlier = earlierDate
+    val result = if (later != null && earlier != null && !later.isBefore(earlier)) {
+        "Age: ${formatAge(earlier, later)}"
+    } else {
+        null
+    }
+    val error = if (later != null && earlier != null && later.isBefore(earlier)) {
+        "Later date must not be before earlier date."
+    } else {
+        null
+    }
+
     ToolScaffold(
         title = "Age Calculator",
         icon = Tools.byRoute(Tools.ROUTE_AGE)!!.icon,
@@ -86,30 +96,17 @@ fun AgeCalculatorScreen(onNavigateBack: () -> Unit) {
             Icon(Icons.Filled.DateRange, contentDescription = null)
             Text("  Earlier date: ${earlierDate?.let { formatDate(it) } ?: "select"}")
         }
-        Spacer(Modifier.height(12.dp))
-        Button(
-            onClick = { result = calculateAge(laterDate, earlierDate) },
-            modifier = Modifier.fillMaxWidth(),
-        ) { Text("Calculate") }
 
-        if (result.isNotEmpty()) {
+        if (result != null) {
             Spacer(Modifier.height(16.dp))
-            Card(modifier = Modifier.fillMaxWidth()) {
-                Text(
-                    text = result,
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                )
-            }
+            ResultCard(
+                text = result,
+                onCopy = { context.copyToClipboard("Age", result) },
+                onShare = { context.shareText(result) },
+            )
+        } else if (error != null) {
             Spacer(Modifier.height(12.dp))
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                OutlinedButton(onClick = { context.copyToClipboard("Age", result) }) {
-                    Icon(Icons.Filled.ContentCopy, contentDescription = null)
-                    Text(" Copy")
-                }
-            }
+            Text(error, color = MaterialTheme.colorScheme.error)
         }
     }
 }
@@ -117,16 +114,11 @@ fun AgeCalculatorScreen(onNavigateBack: () -> Unit) {
 private fun formatDate(date: LocalDate): String =
     "${date.dayOfMonth}/${date.monthValue}/${date.year}"
 
-private fun calculateAge(later: LocalDate?, earlier: LocalDate?): String {
-    if (later == null || earlier == null) {
-        return "Error: Format is not correct. Select dates properly."
-    }
-    if (later.isBefore(earlier)) {
-        return "Error: Later date must not be before earlier date."
-    }
-
-    // Period.between does calendar-correct year/month/day math (respecting actual month
-    // lengths), unlike a fixed 30-day borrow which is off by 1-2 days for most date pairs.
+/**
+ * Period.between does calendar-correct year/month/day math (respecting actual month lengths),
+ * unlike a fixed 30-day borrow which is off by 1-2 days for most date pairs.
+ */
+private fun formatAge(earlier: LocalDate, later: LocalDate): String {
     val period = Period.between(earlier, later)
-    return "Age: ${period.years} years, ${period.months} months, ${period.days} days"
+    return "${period.years} years, ${period.months} months, ${period.days} days"
 }

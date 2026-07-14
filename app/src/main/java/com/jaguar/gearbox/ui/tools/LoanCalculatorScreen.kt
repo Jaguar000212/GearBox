@@ -5,18 +5,10 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.ContentCopy
-import androidx.compose.material.icons.filled.Share
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -25,9 +17,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.jaguar.gearbox.data.Tools
+import com.jaguar.gearbox.ui.components.DecimalField
+import com.jaguar.gearbox.ui.components.ResultCard
 import com.jaguar.gearbox.ui.components.ToolScaffold
 import java.util.Locale
 import kotlin.math.pow
@@ -38,96 +31,67 @@ fun LoanCalculatorScreen(onNavigateBack: () -> Unit) {
     var principal by rememberSaveable { mutableStateOf("") }
     var rate by rememberSaveable { mutableStateOf("") }
     var time by rememberSaveable { mutableStateOf("") }
-    var result by rememberSaveable { mutableStateOf("") }
 
-    val decimalKeyboard = KeyboardOptions(keyboardType = KeyboardType.Decimal)
+    val loanAmount = principal.trim().toDoubleOrNull()?.takeIf { it.isFinite() && it > 0 }
+    val interestRate = rate.trim().toDoubleOrNull()?.takeIf { it.isFinite() && it >= 0 }
+    val loanTerm = time.trim().toDoubleOrNull()?.takeIf { it.isFinite() && it > 0 }
+
+    val principalError = if (principal.isNotBlank() && loanAmount == null) "Enter a positive amount." else null
+    val rateError = if (rate.isNotBlank() && interestRate == null) "Enter a non-negative rate." else null
+    val timeError = if (time.isNotBlank() && loanTerm == null) "Enter a positive term." else null
+
+    // Live compute, like the rest of the app's calculators - a button here previously left a
+    // stale result on screen after editing an input, still showing the answer to numbers you'd
+    // already changed.
+    val result = if (loanAmount != null && interestRate != null && loanTerm != null) {
+        computeLoanResult(loanAmount, interestRate, loanTerm)
+    } else {
+        null
+    }
 
     ToolScaffold(
         title = "Loan Calculator",
         icon = Tools.byRoute(Tools.ROUTE_LOAN)!!.icon,
         onNavigateBack = onNavigateBack,
     ) {
-        OutlinedTextField(
+        DecimalField(
             value = principal,
             onValueChange = { principal = it },
-            label = { Text("Principal amount") },
-            keyboardOptions = decimalKeyboard,
-            modifier = Modifier.fillMaxWidth(),
+            label = "Principal amount",
+            errorText = principalError,
         )
         Spacer(Modifier.height(8.dp))
-        OutlinedTextField(
+        DecimalField(
             value = rate,
             onValueChange = { rate = it },
-            label = { Text("Rate of interest (% per year)") },
-            keyboardOptions = decimalKeyboard,
-            modifier = Modifier.fillMaxWidth(),
+            label = "Rate of interest (% per year)",
+            errorText = rateError,
         )
         Spacer(Modifier.height(8.dp))
-        OutlinedTextField(
+        DecimalField(
             value = time,
             onValueChange = { time = it },
-            label = { Text("Loan term (years)") },
-            keyboardOptions = decimalKeyboard,
-            modifier = Modifier.fillMaxWidth(),
+            label = "Loan term (years)",
+            errorText = timeError,
         )
-        Spacer(Modifier.height(12.dp))
-        Button(
-            onClick = { result = computeLoanResult(principal, rate, time) },
-            modifier = Modifier.fillMaxWidth(),
-        ) { Text("Calculate") }
 
-        if (result.isNotEmpty()) {
+        if (result != null) {
             Spacer(Modifier.height(16.dp))
-            Card(modifier = Modifier.fillMaxWidth()) {
-                Text(
-                    text = result,
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                )
-            }
+            ResultCard(
+                text = result,
+                onCopy = { context.copyToClipboard("Loan Calculator", shareBody(principal, rate, time, result)) },
+                onShare = { context.shareText(shareBody(principal, rate, time, result)) },
+            )
         }
 
         Spacer(Modifier.height(16.dp))
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             OutlinedButton(
-                onClick = { principal = ""; rate = ""; time = ""; result = "" },
+                onClick = { principal = ""; rate = ""; time = "" },
                 modifier = Modifier.weight(1f),
             ) {
                 Icon(Icons.Filled.Clear, contentDescription = null)
                 Text(" Clear")
-            }
-            OutlinedButton(
-                onClick = {
-                    if (result.isNotEmpty()) context.copyToClipboard(
-                        "Loan Calculator",
-                        shareBody(principal, rate, time, result)
-                    )
-                },
-                modifier = Modifier.weight(1f),
-            ) {
-                Icon(Icons.Filled.ContentCopy, contentDescription = null)
-                Text(" Copy")
-            }
-            OutlinedButton(
-                onClick = {
-                    if (result.isNotEmpty()) context.shareText(
-                        shareBody(
-                            principal,
-                            rate,
-                            time,
-                            result
-                        )
-                    )
-                },
-                modifier = Modifier.weight(1f),
-            ) {
-                Icon(Icons.Filled.Share, contentDescription = null)
-                Text(" Share")
             }
         }
     }
@@ -139,42 +103,26 @@ private fun shareBody(principal: String, rate: String, time: String, result: Str
             "Loan Term: $time Years\n" +
             result
 
-/** Replicates the EMI/interest math from the Java `LoanCalculator`. */
-private fun computeLoanResult(principalText: String, rateText: String, timeText: String): String {
-    if (principalText.isEmpty() || rateText.isEmpty() || timeText.isEmpty()) {
-        return "Required fields are empty"
+/** Replicates the EMI/interest math from the Java `LoanCalculator`. Inputs are pre-validated. */
+private fun computeLoanResult(loanAmount: Double, interestRate: Double, loanTerm: Double): String {
+    val monthlyInterestRate = interestRate / 100 / 12
+    val tenure = loanTerm * 12
+    // At 0% interest, the standard EMI formula divides by (1+r)^n - 1 = 0, producing NaN.
+    // A zero-interest loan is just the principal split evenly across the term.
+    val emi = if (monthlyInterestRate == 0.0) {
+        loanAmount / tenure
+    } else {
+        loanAmount * monthlyInterestRate * (1 + monthlyInterestRate).pow(tenure) /
+                ((1 + monthlyInterestRate).pow(tenure) - 1)
     }
-    return try {
-        val loanAmount = principalText.toDouble()
-        val interestRate = rateText.toDouble()
-        val loanTerm = timeText.toDouble()
-        if (!loanAmount.isFinite() || !interestRate.isFinite() || !loanTerm.isFinite() ||
-            loanAmount <= 0 || interestRate < 0 || loanTerm <= 0
-        ) {
-            return "Enter a positive principal and term, and a non-negative rate."
-        }
 
-        val monthlyInterestRate = interestRate / 100 / 12
-        val tenure = loanTerm * 12
-        // At 0% interest, the standard EMI formula divides by (1+r)^n - 1 = 0, producing NaN.
-        // A zero-interest loan is just the principal split evenly across the term.
-        val emi = if (monthlyInterestRate == 0.0) {
-            loanAmount / tenure
-        } else {
-            loanAmount * monthlyInterestRate * (1 + monthlyInterestRate).pow(tenure) /
-                    ((1 + monthlyInterestRate).pow(tenure) - 1)
-        }
+    val totalAmount = emi * loanTerm * 12
+    val totalInterest = totalAmount - loanAmount
+    val interestPercentage = if (totalAmount == 0.0) 0.0 else totalInterest / totalAmount * 100
 
-        val totalAmount = emi * loanTerm * 12
-        val totalInterest = totalAmount - loanAmount
-        val interestPercentage = if (totalAmount == 0.0) 0.0 else totalInterest / totalAmount * 100
-
-        String.format(
-            Locale.US,
-            "Monthly Installment: %.2f\nTotal Amount Repayable: %.2f\nTotal Interest Repayable: %.2f\nInterest Percentage: %.2f%%",
-            emi, totalAmount, totalInterest, interestPercentage,
-        )
-    } catch (_: NumberFormatException) {
-        "Invalid input"
-    }
+    return String.format(
+        Locale.US,
+        "Monthly Installment: %.2f\nTotal Amount Repayable: %.2f\nTotal Interest Repayable: %.2f\nInterest Percentage: %.2f%%",
+        emi, totalAmount, totalInterest, interestPercentage,
+    )
 }

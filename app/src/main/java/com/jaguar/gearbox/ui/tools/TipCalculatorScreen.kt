@@ -10,11 +10,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Remove
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Card
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -24,6 +27,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.jaguar.gearbox.data.Tools
@@ -32,6 +36,7 @@ import java.util.Locale
 
 @Composable
 fun TipCalculatorScreen(onNavigateBack: () -> Unit) {
+    val context = LocalContext.current
     var bill by rememberSaveable { mutableStateOf("") }
     var tipPercent by rememberSaveable { mutableStateOf("15") }
     var splitCount by rememberSaveable { mutableStateOf(1) }
@@ -87,6 +92,10 @@ fun TipCalculatorScreen(onNavigateBack: () -> Unit) {
             val tipAmount = billAmount * tip / 100.0
             val total = billAmount + tipAmount
             val perPerson = total / splitCount
+            val shareText = "Bill: ${formatCurrency(billAmount)}\n" +
+                    "Tip amount: ${formatCurrency(tipAmount)}\n" +
+                    "Total: ${formatCurrency(total)}\n" +
+                    "Per person (split $splitCount ways): ${formatCurrency(perPerson)}"
 
             Spacer(Modifier.height(20.dp))
             Card(modifier = Modifier.fillMaxWidth()) {
@@ -98,6 +107,27 @@ fun TipCalculatorScreen(onNavigateBack: () -> Unit) {
                     ValueRow("Total", formatCurrency(total))
                     Spacer(Modifier.height(8.dp))
                     ValueRow("Per person", formatCurrency(perPerson))
+                }
+            }
+
+            Spacer(Modifier.height(12.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                OutlinedButton(
+                    onClick = { context.copyToClipboard("Tip", shareText) },
+                    modifier = Modifier.weight(1f),
+                ) {
+                    Icon(Icons.Filled.ContentCopy, contentDescription = null)
+                    Text(" Copy")
+                }
+                OutlinedButton(
+                    onClick = { context.shareText(shareText) },
+                    modifier = Modifier.weight(1f),
+                ) {
+                    Icon(Icons.Filled.Share, contentDescription = null)
+                    Text(" Share")
                 }
             }
         } else if (bill.isNotBlank()) {

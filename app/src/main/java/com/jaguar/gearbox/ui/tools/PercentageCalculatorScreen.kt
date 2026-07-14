@@ -3,9 +3,6 @@ package com.jaguar.gearbox.ui.tools
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Card
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -20,9 +17,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.jaguar.gearbox.data.Tools
+import com.jaguar.gearbox.ui.components.DecimalField
+import com.jaguar.gearbox.ui.components.ResultCard
 import com.jaguar.gearbox.ui.components.ToolScaffold
 import java.util.Locale
 
@@ -35,6 +34,7 @@ private enum class PercentMode(val label: String, val hint1: String, val hint2: 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PercentageCalculatorScreen(onNavigateBack: () -> Unit) {
+    val context = LocalContext.current
     var mode by rememberSaveable { mutableStateOf(PercentMode.OF_VALUE.name) }
     var modeExpanded by rememberSaveable { mutableStateOf(false) }
     val selectedMode = PercentMode.valueOf(mode)
@@ -75,35 +75,30 @@ fun PercentageCalculatorScreen(onNavigateBack: () -> Unit) {
         }
 
         Spacer(Modifier.height(16.dp))
-        OutlinedTextField(
+        DecimalField(
             value = field1,
             onValueChange = { field1 = it },
-            label = { Text(selectedMode.hint1) },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-            modifier = Modifier.fillMaxWidth(),
+            label = selectedMode.hint1,
         )
         Spacer(Modifier.height(12.dp))
-        OutlinedTextField(
+        DecimalField(
             value = field2,
             onValueChange = { field2 = it },
-            label = { Text(selectedMode.hint2) },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-            modifier = Modifier.fillMaxWidth(),
+            label = selectedMode.hint2,
         )
 
         val result = computePercentResult(selectedMode, field1, field2)
         if (result != null) {
             Spacer(Modifier.height(20.dp))
-            Card(modifier = Modifier.fillMaxWidth()) {
-                Text(
-                    text = result,
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                )
-            }
-        } else if (field1.isNotBlank() || field2.isNotBlank()) {
+            ResultCard(
+                text = result,
+                onCopy = { context.copyToClipboard("Percentage", result) },
+                onShare = { context.shareText(result) },
+            )
+        } else if (field1.isNotBlank() && field2.isNotBlank()) {
+            // Both fields (not just one) must be filled in before flagging an error - otherwise
+            // this fired as soon as the user typed into the first field, before touching the
+            // second.
             Spacer(Modifier.height(12.dp))
             Text("Enter valid numbers.", color = MaterialTheme.colorScheme.error)
         }

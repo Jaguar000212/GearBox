@@ -100,6 +100,14 @@ fun GeometryCalculatorScreen(onNavigateBack: () -> Unit) {
         }
 
         val result = computeResult(selectedShape, field1, field2, field3)
+        // Only the fields the current shape actually shows count towards "the user is done
+        // typing" - e.g. a Circle only has field1, so field2/field3 being blank must not count
+        // against it (and Triangle needs all three filled before flagging anything).
+        val requiredFieldsFilled = when (selectedShape) {
+            Shape.CIRCLE -> field1.isNotBlank()
+            Shape.RECTANGLE -> field1.isNotBlank() && field2.isNotBlank()
+            Shape.TRIANGLE -> field1.isNotBlank() && field2.isNotBlank() && field3.isNotBlank()
+        }
         if (result != null) {
             Spacer(Modifier.height(20.dp))
             Card(modifier = Modifier.fillMaxWidth()) {
@@ -111,7 +119,7 @@ fun GeometryCalculatorScreen(onNavigateBack: () -> Unit) {
                         .padding(16.dp),
                 )
             }
-        } else if (field1.isNotBlank() || field2.isNotBlank() || field3.isNotBlank()) {
+        } else if (requiredFieldsFilled) {
             Spacer(Modifier.height(12.dp))
             Text(
                 text = "Enter valid, positive measurements" + if (selectedShape == Shape.TRIANGLE) " that form a valid triangle." else ".",

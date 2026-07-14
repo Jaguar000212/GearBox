@@ -70,7 +70,7 @@ fun RatiosScreen(onNavigateBack: () -> Unit) {
                         .padding(24.dp),
                 )
             }
-        } else if (partA.isNotBlank() || partB.isNotBlank()) {
+        } else if (partA.isNotBlank() && partB.isNotBlank()) {
             Spacer(Modifier.height(12.dp))
             Text("Enter valid numbers.", color = MaterialTheme.colorScheme.error)
         }

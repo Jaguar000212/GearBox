@@ -5,13 +5,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.ContentCopy
-import androidx.compose.material.icons.filled.Share
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -26,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.jaguar.gearbox.data.Tools
+import com.jaguar.gearbox.ui.components.ResultCard
 import com.jaguar.gearbox.ui.components.ToolScaffold
 import java.util.Locale
 import kotlin.math.pow
@@ -34,7 +30,11 @@ import kotlin.math.pow
 fun AverageCalculatorScreen(onNavigateBack: () -> Unit) {
     val context = LocalContext.current
     var input by rememberSaveable { mutableStateOf("") }
-    var output by rememberSaveable { mutableStateOf("") }
+
+    // Live compute, like the rest of the app's calculators - a button here previously left a
+    // stale result on screen after editing the input, still showing the answer to a list you'd
+    // already changed.
+    val output = computeAverageResult(input)
 
     ToolScaffold(
         title = "Average Calculator",
@@ -48,50 +48,30 @@ fun AverageCalculatorScreen(onNavigateBack: () -> Unit) {
             placeholder = { Text("e.g. 4, 8, 15, 16, 23, 42") },
             modifier = Modifier.fillMaxWidth(),
         )
-        Spacer(Modifier.height(12.dp))
-        Button(
-            onClick = { output = computeAverageResult(input) },
-            modifier = Modifier.fillMaxWidth(),
-        ) { Text("Calculate") }
 
-        if (output.isNotEmpty()) {
+        if (output != null) {
             Spacer(Modifier.height(16.dp))
-            Card(modifier = Modifier.fillMaxWidth()) {
-                Text(
-                    text = output,
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                )
-            }
+            ResultCard(
+                text = output,
+                onCopy = { context.copyToClipboard("Average", "Input: $input\n$output") },
+                onShare = { context.shareText("Input: $input\n$output") },
+            )
+        } else if (input.isNotBlank()) {
+            Spacer(Modifier.height(12.dp))
+            Text(
+                "Enter numbers separated by commas, e.g. 4, 8, 15.",
+                color = MaterialTheme.colorScheme.error,
+            )
         }
 
         Spacer(Modifier.height(16.dp))
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             OutlinedButton(
-                onClick = { input = ""; output = "" },
+                onClick = { input = "" },
                 modifier = Modifier.weight(1f),
             ) {
                 Icon(Icons.Filled.Clear, contentDescription = null)
                 Text(" Clear")
-            }
-            OutlinedButton(
-                onClick = { context.copyToClipboard("Copied Text", "Input: $input\n$output") },
-                modifier = Modifier.weight(1f),
-            ) {
-                Icon(Icons.Filled.ContentCopy, contentDescription = null)
-                Text(" Copy")
-            }
-            OutlinedButton(
-                onClick = { context.shareText("Input: $input\n$output") },
-                modifier = Modifier.weight(1f),
-            ) {
-                Icon(Icons.Filled.Share, contentDescription = null)
-                Text(" Share")
             }
         }
     }
@@ -99,21 +79,21 @@ fun AverageCalculatorScreen(onNavigateBack: () -> Unit) {
 
 /**
  * Replicates the statistics produced by the Java `AverageCalculator`: arithmetic mean, geometric
- * mean, harmonic mean, sum, count, largest and smallest.
+ * mean, harmonic mean, sum, count, largest and smallest. Returns null (rather than an error
+ * string) on invalid input, so the caller can show the error as plain text instead of inside a
+ * card styled as a successful result.
  */
-private fun computeAverageResult(input: String): String {
+private fun computeAverageResult(input: String): String? {
     val numbers = try {
         input.split(",")
             .map { it.trim() }
             .filter { it.isNotEmpty() }
             .map { it.toDouble() }
     } catch (_: NumberFormatException) {
-        return "Error: Format is not correct. Separate numbers with commas."
+        return null
     }
 
-    if (numbers.isEmpty()) {
-        return "Error: Format is not correct. Separate numbers with commas."
-    }
+    if (numbers.isEmpty()) return null
 
     val sum = numbers.sum()
     val average = sum / numbers.size

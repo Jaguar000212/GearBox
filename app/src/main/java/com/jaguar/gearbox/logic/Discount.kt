@@ -5,7 +5,11 @@ package com.jaguar.gearbox.logic
  * 20% then 10% off ₹100 is ₹80 then ₹72, not a flat 30% off (₹70). This is how "stacked" discounts
  * actually compound in retail pricing.
  */
-data class DiscountResult(val finalPrice: Double, val totalSaved: Double, val effectivePercent: Double)
+data class DiscountResult(
+    val finalPrice: Double,
+    val totalSaved: Double,
+    val effectivePercent: Double
+)
 
 fun applyStackedDiscounts(originalPrice: Double, discountPercents: List<Double>): DiscountResult {
     val finalPrice = discountPercents.fold(originalPrice) { price, percent ->

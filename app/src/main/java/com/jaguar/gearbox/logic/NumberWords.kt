@@ -84,7 +84,8 @@ fun numberToWordsIndian(number: Long): String {
     }
 
     // Covers up to Shankh, which is more than enough for Long.MAX_VALUE (19 digits).
-    val scales = arrayOf("", "Thousand", "Lakh", "Crore", "Arab", "Kharab", "Neel", "Padma", "Shankh")
+    val scales =
+        arrayOf("", "Thousand", "Lakh", "Crore", "Arab", "Kharab", "Neel", "Padma", "Shankh")
     val parts = mutableListOf<String>()
     for (i in higherGroups.indices.reversed()) {
         val group = higherGroups[i]
@@ -103,6 +104,7 @@ private fun twoDigitsToWords(number: Int): String = when {
         val onesPart = ones[number % 10]
         if (onesPart.isNotEmpty()) "$tensPart-$onesPart" else tensPart
     }
+
     else -> ""
 }
 

@@ -73,8 +73,8 @@ fun GstCalculatorScreen(onNavigateBack: () -> Unit) {
         if (amountValue != null && rateValue != null) {
             val result = calculateGst(amountValue, rateValue, inclusive)
             val summary = "Base amount: ${formatTrimmed(result.baseAmount, 2)}\n" +
-                "Tax amount: ${formatTrimmed(result.taxAmount, 2)}\n" +
-                "Total: ${formatTrimmed(result.totalAmount, 2)}"
+                    "Tax amount: ${formatTrimmed(result.taxAmount, 2)}\n" +
+                    "Total: ${formatTrimmed(result.totalAmount, 2)}"
 
             Spacer(Modifier.height(20.dp))
             ResultCard(

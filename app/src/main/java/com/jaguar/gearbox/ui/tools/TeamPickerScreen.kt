@@ -159,7 +159,11 @@ fun TeamPickerScreen(onNavigateBack: () -> Unit) {
                     val shuffled = names.shuffled()
                     val groups = List(teamCount) { mutableListOf<String>() }
                     shuffled.forEachIndexed { index, name -> groups[index % teamCount].add(name) }
-                    teams = groups.mapIndexed { index, group -> "Team ${index + 1}: ${group.joinToString(", ")}" }
+                    teams = groups.mapIndexed { index, group ->
+                        "Team ${index + 1}: ${
+                            group.joinToString(", ")
+                        }"
+                    }
                 },
                 enabled = teamCount in 2..names.size,
                 modifier = Modifier.fillMaxWidth(),

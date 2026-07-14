@@ -37,6 +37,7 @@ import androidx.compose.material.icons.filled.Tag
 import androidx.compose.material.icons.filled.TextFields
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material.icons.filled.Translate
+import com.jaguar.gearbox.data.Tools.all
 import com.jaguar.gearbox.ui.tools.AgeCalculatorScreen
 import com.jaguar.gearbox.ui.tools.AverageCalculatorScreen
 import com.jaguar.gearbox.ui.tools.BaseConverterScreen

@@ -65,7 +65,10 @@ fun AverageCalculatorScreen(onNavigateBack: () -> Unit) {
         }
 
         Spacer(Modifier.height(16.dp))
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
             OutlinedButton(
                 onClick = { input = "" },
                 modifier = Modifier.weight(1f),

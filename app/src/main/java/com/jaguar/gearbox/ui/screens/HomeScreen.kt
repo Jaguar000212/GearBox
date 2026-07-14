@@ -57,9 +57,9 @@ fun HomeScreen(
 
     val filtered = tools.filter { tool ->
         val matchesQuery = query.isBlank() ||
-            tool.name.contains(query, ignoreCase = true) ||
-            tool.description.contains(query, ignoreCase = true) ||
-            tool.keywords.any { it.contains(query, ignoreCase = true) }
+                tool.name.contains(query, ignoreCase = true) ||
+                tool.description.contains(query, ignoreCase = true) ||
+                tool.keywords.any { it.contains(query, ignoreCase = true) }
         val matchesCategory = selectedCategory == null || tool.category.name == selectedCategory
         matchesQuery && matchesCategory
     }
@@ -67,7 +67,8 @@ fun HomeScreen(
         val toolsInCategory = filtered.filter { it.category == category }
         if (toolsInCategory.isEmpty()) null else category to toolsInCategory
     }
-    val recentToolObjs = recentTools.recent.mapNotNull { route -> tools.firstOrNull { it.route == route } }
+    val recentToolObjs =
+        recentTools.recent.mapNotNull { route -> tools.firstOrNull { it.route == route } }
 
     LazyColumn(modifier = Modifier.fillMaxSize()) {
         if (query.isBlank() && recentToolObjs.isNotEmpty()) {

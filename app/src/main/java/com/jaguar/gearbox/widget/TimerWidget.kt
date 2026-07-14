@@ -62,8 +62,10 @@ class TimerWidget : GlanceAppWidget() {
                 savedAt = store.getLong(KEY_SAVED_AT, 0L),
                 now = System.currentTimeMillis(),
             )
-            val running = if (isStopwatch) store.getBoolean(KEY_SW_RUNNING, false) else snapshot.timerRunning
-            val displayMillis = if (isStopwatch) snapshot.stopwatchElapsedMillis else snapshot.timerRemainingMillis
+            val running =
+                if (isStopwatch) store.getBoolean(KEY_SW_RUNNING, false) else snapshot.timerRunning
+            val displayMillis =
+                if (isStopwatch) snapshot.stopwatchElapsedMillis else snapshot.timerRemainingMillis
             val canStart = isStopwatch || running || snapshot.timerRemainingMillis > 0
 
             Column(
@@ -119,7 +121,11 @@ class TimerWidget : GlanceAppWidget() {
 }
 
 class TimerWidgetAction : ActionCallback {
-    override suspend fun onAction(context: Context, glanceId: GlanceId, parameters: ActionParameters) {
+    override suspend fun onAction(
+        context: Context,
+        glanceId: GlanceId,
+        parameters: ActionParameters
+    ) {
         val store = SimplePrefsStore(context)
         val isStopwatch = store.getString(KEY_MODE, MODE_STOPWATCH) == MODE_STOPWATCH
         val now = System.currentTimeMillis()

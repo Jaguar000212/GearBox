@@ -93,7 +93,11 @@ private fun WidgetActionText(label: String, op: String) {
 }
 
 class CounterWidgetAction : ActionCallback {
-    override suspend fun onAction(context: Context, glanceId: GlanceId, parameters: ActionParameters) {
+    override suspend fun onAction(
+        context: Context,
+        glanceId: GlanceId,
+        parameters: ActionParameters
+    ) {
         val store = SimplePrefsStore(context)
         val newCount = when (parameters[KEY_OP]) {
             "inc" -> store.getInt(KEY_COUNT, 0) + 1

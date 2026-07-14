@@ -42,7 +42,9 @@ fun DaysUntilScreen(onNavigateBack: () -> Unit) {
     val store = remember { SimplePrefsStore(context) }
     var label by rememberSaveable { mutableStateOf(store.getString(KEY_LABEL, "")) }
     var targetDate by rememberSaveable {
-        mutableStateOf(store.getString(KEY_TARGET_DATE, "").let { runCatching { LocalDate.parse(it) }.getOrNull() })
+        mutableStateOf(
+            store.getString(KEY_TARGET_DATE, "")
+                .let { runCatching { LocalDate.parse(it) }.getOrNull() })
     }
     var showPicker by rememberSaveable { mutableStateOf(false) }
 
@@ -60,7 +62,8 @@ fun DaysUntilScreen(onNavigateBack: () -> Unit) {
             confirmButton = {
                 TextButton(onClick = {
                     state.selectedDateMillis?.let { millis ->
-                        targetDate = Instant.ofEpochMilli(millis).atZone(ZoneOffset.UTC).toLocalDate()
+                        targetDate =
+                            Instant.ofEpochMilli(millis).atZone(ZoneOffset.UTC).toLocalDate()
                         persist(label, targetDate)
                     }
                     showPicker = false

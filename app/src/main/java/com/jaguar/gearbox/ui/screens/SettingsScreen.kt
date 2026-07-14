@@ -1,7 +1,6 @@
 package com.jaguar.gearbox.ui.screens
 
 import android.content.Intent
-import android.net.Uri
 import android.os.Build
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -34,9 +33,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import com.jaguar.gearbox.R
 import com.jaguar.gearbox.ui.theme.ThemeMode
-import androidx.core.net.toUri
 
 private const val GITHUB_USERNAME = "Jaguar000212"
 private const val GITHUB_PROFILE_URL = "https://github.com/$GITHUB_USERNAME"

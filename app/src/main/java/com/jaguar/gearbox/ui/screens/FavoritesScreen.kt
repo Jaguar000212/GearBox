@@ -156,9 +156,11 @@ fun FavoritesScreen(
                                     onDrag = { change, delta ->
                                         change.consume()
                                         dragOffset += delta.y
-                                        val current = draggedIndex ?: return@detectDragGesturesAfterLongPress
-                                        val target = (current + (dragOffset / rowHeightPx).roundToInt())
-                                            .coerceIn(0, favTools.lastIndex)
+                                        val current =
+                                            draggedIndex ?: return@detectDragGesturesAfterLongPress
+                                        val target =
+                                            (current + (dragOffset / rowHeightPx).roundToInt())
+                                                .coerceIn(0, favTools.lastIndex)
                                         if (target != current) {
                                             favorites.move(current, target)
                                             dragOffset -= (target - current) * rowHeightPx

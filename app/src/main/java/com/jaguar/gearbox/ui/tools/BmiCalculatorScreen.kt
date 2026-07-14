@@ -54,7 +54,8 @@ fun BmiCalculatorScreen(onNavigateBack: () -> Unit) {
     } else {
         val ft = heightFt.trim().toDoubleOrNull()?.takeIf { it.isFinite() }
         // Inches is optional (defaults to 0) - a whole-feet height like "6 ft" is a valid input.
-        val inch = if (heightIn.isBlank()) 0.0 else heightIn.trim().toDoubleOrNull()?.takeIf { it.isFinite() }
+        val inch = if (heightIn.isBlank()) 0.0 else heightIn.trim().toDoubleOrNull()
+            ?.takeIf { it.isFinite() }
         val lbs = weightLbs.trim().toDoubleOrNull()?.takeIf { it.isFinite() }
         heightM = if (ft != null && inch != null) (ft * 12.0 + inch) * 0.0254 else null
         weightKgValue = lbs?.let { it * 0.453592 }

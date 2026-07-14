@@ -100,9 +100,11 @@ fun TipCalculatorScreen(onNavigateBack: () -> Unit) {
 
             Spacer(Modifier.height(20.dp))
             Card(modifier = Modifier.fillMaxWidth()) {
-                Column(modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                ) {
                     ValueRow("Tip amount", formatCurrency(tipAmount))
                     Spacer(Modifier.height(8.dp))
                     ValueRow("Total", formatCurrency(total))

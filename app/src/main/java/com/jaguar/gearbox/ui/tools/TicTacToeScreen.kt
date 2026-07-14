@@ -103,9 +103,17 @@ fun TicTacToeScreen(onNavigateBack: () -> Unit) {
                             val updatedCells = board.map { c -> c.ifEmpty { null } }
                             val newWinner = winningLine(updatedCells)?.let { updatedCells[it[0]] }
                             when {
-                                newWinner == "X" -> { xWins++; persistTally() }
-                                newWinner == "O" -> { oWins++; persistTally() }
-                                isBoardFull(updatedCells) -> { draws++; persistTally() }
+                                newWinner == "X" -> {
+                                    xWins++; persistTally()
+                                }
+
+                                newWinner == "O" -> {
+                                    oWins++; persistTally()
+                                }
+
+                                isBoardFull(updatedCells) -> {
+                                    draws++; persistTally()
+                                }
                             }
                             currentPlayer = if (currentPlayer == "X") "O" else "X"
                         }

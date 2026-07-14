@@ -36,8 +36,10 @@ fun LoanCalculatorScreen(onNavigateBack: () -> Unit) {
     val interestRate = rate.trim().toDoubleOrNull()?.takeIf { it.isFinite() && it >= 0 }
     val loanTerm = time.trim().toDoubleOrNull()?.takeIf { it.isFinite() && it > 0 }
 
-    val principalError = if (principal.isNotBlank() && loanAmount == null) "Enter a positive amount." else null
-    val rateError = if (rate.isNotBlank() && interestRate == null) "Enter a non-negative rate." else null
+    val principalError =
+        if (principal.isNotBlank() && loanAmount == null) "Enter a positive amount." else null
+    val rateError =
+        if (rate.isNotBlank() && interestRate == null) "Enter a non-negative rate." else null
     val timeError = if (time.isNotBlank() && loanTerm == null) "Enter a positive term." else null
 
     // Live compute, like the rest of the app's calculators - a button here previously left a
@@ -79,13 +81,21 @@ fun LoanCalculatorScreen(onNavigateBack: () -> Unit) {
             Spacer(Modifier.height(16.dp))
             ResultCard(
                 text = result,
-                onCopy = { context.copyToClipboard("Loan Calculator", shareBody(principal, rate, time, result)) },
+                onCopy = {
+                    context.copyToClipboard(
+                        "Loan Calculator",
+                        shareBody(principal, rate, time, result)
+                    )
+                },
                 onShare = { context.shareText(shareBody(principal, rate, time, result)) },
             )
         }
 
         Spacer(Modifier.height(16.dp))
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
             OutlinedButton(
                 onClick = { principal = ""; rate = ""; time = "" },
                 modifier = Modifier.weight(1f),

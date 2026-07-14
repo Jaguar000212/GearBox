@@ -71,9 +71,11 @@ fun RockPaperScissorsScreen(onNavigateBack: () -> Unit) {
         onNavigateBack = onNavigateBack,
     ) {
         Card(modifier = Modifier.fillMaxWidth()) {
-            Column(modifier = Modifier
-                .fillMaxWidth()
-                .padding(all = 16.dp)) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(all = 16.dp)
+            ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly

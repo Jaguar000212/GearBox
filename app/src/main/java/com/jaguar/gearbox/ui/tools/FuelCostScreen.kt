@@ -60,7 +60,7 @@ fun FuelCostScreen(onNavigateBack: () -> Unit) {
             val result = calculateFuelCost(distanceValue, mileageValue, priceValue)
             if (result != null) {
                 val summary = "Fuel needed: ${formatTrimmed(result.fuelNeeded, 2)}\n" +
-                    "Total cost: ${formatTrimmed(result.totalCost, 2)}"
+                        "Total cost: ${formatTrimmed(result.totalCost, 2)}"
 
                 Spacer(Modifier.height(20.dp))
                 ResultCard(

@@ -176,9 +176,11 @@ fun ColorPickerScreen(onNavigateBack: () -> Unit) {
         val rgbText = "rgb(${red.roundToInt()}, ${green.roundToInt()}, ${blue.roundToInt()})"
         val hslText = "hsl(${hsl.first}, ${hsl.second}%, ${hsl.third}%)"
         Card(modifier = Modifier.fillMaxWidth()) {
-            Column(modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            ) {
                 ValueRow("HEX", hex)
                 Spacer(Modifier.height(8.dp))
                 ValueRow("RGB", rgbText)

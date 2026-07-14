@@ -37,7 +37,9 @@ fun DiscountCalculatorScreen(onNavigateBack: () -> Unit) {
 
     val originalPrice = price.trim().toDoubleOrNull()?.takeIf { it.isFinite() && it >= 0 }
     val filledDiscounts = discounts.filter { it.isNotBlank() }
-    val discountValues = filledDiscounts.mapNotNull { it.trim().toDoubleOrNull()?.takeIf { v -> v.isFinite() && v in 0.0..100.0 } }
+    val discountValues = filledDiscounts.mapNotNull {
+        it.trim().toDoubleOrNull()?.takeIf { v -> v.isFinite() && v in 0.0..100.0 }
+    }
     val allDiscountsValid = discountValues.size == filledDiscounts.size
 
     ToolScaffold(
@@ -70,7 +72,10 @@ fun DiscountCalculatorScreen(onNavigateBack: () -> Unit) {
                     IconButton(onClick = {
                         discounts = discounts.toMutableList().also { it.removeAt(index) }
                     }) {
-                        Icon(Icons.Filled.Close, contentDescription = "Remove discount ${index + 1}")
+                        Icon(
+                            Icons.Filled.Close,
+                            contentDescription = "Remove discount ${index + 1}"
+                        )
                     }
                 }
             }
@@ -88,7 +93,12 @@ fun DiscountCalculatorScreen(onNavigateBack: () -> Unit) {
         if (originalPrice != null && allDiscountsValid && discountValues.isNotEmpty()) {
             val result = applyStackedDiscounts(originalPrice, discountValues)
             val summary = "Final price: ${formatTrimmed(result.finalPrice, 2)}\n" +
-                "You save: ${formatTrimmed(result.totalSaved, 2)} (${formatTrimmed(result.effectivePercent, 2)}% effective)"
+                    "You save: ${
+                        formatTrimmed(
+                            result.totalSaved,
+                            2
+                        )
+                    } (${formatTrimmed(result.effectivePercent, 2)}% effective)"
 
             Spacer(Modifier.height(20.dp))
             ResultCard(

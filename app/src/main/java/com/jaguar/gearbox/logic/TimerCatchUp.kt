@@ -24,7 +24,12 @@ fun catchUpTimerState(
     now: Long,
 ): TimerSnapshot {
     if (savedAt <= 0L) {
-        return TimerSnapshot(stopwatchElapsedMillis, timerRemainingMillis, timerRunning, timerFinished)
+        return TimerSnapshot(
+            stopwatchElapsedMillis,
+            timerRemainingMillis,
+            timerRunning,
+            timerFinished
+        )
     }
 
     val gap = (now - savedAt).coerceAtLeast(0L)

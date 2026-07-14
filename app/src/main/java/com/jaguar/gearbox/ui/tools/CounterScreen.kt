@@ -32,13 +32,14 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.glance.appwidget.updateAll
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.jaguar.gearbox.data.SimplePrefsStore
 import com.jaguar.gearbox.data.Tools
 import com.jaguar.gearbox.ui.components.ToolScaffold
 import com.jaguar.gearbox.ui.theme.LocalHapticsEnabled
-import androidx.glance.appwidget.updateAll
 import com.jaguar.gearbox.widget.CounterWidget
 import kotlinx.coroutines.launch
 
@@ -57,7 +58,7 @@ fun CounterScreen(onNavigateBack: () -> Unit) {
 
     // The Counter home-screen widget writes to the same key while this screen is backgrounded;
     // pick that up as soon as the user returns instead of showing a stale in-memory value.
-    val lifecycleOwner = LocalLifecycleOwner.current
+    val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {

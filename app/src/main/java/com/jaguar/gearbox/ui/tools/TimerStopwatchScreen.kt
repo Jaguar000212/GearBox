@@ -34,13 +34,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.glance.appwidget.updateAll
 import com.jaguar.gearbox.data.SimplePrefsStore
 import com.jaguar.gearbox.data.Tools
 import com.jaguar.gearbox.logic.catchUpTimerState
 import com.jaguar.gearbox.ui.components.LongListSaver
 import com.jaguar.gearbox.ui.components.ToolScaffold
 import com.jaguar.gearbox.widget.TimerWidget
-import androidx.glance.appwidget.updateAll
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.Locale
@@ -216,7 +216,9 @@ fun TimerStopwatchScreen(onNavigateBack: () -> Unit) {
                 elapsedMillis = stopwatchElapsedMillis,
                 isRunning = stopwatchRunning,
                 laps = laps,
-                onToggleRunning = { stopwatchRunning = !stopwatchRunning; persistState(); syncWidget() },
+                onToggleRunning = {
+                    stopwatchRunning = !stopwatchRunning; persistState(); syncWidget()
+                },
                 onLap = { laps = laps + stopwatchElapsedMillis; persistState() },
                 onReset = {
                     stopwatchRunning = false
@@ -226,6 +228,7 @@ fun TimerStopwatchScreen(onNavigateBack: () -> Unit) {
                     syncWidget()
                 },
             )
+
             ClockMode.TIMER -> TimerSection(
                 remainingMillis = timerRemainingMillis,
                 isRunning = timerRunning,

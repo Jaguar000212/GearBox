@@ -4,6 +4,12 @@ plugins {
     alias(libs.plugins.kotlin.compose)
 }
 
+// Release signing is only configured when these are supplied (e.g. by the release CI workflow,
+// see .github/workflows/release.yml) - a local `assembleRelease` with none of them set still
+// produces an unsigned APK exactly as before, so this doesn't require every contributor to have
+// a keystore.
+val releaseKeystorePath: String? = System.getenv("KEYSTORE_PATH")
+
 android {
     namespace = "com.jaguar.gearbox"
     compileSdk = 35
@@ -18,9 +24,24 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        if (releaseKeystorePath != null) {
+            create("release") {
+                storeFile = file(releaseKeystorePath)
+                storePassword = System.getenv("KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("KEY_ALIAS")
+                keyPassword = System.getenv("KEY_PASSWORD")
+            }
+        }
+    }
+
     buildTypes {
         release {
-            isMinifyEnabled = false
+            if (releaseKeystorePath != null) {
+                signingConfig = signingConfigs.getByName("release")
+            }
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"

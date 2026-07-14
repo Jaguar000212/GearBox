@@ -1,7 +1,11 @@
+<img src="docs/icon.svg" width="96" height="96" alt="GearBox icon" align="left" />
+
 # GearBox
 
 GearBox is the Kotlin + Jetpack Compose rewrite of the original Java
 [Tool-Kit](https://github.com/Jaguar000212/Tool-Kit) Android app — a suite of handy mini-tools.
+
+<br clear="left" />
 
 ## Tools
 

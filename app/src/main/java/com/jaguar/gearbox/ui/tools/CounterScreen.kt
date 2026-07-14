@@ -12,6 +12,7 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.Button
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -23,7 +24,9 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.jaguar.gearbox.data.SimplePrefsStore
@@ -31,14 +34,18 @@ import com.jaguar.gearbox.data.Tools
 import com.jaguar.gearbox.ui.components.ToolScaffold
 
 private const val KEY_COUNT = "counter.count"
+private val STEP_OPTIONS = listOf(1, 5, 10)
 
 @Composable
 fun CounterScreen(onNavigateBack: () -> Unit) {
     val context = LocalContext.current
+    val haptic = LocalHapticFeedback.current
     val store = remember { SimplePrefsStore(context) }
     var count by rememberSaveable { mutableIntStateOf(store.getInt(KEY_COUNT, 0)) }
+    var step by rememberSaveable { mutableIntStateOf(1) }
 
     fun update(newCount: Int) {
+        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
         count = newCount
         store.putInt(KEY_COUNT, newCount)
     }
@@ -55,16 +62,29 @@ fun CounterScreen(onNavigateBack: () -> Unit) {
             textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth(),
         )
-        Spacer(Modifier.height(32.dp))
+        Spacer(Modifier.height(20.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            STEP_OPTIONS.forEach { option ->
+                FilterChip(
+                    selected = step == option,
+                    onClick = { step = option },
+                    label = { Text("+$option") },
+                )
+            }
+        }
+        Spacer(Modifier.height(20.dp))
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            FilledTonalButton(onClick = { update(count - 1) }, modifier = Modifier.weight(1f)) {
+            FilledTonalButton(onClick = { update(count - step) }, modifier = Modifier.weight(1f)) {
                 Icon(Icons.Filled.Remove, contentDescription = "Decrement")
             }
-            FilledTonalButton(onClick = { update(count + 1) }, modifier = Modifier.weight(1f)) {
+            FilledTonalButton(onClick = { update(count + step) }, modifier = Modifier.weight(1f)) {
                 Icon(Icons.Filled.Add, contentDescription = "Increment")
             }
         }

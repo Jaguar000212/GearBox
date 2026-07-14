@@ -31,7 +31,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.jaguar.gearbox.data.Tools
 import com.jaguar.gearbox.ui.components.ToolScaffold
-import kotlin.random.Random
+import java.security.SecureRandom
 
 private const val UPPERCASE_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 private const val LOWERCASE_CHARS = "abcdefghijklmnopqrstuvwxyz"
@@ -48,12 +48,13 @@ fun PasswordGeneratorScreen(onNavigateBack: () -> Unit) {
     var useSymbols by rememberSaveable { mutableStateOf(false) }
     var password by rememberSaveable { mutableStateOf("") }
 
-    val charset = buildString {
-        if (useUpper) append(UPPERCASE_CHARS)
-        if (useLower) append(LOWERCASE_CHARS)
-        if (useNumbers) append(NUMBER_CHARS)
-        if (useSymbols) append(SYMBOL_CHARS)
+    val enabledClasses = buildList {
+        if (useUpper) add(UPPERCASE_CHARS)
+        if (useLower) add(LOWERCASE_CHARS)
+        if (useNumbers) add(NUMBER_CHARS)
+        if (useSymbols) add(SYMBOL_CHARS)
     }
+    val charset = enabledClasses.joinToString("")
 
     ToolScaffold(
         title = "Password Generator",
@@ -76,7 +77,7 @@ fun PasswordGeneratorScreen(onNavigateBack: () -> Unit) {
 
         Spacer(Modifier.height(12.dp))
         Button(
-            onClick = { password = generatePassword(length.toInt(), charset) },
+            onClick = { password = generatePassword(length.toInt(), enabledClasses) },
             enabled = charset.isNotEmpty(),
             modifier = Modifier.fillMaxWidth(),
         ) {
@@ -113,7 +114,7 @@ fun PasswordGeneratorScreen(onNavigateBack: () -> Unit) {
 
             Spacer(Modifier.height(16.dp))
             OutlinedButton(
-                onClick = { context.copyToClipboard("Password", password) },
+                onClick = { context.copyToClipboard("Password", password, sensitive = true) },
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 Icon(Icons.Filled.ContentCopy, contentDescription = null)
@@ -135,9 +136,28 @@ private fun ToggleRow(label: String, checked: Boolean, onCheckedChange: (Boolean
     }
 }
 
-private fun generatePassword(length: Int, charset: String): String {
-    if (charset.isEmpty()) return ""
-    return (1..length).map { charset[Random.nextInt(charset.length)] }.joinToString("")
+private val secureRandom = SecureRandom()
+
+/**
+ * Guarantees at least one character from every enabled class (many sites reject a password with
+ * "no digit" even if it's otherwise long and random), then fills the rest from the combined
+ * charset and Fisher-Yates shuffles so the guaranteed characters aren't predictably at the front.
+ */
+private fun generatePassword(length: Int, enabledClasses: List<String>): String {
+    if (enabledClasses.isEmpty()) return ""
+    val charset = enabledClasses.joinToString("")
+    val required = enabledClasses.take(length).map { it[secureRandom.nextInt(it.length)] }
+    val fillCount = (length - required.size).coerceAtLeast(0)
+    val chars = (required + (1..fillCount).map { charset[secureRandom.nextInt(charset.length)] })
+        .toMutableList()
+
+    for (i in chars.indices.reversed()) {
+        val j = secureRandom.nextInt(i + 1)
+        val temp = chars[i]
+        chars[i] = chars[j]
+        chars[j] = temp
+    }
+    return chars.joinToString("")
 }
 
 /** Rough strength estimate from entropy bits (length * log2(charset size)), not a security audit. */

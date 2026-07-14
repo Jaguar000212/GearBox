@@ -23,6 +23,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
@@ -45,22 +46,18 @@ fun RandomNumberScreen(onNavigateBack: () -> Unit) {
         icon = Tools.byRoute(Tools.ROUTE_RANDOM)!!.icon,
         onNavigateBack = onNavigateBack,
     ) {
-        OutlinedTextField(
+        SignedNumberField(
+            label = "Minimum",
+            placeholder = "e.g. 1",
             value = min,
             onValueChange = { min = it },
-            label = { Text("Minimum") },
-            placeholder = { Text("e.g. 1") },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            modifier = Modifier.fillMaxWidth(),
         )
         Spacer(Modifier.height(12.dp))
-        OutlinedTextField(
+        SignedNumberField(
+            label = "Maximum",
+            placeholder = "e.g. 100",
             value = max,
             onValueChange = { max = it },
-            label = { Text("Maximum") },
-            placeholder = { Text("e.g. 100") },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            modifier = Modifier.fillMaxWidth(),
         )
         Spacer(Modifier.height(12.dp))
         Button(
@@ -133,6 +130,42 @@ fun RandomNumberScreen(onNavigateBack: () -> Unit) {
             }
         }
     }
+}
+
+/**
+ * A number field paired with a "±" toggle button, since [KeyboardType.Number] often omits a
+ * minus key on the numeric keypad — without this, a negative bound is simply untypeable on many
+ * devices even though the generator fully supports negative ranges.
+ */
+@Composable
+private fun SignedNumberField(
+    label: String,
+    placeholder: String,
+    value: String,
+    onValueChange: (String) -> Unit,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        OutlinedTextField(
+            value = value,
+            onValueChange = onValueChange,
+            label = { Text(label) },
+            placeholder = { Text(placeholder) },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            modifier = Modifier.weight(1f),
+        )
+        OutlinedButton(onClick = { onValueChange(toggleSign(value)) }) {
+            Text("±")
+        }
+    }
+}
+
+private fun toggleSign(text: String): String = when {
+    text.startsWith("-") -> text.removePrefix("-")
+    else -> "-$text"
 }
 
 /**

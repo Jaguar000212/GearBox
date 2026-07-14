@@ -117,14 +117,34 @@ private fun computeAverageResult(input: String): String {
 
     val sum = numbers.sum()
     val average = sum / numbers.size
-    val harmonicMean = numbers.size / numbers.sumOf { 1 / it }
-    val geometricMean = numbers.fold(1.0) { acc, n -> acc * n }.pow(1.0 / numbers.size)
+
+    // Harmonic mean divides by each value, so any zero in the list makes it undefined (the naive
+    // formula silently gives 0, which looks like a valid answer rather than an error).
+    val harmonicMeanText = if (numbers.any { it == 0.0 }) {
+        "N/A (list contains zero)"
+    } else {
+        formatNumber(numbers.size / numbers.sumOf { 1 / it })
+    }
+
+    // A fractional power of a negative base is NaN in Java/Kotlin regardless of whether the
+    // implied root would be odd, so a negative number also makes the geometric mean undefined.
+    val geometricMeanText = if (numbers.any { it < 0.0 }) {
+        "N/A (list contains a negative number)"
+    } else {
+        formatNumber(numbers.fold(1.0) { acc, n -> acc * n }.pow(1.0 / numbers.size))
+    }
+
     val largest = numbers.max()
     val smallest = numbers.min()
 
-    return String.format(
-        Locale.US,
-        "Result: %f\n\nGeometric Mean: %f\nHarmonic Mean: %f\n\nSum: %f\nCount: %d\nLargest: %f\nSmallest: %f",
-        average, geometricMean, harmonicMean, sum, numbers.size, largest, smallest,
-    )
+    return "Result: ${formatNumber(average)}\n\n" +
+            "Geometric Mean: $geometricMeanText\nHarmonic Mean: $harmonicMeanText\n\n" +
+            "Sum: ${formatNumber(sum)}\nCount: ${numbers.size}\n" +
+            "Largest: ${formatNumber(largest)}\nSmallest: ${formatNumber(smallest)}"
+}
+
+/** Formats without %f's fixed trailing zeros (e.g. "7.000000"), matching the app's other tools. */
+private fun formatNumber(value: Double): String {
+    val rounded = String.format(Locale.US, "%.6f", value).trimEnd('0').trimEnd('.')
+    return rounded.ifEmpty { "0" }
 }

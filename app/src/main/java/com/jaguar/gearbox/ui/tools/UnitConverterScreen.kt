@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.SwapVert
 import androidx.compose.material3.Card
 import androidx.compose.material3.DropdownMenu
@@ -18,6 +19,7 @@ import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -27,6 +29,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.jaguar.gearbox.data.Tools
@@ -37,44 +40,75 @@ private enum class UnitCategory(val label: String) {
     LENGTH("Length"),
     WEIGHT("Weight"),
     VOLUME("Volume"),
+    TEMPERATURE("Temperature"),
 }
 
-/** Stores a factor to convert 1 unit into the category's base unit (meter, kilogram, liter). */
-private data class MeasurementUnit(val label: String, val factorToBase: Double)
+/**
+ * Converts a value to/from the category's base unit. Length/Weight/Volume units are simple
+ * multiples of their base (meter, kilogram, liter), but Temperature scales have an offset
+ * (0°C = 32°F = 273.15K), so a single `factorToBase` multiplier can't represent them — hence
+ * explicit to/from lambdas instead.
+ */
+private data class MeasurementUnit(
+    val label: String,
+    val toBase: (Double) -> Double,
+    val fromBase: (Double) -> Double,
+)
+
+private fun linearUnit(label: String, factorToBase: Double) = MeasurementUnit(
+    label = label,
+    toBase = { it * factorToBase },
+    fromBase = { it / factorToBase },
+)
 
 private val unitsByCategory: Map<UnitCategory, List<MeasurementUnit>> = mapOf(
     UnitCategory.LENGTH to listOf(
-        MeasurementUnit("Millimeters", 0.001),
-        MeasurementUnit("Centimeters", 0.01),
-        MeasurementUnit("Meters", 1.0),
-        MeasurementUnit("Kilometers", 1000.0),
-        MeasurementUnit("Inches", 0.0254),
-        MeasurementUnit("Feet", 0.3048),
-        MeasurementUnit("Yards", 0.9144),
-        MeasurementUnit("Miles", 1609.344),
+        linearUnit("Millimeters", 0.001),
+        linearUnit("Centimeters", 0.01),
+        linearUnit("Meters", 1.0),
+        linearUnit("Kilometers", 1000.0),
+        linearUnit("Inches", 0.0254),
+        linearUnit("Feet", 0.3048),
+        linearUnit("Yards", 0.9144),
+        linearUnit("Miles", 1609.344),
     ),
     UnitCategory.WEIGHT to listOf(
-        MeasurementUnit("Milligrams", 0.000001),
-        MeasurementUnit("Grams", 0.001),
-        MeasurementUnit("Kilograms", 1.0),
-        MeasurementUnit("Ounces", 0.0283495),
-        MeasurementUnit("Pounds", 0.453592),
-        MeasurementUnit("Tonnes", 1000.0),
+        linearUnit("Milligrams", 0.000001),
+        linearUnit("Grams", 0.001),
+        linearUnit("Kilograms", 1.0),
+        linearUnit("Ounces", 0.0283495),
+        linearUnit("Pounds", 0.453592),
+        linearUnit("Tonnes", 1000.0),
     ),
     UnitCategory.VOLUME to listOf(
-        MeasurementUnit("Milliliters", 0.001),
-        MeasurementUnit("Liters", 1.0),
-        MeasurementUnit("Cubic meters", 1000.0),
-        MeasurementUnit("Teaspoons", 0.00492892),
-        MeasurementUnit("Tablespoons", 0.0147868),
-        MeasurementUnit("Cups", 0.24),
-        MeasurementUnit("Gallons (US)", 3.78541),
+        linearUnit("Milliliters", 0.001),
+        linearUnit("Liters", 1.0),
+        linearUnit("Cubic meters", 1000.0),
+        linearUnit("Teaspoons", 0.00492892),
+        linearUnit("Tablespoons", 0.0147868),
+        linearUnit("Cups", 0.24),
+        linearUnit("Gallons (US)", 3.78541),
+    ),
+    // Base unit is Celsius.
+    UnitCategory.TEMPERATURE to listOf(
+        MeasurementUnit("Celsius", toBase = { it }, fromBase = { it }),
+        MeasurementUnit(
+            "Fahrenheit",
+            toBase = { (it - 32.0) * 5.0 / 9.0 },
+            fromBase = { it * 9.0 / 5.0 + 32.0 },
+        ),
+        MeasurementUnit(
+            "Kelvin",
+            toBase = { it - 273.15 },
+            fromBase = { it + 273.15 },
+        ),
     ),
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UnitConverterScreen(onNavigateBack: () -> Unit) {
+    val context = LocalContext.current
     var category by rememberSaveable { mutableStateOf(UnitCategory.LENGTH.name) }
     var categoryExpanded by rememberSaveable { mutableStateOf(false) }
     val selectedCategory = UnitCategory.valueOf(category)
@@ -125,7 +159,7 @@ fun UnitConverterScreen(onNavigateBack: () -> Unit) {
             value = input,
             onValueChange = { input = it },
             label = { Text("Value") },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
             modifier = Modifier.fillMaxWidth(),
         )
 
@@ -160,25 +194,37 @@ fun UnitConverterScreen(onNavigateBack: () -> Unit) {
 
         val value = input.trim().toDoubleOrNull()?.takeIf { it.isFinite() }
         Spacer(Modifier.height(20.dp))
-        if (value != null) {
-            val fromFactor = units.first { it.label == fromUnit }.factorToBase
-            val toFactor = units.first { it.label == toUnit }.factorToBase
-            val result = value * fromFactor / toFactor
+        val resultText = if (value != null) {
+            val from = units.first { it.label == fromUnit }
+            val to = units.first { it.label == toUnit }
+            val result = to.fromBase(from.toBase(value))
+            String.format(
+                Locale.US,
+                "%s %s = %s %s",
+                trimNumber(value),
+                fromUnit,
+                trimNumber(result),
+                toUnit,
+            )
+        } else null
+
+        if (resultText != null) {
             Card(modifier = Modifier.fillMaxWidth()) {
                 Text(
-                    text = String.format(
-                        Locale.US,
-                        "%s %s = %s %s",
-                        trimNumber(value),
-                        fromUnit,
-                        trimNumber(result),
-                        toUnit
-                    ),
+                    text = resultText,
                     style = MaterialTheme.typography.bodyLarge,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(16.dp),
                 )
+            }
+            Spacer(Modifier.height(12.dp))
+            OutlinedButton(
+                onClick = { context.copyToClipboard("Unit conversion", resultText) },
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Icon(Icons.Filled.ContentCopy, contentDescription = null)
+                Text(" Copy")
             }
         } else if (input.isNotBlank()) {
             Text("Enter a valid number.", color = MaterialTheme.colorScheme.error)

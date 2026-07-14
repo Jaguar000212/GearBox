@@ -3,15 +3,16 @@ package com.jaguar.gearbox.ui.tools
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Casino
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -19,6 +20,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
@@ -51,12 +53,32 @@ fun TambolaScreen(onNavigateBack: () -> Unit) {
         mutableStateOf(store.getIntList(KEY_CALLED))
     }
     var lastCalled by rememberSaveable { mutableStateOf(store.getInt(KEY_LAST_CALLED, 0)) }
+    var showResetConfirm by rememberSaveable { mutableStateOf(false) }
 
     fun persistGame(numbers: List<Int>, last: Int) {
         store.edit {
             putString(KEY_CALLED, numbers.joinToString(","))
             putInt(KEY_LAST_CALLED, last)
         }
+    }
+
+    if (showResetConfirm) {
+        AlertDialog(
+            onDismissRequest = { showResetConfirm = false },
+            title = { Text("Reset game?") },
+            text = { Text("This clears all ${calledNumbers.size} called numbers. This can't be undone.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    calledNumbers = emptyList()
+                    lastCalled = 0
+                    persistGame(calledNumbers, lastCalled)
+                    showResetConfirm = false
+                }) { Text("Reset") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showResetConfirm = false }) { Text("Cancel") }
+            },
+        )
     }
 
     ToolScaffold(
@@ -125,11 +147,7 @@ fun TambolaScreen(onNavigateBack: () -> Unit) {
                 Text("  Call number")
             }
             OutlinedButton(
-                onClick = {
-                    calledNumbers = emptyList()
-                    lastCalled = 0
-                    persistGame(calledNumbers, lastCalled)
-                },
+                onClick = { showResetConfirm = true },
                 modifier = Modifier.weight(1f),
             ) {
                 Icon(Icons.Filled.Refresh, contentDescription = null)
@@ -153,7 +171,11 @@ fun TambolaScreen(onNavigateBack: () -> Unit) {
                     colors = CardDefaults.cardColors(
                         containerColor = if (called) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
                     ),
-                    modifier = Modifier.size(32.dp),
+                    // Fills whatever width the grid computes for 10 columns instead of a fixed
+                    // 32dp, which clipped past the edge of the screen on narrow (360dp) devices.
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(1f),
                 ) {
                     Text(
                         text = number.toString(),

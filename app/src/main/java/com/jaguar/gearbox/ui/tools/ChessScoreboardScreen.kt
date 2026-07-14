@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Undo
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
@@ -26,6 +27,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.jaguar.gearbox.data.ChessMatch
 import com.jaguar.gearbox.data.ChessMatchStore
@@ -44,8 +46,24 @@ fun ChessScoreboardScreen(onNavigateBack: () -> Unit) {
     var blackScore by rememberSaveable { mutableFloatStateOf(initial.blackScore) }
     var gamesPlayed by rememberSaveable { mutableIntStateOf(initial.gamesPlayed) }
 
+    // Only the last score-changing action (white/black win or draw) can be undone - a reset
+    // clears it, since undoing "back to before the reset" isn't a meaningful action here.
+    var lastWhiteDelta by rememberSaveable { mutableFloatStateOf(0f) }
+    var lastBlackDelta by rememberSaveable { mutableFloatStateOf(0f) }
+    var canUndo by rememberSaveable { mutableStateOf(false) }
+
     fun persist() {
         store.save(ChessMatch(whiteName, blackName, whiteScore, blackScore, gamesPlayed))
+    }
+
+    fun recordResult(whiteDelta: Float, blackDelta: Float) {
+        whiteScore += whiteDelta
+        blackScore += blackDelta
+        gamesPlayed++
+        lastWhiteDelta = whiteDelta
+        lastBlackDelta = blackDelta
+        canUndo = true
+        persist()
     }
 
     ToolScaffold(
@@ -106,31 +124,65 @@ fun ChessScoreboardScreen(onNavigateBack: () -> Unit) {
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             OutlinedButton(
-                onClick = { whiteScore += 1f; gamesPlayed++; persist() },
+                onClick = { recordResult(whiteDelta = 1f, blackDelta = 0f) },
                 modifier = Modifier.weight(1f),
-            ) { Text("$whiteName wins") }
+            ) {
+                Text(
+                    "$whiteName wins",
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    textAlign = TextAlign.Center,
+                )
+            }
             OutlinedButton(
-                onClick = { whiteScore += 0.5f; blackScore += 0.5f; gamesPlayed++; persist() },
+                onClick = { recordResult(whiteDelta = 0.5f, blackDelta = 0.5f) },
                 modifier = Modifier.weight(1f),
             ) { Text("Draw") }
             OutlinedButton(
-                onClick = { blackScore += 1f; gamesPlayed++; persist() },
+                onClick = { recordResult(whiteDelta = 0f, blackDelta = 1f) },
                 modifier = Modifier.weight(1f),
-            ) { Text("$blackName wins") }
+            ) {
+                Text(
+                    "$blackName wins",
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    textAlign = TextAlign.Center,
+                )
+            }
         }
 
         Spacer(Modifier.height(20.dp))
-        OutlinedButton(
-            onClick = {
-                whiteScore = 0f
-                blackScore = 0f
-                gamesPlayed = 0
-                persist()
-            },
+        Row(
             modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            Icon(Icons.Filled.Refresh, contentDescription = null)
-            Text(" Reset match")
+            OutlinedButton(
+                onClick = {
+                    whiteScore -= lastWhiteDelta
+                    blackScore -= lastBlackDelta
+                    gamesPlayed--
+                    canUndo = false
+                    persist()
+                },
+                enabled = canUndo,
+                modifier = Modifier.weight(1f),
+            ) {
+                Icon(Icons.AutoMirrored.Filled.Undo, contentDescription = null)
+                Text(" Undo")
+            }
+            OutlinedButton(
+                onClick = {
+                    whiteScore = 0f
+                    blackScore = 0f
+                    gamesPlayed = 0
+                    canUndo = false
+                    persist()
+                },
+                modifier = Modifier.weight(1f),
+            ) {
+                Icon(Icons.Filled.Refresh, contentDescription = null)
+                Text(" Reset match")
+            }
         }
     }
 }

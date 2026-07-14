@@ -3,6 +3,7 @@ package com.jaguar.gearbox.ui.tools
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -37,6 +39,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -101,7 +104,9 @@ fun ColorPickerScreen(onNavigateBack: () -> Unit) {
         if (recentColors.isNotEmpty()) {
             Spacer(Modifier.height(12.dp))
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState()),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 recentColors.forEach { savedHex ->
@@ -133,9 +138,12 @@ fun ColorPickerScreen(onNavigateBack: () -> Unit) {
 
         Spacer(Modifier.height(20.dp))
         Text("RGB", style = MaterialTheme.typography.titleMedium)
-        ColorSlider("Red", red) { red = it }
-        ColorSlider("Green", green) { green = it }
-        ColorSlider("Blue", blue) { blue = it }
+        // Clearing hexInput lets the field fall back to displaying the live `hex` computed from
+        // the sliders - otherwise it kept showing whatever was last typed even after a slider
+        // moved the color elsewhere, showing a swatch and a hex value that no longer matched.
+        ColorSlider("Red", red) { red = it; hexInput = "" }
+        ColorSlider("Green", green) { green = it; hexInput = "" }
+        ColorSlider("Blue", blue) { blue = it; hexInput = "" }
 
         Spacer(Modifier.height(16.dp))
         HorizontalDivider()
@@ -150,15 +158,21 @@ fun ColorPickerScreen(onNavigateBack: () -> Unit) {
                     red = parsed.first.toFloat()
                     green = parsed.second.toFloat()
                     blue = parsed.third.toFloat()
-                    hexError = ""
-                } else if (value.isNotBlank()) {
-                    hexError = "Enter a valid hex color, e.g. #6750A4"
                 }
+                // Don't flag an error while the user is still mid-keystroke (e.g. "#FF0" on the
+                // way to "#FF0000") - only validate once the field loses focus, below.
+                hexError = ""
             },
             label = { Text("HEX") },
             isError = hexError.isNotEmpty(),
             supportingText = { if (hexError.isNotEmpty()) Text(hexError) },
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .onFocusChanged { focusState ->
+                    if (!focusState.isFocused && hexInput.isNotBlank() && parseHex(hexInput) == null) {
+                        hexError = "Enter a valid hex color, e.g. #6750A4"
+                    }
+                },
         )
 
         Spacer(Modifier.height(16.dp))

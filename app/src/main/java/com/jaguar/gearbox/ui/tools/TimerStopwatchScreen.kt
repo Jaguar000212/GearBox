@@ -378,7 +378,7 @@ private fun playTimerAlert(context: Context) {
         val uri = RingtoneManager.getActualDefaultRingtoneUri(context, RingtoneManager.TYPE_ALARM)
             ?: RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
         RingtoneManager.getRingtone(context, uri)?.play()
-    } catch (e: Exception) {
+    } catch (_: Exception) {
         // Some devices/emulators have no ringtone configured, or a flaky audio service.
     }
 

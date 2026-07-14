@@ -11,10 +11,16 @@ import androidx.compose.material.icons.filled.Casino
 import androidx.compose.material.icons.filled.Colorize
 import androidx.compose.material.icons.filled.EditCalendar
 import androidx.compose.material.icons.filled.EmojiEvents
+import androidx.compose.material.icons.filled.Event
+import androidx.compose.material.icons.filled.Fingerprint
 import androidx.compose.material.icons.filled.FrontHand
 import androidx.compose.material.icons.filled.Functions
+import androidx.compose.material.icons.filled.Grid3x3
 import androidx.compose.material.icons.filled.Grid4x4
+import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.HistoryEdu
+import androidx.compose.material.icons.filled.LocalGasStation
+import androidx.compose.material.icons.filled.LocalOffer
 import androidx.compose.material.icons.filled.MonetizationOn
 import androidx.compose.material.icons.filled.MonitorWeight
 import androidx.compose.material.icons.filled.Password
@@ -22,6 +28,7 @@ import androidx.compose.material.icons.filled.Payments
 import androidx.compose.material.icons.filled.Percent
 import androidx.compose.material.icons.filled.PieChart
 import androidx.compose.material.icons.filled.PlusOne
+import androidx.compose.material.icons.filled.Receipt
 import androidx.compose.material.icons.filled.Scoreboard
 import androidx.compose.material.icons.filled.Shuffle
 import androidx.compose.material.icons.filled.Straighten
@@ -29,6 +36,7 @@ import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.material.icons.filled.Tag
 import androidx.compose.material.icons.filled.TextFields
 import androidx.compose.material.icons.filled.Timer
+import androidx.compose.material.icons.filled.Translate
 import com.jaguar.gearbox.ui.tools.AgeCalculatorScreen
 import com.jaguar.gearbox.ui.tools.AverageCalculatorScreen
 import com.jaguar.gearbox.ui.tools.BaseConverterScreen
@@ -37,11 +45,17 @@ import com.jaguar.gearbox.ui.tools.ChessScoreboardScreen
 import com.jaguar.gearbox.ui.tools.ColorPickerScreen
 import com.jaguar.gearbox.ui.tools.CounterScreen
 import com.jaguar.gearbox.ui.tools.DateCalculatorScreen
+import com.jaguar.gearbox.ui.tools.DaysUntilScreen
 import com.jaguar.gearbox.ui.tools.DecimalToFractionScreen
 import com.jaguar.gearbox.ui.tools.DiceRollScreen
+import com.jaguar.gearbox.ui.tools.DiscountCalculatorScreen
 import com.jaguar.gearbox.ui.tools.FlipCoinScreen
+import com.jaguar.gearbox.ui.tools.FuelCostScreen
 import com.jaguar.gearbox.ui.tools.GeometryCalculatorScreen
+import com.jaguar.gearbox.ui.tools.GstCalculatorScreen
+import com.jaguar.gearbox.ui.tools.HashGeneratorScreen
 import com.jaguar.gearbox.ui.tools.LoanCalculatorScreen
+import com.jaguar.gearbox.ui.tools.MorseBinaryScreen
 import com.jaguar.gearbox.ui.tools.NumberToRomanScreen
 import com.jaguar.gearbox.ui.tools.NumberToWordsScreen
 import com.jaguar.gearbox.ui.tools.OneOfTwoScreen
@@ -53,7 +67,9 @@ import com.jaguar.gearbox.ui.tools.RockPaperScissorsScreen
 import com.jaguar.gearbox.ui.tools.ScoreboardScreen
 import com.jaguar.gearbox.ui.tools.SpinBottleScreen
 import com.jaguar.gearbox.ui.tools.TambolaScreen
+import com.jaguar.gearbox.ui.tools.TeamPickerScreen
 import com.jaguar.gearbox.ui.tools.TextToolsScreen
+import com.jaguar.gearbox.ui.tools.TicTacToeScreen
 import com.jaguar.gearbox.ui.tools.TimerStopwatchScreen
 import com.jaguar.gearbox.ui.tools.TipCalculatorScreen
 import com.jaguar.gearbox.ui.tools.UnitConverterScreen
@@ -94,6 +110,14 @@ object Tools {
     const val ROUTE_TIP = "tool/tip"
     const val ROUTE_PASSWORD_GENERATOR = "tool/password_generator"
     const val ROUTE_DATE_CALCULATOR = "tool/date_calculator"
+    const val ROUTE_DISCOUNT = "tool/discount"
+    const val ROUTE_GST = "tool/gst"
+    const val ROUTE_DAYS_UNTIL = "tool/days_until"
+    const val ROUTE_TEAM_PICKER = "tool/team_picker"
+    const val ROUTE_FUEL_COST = "tool/fuel_cost"
+    const val ROUTE_MORSE_BINARY = "tool/morse_binary"
+    const val ROUTE_HASH_GENERATOR = "tool/hash_generator"
+    const val ROUTE_TIC_TAC_TOE = "tool/tic_tac_toe"
 
     val all: List<Tool> = listOf(
         Tool(
@@ -172,6 +196,42 @@ object Tools {
             content = { onNavigateBack -> DateCalculatorScreen(onNavigateBack) },
         ),
         Tool(
+            name = "Discount Calculator",
+            description = "Apply one or more stacked discounts to a price.",
+            icon = Icons.Filled.LocalOffer,
+            route = ROUTE_DISCOUNT,
+            category = ToolCategory.CALCULATORS,
+            content = { onNavigateBack -> DiscountCalculatorScreen(onNavigateBack) },
+            keywords = listOf("sale", "off", "savings"),
+        ),
+        Tool(
+            name = "GST / Tax Calculator",
+            description = "Add or remove tax from an amount.",
+            icon = Icons.Filled.Receipt,
+            route = ROUTE_GST,
+            category = ToolCategory.CALCULATORS,
+            content = { onNavigateBack -> GstCalculatorScreen(onNavigateBack) },
+            keywords = listOf("vat", "sales tax", "gst"),
+        ),
+        Tool(
+            name = "Days Until",
+            description = "Count down the days until (or since) a date you pick.",
+            icon = Icons.Filled.Event,
+            route = ROUTE_DAYS_UNTIL,
+            category = ToolCategory.CALCULATORS,
+            content = { onNavigateBack -> DaysUntilScreen(onNavigateBack) },
+            keywords = listOf("countdown", "event"),
+        ),
+        Tool(
+            name = "Fuel Cost Calculator",
+            description = "Estimate fuel needed and trip cost from distance and mileage.",
+            icon = Icons.Filled.LocalGasStation,
+            route = ROUTE_FUEL_COST,
+            category = ToolCategory.CALCULATORS,
+            content = { onNavigateBack -> FuelCostScreen(onNavigateBack) },
+            keywords = listOf("mileage", "petrol", "gas", "trip cost"),
+        ),
+        Tool(
             name = "Base Converter",
             description = "Convert numbers between binary, octal, decimal, and hexadecimal bases.",
             icon = Icons.Filled.Tag,
@@ -212,6 +272,15 @@ object Tools {
             route = ROUTE_DECIMAL_TO_FRACTION,
             category = ToolCategory.CONVERTERS,
             content = { onNavigateBack -> DecimalToFractionScreen(onNavigateBack) },
+        ),
+        Tool(
+            name = "Morse / Binary Translator",
+            description = "Translate text to and from Morse code or binary.",
+            icon = Icons.Filled.Translate,
+            route = ROUTE_MORSE_BINARY,
+            category = ToolCategory.CONVERTERS,
+            content = { onNavigateBack -> MorseBinaryScreen(onNavigateBack) },
+            keywords = listOf("dots", "dashes", "encode", "decode"),
         ),
         Tool(
             name = "Random Number Generator",
@@ -271,6 +340,24 @@ object Tools {
             content = { onNavigateBack -> OneOfTwoScreen(onNavigateBack) },
         ),
         Tool(
+            name = "Team / Name Picker",
+            description = "Pick a random name, or split a list of names into teams.",
+            icon = Icons.Filled.Groups,
+            route = ROUTE_TEAM_PICKER,
+            category = ToolCategory.GAMES_AND_RANDOM,
+            content = { onNavigateBack -> TeamPickerScreen(onNavigateBack) },
+            keywords = listOf("names", "groups", "draw"),
+        ),
+        Tool(
+            name = "Tic-tac-toe",
+            description = "Play a two-player game of tic-tac-toe.",
+            icon = Icons.Filled.Grid3x3,
+            route = ROUTE_TIC_TAC_TOE,
+            category = ToolCategory.GAMES_AND_RANDOM,
+            content = { onNavigateBack -> TicTacToeScreen(onNavigateBack) },
+            keywords = listOf("noughts and crosses", "xo"),
+        ),
+        Tool(
             name = "Counter",
             description = "A simple counter to increment, decrement and reset.",
             icon = Icons.Filled.PlusOne,
@@ -326,6 +413,15 @@ object Tools {
             category = ToolCategory.UTILITIES,
             content = { onNavigateBack -> PasswordGeneratorScreen(onNavigateBack) },
             keywords = listOf("pin", "passcode", "security"),
+        ),
+        Tool(
+            name = "Hash Generator",
+            description = "Generate an MD5, SHA-1, SHA-256, or SHA-512 hash of some text.",
+            icon = Icons.Filled.Fingerprint,
+            route = ROUTE_HASH_GENERATOR,
+            category = ToolCategory.UTILITIES,
+            content = { onNavigateBack -> HashGeneratorScreen(onNavigateBack) },
+            keywords = listOf("md5", "sha", "checksum", "digest"),
         ),
     )
 

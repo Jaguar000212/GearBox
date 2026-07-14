@@ -20,11 +20,13 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -33,6 +35,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.jaguar.gearbox.data.SimplePrefsStore
 import com.jaguar.gearbox.data.Tools
 import com.jaguar.gearbox.ui.components.ToolScaffold
 import kotlinx.coroutines.delay
@@ -49,28 +52,119 @@ private val lapsSaver: Saver<MutableState<List<Long>>, LongArray> = Saver(
     restore = { mutableStateOf(it.toList()) },
 )
 
+private const val KEY_MODE = "timer_stopwatch.mode"
+private const val KEY_SW_ELAPSED = "timer_stopwatch.sw_elapsed"
+private const val KEY_SW_RUNNING = "timer_stopwatch.sw_running"
+private const val KEY_LAPS = "timer_stopwatch.laps"
+private const val KEY_TIMER_REMAINING = "timer_stopwatch.timer_remaining"
+private const val KEY_TIMER_RUNNING = "timer_stopwatch.timer_running"
+private const val KEY_TIMER_FINISHED = "timer_stopwatch.timer_finished"
+private const val KEY_MINUTES = "timer_stopwatch.minutes_input"
+private const val KEY_SECONDS = "timer_stopwatch.seconds_input"
+private const val KEY_SAVED_AT = "timer_stopwatch.saved_at"
+
+/** Snapshot of everything this screen needs to restore, with running clocks caught up to now. */
+private class TimerLoadResult(
+    val mode: String,
+    val stopwatchElapsedMillis: Long,
+    val stopwatchRunning: Boolean,
+    val laps: List<Long>,
+    val timerRemainingMillis: Long,
+    val timerRunning: Boolean,
+    val timerFinished: Boolean,
+    val minutesInput: String,
+    val secondsInput: String,
+)
+
+/**
+ * Loads persisted state and, if a clock was left running, advances it by however long has
+ * passed since the last save — so leaving the screen (or killing the app) no longer pauses a
+ * stopwatch/timer that the user believed was still counting.
+ */
+private fun loadTimerState(store: SimplePrefsStore): TimerLoadResult {
+    val mode = store.getString(KEY_MODE, ClockMode.STOPWATCH.name)
+    var stopwatchElapsed = store.getLong(KEY_SW_ELAPSED, 0L)
+    val stopwatchRunning = store.getBoolean(KEY_SW_RUNNING, false)
+    val laps = store.getLongList(KEY_LAPS)
+    var timerRemaining = store.getLong(KEY_TIMER_REMAINING, 0L)
+    var timerRunning = store.getBoolean(KEY_TIMER_RUNNING, false)
+    var timerFinished = store.getBoolean(KEY_TIMER_FINISHED, false)
+    val minutesInput = store.getString(KEY_MINUTES, "5")
+    val secondsInput = store.getString(KEY_SECONDS, "0")
+    val savedAt = store.getLong(KEY_SAVED_AT, 0L)
+
+    if (savedAt > 0L) {
+        val gap = (System.currentTimeMillis() - savedAt).coerceAtLeast(0L)
+        if (stopwatchRunning) stopwatchElapsed += gap
+        if (timerRunning) {
+            timerRemaining = (timerRemaining - gap).coerceAtLeast(0L)
+            if (timerRemaining == 0L) {
+                timerRunning = false
+                timerFinished = true
+            }
+        }
+    }
+
+    return TimerLoadResult(
+        mode = mode,
+        stopwatchElapsedMillis = stopwatchElapsed,
+        stopwatchRunning = stopwatchRunning,
+        laps = laps,
+        timerRemainingMillis = timerRemaining,
+        timerRunning = timerRunning,
+        timerFinished = timerFinished,
+        minutesInput = minutesInput,
+        secondsInput = secondsInput,
+    )
+}
+
 @Composable
 fun TimerStopwatchScreen(onNavigateBack: () -> Unit) {
     val context = LocalContext.current
-    var mode by rememberSaveable { mutableStateOf(ClockMode.STOPWATCH.name) }
+    val store = remember { SimplePrefsStore(context) }
+    val initial = remember { loadTimerState(store) }
+
+    var mode by rememberSaveable { mutableStateOf(initial.mode) }
     val selectedMode = ClockMode.valueOf(mode)
 
     // All clock state (and the single ticking effect below) lives here, above the tab switch,
     // so that showing the Timer tab can never pause the Stopwatch's ticking (or vice versa) --
     // that was the previous bug: each tab's LaunchedEffect only ran while its composable was in
     // the active `when` branch, so the other clock silently froze while claiming to be running.
-    var stopwatchElapsedMillis by rememberSaveable { mutableLongStateOf(0L) }
-    var stopwatchRunning by rememberSaveable { mutableStateOf(false) }
-    var laps by rememberSaveable(saver = lapsSaver) { mutableStateOf(emptyList()) }
+    var stopwatchElapsedMillis by rememberSaveable { mutableLongStateOf(initial.stopwatchElapsedMillis) }
+    var stopwatchRunning by rememberSaveable { mutableStateOf(initial.stopwatchRunning) }
+    var laps by rememberSaveable(saver = lapsSaver) { mutableStateOf(initial.laps) }
 
-    var timerRemainingMillis by rememberSaveable { mutableLongStateOf(0L) }
-    var timerRunning by rememberSaveable { mutableStateOf(false) }
-    var timerFinished by rememberSaveable { mutableStateOf(false) }
-    var minutesInput by rememberSaveable { mutableStateOf("5") }
-    var secondsInput by rememberSaveable { mutableStateOf("0") }
+    var timerRemainingMillis by rememberSaveable { mutableLongStateOf(initial.timerRemainingMillis) }
+    var timerRunning by rememberSaveable { mutableStateOf(initial.timerRunning) }
+    var timerFinished by rememberSaveable { mutableStateOf(initial.timerFinished) }
+    var minutesInput by rememberSaveable { mutableStateOf(initial.minutesInput) }
+    var secondsInput by rememberSaveable { mutableStateOf(initial.secondsInput) }
+
+    fun persistState() {
+        store.edit {
+            putString(KEY_MODE, mode)
+            putLong(KEY_SW_ELAPSED, stopwatchElapsedMillis)
+            putBoolean(KEY_SW_RUNNING, stopwatchRunning)
+            putString(KEY_LAPS, laps.joinToString(","))
+            putLong(KEY_TIMER_REMAINING, timerRemainingMillis)
+            putBoolean(KEY_TIMER_RUNNING, timerRunning)
+            putBoolean(KEY_TIMER_FINISHED, timerFinished)
+            putString(KEY_MINUTES, minutesInput)
+            putString(KEY_SECONDS, secondsInput)
+            putLong(KEY_SAVED_AT, System.currentTimeMillis())
+        }
+    }
+
+    // Saves whatever state exists the moment this screen leaves composition (back-navigation),
+    // so a running clock isn't silently forgotten even if the user never pauses it first.
+    DisposableEffect(Unit) {
+        onDispose { persistState() }
+    }
 
     LaunchedEffect(stopwatchRunning, timerRunning) {
         var lastTick = System.currentTimeMillis()
+        var millisSinceSave = 0L
         while (stopwatchRunning || timerRunning) {
             delay(30.milliseconds)
             val now = System.currentTimeMillis()
@@ -86,7 +180,16 @@ fun TimerStopwatchScreen(onNavigateBack: () -> Unit) {
                     timerRunning = false
                     timerFinished = true
                     playTimerAlert(context)
+                    persistState()
                 }
+            }
+
+            // Persist periodically (not every 30ms tick) so a killed process loses at most ~1s
+            // of progress instead of freezing the clock at whatever it read on the last visit.
+            millisSinceSave += delta
+            if (millisSinceSave >= 1000L) {
+                millisSinceSave = 0L
+                persistState()
             }
         }
     }
@@ -100,7 +203,7 @@ fun TimerStopwatchScreen(onNavigateBack: () -> Unit) {
             ClockMode.entries.forEach { entry ->
                 Tab(
                     selected = entry == selectedMode,
-                    onClick = { mode = entry.name },
+                    onClick = { mode = entry.name; persistState() },
                     text = { Text(entry.label) },
                 )
             }
@@ -112,12 +215,13 @@ fun TimerStopwatchScreen(onNavigateBack: () -> Unit) {
                 elapsedMillis = stopwatchElapsedMillis,
                 isRunning = stopwatchRunning,
                 laps = laps,
-                onToggleRunning = { stopwatchRunning = !stopwatchRunning },
-                onLap = { laps = laps + stopwatchElapsedMillis },
+                onToggleRunning = { stopwatchRunning = !stopwatchRunning; persistState() },
+                onLap = { laps = laps + stopwatchElapsedMillis; persistState() },
                 onReset = {
                     stopwatchRunning = false
                     stopwatchElapsedMillis = 0L
                     laps = emptyList()
+                    persistState()
                 },
             )
             ClockMode.TIMER -> TimerSection(
@@ -140,11 +244,13 @@ fun TimerStopwatchScreen(onNavigateBack: () -> Unit) {
                         }
                         if (timerRemainingMillis > 0) timerRunning = true
                     }
+                    persistState()
                 },
                 onReset = {
                     timerRunning = false
                     timerRemainingMillis = 0L
                     timerFinished = false
+                    persistState()
                 },
             )
         }

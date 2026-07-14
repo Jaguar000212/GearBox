@@ -18,18 +18,30 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.jaguar.gearbox.data.SimplePrefsStore
 import com.jaguar.gearbox.data.Tools
 import com.jaguar.gearbox.ui.components.ToolScaffold
 
+private const val KEY_COUNT = "counter.count"
+
 @Composable
 fun CounterScreen(onNavigateBack: () -> Unit) {
-    var count by rememberSaveable { mutableIntStateOf(0) }
+    val context = LocalContext.current
+    val store = remember { SimplePrefsStore(context) }
+    var count by rememberSaveable { mutableIntStateOf(store.getInt(KEY_COUNT, 0)) }
+
+    fun update(newCount: Int) {
+        count = newCount
+        store.putInt(KEY_COUNT, newCount)
+    }
 
     ToolScaffold(
         title = "Counter",
@@ -49,16 +61,16 @@ fun CounterScreen(onNavigateBack: () -> Unit) {
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            FilledTonalButton(onClick = { count-- }, modifier = Modifier.weight(1f)) {
+            FilledTonalButton(onClick = { update(count - 1) }, modifier = Modifier.weight(1f)) {
                 Icon(Icons.Filled.Remove, contentDescription = "Decrement")
             }
-            FilledTonalButton(onClick = { count++ }, modifier = Modifier.weight(1f)) {
+            FilledTonalButton(onClick = { update(count + 1) }, modifier = Modifier.weight(1f)) {
                 Icon(Icons.Filled.Add, contentDescription = "Increment")
             }
         }
         Spacer(Modifier.height(12.dp))
         Button(
-            onClick = { count = 0 },
+            onClick = { update(0) },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 4.dp),

@@ -31,6 +31,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -39,6 +40,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import com.jaguar.gearbox.data.SimplePrefsStore
 import com.jaguar.gearbox.data.Tools
 import com.jaguar.gearbox.ui.components.ToolScaffold
 import kotlin.math.roundToInt
@@ -49,16 +51,20 @@ private val recentColorsSaver: Saver<MutableState<List<String>>, Array<String>> 
 )
 
 private const val MAX_RECENT_COLORS = 8
+private const val KEY_RECENT_COLORS = "color_picker.recent"
 
 @Composable
 fun ColorPickerScreen(onNavigateBack: () -> Unit) {
     val context = LocalContext.current
+    val store = remember { SimplePrefsStore(context) }
     var red by rememberSaveable { mutableFloatStateOf(103f) }
     var green by rememberSaveable { mutableFloatStateOf(80f) }
     var blue by rememberSaveable { mutableFloatStateOf(164f) }
     var hexInput by rememberSaveable { mutableStateOf("") }
     var hexError by rememberSaveable { mutableStateOf("") }
-    var recentColors by rememberSaveable(saver = recentColorsSaver) { mutableStateOf(emptyList()) }
+    var recentColors by rememberSaveable(saver = recentColorsSaver) {
+        mutableStateOf(store.getString(KEY_RECENT_COLORS, "").split(",").filter { it.isNotBlank() })
+    }
 
     val color = Color(red / 255f, green / 255f, blue / 255f)
     val hex =
@@ -85,6 +91,7 @@ fun ColorPickerScreen(onNavigateBack: () -> Unit) {
                 onClick = {
                     recentColors =
                         (listOf(hex) + recentColors.filterNot { it == hex }).take(MAX_RECENT_COLORS)
+                    store.putString(KEY_RECENT_COLORS, recentColors.joinToString(","))
                 },
             ) {
                 Icon(Icons.Filled.BookmarkAdd, contentDescription = "Save this color")

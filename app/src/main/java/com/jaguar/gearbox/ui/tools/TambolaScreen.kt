@@ -23,12 +23,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.jaguar.gearbox.data.SimplePrefsStore
 import com.jaguar.gearbox.data.Tools
 import com.jaguar.gearbox.ui.components.ToolScaffold
 
@@ -37,10 +40,24 @@ private val calledNumbersSaver: Saver<MutableState<List<Int>>, IntArray> = Saver
     restore = { mutableStateOf(it.toList()) },
 )
 
+private const val KEY_CALLED = "tambola.called"
+private const val KEY_LAST_CALLED = "tambola.last_called"
+
 @Composable
 fun TambolaScreen(onNavigateBack: () -> Unit) {
-    var calledNumbers by rememberSaveable(saver = calledNumbersSaver) { mutableStateOf(emptyList()) }
-    var lastCalled by rememberSaveable { mutableStateOf(0) }
+    val context = LocalContext.current
+    val store = remember { SimplePrefsStore(context) }
+    var calledNumbers by rememberSaveable(saver = calledNumbersSaver) {
+        mutableStateOf(store.getIntList(KEY_CALLED))
+    }
+    var lastCalled by rememberSaveable { mutableStateOf(store.getInt(KEY_LAST_CALLED, 0)) }
+
+    fun persistGame(numbers: List<Int>, last: Int) {
+        store.edit {
+            putString(KEY_CALLED, numbers.joinToString(","))
+            putInt(KEY_LAST_CALLED, last)
+        }
+    }
 
     ToolScaffold(
         title = "Tambola Numbers",
@@ -98,6 +115,7 @@ fun TambolaScreen(onNavigateBack: () -> Unit) {
                         val next = remaining.random()
                         calledNumbers = calledNumbers + next
                         lastCalled = next
+                        persistGame(calledNumbers, lastCalled)
                     }
                 },
                 enabled = calledNumbers.size < 90,
@@ -110,6 +128,7 @@ fun TambolaScreen(onNavigateBack: () -> Unit) {
                 onClick = {
                     calledNumbers = emptyList()
                     lastCalled = 0
+                    persistGame(calledNumbers, lastCalled)
                 },
                 modifier = Modifier.weight(1f),
             ) {

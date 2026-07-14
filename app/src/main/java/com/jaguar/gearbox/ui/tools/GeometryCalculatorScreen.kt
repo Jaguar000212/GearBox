@@ -134,7 +134,7 @@ private fun NumberField(label: String, value: String, onValueChange: (String) ->
 
 private fun computeResult(shape: Shape, f1: String, f2: String, f3: String): String? {
     fun fmt(value: Double) =
-        String.format(Locale.getDefault(), "%.4f", value).trimEnd('0').trimEnd('.')
+        String.format(Locale.US, "%.4f", value).trimEnd('0').trimEnd('.')
 
     return when (shape) {
         Shape.CIRCLE -> {

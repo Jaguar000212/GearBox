@@ -23,7 +23,7 @@ import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -32,17 +32,18 @@ import com.jaguar.gearbox.data.Tools
 import com.jaguar.gearbox.ui.components.ToolScaffold
 import java.time.Instant
 import java.time.LocalDate
+import java.time.Period
 import java.time.ZoneOffset
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AgeCalculatorScreen(onNavigateBack: () -> Unit) {
     val context = LocalContext.current
-    var laterDate by remember { mutableStateOf<LocalDate?>(null) }
-    var earlierDate by remember { mutableStateOf<LocalDate?>(null) }
-    var result by remember { mutableStateOf("") }
+    var laterDate by rememberSaveable { mutableStateOf<LocalDate?>(null) }
+    var earlierDate by rememberSaveable { mutableStateOf<LocalDate?>(null) }
+    var result by rememberSaveable { mutableStateOf("") }
     // 0 = none, 1 = later, 2 = earlier
-    var pickerTarget by remember { mutableStateOf(0) }
+    var pickerTarget by rememberSaveable { mutableStateOf(0) }
 
     if (pickerTarget != 0) {
         val state = rememberDatePickerState()
@@ -116,27 +117,16 @@ fun AgeCalculatorScreen(onNavigateBack: () -> Unit) {
 private fun formatDate(date: LocalDate): String =
     "${date.dayOfMonth}/${date.monthValue}/${date.year}"
 
-/**
- * Replicates the age math from the Java `AgeCalculator` (simple per-field delta with a 30-day
- * month borrow), operating on the later date minus the earlier date.
- */
 private fun calculateAge(later: LocalDate?, earlier: LocalDate?): String {
     if (later == null || earlier == null) {
         return "Error: Format is not correct. Select dates properly."
     }
-
-    var deltaYear = later.year - earlier.year
-    var deltaMonth = later.monthValue - earlier.monthValue
-    var deltaDay = later.dayOfMonth - earlier.dayOfMonth
-
-    if (deltaDay < 0) {
-        deltaMonth--
-        deltaDay += 30
-    }
-    if (deltaMonth < 0) {
-        deltaYear--
-        deltaMonth += 12
+    if (later.isBefore(earlier)) {
+        return "Error: Later date must not be before earlier date."
     }
 
-    return "Age: $deltaYear years, $deltaMonth months, $deltaDay days"
+    // Period.between does calendar-correct year/month/day math (respecting actual month
+    // lengths), unlike a fixed 30-day borrow which is off by 1-2 days for most date pairs.
+    val period = Period.between(earlier, later)
+    return "Age: ${period.years} years, ${period.months} months, ${period.days} days"
 }

@@ -100,7 +100,9 @@ fun TipCalculatorScreen(onNavigateBack: () -> Unit) {
                     ValueRow("Per person", formatCurrency(perPerson))
                 }
             }
-        } else if (bill.isNotBlank() || tipPercent.isNotBlank()) {
+        } else if (bill.isNotBlank()) {
+            // tipPercent defaults to a non-blank "15", so only the bill field being touched
+            // should trigger this — otherwise the error shows on an untouched, pristine screen.
             Spacer(Modifier.height(12.dp))
             Text("Enter a valid bill amount and tip %.", color = MaterialTheme.colorScheme.error)
         }
@@ -119,4 +121,4 @@ private fun ValueRow(label: String, value: String) {
 }
 
 private fun formatCurrency(value: Double): String =
-    String.format(Locale.getDefault(), "%.2f", value)
+    String.format(Locale.US, "%.2f", value)

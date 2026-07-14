@@ -1,5 +1,11 @@
 package com.jaguar.gearbox.ui.tools
 
+import android.content.Context
+import android.media.RingtoneManager
+import android.os.Build
+import android.os.VibrationEffect
+import android.os.Vibrator
+import android.os.VibratorManager
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -23,6 +29,7 @@ import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -37,10 +44,52 @@ private enum class ClockMode(val label: String) {
     TIMER("Timer"),
 }
 
+private val lapsSaver: Saver<MutableState<List<Long>>, LongArray> = Saver(
+    save = { it.value.toLongArray() },
+    restore = { mutableStateOf(it.toList()) },
+)
+
 @Composable
 fun TimerStopwatchScreen(onNavigateBack: () -> Unit) {
+    val context = LocalContext.current
     var mode by rememberSaveable { mutableStateOf(ClockMode.STOPWATCH.name) }
     val selectedMode = ClockMode.valueOf(mode)
+
+    // All clock state (and the single ticking effect below) lives here, above the tab switch,
+    // so that showing the Timer tab can never pause the Stopwatch's ticking (or vice versa) --
+    // that was the previous bug: each tab's LaunchedEffect only ran while its composable was in
+    // the active `when` branch, so the other clock silently froze while claiming to be running.
+    var stopwatchElapsedMillis by rememberSaveable { mutableLongStateOf(0L) }
+    var stopwatchRunning by rememberSaveable { mutableStateOf(false) }
+    var laps by rememberSaveable(saver = lapsSaver) { mutableStateOf(emptyList()) }
+
+    var timerRemainingMillis by rememberSaveable { mutableLongStateOf(0L) }
+    var timerRunning by rememberSaveable { mutableStateOf(false) }
+    var timerFinished by rememberSaveable { mutableStateOf(false) }
+    var minutesInput by rememberSaveable { mutableStateOf("5") }
+    var secondsInput by rememberSaveable { mutableStateOf("0") }
+
+    LaunchedEffect(stopwatchRunning, timerRunning) {
+        var lastTick = System.currentTimeMillis()
+        while (stopwatchRunning || timerRunning) {
+            delay(30.milliseconds)
+            val now = System.currentTimeMillis()
+            val delta = now - lastTick
+            lastTick = now
+
+            if (stopwatchRunning) {
+                stopwatchElapsedMillis += delta
+            }
+            if (timerRunning) {
+                timerRemainingMillis = (timerRemainingMillis - delta).coerceAtLeast(0)
+                if (timerRemainingMillis == 0L) {
+                    timerRunning = false
+                    timerFinished = true
+                    playTimerAlert(context)
+                }
+            }
+        }
+    }
 
     ToolScaffold(
         title = "Timer / Stopwatch",
@@ -59,33 +108,58 @@ fun TimerStopwatchScreen(onNavigateBack: () -> Unit) {
 
         Spacer(Modifier.height(20.dp))
         when (selectedMode) {
-            ClockMode.STOPWATCH -> StopwatchSection()
-            ClockMode.TIMER -> TimerSection()
+            ClockMode.STOPWATCH -> StopwatchSection(
+                elapsedMillis = stopwatchElapsedMillis,
+                isRunning = stopwatchRunning,
+                laps = laps,
+                onToggleRunning = { stopwatchRunning = !stopwatchRunning },
+                onLap = { laps = laps + stopwatchElapsedMillis },
+                onReset = {
+                    stopwatchRunning = false
+                    stopwatchElapsedMillis = 0L
+                    laps = emptyList()
+                },
+            )
+            ClockMode.TIMER -> TimerSection(
+                remainingMillis = timerRemainingMillis,
+                isRunning = timerRunning,
+                finished = timerFinished,
+                minutesInput = minutesInput,
+                secondsInput = secondsInput,
+                onMinutesChange = { minutesInput = it },
+                onSecondsChange = { secondsInput = it },
+                onStartPause = {
+                    if (timerRunning) {
+                        timerRunning = false
+                    } else {
+                        if (timerRemainingMillis == 0L) {
+                            val minutes = minutesInput.trim().toLongOrNull()?.coerceIn(0, 999) ?: 0
+                            val seconds = secondsInput.trim().toLongOrNull()?.coerceIn(0, 59) ?: 0
+                            timerRemainingMillis = (minutes * 60 + seconds) * 1000
+                            timerFinished = false
+                        }
+                        if (timerRemainingMillis > 0) timerRunning = true
+                    }
+                },
+                onReset = {
+                    timerRunning = false
+                    timerRemainingMillis = 0L
+                    timerFinished = false
+                },
+            )
         }
     }
 }
 
-private val lapsSaver: Saver<MutableState<List<Long>>, LongArray> = Saver(
-    save = { it.value.toLongArray() },
-    restore = { mutableStateOf(it.toList()) },
-)
-
 @Composable
-private fun StopwatchSection() {
-    var elapsedMillis by rememberSaveable { mutableLongStateOf(0L) }
-    var isRunning by rememberSaveable { mutableStateOf(false) }
-    var laps by rememberSaveable(saver = lapsSaver) { mutableStateOf(emptyList()) }
-
-    LaunchedEffect(isRunning) {
-        var lastTick = System.currentTimeMillis()
-        while (isRunning) {
-            delay(30.milliseconds)
-            val now = System.currentTimeMillis()
-            elapsedMillis += now - lastTick
-            lastTick = now
-        }
-    }
-
+private fun StopwatchSection(
+    elapsedMillis: Long,
+    isRunning: Boolean,
+    laps: List<Long>,
+    onToggleRunning: () -> Unit,
+    onLap: () -> Unit,
+    onReset: () -> Unit,
+) {
     Text(
         text = formatDuration(elapsedMillis),
         style = MaterialTheme.typography.displayMedium,
@@ -98,23 +172,15 @@ private fun StopwatchSection() {
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        Button(
-            onClick = { isRunning = !isRunning },
-            modifier = Modifier.weight(1f),
-        ) { Text(if (isRunning) "Pause" else "Start") }
-        OutlinedButton(
-            onClick = { if (isRunning) laps = laps + elapsedMillis },
-            enabled = isRunning,
-            modifier = Modifier.weight(1f),
-        ) { Text("Lap") }
-        OutlinedButton(
-            onClick = {
-                isRunning = false
-                elapsedMillis = 0L
-                laps = emptyList()
-            },
-            modifier = Modifier.weight(1f),
-        ) { Text("Reset") }
+        Button(onClick = onToggleRunning, modifier = Modifier.weight(1f)) {
+            Text(if (isRunning) "Pause" else "Start")
+        }
+        OutlinedButton(onClick = onLap, enabled = isRunning, modifier = Modifier.weight(1f)) {
+            Text("Lap")
+        }
+        OutlinedButton(onClick = onReset, modifier = Modifier.weight(1f)) {
+            Text("Reset")
+        }
     }
 
     if (laps.isNotEmpty()) {
@@ -129,28 +195,17 @@ private fun StopwatchSection() {
 }
 
 @Composable
-private fun TimerSection() {
-    var minutesInput by rememberSaveable { mutableStateOf("5") }
-    var secondsInput by rememberSaveable { mutableStateOf("0") }
-    var remainingMillis by rememberSaveable { mutableLongStateOf(0L) }
-    var isRunning by rememberSaveable { mutableStateOf(false) }
-    var finished by rememberSaveable { mutableStateOf(false) }
-
-    LaunchedEffect(isRunning) {
-        var lastTick = System.currentTimeMillis()
-        while (isRunning) {
-            delay(30.milliseconds)
-            val now = System.currentTimeMillis()
-            val delta = now - lastTick
-            lastTick = now
-            remainingMillis = (remainingMillis - delta).coerceAtLeast(0)
-            if (remainingMillis == 0L) {
-                isRunning = false
-                finished = true
-            }
-        }
-    }
-
+private fun TimerSection(
+    remainingMillis: Long,
+    isRunning: Boolean,
+    finished: Boolean,
+    minutesInput: String,
+    secondsInput: String,
+    onMinutesChange: (String) -> Unit,
+    onSecondsChange: (String) -> Unit,
+    onStartPause: () -> Unit,
+    onReset: () -> Unit,
+) {
     val isEditable = !isRunning && remainingMillis == 0L
     if (isEditable) {
         Row(
@@ -159,14 +214,14 @@ private fun TimerSection() {
         ) {
             OutlinedTextField(
                 value = minutesInput,
-                onValueChange = { minutesInput = it },
+                onValueChange = onMinutesChange,
                 label = { Text("Minutes") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 modifier = Modifier.weight(1f),
             )
             OutlinedTextField(
                 value = secondsInput,
-                onValueChange = { secondsInput = it },
+                onValueChange = onSecondsChange,
                 label = { Text("Seconds") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 modifier = Modifier.weight(1f),
@@ -198,31 +253,32 @@ private fun TimerSection() {
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        Button(
-            onClick = {
-                if (isRunning) {
-                    isRunning = false
-                } else {
-                    if (remainingMillis == 0L) {
-                        val minutes = minutesInput.trim().toLongOrNull()?.coerceIn(0, 999) ?: 0
-                        val seconds = secondsInput.trim().toLongOrNull()?.coerceIn(0, 59) ?: 0
-                        remainingMillis = (minutes * 60 + seconds) * 1000
-                        finished = false
-                    }
-                    if (remainingMillis > 0) isRunning = true
-                }
-            },
-            modifier = Modifier.weight(1f),
-        ) { Text(if (isRunning) "Pause" else "Start") }
-        OutlinedButton(
-            onClick = {
-                isRunning = false
-                remainingMillis = 0L
-                finished = false
-            },
-            modifier = Modifier.weight(1f),
-        ) { Text("Reset") }
+        Button(onClick = onStartPause, modifier = Modifier.weight(1f)) {
+            Text(if (isRunning) "Pause" else "Start")
+        }
+        OutlinedButton(onClick = onReset, modifier = Modifier.weight(1f)) {
+            Text("Reset")
+        }
     }
+}
+
+/** Best-effort alert sound + vibration when a timer finishes; a silent failure isn't fatal. */
+private fun playTimerAlert(context: Context) {
+    try {
+        val uri = RingtoneManager.getActualDefaultRingtoneUri(context, RingtoneManager.TYPE_ALARM)
+            ?: RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+        RingtoneManager.getRingtone(context, uri)?.play()
+    } catch (e: Exception) {
+        // Some devices/emulators have no ringtone configured, or a flaky audio service.
+    }
+
+    val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        (context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as? VibratorManager)?.defaultVibrator
+    } else {
+        @Suppress("DEPRECATION")
+        context.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
+    }
+    vibrator?.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE))
 }
 
 private fun formatDuration(millis: Long): String {
@@ -232,8 +288,8 @@ private fun formatDuration(millis: Long): String {
     val seconds = totalSeconds % 60
     val centis = (millis % 1000) / 10
     return if (hours > 0) {
-        String.format(Locale.getDefault(), "%d:%02d:%02d", hours, minutes, seconds)
+        String.format(Locale.US, "%d:%02d:%02d", hours, minutes, seconds)
     } else {
-        String.format(Locale.getDefault(), "%02d:%02d.%02d", minutes, seconds, centis)
+        String.format(Locale.US, "%02d:%02d.%02d", minutes, seconds, centis)
     }
 }

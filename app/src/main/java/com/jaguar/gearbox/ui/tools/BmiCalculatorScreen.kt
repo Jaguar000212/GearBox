@@ -92,6 +92,6 @@ private fun computeBmi(heightCm: Double, weightKg: Double): Pair<String, String>
         bmi < 30.0 -> "Overweight"
         else -> "Obese"
     }
-    val formatted = String.format(Locale.getDefault(), "%.1f", bmi)
+    val formatted = String.format(Locale.US, "%.1f", bmi)
     return formatted to category
 }

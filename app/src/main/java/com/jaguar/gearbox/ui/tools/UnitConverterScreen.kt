@@ -167,7 +167,7 @@ fun UnitConverterScreen(onNavigateBack: () -> Unit) {
             Card(modifier = Modifier.fillMaxWidth()) {
                 Text(
                     text = String.format(
-                        Locale.getDefault(),
+                        Locale.US,
                         "%s %s = %s %s",
                         trimNumber(value),
                         fromUnit,
@@ -227,6 +227,6 @@ private fun UnitDropdown(
 }
 
 private fun trimNumber(value: Double): String {
-    val rounded = String.format(Locale.getDefault(), "%.6f", value).trimEnd('0').trimEnd('.')
+    val rounded = String.format(Locale.US, "%.6f", value).trimEnd('0').trimEnd('.')
     return rounded.ifEmpty { "0" }
 }

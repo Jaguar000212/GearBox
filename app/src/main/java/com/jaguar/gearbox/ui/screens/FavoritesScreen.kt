@@ -18,6 +18,6 @@ fun FavoritesScreen(
         favorites = favorites,
         onOpenTool = onOpenTool,
         onShowDescription = onShowDescription,
-        emptyMessage = "No favourites yet.\nLong-press the star on a tool to add it here.",
+        emptyMessage = "No favourites yet.\nTap the star on a tool to add it here.",
     )
 }

@@ -123,7 +123,7 @@ private fun computeAverageResult(input: String): String {
     val smallest = numbers.min()
 
     return String.format(
-        Locale.getDefault(),
+        Locale.US,
         "Result: %f\n\nGeometric Mean: %f\nHarmonic Mean: %f\n\nSum: %f\nCount: %d\nLargest: %f\nSmallest: %f",
         average, geometricMean, harmonicMean, sum, numbers.size, largest, smallest,
     )

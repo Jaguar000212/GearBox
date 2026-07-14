@@ -35,8 +35,11 @@ fun FlipCoinScreen(onNavigateBack: () -> Unit) {
     var result by rememberSaveable { mutableStateOf<Boolean?>(null) }
     var flipCount by rememberSaveable { mutableIntStateOf(0) }
 
+    // A full 360° turn per flip (not 180°) so the coin always settles back at a multiple of 360 —
+    // resting at 180 would draw the "H"/"T" text mirrored, since graphicsLayer rotationY flips the
+    // whole layer including its content, not just a swappable coin face.
     val rotation by animateFloatAsState(
-        targetValue = flipCount * 180f,
+        targetValue = flipCount * 360f,
         animationSpec = tween(durationMillis = 500),
         label = "coinFlip",
     )

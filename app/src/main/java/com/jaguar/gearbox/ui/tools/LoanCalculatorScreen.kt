@@ -136,7 +136,7 @@ fun LoanCalculatorScreen(onNavigateBack: () -> Unit) {
 private fun shareBody(principal: String, rate: String, time: String, result: String): String =
     "Principal Amount: $principal\n" +
             "Rate of Interest: $rate%\n" +
-            "Loan Term: ${time}Years\n" +
+            "Loan Term: $time Years\n" +
             result
 
 /** Replicates the EMI/interest math from the Java `LoanCalculator`. */
@@ -148,18 +148,29 @@ private fun computeLoanResult(principalText: String, rateText: String, timeText:
         val loanAmount = principalText.toDouble()
         val interestRate = rateText.toDouble()
         val loanTerm = timeText.toDouble()
+        if (!loanAmount.isFinite() || !interestRate.isFinite() || !loanTerm.isFinite() ||
+            loanAmount <= 0 || interestRate < 0 || loanTerm <= 0
+        ) {
+            return "Enter a positive principal and term, and a non-negative rate."
+        }
 
         val monthlyInterestRate = interestRate / 100 / 12
         val tenure = loanTerm * 12
-        val emi = loanAmount * monthlyInterestRate * (1 + monthlyInterestRate).pow(tenure) /
-                ((1 + monthlyInterestRate).pow(tenure) - 1)
+        // At 0% interest, the standard EMI formula divides by (1+r)^n - 1 = 0, producing NaN.
+        // A zero-interest loan is just the principal split evenly across the term.
+        val emi = if (monthlyInterestRate == 0.0) {
+            loanAmount / tenure
+        } else {
+            loanAmount * monthlyInterestRate * (1 + monthlyInterestRate).pow(tenure) /
+                    ((1 + monthlyInterestRate).pow(tenure) - 1)
+        }
 
         val totalAmount = emi * loanTerm * 12
         val totalInterest = totalAmount - loanAmount
-        val interestPercentage = totalInterest / totalAmount * 100
+        val interestPercentage = if (totalAmount == 0.0) 0.0 else totalInterest / totalAmount * 100
 
         String.format(
-            Locale.getDefault(),
+            Locale.US,
             "Monthly Installment: %.2f\nTotal Amount Repayable: %.2f\nTotal Interest Repayable: %.2f\nInterest Percentage: %.2f%%",
             emi, totalAmount, totalInterest, interestPercentage,
         )

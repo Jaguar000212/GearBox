@@ -19,6 +19,8 @@ data class Tool(
     val route: String,
     val category: ToolCategory,
     val content: @Composable (onNavigateBack: () -> Unit) -> Unit,
+    /** Extra search aliases for when the common term a user types isn't in [name] or [description]. */
+    val keywords: List<String> = emptyList(),
 )
 
 /** Groups tools shown on the home screen so similar tools appear together. */

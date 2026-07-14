@@ -111,6 +111,7 @@ object Tools {
             route = ROUTE_LOAN,
             category = ToolCategory.CALCULATORS,
             content = { onNavigateBack -> LoanCalculatorScreen(onNavigateBack) },
+            keywords = listOf("loan", "emi", "installment"),
         ),
         Tool(
             name = "Age Calculator",
@@ -151,6 +152,7 @@ object Tools {
             route = ROUTE_BMI,
             category = ToolCategory.CALCULATORS,
             content = { onNavigateBack -> BmiCalculatorScreen(onNavigateBack) },
+            keywords = listOf("weight", "obesity", "body fat"),
         ),
         Tool(
             name = "Tip Calculator",
@@ -159,6 +161,7 @@ object Tools {
             route = ROUTE_TIP,
             category = ToolCategory.CALCULATORS,
             content = { onNavigateBack -> TipCalculatorScreen(onNavigateBack) },
+            keywords = listOf("gratuity", "bill split"),
         ),
         Tool(
             name = "Date Calculator",
@@ -175,6 +178,7 @@ object Tools {
             route = ROUTE_BASE_CONVERTER,
             category = ToolCategory.CONVERTERS,
             content = { onNavigateBack -> BaseConverterScreen(onNavigateBack) },
+            keywords = listOf("binary", "hex", "octal"),
         ),
         Tool(
             name = "Unit Converters",
@@ -183,6 +187,7 @@ object Tools {
             route = ROUTE_UNIT_CONVERTER,
             category = ToolCategory.CONVERTERS,
             content = { onNavigateBack -> UnitConverterScreen(onNavigateBack) },
+            keywords = listOf("temperature", "celsius", "fahrenheit"),
         ),
         Tool(
             name = "Number to Words",
@@ -223,6 +228,7 @@ object Tools {
             route = ROUTE_TAMBOLA,
             category = ToolCategory.GAMES_AND_RANDOM,
             content = { onNavigateBack -> TambolaScreen(onNavigateBack) },
+            keywords = listOf("housie", "bingo"),
         ),
         Tool(
             name = "Flip Coin",
@@ -319,6 +325,7 @@ object Tools {
             route = ROUTE_PASSWORD_GENERATOR,
             category = ToolCategory.UTILITIES,
             content = { onNavigateBack -> PasswordGeneratorScreen(onNavigateBack) },
+            keywords = listOf("pin", "passcode", "security"),
         ),
     )
 

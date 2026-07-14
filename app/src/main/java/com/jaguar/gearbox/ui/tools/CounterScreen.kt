@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import com.jaguar.gearbox.data.SimplePrefsStore
 import com.jaguar.gearbox.data.Tools
 import com.jaguar.gearbox.ui.components.ToolScaffold
+import com.jaguar.gearbox.ui.theme.LocalHapticsEnabled
 
 private const val KEY_COUNT = "counter.count"
 private val STEP_OPTIONS = listOf(1, 5, 10)
@@ -40,12 +41,13 @@ private val STEP_OPTIONS = listOf(1, 5, 10)
 fun CounterScreen(onNavigateBack: () -> Unit) {
     val context = LocalContext.current
     val haptic = LocalHapticFeedback.current
+    val hapticsEnabled = LocalHapticsEnabled.current
     val store = remember { SimplePrefsStore(context) }
     var count by rememberSaveable { mutableIntStateOf(store.getInt(KEY_COUNT, 0)) }
     var step by rememberSaveable { mutableIntStateOf(1) }
 
     fun update(newCount: Int) {
-        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+        if (hapticsEnabled) haptic.performHapticFeedback(HapticFeedbackType.LongPress)
         count = newCount
         store.putInt(KEY_COUNT, newCount)
     }

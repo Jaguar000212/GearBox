@@ -31,6 +31,7 @@ class SimplePrefsStore(context: Context) {
         getString(key, "").split(",").mapNotNull { it.toLongOrNull() }
 
     fun putInt(key: String, value: Int) = prefs.edit { putInt(key, value) }
+    fun putBoolean(key: String, value: Boolean) = prefs.edit { putBoolean(key, value) }
     fun putString(key: String, value: String) = prefs.edit { putString(key, value) }
 
     /** Batches several writes into a single commit; prefer this over multiple single-key puts. */

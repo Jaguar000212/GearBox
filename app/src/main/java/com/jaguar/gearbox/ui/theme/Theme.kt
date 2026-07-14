@@ -9,8 +9,26 @@ import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+
+/** User-selectable theme override; [SYSTEM] follows the device's day/night setting. */
+enum class ThemeMode(val label: String) {
+    SYSTEM("System default"),
+    LIGHT("Light"),
+    DARK("Dark"),
+}
+
+@Composable
+fun ThemeMode.resolveDarkTheme(): Boolean = when (this) {
+    ThemeMode.SYSTEM -> isSystemInDarkTheme()
+    ThemeMode.LIGHT -> false
+    ThemeMode.DARK -> true
+}
+
+/** Whether haptic feedback is enabled, per the user's Settings toggle. Defaults to on. */
+val LocalHapticsEnabled = compositionLocalOf { true }
 
 private val lightScheme = lightColorScheme(
     primary = primaryLight,

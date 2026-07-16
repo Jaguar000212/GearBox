@@ -28,6 +28,7 @@ import androidx.compose.material.icons.filled.Payments
 import androidx.compose.material.icons.filled.Percent
 import androidx.compose.material.icons.filled.PieChart
 import androidx.compose.material.icons.filled.PlusOne
+import androidx.compose.material.icons.filled.QrCode
 import androidx.compose.material.icons.filled.Receipt
 import androidx.compose.material.icons.filled.Scoreboard
 import androidx.compose.material.icons.filled.Shuffle
@@ -37,7 +38,6 @@ import androidx.compose.material.icons.filled.Tag
 import androidx.compose.material.icons.filled.TextFields
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material.icons.filled.Translate
-import com.jaguar.gearbox.data.Tools.all
 import com.jaguar.gearbox.ui.tools.AgeCalculatorScreen
 import com.jaguar.gearbox.ui.tools.AverageCalculatorScreen
 import com.jaguar.gearbox.ui.tools.BaseConverterScreen
@@ -62,6 +62,7 @@ import com.jaguar.gearbox.ui.tools.NumberToWordsScreen
 import com.jaguar.gearbox.ui.tools.OneOfTwoScreen
 import com.jaguar.gearbox.ui.tools.PasswordGeneratorScreen
 import com.jaguar.gearbox.ui.tools.PercentageCalculatorScreen
+import com.jaguar.gearbox.ui.tools.QrGeneratorScreen
 import com.jaguar.gearbox.ui.tools.RandomNumberScreen
 import com.jaguar.gearbox.ui.tools.RatiosScreen
 import com.jaguar.gearbox.ui.tools.RockPaperScissorsScreen
@@ -119,6 +120,7 @@ object Tools {
     const val ROUTE_MORSE_BINARY = "tool/morse_binary"
     const val ROUTE_HASH_GENERATOR = "tool/hash_generator"
     const val ROUTE_TIC_TAC_TOE = "tool/tic_tac_toe"
+    const val ROUTE_QR_GENERATOR = "tool/qr_generator"
 
     val all: List<Tool> = listOf(
         Tool(
@@ -423,6 +425,15 @@ object Tools {
             category = ToolCategory.UTILITIES,
             content = { onNavigateBack -> HashGeneratorScreen(onNavigateBack) },
             keywords = listOf("md5", "sha", "checksum", "digest"),
+        ),
+        Tool(
+            name = "QR Code Generator",
+            description = "Turn text or a URL into a scannable QR code.",
+            icon = Icons.Filled.QrCode,
+            route = ROUTE_QR_GENERATOR,
+            category = ToolCategory.UTILITIES,
+            content = { onNavigateBack -> QrGeneratorScreen(onNavigateBack) },
+            keywords = listOf("barcode", "scan"),
         ),
     )
 

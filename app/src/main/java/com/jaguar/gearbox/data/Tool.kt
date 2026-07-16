@@ -29,4 +29,5 @@ enum class ToolCategory(val label: String) {
     CONVERTERS("Converters"),
     GAMES_AND_RANDOM("Games & Randomizers"),
     UTILITIES("Utilities"),
+    DEVICE("Device"),
 }

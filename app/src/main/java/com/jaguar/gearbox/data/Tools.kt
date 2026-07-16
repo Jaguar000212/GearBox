@@ -4,6 +4,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Article
 import androidx.compose.material.icons.automirrored.filled.CallSplit
 import androidx.compose.material.icons.automirrored.filled.RotateRight
+import androidx.compose.material.icons.filled.Adjust
 import androidx.compose.material.icons.filled.Balance
 import androidx.compose.material.icons.filled.Cake
 import androidx.compose.material.icons.filled.Calculate
@@ -12,7 +13,9 @@ import androidx.compose.material.icons.filled.Colorize
 import androidx.compose.material.icons.filled.EditCalendar
 import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.Event
+import androidx.compose.material.icons.filled.Explore
 import androidx.compose.material.icons.filled.Fingerprint
+import androidx.compose.material.icons.filled.FlashlightOn
 import androidx.compose.material.icons.filled.FrontHand
 import androidx.compose.material.icons.filled.Functions
 import androidx.compose.material.icons.filled.Grid3x3
@@ -32,6 +35,7 @@ import androidx.compose.material.icons.filled.QrCode
 import androidx.compose.material.icons.filled.Receipt
 import androidx.compose.material.icons.filled.Scoreboard
 import androidx.compose.material.icons.filled.Shuffle
+import androidx.compose.material.icons.filled.SquareFoot
 import androidx.compose.material.icons.filled.Straighten
 import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.material.icons.filled.Tag
@@ -42,14 +46,17 @@ import com.jaguar.gearbox.ui.tools.AgeCalculatorScreen
 import com.jaguar.gearbox.ui.tools.AverageCalculatorScreen
 import com.jaguar.gearbox.ui.tools.BaseConverterScreen
 import com.jaguar.gearbox.ui.tools.BmiCalculatorScreen
+import com.jaguar.gearbox.ui.tools.BubbleLevelScreen
 import com.jaguar.gearbox.ui.tools.ChessScoreboardScreen
 import com.jaguar.gearbox.ui.tools.ColorPickerScreen
+import com.jaguar.gearbox.ui.tools.CompassScreen
 import com.jaguar.gearbox.ui.tools.CounterScreen
 import com.jaguar.gearbox.ui.tools.DateCalculatorScreen
 import com.jaguar.gearbox.ui.tools.DaysUntilScreen
 import com.jaguar.gearbox.ui.tools.DecimalToFractionScreen
 import com.jaguar.gearbox.ui.tools.DiceRollScreen
 import com.jaguar.gearbox.ui.tools.DiscountCalculatorScreen
+import com.jaguar.gearbox.ui.tools.FlashlightScreen
 import com.jaguar.gearbox.ui.tools.FlipCoinScreen
 import com.jaguar.gearbox.ui.tools.FuelCostScreen
 import com.jaguar.gearbox.ui.tools.GeometryCalculatorScreen
@@ -67,6 +74,7 @@ import com.jaguar.gearbox.ui.tools.RandomNumberScreen
 import com.jaguar.gearbox.ui.tools.RatiosScreen
 import com.jaguar.gearbox.ui.tools.RockPaperScissorsScreen
 import com.jaguar.gearbox.ui.tools.ScoreboardScreen
+import com.jaguar.gearbox.ui.tools.ScreenRulerScreen
 import com.jaguar.gearbox.ui.tools.SpinBottleScreen
 import com.jaguar.gearbox.ui.tools.TambolaScreen
 import com.jaguar.gearbox.ui.tools.TeamPickerScreen
@@ -121,6 +129,10 @@ object Tools {
     const val ROUTE_HASH_GENERATOR = "tool/hash_generator"
     const val ROUTE_TIC_TAC_TOE = "tool/tic_tac_toe"
     const val ROUTE_QR_GENERATOR = "tool/qr_generator"
+    const val ROUTE_BUBBLE_LEVEL = "tool/bubble_level"
+    const val ROUTE_COMPASS = "tool/compass"
+    const val ROUTE_FLASHLIGHT = "tool/flashlight"
+    const val ROUTE_SCREEN_RULER = "tool/screen_ruler"
 
     val all: List<Tool> = listOf(
         Tool(
@@ -434,6 +446,42 @@ object Tools {
             category = ToolCategory.UTILITIES,
             content = { onNavigateBack -> QrGeneratorScreen(onNavigateBack) },
             keywords = listOf("barcode", "scan"),
+        ),
+        Tool(
+            name = "Bubble Level",
+            description = "Use the device's sensors as a spirit level.",
+            icon = Icons.Filled.Adjust,
+            route = ROUTE_BUBBLE_LEVEL,
+            category = ToolCategory.DEVICE,
+            content = { onNavigateBack -> BubbleLevelScreen(onNavigateBack) },
+            keywords = listOf("spirit level", "tilt"),
+        ),
+        Tool(
+            name = "Compass",
+            description = "Find magnetic north using the device's sensors.",
+            icon = Icons.Filled.Explore,
+            route = ROUTE_COMPASS,
+            category = ToolCategory.DEVICE,
+            content = { onNavigateBack -> CompassScreen(onNavigateBack) },
+            keywords = listOf("heading", "direction", "north"),
+        ),
+        Tool(
+            name = "Flashlight",
+            description = "Toggle the device's camera flash as a torch.",
+            icon = Icons.Filled.FlashlightOn,
+            route = ROUTE_FLASHLIGHT,
+            category = ToolCategory.DEVICE,
+            content = { onNavigateBack -> FlashlightScreen(onNavigateBack) },
+            keywords = listOf("torch", "light"),
+        ),
+        Tool(
+            name = "Screen Ruler",
+            description = "Measure small objects against the screen in cm or inches.",
+            icon = Icons.Filled.SquareFoot,
+            route = ROUTE_SCREEN_RULER,
+            category = ToolCategory.DEVICE,
+            content = { onNavigateBack -> ScreenRulerScreen(onNavigateBack) },
+            keywords = listOf("measure", "length"),
         ),
     )
 

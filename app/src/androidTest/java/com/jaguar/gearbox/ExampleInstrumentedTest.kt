@@ -17,6 +17,7 @@ class ExampleInstrumentedTest {
     fun useAppContext() {
         // Context of the app under test.
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        assertEquals("com.jaguar.gearbox", appContext.packageName)
+        // Instrumentation targets the debug variant, which installs beside production.
+        assertEquals("com.jaguar.gearbox.beta", appContext.packageName)
     }
 }

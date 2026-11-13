@@ -21,8 +21,7 @@ fun resolveVersionName(): String {
             .redirectErrorStream(true)
             .start()
         val output = process.inputStream.bufferedReader().readText().trim()
-        process.waitFor()
-        output
+        if (process.waitFor() == 0) output else null
     }.getOrNull()?.takeIf { it.isNotBlank() }
     return tag?.removePrefix("v") ?: "1.0"
 }
@@ -98,6 +97,7 @@ dependencies {
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.ui)

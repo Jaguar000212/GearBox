@@ -3,7 +3,7 @@
 ## Supported tags and publication
 
 The release workflow accepts `vMAJOR.MINOR.PATCH` and `vMAJOR.MINOR.PATCH-beta`.
-The currently requested prerelease tag is **`v2.30.0-beta`**. Tags containing `-beta`
+The currently requested prerelease tag is **`v2.41.0-beta`**. Tags containing `-beta`
 create a prerelease; stable tags do not. Both create **drafts only**, for owner
 review. The workflow never marks a release as latest. No Play Store upload or
 AAB is configured or required.
@@ -65,14 +65,38 @@ access rules; these artifacts are not a secrets vault.
 6. Confirm the draft prerelease flag for beta, attach screenshots/known limitations
    as appropriate, then publish manually only when satisfied.
 
-## Versioning limitation retained intentionally
+## Versioning and upgrade ordering
 
-The current code is `major * 10000 + minor * 100 + patch`, so `v2.30.0-beta`
-and `v2.30.0` both yield **23000**. This phase does not silently change that
-policy. Minor and patch components above 99 are rejected to avoid code
-collisions; tags must yield an Android-supported positive versionCode. Before
-shipping another build with the same numeric version, explicitly decide the
-upgrade/versioning policy. Do not infer monotonic upgrades from a changed suffix.
+Version names retain the tag without its leading `v`. The owner-approved code is:
+
+`(major * 10000 + minor * 100 + patch) * 10 + channel`
+
+`channel` is 0 for beta and 1 for stable. Therefore:
+
+| Tag | versionName | versionCode |
+| --- | --- | --- |
+| `v2.41.0-beta` | `2.41.0-beta` | 241000 |
+| `v2.41.0` | `2.41.0` | 241001 |
+| `v2.41.1-beta` | `2.41.1-beta` | 241010 |
+
+Both 2.41.0 variants exceed the old distributed v2.29.0 code of 22900.
+An unchanged application ID and signing certificate are also required for an
+in-place upgrade; version ordering does not prove signing compatibility.
+
+Major must be 0..20999 and minor/patch 0..99. Version 0.0.0 is rejected.
+These bounds prevent component collisions and keep both beta and stable within
+Android's maximum 2100000000, including promotion at the upper supported version.
+The maximum supported stable code is 2099999991. Leading zeroes, extra suffixes,
+numbered betas and malformed tags fail rather than being guessed or truncated.
+No numbered/repeated-beta strategy is introduced. Do not overwrite distributed
+APKs or reuse a published tag for a different build.
+
+Gradle's production parser lives in `buildSrc` and is covered by JVM tests.
+The packaging validator enforces the same scheme. CI and the release workflow
+run both test suites. `RELEASE_VERSION_TAG` supports a manually selected candidate
+version without creating a tag; otherwise a GitHub tag ref or latest local tag
+is used. A checkout without tags falls back to `v1.0.0`. A GitHub branch whose
+name happens to start with `v` is not treated as a release tag.
 
 ## Validation boundaries
 

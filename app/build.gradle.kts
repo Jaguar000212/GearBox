@@ -1,3 +1,5 @@
+import com.jaguar.versioning.ReleaseVersion
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -10,34 +12,26 @@ plugins {
 // a keystore.
 val releaseKeystorePath: String? = System.getenv("KEYSTORE_PATH")
 
-// versionName tracks the pushed git tag (e.g. v1.2.0 -> "1.2.0") so the release workflow never
-// needs a manual bump here before tagging, and the in-app "About" version row stays truthful.
-// GITHUB_REF_NAME is set by the tag-triggered release workflow; `git describe` covers local
-// builds. Falls back to "1.0" if neither is available (e.g. a shallow clone with no tags yet).
-fun resolveVersionName(): String {
-    val envTag = System.getenv("GITHUB_REF_NAME")?.takeIf { it.startsWith("v") }
-    val tag = envTag ?: runCatching {
+// Only tag refs determine CI release identity. A branch named v... is not a release.
+// Manual signed-candidate builds may supply an explicit validated release tag.
+fun resolveVersionTag(): String {
+    System.getenv("RELEASE_VERSION_TAG")?.let { return it }
+    val refName = System.getenv("GITHUB_REF_NAME")
+    if (System.getenv("GITHUB_REF_TYPE") == "tag" && refName != null) return refName
+    val localTag = runCatching {
         val process = ProcessBuilder("git", "describe", "--tags", "--abbrev=0")
             .redirectErrorStream(true)
             .start()
         val output = process.inputStream.bufferedReader().readText().trim()
         if (process.waitFor() == 0) output else null
     }.getOrNull()?.takeIf { it.isNotBlank() }
-    return tag?.removePrefix("v") ?: "1.0"
+    return localTag ?: "v1.0.0"
 }
 
-// Derived purely from the version name (major*10_000 + minor*100 + patch) so it doesn't depend
-// on git history depth (CI checkouts are often shallow) and only ever increases with real releases.
-fun versionCodeFromName(name: String): Int {
-    val parts = name.split(".", "-").mapNotNull { it.toIntOrNull() }
-    val major = parts.getOrElse(0) { 1 }
-    val minor = parts.getOrElse(1) { 0 }
-    val patch = parts.getOrElse(2) { 0 }
-    return major * 10_000 + minor * 100 + patch
-}
-
-val resolvedVersionName = resolveVersionName()
-val resolvedVersionCode = versionCodeFromName(resolvedVersionName)
+// Fail loudly for invalid tags instead of silently manufacturing a version code.
+val resolvedVersion = ReleaseVersion.fromTag(resolveVersionTag())
+val resolvedVersionName = resolvedVersion.name
+val resolvedVersionCode = resolvedVersion.code
 
 android {
     namespace = "com.jaguar.gearbox"

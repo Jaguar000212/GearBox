@@ -11,9 +11,10 @@ GearBox is the Kotlin + Jetpack Compose rewrite of the original Java
 
 ## Tools
 
-28 tools, grouped into four categories on the home screen.
+41 tools, grouped into five categories on the home screen. This inventory describes `main`;
+a published release may contain fewer tools.
 
-#### Calculators
+#### Calculators (13)
 
 | Tool | Description |
 | --- | --- |
@@ -26,8 +27,12 @@ GearBox is the Kotlin + Jetpack Compose rewrite of the original Java
 | BMI Calculator | Body mass index and weight category, in metric (cm/kg) or imperial (ft+in/lbs). |
 | Tip Calculator | Bill + tip % split across any number of people. |
 | Date Calculator | Add or subtract days/weeks/months/years from a date. |
+| Discount Calculator | Apply stacked percentage discounts to a price. |
+| GST / Tax Calculator | Add tax to an amount or extract included tax. |
+| Days Until | Count days until or since a selected date. |
+| Fuel Cost Calculator | Estimate fuel consumption and trip cost. |
 
-#### Converters
+#### Converters (6)
 
 | Tool | Description |
 | --- | --- |
@@ -36,8 +41,9 @@ GearBox is the Kotlin + Jetpack Compose rewrite of the original Java
 | Number to Words | Numeric value → English words, in International or Indian (Lakh/Crore) numbering. |
 | Number to Roman | Numeric value → Roman numerals (1–3999). |
 | Decimal to Fraction Converter | Decimal → simplified fraction, with a mixed-number form and repeating-decimal recognition. |
+| Morse / Binary Translator | Translate text to and from Morse code or binary. |
 
-#### Games & Randomizers
+#### Games & Randomizers (9)
 
 | Tool | Description |
 | --- | --- |
@@ -48,8 +54,10 @@ GearBox is the Kotlin + Jetpack Compose rewrite of the original Java
 | Rock Paper Scissors | Play against the app; win/loss/draw tally persists across restarts. |
 | Dice Roll | Roll 1–6 dice at once, with total. |
 | 1 of 2 | Randomly choose between two user-entered options. |
+| Team / Name Picker | Pick a name or split a list into teams. |
+| Tic-tac-toe | Play a local two-player game. |
 
-#### Utilities
+#### Utilities (9)
 
 | Tool | Description |
 | --- | --- |
@@ -58,8 +66,19 @@ GearBox is the Kotlin + Jetpack Compose rewrite of the original Java
 | Chess Scoreboard | Win/draw/loss tracking with standard chess scoring (1 / ½ / 0) and an undo for the last result; persisted across restarts. |
 | Color Picker | Pick a color via RGB sliders or a HEX input; view HEX, RGB and HSL; save recent colors (persisted across restarts). |
 | Text Tools | Word/character counts, case conversion (upper/lower/title/camel), and palindrome checking. |
-| Timer / Stopwatch | Stopwatch with laps, or a countdown timer with a sound + vibration alert on completion; keeps ticking (wall-clock correct) even across restarts. |
+| Timer / Stopwatch | Stopwatch with laps or a countdown timer. Persisted state catches up when reopened; background completion alerts are not guaranteed. |
 | Password Generator | Cryptographically random password (`SecureRandom`) guaranteeing at least one character from each enabled class, with a strength meter and a sensitive-marked clipboard copy. |
+| Hash Generator | Generate MD5, SHA-1, SHA-256 or SHA-512 hashes of text. |
+| QR Code Generator | Generate and share a QR image from text or a URL. |
+
+#### Device (4)
+
+| Tool | Description |
+| --- | --- |
+| Bubble Level | Use device sensors as a spirit level. |
+| Compass | Show magnetic heading using available sensors. |
+| Flashlight | Toggle the camera flash as a torch on supported devices. |
+| Screen Ruler | Measure against an on-screen cm/inch scale; accuracy depends on device calibration. |
 
 ## Features
 
@@ -69,10 +88,12 @@ GearBox is the Kotlin + Jetpack Compose rewrite of the original Java
   a `composable(...)` call per tool.
 - **Home screen**: tools grouped by category, with a search field and category filter chips;
   tap a tool to open it, long-press to see its description.
-- **Favourites** persisted with `SharedPreferences` — star a tool to pin it to the Favorites tab.
-- **State that survives more than rotation**: `rememberSaveable` alone only survives a
-  configuration change, not back-navigation or the process being killed. Tools where losing
-  progress would actually hurt (Tambola's called numbers, Counter, RPS's tally, the Timer/
+- **Favourites** persisted with `SharedPreferences`, with ordering and dynamic launcher shortcuts.
+- **Recent tools** provide quick access to the five most recently used tools.
+- **Home-screen widgets** for Counter and Timer / Stopwatch.
+- **Persistent tool state**: selected tools store state beyond the lifetime of their navigation
+  destination. `rememberSaveable` supports saved-state restoration, but it is not durable storage.
+  Tools where losing progress would actually hurt (Tambola's called numbers, Counter, RPS's tally, the Timer/
   Stopwatch, Color Picker's saved palette, both scoreboards) persist through a small generic
   `SimplePrefsStore` key-value layer backed by `SharedPreferences`.
 - **Consistent result UX**: every tool with a result offers Copy (and Share, where sending it
@@ -101,6 +122,17 @@ com.jaguar.gearbox
 
 ## Testing
 
+The [CI workflow](.github/workflows/ci.yml) runs for pull requests and pushes to `main`.
+It builds debug, debug-instrumentation and unsigned release APKs, runs JVM unit tests, and
+runs debug Android lint. Reports are uploaded even when a check fails. It does not run an
+emulator, sign a release, or publish an APK.
+
+Run the same checks locally:
+
+```bash
+bash ./gradlew --continue :app:assembleDebug :app:assembleDebugAndroidTest :app:assembleRelease :app:testDebugUnitTest :app:lintDebug
+```
+
 Pure logic (number-to-words, BMI, ratio simplification, decimal↔fraction, RGB↔HSL, random-range
 generation) lives in `logic/` and is covered by JVM unit tests under `app/src/test`:
 
@@ -108,7 +140,20 @@ generation) lives in `logic/` and is covered by JVM unit tests under `app/src/te
 ./gradlew testDebugUnitTest
 ```
 
+On a connected Android 11+ device or emulator, run instrumentation separately:
+
+```bash
+bash ./gradlew :app:connectedDebugAndroidTest
+```
+
+The current instrumentation test is a package-name smoke check, not comprehensive UI coverage.
+
 ## Build
+
+Prerequisites: JDK 17, Android SDK Platform 35 and Build Tools 35.0.0. Point Android Studio,
+`ANDROID_HOME`, or an untracked `local.properties` at your SDK. The checked-in wrapper uses
+Gradle 8.10.2; the first build needs network access to download Gradle and dependencies.
+The app supports Android 11 (API 30) and newer.
 
 Open in Android Studio and run the `app` configuration, or:
 
@@ -121,6 +166,9 @@ A release build is minified and resource-shrunk (`isMinifyEnabled` / `isShrinkRe
 ```bash
 ./gradlew assembleRelease
 ```
+
+Debug builds install as `com.jaguar.gearbox.beta` with a `-b` version suffix, alongside
+production `com.jaguar.gearbox`.
 
 Locally this produces an **unsigned** release APK. Signing only kicks in when `KEYSTORE_PATH`,
 `KEYSTORE_PASSWORD`, `KEY_ALIAS` and `KEY_PASSWORD` are set in the environment — see

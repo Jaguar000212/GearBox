@@ -2,21 +2,37 @@ name: Release
 
 on:
   push:
-    tags:
-      - "v*"
+    tags: ["v*"]
 
 permissions:
-  contents: write
+  contents: read
 
-env:
-  APP_ID: com.jaguar.gearbox
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
-  build-and-release:
+  build:
+    name: Validate and sign release APK
     runs-on: ubuntu-latest
+    timeout-minutes: 30
+    outputs:
+      prerelease: ${{ steps.version.outputs.prerelease }}
     steps:
-      - name: Checkout
+      - name: Check out tagged source
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Validate release tag and packaging tests
+        id: version
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          python3 -m unittest discover -s scripts/tests -v
+          python3 scripts/release_artifact.py "$RELEASE_TAG" > release-version.json
+          echo "prerelease=$(python3 -c 'import json; print(str(json.load(open("release-version.json"))["prerelease"]).lower())')" >> "$GITHUB_OUTPUT"
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -24,8 +40,40 @@ jobs:
           distribution: temurin
           java-version: "17"
 
-      - name: Decode keystore
-        run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > "${{ runner.temp }}/release.jks"
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
+
+      - name: Install build SDK
+        run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
+
+      - name: Run unsigned quality gates
+        run: >-
+          bash ./gradlew --no-daemon --stacktrace
+          :app:assembleDebug :app:assembleDebugAndroidTest
+          :app:testDebugUnitTest :app:lintDebug :app:lintRelease
+
+      - name: Decode signing key
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          for name in KEYSTORE_BASE64 KEYSTORE_PASSWORD KEY_ALIAS KEY_PASSWORD; do
+            if [[ -z "${!name}" ]]; then
+              echo "::error::Missing required signing secret: $name"
+              exit 1
+            fi
+          done
+          umask 077
+          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/release.jks"
+          test -s "$RUNNER_TEMP/release.jks"
 
       - name: Build signed release APK
         env:
@@ -33,26 +81,87 @@ jobs:
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-        run: |
-          chmod +x gradlew
-          ./gradlew assembleRelease --no-daemon
+        run: bash ./gradlew :app:assembleRelease --no-daemon --stacktrace
 
-      - name: Remove decoded keystore
+      - name: Remove decoded signing key
         if: always()
-        run: rm -f "${{ runner.temp }}/release.jks"
+        run: rm -f "$RUNNER_TEMP/release.jks"
 
-      - name: Rename APK to include tag
-        id: apk
+      - name: Verify signature, package and version; generate checksum
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: >-
+          python3 scripts/release_artifact.py "$RELEASE_TAG"
+          --apk-dir app/build/outputs/apk/release
+          --build-tools "$ANDROID_HOME/build-tools/35.0.0"
+
+      - name: Preserve verified distribution files
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-distribution
+          path: dist/
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Preserve obfuscation mapping
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-mapping
+          path: app/build/outputs/mapping/release/mapping.txt
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Upload diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-diagnostics
+          path: |
+            app/build/reports/
+            app/build/test-results/
+          if-no-files-found: warn
+          retention-days: 14
+
+  draft:
+    name: Create GitHub draft release for owner review
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - name: Download verified distribution files
+        uses: actions/download-artifact@v4
+        with:
+          name: release-distribution
+          path: dist
+
+      - name: Check distribution integrity
+        working-directory: dist
+        run: sha256sum --check SHA256SUMS
+
+      - name: Refuse to modify an already published release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}
+          REPOSITORY: ${{ github.repository }}
         run: |
-          src=$(find app/build/outputs/apk/release -name "*.apk" | head -n 1)
-          dest="${APP_ID}-${GITHUB_REF_NAME}.apk"
-          cp "$src" "$dest"
-          echo "path=$dest" >> "$GITHUB_OUTPUT"
+          set -euo pipefail
+          if gh api "repos/$REPOSITORY/releases/tags/$RELEASE_TAG" > existing-release.json 2> api-error.txt; then
+            python3 -c 'import json; r=json.load(open("existing-release.json")); assert r["draft"], "Refusing to modify an already published release"'
+          elif ! grep -q '(HTTP 404)' api-error.txt; then
+            cat api-error.txt >&2
+            exit 1
+          fi
 
-      - name: Create GitHub Release
+      - name: Create draft release
         uses: softprops/action-gh-release@v2
         with:
-          files: ${{ steps.apk.outputs.path }}
+          draft: true
+          prerelease: ${{ needs.build.outputs.prerelease == 'true' }}
+          make_latest: false
+          fail_on_unmatched_files: true
+          files: |
+            dist/*.apk
+            dist/SHA256SUMS
           generate_release_notes: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

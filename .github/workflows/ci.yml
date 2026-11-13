@@ -36,6 +36,9 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
 
+      - name: Test Android version build logic
+        run: bash ./gradlew -p buildSrc --no-daemon test
+
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
         with:
@@ -58,6 +61,8 @@ jobs:
         with:
           name: android-check-reports
           path: |
+            buildSrc/build/reports/
+            buildSrc/build/test-results/
             app/build/reports/
             app/build/test-results/
           if-no-files-found: warn

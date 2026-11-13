@@ -8,7 +8,7 @@ import subprocess
 from pathlib import Path
 
 APP_ID = "com.jaguar.gearbox"
-TAG_PATTERN = re.compile(r"v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(-beta)?")
+TAG_PATTERN = re.compile(r"v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-beta)?")
 
 
 def release_metadata(tag):
@@ -16,9 +16,10 @@ def release_metadata(tag):
     if not match:
         raise ValueError("Expected vMAJOR.MINOR.PATCH or vMAJOR.MINOR.PATCH-beta")
     major, minor, patch = map(int, match.group(1, 2, 3))
-    code = major * 10000 + minor * 100 + patch
-    if minor > 99 or patch > 99 or not 0 < code <= 2100000000:
-        raise ValueError("Tag is outside the existing Android versionCode scheme")
+    base = major * 10000 + minor * 100 + patch
+    if major > 20999 or minor > 99 or patch > 99 or base == 0:
+        raise ValueError("Tag requires major 0..20999, minor/patch 0..99 and a nonzero version")
+    code = base * 10 + (0 if match.group(4) else 1)
     return {"version_name": tag[1:], "version_code": code,
             "prerelease": bool(match.group(4))}
 

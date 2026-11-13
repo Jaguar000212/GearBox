@@ -17,35 +17,37 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.jaguar.gearbox.data.Tools
 import com.jaguar.gearbox.ui.components.ToolScaffold
-import com.jaguar.gearbox.ui.components.rememberOrientationSnapshot
+import com.jaguar.gearbox.ui.components.rememberOrientationState
+import com.jaguar.gearbox.ui.components.OrientationState
+import com.jaguar.gearbox.ui.components.OrientationStatusMessage
+import androidx.compose.ui.res.stringResource
+import com.jaguar.gearbox.R
 import kotlin.math.abs
 
 private const val LEVEL_TOLERANCE_DEGREES = 1.0
 private const val BUBBLE_SENSITIVITY = 2.5f
 
 @Composable
-fun BubbleLevelScreen(onNavigateBack: () -> Unit) {
-    val snapshot = rememberOrientationSnapshot()
+fun BubbleLevelScreen(
+    onNavigateBack: () -> Unit,
+    sensorState: OrientationState = rememberOrientationState(),
+) {
+    val snapshot = sensorState.snapshot
 
     ToolScaffold(
-        title = "Bubble Level",
+        title = stringResource(R.string.bubble_level_title),
         icon = Tools.byRoute(Tools.ROUTE_BUBBLE_LEVEL)!!.icon,
         onNavigateBack = onNavigateBack,
     ) {
-        if (snapshot == null) {
-            Text(
-                "Waiting for the orientation sensor... if this doesn't change, your device may not support it.",
-                style = MaterialTheme.typography.bodyMedium,
-            )
-            return@ToolScaffold
-        }
+        OrientationStatusMessage(sensorState.status)
+        if (snapshot == null) return@ToolScaffold
 
         val pitchDeg = Math.toDegrees(snapshot.pitchRad.toDouble())
         val rollDeg = Math.toDegrees(snapshot.rollRad.toDouble())
         val isLevel = abs(pitchDeg) < LEVEL_TOLERANCE_DEGREES && abs(rollDeg) < LEVEL_TOLERANCE_DEGREES
 
         Text(
-            text = if (isLevel) "Level!" else "Tilt the device to level it",
+            text = stringResource(if (isLevel) R.string.bubble_level_ready else R.string.bubble_level_tilt),
             style = MaterialTheme.typography.titleLarge,
             textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth(),
@@ -92,7 +94,7 @@ fun BubbleLevelScreen(onNavigateBack: () -> Unit) {
 
         Spacer(Modifier.height(24.dp))
         Text(
-            text = "Pitch: ${"%.1f".format(pitchDeg)}°   Roll: ${"%.1f".format(rollDeg)}°",
+            text = stringResource(R.string.bubble_level_reading, "%.1f".format(pitchDeg), "%.1f".format(rollDeg)),
             style = MaterialTheme.typography.bodyLarge,
             textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth(),

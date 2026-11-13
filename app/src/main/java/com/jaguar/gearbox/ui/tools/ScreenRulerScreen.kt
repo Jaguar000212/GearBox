@@ -14,6 +14,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.contentDescription
+import com.jaguar.gearbox.R
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
@@ -32,12 +36,12 @@ fun ScreenRulerScreen(onNavigateBack: () -> Unit) {
     val density = LocalDensity.current
     var useMetric by rememberSaveable { mutableStateOf(true) }
 
-    // xdpi is the device's actual reported horizontal pixel density - more accurate for a
+    // ydpi is the device's reported vertical pixel density - more accurate for a
     // physical-length ruler than deriving it from density-independent dp, which is quantized
     // into density buckets (mdpi/hdpi/xhdpi/...) and not a true physical measurement. This can
-    // still be off on devices/OEMs that misreport DisplayMetrics.xdpi.
+    // still be off on devices/OEMs that misreport DisplayMetrics.ydpi.
     val metrics = context.resources.displayMetrics
-    val pxPerInch = metrics.xdpi.takeIf { it > 0f } ?: (metrics.densityDpi.toFloat())
+    val pxPerInch = metrics.ydpi.takeIf { it.isFinite() && it > 0f } ?: (metrics.densityDpi.toFloat())
     val pxPerCm = pxPerInch / 2.54f
     val pxPerUnit = if (useMetric) pxPerCm else pxPerInch
     val totalUnits = 30
@@ -48,7 +52,7 @@ fun ScreenRulerScreen(onNavigateBack: () -> Unit) {
     val textSizePx = with(density) { 12.sp.toPx() }
 
     ToolScaffold(
-        title = "Screen Ruler",
+        title = stringResource(R.string.ruler_title),
         icon = Tools.byRoute(Tools.ROUTE_SCREEN_RULER)!!.icon,
         onNavigateBack = onNavigateBack,
     ) {
@@ -56,24 +60,25 @@ fun ScreenRulerScreen(onNavigateBack: () -> Unit) {
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            FilterChip(selected = useMetric, onClick = { useMetric = true }, label = { Text("cm") })
-            FilterChip(selected = !useMetric, onClick = { useMetric = false }, label = { Text("in") })
+            FilterChip(selected = useMetric, onClick = { useMetric = true }, label = { Text(stringResource(R.string.ruler_cm)) })
+            FilterChip(selected = !useMetric, onClick = { useMetric = false }, label = { Text(stringResource(R.string.ruler_inches)) })
         }
 
         Spacer(Modifier.height(8.dp))
         Text(
-            "Line up an object's edge with the top of the ruler below. Physical accuracy depends " +
-                "on your device correctly reporting its screen density.",
+            stringResource(R.string.ruler_guidance),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
 
         Spacer(Modifier.height(16.dp))
         val minorSubdivisions = if (useMetric) 10 else 16
+        val rulerDescription = stringResource(R.string.ruler_description, if (useMetric) "cm" else "in")
         Canvas(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(totalHeightDp),
+                .height(totalHeightDp)
+                .semantics { contentDescription = rulerDescription },
         ) {
             val paint = android.graphics.Paint().apply {
                 color = labelColor.toArgb()

@@ -9,6 +9,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.res.stringResource
+import com.jaguar.gearbox.R
+import com.jaguar.gearbox.logic.isInvalidNumericInput
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.text.input.KeyboardType
@@ -29,8 +32,12 @@ fun DecimalField(
     placeholder: String? = null,
     errorText: String? = null,
 ) {
-    var blurredAfterFocus by remember { mutableStateOf(false) }
-    val showError = blurredAfterFocus && errorText != null
+    var hasBeenFocused by remember { mutableStateOf(false) }
+    var isFocused by remember { mutableStateOf(false) }
+    val message = errorText ?: if (isInvalidNumericInput(value)) {
+        stringResource(R.string.input_invalid_number)
+    } else null
+    val showError = hasBeenFocused && !isFocused && message != null
 
     OutlinedTextField(
         value = value,
@@ -39,15 +46,17 @@ fun DecimalField(
         placeholder = placeholder?.let { { Text(it) } },
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
         isError = showError,
+        singleLine = true,
         supportingText = if (showError) {
-            { Text(errorText) }
+            { Text(message.orEmpty()) }
         } else {
             null
         },
         modifier = modifier
             .fillMaxWidth()
             .onFocusChanged { focusState ->
-                if (!focusState.isFocused) blurredAfterFocus = true
+                isFocused = focusState.isFocused
+                if (focusState.isFocused) hasBeenFocused = true
             },
     )
 }

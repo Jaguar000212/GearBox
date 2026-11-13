@@ -1,6 +1,9 @@
 package com.jaguar.gearbox.ui.tools
 
 import android.content.Context
+import android.hardware.camera2.CameraAccessException
+import android.os.Handler
+import android.os.Looper
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraManager
 import androidx.compose.foundation.layout.Box
@@ -15,6 +18,7 @@ import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -23,6 +27,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
+import com.jaguar.gearbox.R
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
@@ -33,42 +42,63 @@ import com.jaguar.gearbox.ui.components.ToolScaffold
 @Composable
 fun FlashlightScreen(onNavigateBack: () -> Unit) {
     val context = LocalContext.current
-    val cameraManager = remember { context.getSystemService(Context.CAMERA_SERVICE) as CameraManager }
-    val cameraId = remember {
-        runCatching {
-            cameraManager.cameraIdList.firstOrNull { id ->
+    val cameraManager = remember { context.getSystemService(Context.CAMERA_SERVICE) as? CameraManager }
+    var attempt by remember { mutableStateOf(0) }
+    val discovery = remember(cameraManager, attempt) {
+        if (cameraManager == null) null to R.string.flashlight_failed else try {
+            val id = cameraManager.cameraIdList.firstOrNull { id ->
                 cameraManager.getCameraCharacteristics(id)
                     .get(CameraCharacteristics.FLASH_INFO_AVAILABLE) == true
             }
-        }.getOrNull()
+            id to if (id == null) R.string.flashlight_no_hardware else null
+        } catch (_: CameraAccessException) {
+            null to R.string.flashlight_busy
+        } catch (_: SecurityException) {
+            null to R.string.flashlight_denied
+        } catch (_: RuntimeException) {
+            null to R.string.flashlight_failed
+        }
     }
+    val cameraId = discovery.first
     var isOn by remember { mutableStateOf(false) }
+    var errorResource by remember(attempt) { mutableStateOf(discovery.second) }
 
-    // Guards against leaving the torch stuck on if the user navigates away from this screen
-    // while it's lit - torch state otherwise persists at the hardware level, not with the screen.
-    DisposableEffect(cameraId) {
-        onDispose {
-            if (isOn && cameraId != null) {
-                runCatching { cameraManager.setTorchMode(cameraId, false) }
+    DisposableEffect(cameraManager, cameraId, attempt) {
+        val callback = object : CameraManager.TorchCallback() {
+            override fun onTorchModeChanged(id: String, enabled: Boolean) {
+                if (id == cameraId) { isOn = enabled; errorResource = null }
             }
+            override fun onTorchModeUnavailable(id: String) {
+                if (id == cameraId) { isOn = false; errorResource = R.string.flashlight_busy }
+            }
+        }
+        if (cameraId != null) {
+            runCatching { cameraManager?.registerTorchCallback(callback, Handler(Looper.getMainLooper())) }
+                .onFailure { errorResource = R.string.flashlight_failed }
+        }
+        onDispose {
+            if (isOn && cameraId != null) runCatching { cameraManager?.setTorchMode(cameraId, false) }
+            cameraManager?.unregisterTorchCallback(callback)
         }
     }
 
     ToolScaffold(
-        title = "Flashlight",
+        title = stringResource(R.string.flashlight_title),
         icon = Tools.byRoute(Tools.ROUTE_FLASHLIGHT)!!.icon,
         onNavigateBack = onNavigateBack,
     ) {
-        if (cameraId == null) {
+        errorResource?.let { resource ->
             Text(
-                "No flash hardware was found on this device.",
-                style = MaterialTheme.typography.bodyMedium,
+                stringResource(resource),
+                color = MaterialTheme.colorScheme.error,
+                modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
             )
-            return@ToolScaffold
+            OutlinedButton(onClick = { attempt++ }) { Text(stringResource(R.string.flashlight_retry)) }
         }
+        if (cameraId == null || cameraManager == null) return@ToolScaffold
 
         Text(
-            text = if (isOn) "On" else "Off",
+            text = stringResource(if (isOn) R.string.flashlight_on else R.string.flashlight_off),
             style = MaterialTheme.typography.titleLarge,
             textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth(),
@@ -79,8 +109,17 @@ fun FlashlightScreen(onNavigateBack: () -> Unit) {
             FilledIconButton(
                 onClick = {
                     val next = !isOn
-                    val toggled = runCatching { cameraManager.setTorchMode(cameraId, next) }.isSuccess
-                    if (toggled) isOn = next
+                    try {
+                        cameraManager.setTorchMode(cameraId, next)
+                        isOn = next
+                        errorResource = null
+                    } catch (_: CameraAccessException) {
+                        errorResource = R.string.flashlight_busy
+                    } catch (_: SecurityException) {
+                        errorResource = R.string.flashlight_denied
+                    } catch (_: RuntimeException) {
+                        errorResource = R.string.flashlight_failed
+                    }
                 },
                 modifier = Modifier.size(96.dp),
                 colors = IconButtonDefaults.filledIconButtonColors(
@@ -89,7 +128,7 @@ fun FlashlightScreen(onNavigateBack: () -> Unit) {
             ) {
                 Icon(
                     imageVector = if (isOn) Icons.Filled.FlashOn else Icons.Filled.FlashOff,
-                    contentDescription = if (isOn) "Turn off flashlight" else "Turn on flashlight",
+                    contentDescription = stringResource(if (isOn) R.string.flashlight_turn_off else R.string.flashlight_turn_on),
                     tint = if (isOn) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(48.dp),
                 )

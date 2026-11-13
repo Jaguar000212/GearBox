@@ -1,0 +1,11 @@
+<resources>
+    <string name="layout_back">Back</string>
+    <string name="layout_search_tools">Search tools</string>
+    <string name="layout_clear_search">Clear search</string>
+    <string name="layout_all_categories">All</string>
+    <string name="layout_no_tools_found">No tools match your search.</string>
+    <string name="layout_recent_tools">Recently used</string>
+    <string name="layout_open_tool">Open %1$s</string>
+    <string name="layout_add_favorite">Add %1$s to favourites</string>
+    <string name="layout_remove_favorite">Remove %1$s from favourites</string>
+</resources>

@@ -5,6 +5,10 @@ import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import com.google.zxing.BinaryBitmap
+import com.google.zxing.MultiFormatReader
+import com.google.zxing.RGBLuminanceSource
+import com.google.zxing.common.HybridBinarizer
 
 class QrCodeTest {
 
@@ -31,5 +35,22 @@ class QrCodeTest {
     @Test
     fun `empty text returns null instead of encoding`() {
         assertNull(generateQrMatrix(""))
+    }
+    @Test
+    fun `unicode and whitespace round trip without substitution`() {
+        val text = "  नमस्ते 世界 👋  "
+        val matrix = generateQrMatrix(text)!!
+        val pixels = IntArray(matrix.width * matrix.height) { index ->
+            if (matrix[index % matrix.width, index / matrix.width]) 0xFF000000.toInt() else 0xFFFFFFFF.toInt()
+        }
+        val bitmap = BinaryBitmap(HybridBinarizer(RGBLuminanceSource(matrix.width, matrix.height, pixels)))
+        assertEquals(text, MultiFormatReader().decode(bitmap).text)
+    }
+
+    @Test
+    fun `invalid size and excess payload fail gracefully`() {
+        assertNull(generateQrMatrix("hello", size = 0))
+        assertNull(generateQrMatrix("hello", size = -1))
+        assertNull(generateQrMatrix("x".repeat(5000)))
     }
 }

@@ -1,11 +1,12 @@
 package com.jaguar.gearbox.ui.tools
 
-import android.content.Context
-import android.media.RingtoneManager
+import android.Manifest
+import android.content.Intent
+import android.net.Uri
 import android.os.Build
-import android.os.VibrationEffect
-import android.os.Vibrator
-import android.os.VibratorManager
+import android.provider.Settings
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -20,10 +21,8 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -35,165 +34,94 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.glance.appwidget.updateAll
-import com.jaguar.gearbox.data.SimplePrefsStore
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.repeatOnLifecycle
 import com.jaguar.gearbox.data.Tools
-import com.jaguar.gearbox.logic.catchUpTimerState
-import com.jaguar.gearbox.ui.components.LongListSaver
+import com.jaguar.gearbox.logic.ClockState
+import com.jaguar.gearbox.logic.timerDurationMillis
+import com.jaguar.gearbox.logic.toggleCountdown
+import com.jaguar.gearbox.logic.resetCountdown
+import com.jaguar.gearbox.timer.ClockRepository
+import com.jaguar.gearbox.timer.TimerAlerts
 import com.jaguar.gearbox.ui.components.ToolScaffold
 import com.jaguar.gearbox.widget.TimerWidget
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 import java.util.Locale
-import kotlin.time.Duration.Companion.milliseconds
 
-private enum class ClockMode(val label: String) {
-    STOPWATCH("Stopwatch"),
-    TIMER("Timer"),
-}
-
-private const val KEY_MODE = "timer_stopwatch.mode"
-private const val KEY_SW_ELAPSED = "timer_stopwatch.sw_elapsed"
-private const val KEY_SW_RUNNING = "timer_stopwatch.sw_running"
-private const val KEY_LAPS = "timer_stopwatch.laps"
-private const val KEY_TIMER_REMAINING = "timer_stopwatch.timer_remaining"
-private const val KEY_TIMER_RUNNING = "timer_stopwatch.timer_running"
-private const val KEY_TIMER_FINISHED = "timer_stopwatch.timer_finished"
-private const val KEY_MINUTES = "timer_stopwatch.minutes_input"
-private const val KEY_SECONDS = "timer_stopwatch.seconds_input"
-private const val KEY_SAVED_AT = "timer_stopwatch.saved_at"
-
-/** Snapshot of everything this screen needs to restore, with running clocks caught up to now. */
-private class TimerLoadResult(
-    val mode: String,
-    val stopwatchElapsedMillis: Long,
-    val stopwatchRunning: Boolean,
-    val laps: List<Long>,
-    val timerRemainingMillis: Long,
-    val timerRunning: Boolean,
-    val timerFinished: Boolean,
-    val minutesInput: String,
-    val secondsInput: String,
-)
-
-/**
- * Loads persisted state and, if a clock was left running, advances it by however long has
- * passed since the last save — so leaving the screen (or killing the app) no longer pauses a
- * stopwatch/timer that the user believed was still counting.
- */
-private fun loadTimerState(store: SimplePrefsStore): TimerLoadResult {
-    val mode = store.getString(KEY_MODE, ClockMode.STOPWATCH.name)
-    val stopwatchRunning = store.getBoolean(KEY_SW_RUNNING, false)
-    val laps = store.getLongList(KEY_LAPS)
-    val minutesInput = store.getString(KEY_MINUTES, "5")
-    val secondsInput = store.getString(KEY_SECONDS, "0")
-
-    val caughtUp = catchUpTimerState(
-        stopwatchElapsedMillis = store.getLong(KEY_SW_ELAPSED, 0L),
-        stopwatchRunning = stopwatchRunning,
-        timerRemainingMillis = store.getLong(KEY_TIMER_REMAINING, 0L),
-        timerRunning = store.getBoolean(KEY_TIMER_RUNNING, false),
-        timerFinished = store.getBoolean(KEY_TIMER_FINISHED, false),
-        savedAt = store.getLong(KEY_SAVED_AT, 0L),
-        now = System.currentTimeMillis(),
-    )
-
-    return TimerLoadResult(
-        mode = mode,
-        stopwatchElapsedMillis = caughtUp.stopwatchElapsedMillis,
-        stopwatchRunning = stopwatchRunning,
-        laps = laps,
-        timerRemainingMillis = caughtUp.timerRemainingMillis,
-        timerRunning = caughtUp.timerRunning,
-        timerFinished = caughtUp.timerFinished,
-        minutesInput = minutesInput,
-        secondsInput = secondsInput,
-    )
-}
+private enum class ClockMode(val label: String) { STOPWATCH("Stopwatch"), TIMER("Timer") }
 
 @Composable
 fun TimerStopwatchScreen(onNavigateBack: () -> Unit) {
     val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
     val scope = rememberCoroutineScope()
-    val store = remember { SimplePrefsStore(context) }
-    val initial = remember { loadTimerState(store) }
-
-    var mode by rememberSaveable { mutableStateOf(initial.mode) }
-    val selectedMode = ClockMode.valueOf(mode)
-
-    // All clock state (and the single ticking effect below) lives here, above the tab switch,
-    // so that showing the Timer tab can never pause the Stopwatch's ticking (or vice versa) --
-    // that was the previous bug: each tab's LaunchedEffect only ran while its composable was in
-    // the active `when` branch, so the other clock silently froze while claiming to be running.
-    var stopwatchElapsedMillis by rememberSaveable { mutableLongStateOf(initial.stopwatchElapsedMillis) }
-    var stopwatchRunning by rememberSaveable { mutableStateOf(initial.stopwatchRunning) }
-    var laps by rememberSaveable(stateSaver = LongListSaver) { mutableStateOf(initial.laps) }
-
-    var timerRemainingMillis by rememberSaveable { mutableLongStateOf(initial.timerRemainingMillis) }
-    var timerRunning by rememberSaveable { mutableStateOf(initial.timerRunning) }
-    var timerFinished by rememberSaveable { mutableStateOf(initial.timerFinished) }
-    var minutesInput by rememberSaveable { mutableStateOf(initial.minutesInput) }
-    var secondsInput by rememberSaveable { mutableStateOf(initial.secondsInput) }
-
-    fun persistState() {
-        store.edit {
-            putString(KEY_MODE, mode)
-            putLong(KEY_SW_ELAPSED, stopwatchElapsedMillis)
-            putBoolean(KEY_SW_RUNNING, stopwatchRunning)
-            putString(KEY_LAPS, laps.joinToString(","))
-            putLong(KEY_TIMER_REMAINING, timerRemainingMillis)
-            putBoolean(KEY_TIMER_RUNNING, timerRunning)
-            putBoolean(KEY_TIMER_FINISHED, timerFinished)
-            putString(KEY_MINUTES, minutesInput)
-            putString(KEY_SECONDS, secondsInput)
-            putLong(KEY_SAVED_AT, System.currentTimeMillis())
-        }
+    val mutations = remember { Mutex() }
+    var state by remember { mutableStateOf(ClockRepository.snapshot(context)) }
+    var draftMinutes by rememberSaveable { mutableStateOf(state.minutesInput) }
+    var draftSeconds by rememberSaveable { mutableStateOf(state.secondsInput) }
+    var error by remember { mutableStateOf<String?>(null) }
+    var notificationsAllowed by remember { mutableStateOf(TimerAlerts.notificationsAllowed(context)) }
+    var exactAllowed by remember { mutableStateOf(TimerAlerts.exactAlarmsAllowed(context)) }
+    val selectedMode = ClockMode.entries.firstOrNull { it.name == state.mode } ?: ClockMode.STOPWATCH
+    val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
+        notificationsAllowed = TimerAlerts.notificationsAllowed(context)
     }
 
-    // Refreshes the home-screen widget's snapshot on real interactions (start/pause/reset/mode
-    // switch), not on the periodic 1s auto-save tick below - Glance can't animate a live countdown
-    // anyway, so there's nothing to gain from pushing an update every second while it's running.
-    fun syncWidget() {
-        scope.launch { TimerWidget().updateAll(context) }
-    }
-
-    // Saves whatever state exists the moment this screen leaves composition (back-navigation),
-    // so a running clock isn't silently forgotten even if the user never pauses it first.
-    DisposableEffect(Unit) {
-        onDispose { persistState() }
-    }
-
-    LaunchedEffect(stopwatchRunning, timerRunning) {
-        var lastTick = System.currentTimeMillis()
-        var millisSinceSave = 0L
-        while (stopwatchRunning || timerRunning) {
-            delay(30.milliseconds)
-            val now = System.currentTimeMillis()
-            val delta = now - lastTick
-            lastTick = now
-
-            if (stopwatchRunning) {
-                stopwatchElapsedMillis += delta
-            }
-            if (timerRunning) {
-                timerRemainingMillis = (timerRemainingMillis - delta).coerceAtLeast(0)
-                if (timerRemainingMillis == 0L) {
-                    timerRunning = false
-                    timerFinished = true
-                    playTimerAlert(context)
-                    persistState()
-                    syncWidget()
+    fun change(updateWidgets: Boolean = true, transform: (ClockState) -> ClockState) {
+        scope.launch {
+            try {
+                state = mutations.withLock {
+                    withContext(Dispatchers.IO) {
+                        val updated = ClockRepository.update(context, transform)
+                        if (updateWidgets) TimerWidget().updateAll(context)
+                        updated
+                    }
                 }
-            }
-
-            // Persist periodically (not every 30ms tick) so a killed process loses at most ~1s
-            // of progress instead of freezing the clock at whatever it read on the last visit.
-            millisSinceSave += delta
-            if (millisSinceSave >= 1000L) {
-                millisSinceSave = 0L
-                persistState()
+                error = null
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (_: Exception) {
+                error = "Could not save the clock state. Please try again."
             }
         }
     }
+
+    // The store is the only clock writer. Local text drafts update synchronously for fast typing;
+    // polling cannot overwrite those drafts, and no disposal callback rewrites clock snapshots.
+    LaunchedEffect(context, lifecycleOwner) {
+        lifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            try {
+                withContext(Dispatchers.IO) { ClockRepository.restoreAlarm(context) }
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (_: Exception) {
+                error = "Could not restore the timer alert. Please restart the timer."
+            }
+            while (true) {
+                try {
+                    val fresh = withContext(Dispatchers.IO) { ClockRepository.refresh(context) }
+                    val justFinished = state.timerRunning && fresh.timerFinished
+                    state = fresh
+                    if (justFinished) withContext(Dispatchers.IO) { TimerWidget().updateAll(context) }
+                } catch (cancelled: CancellationException) {
+                    throw cancelled
+                } catch (_: Exception) {
+                    error = "Could not update the clock state."
+                }
+                notificationsAllowed = TimerAlerts.notificationsAllowed(context)
+                exactAllowed = TimerAlerts.exactAlarmsAllowed(context)
+                delay(100)
+            }
+        }
+    }
+
 
     ToolScaffold(
         title = "Timer / Stopwatch",
@@ -202,64 +130,79 @@ fun TimerStopwatchScreen(onNavigateBack: () -> Unit) {
     ) {
         TabRow(selectedTabIndex = ClockMode.entries.indexOf(selectedMode)) {
             ClockMode.entries.forEach { entry ->
-                Tab(
-                    selected = entry == selectedMode,
-                    onClick = { mode = entry.name; persistState(); syncWidget() },
-                    text = { Text(entry.label) },
-                )
+                Tab(selected = entry == selectedMode, onClick = { change { it.copy(mode = entry.name) } },
+                    text = { Text(entry.label) })
             }
         }
-
+        error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
         Spacer(Modifier.height(20.dp))
         when (selectedMode) {
             ClockMode.STOPWATCH -> StopwatchSection(
-                elapsedMillis = stopwatchElapsedMillis,
-                isRunning = stopwatchRunning,
-                laps = laps,
-                onToggleRunning = {
-                    stopwatchRunning = !stopwatchRunning; persistState(); syncWidget()
-                },
-                onLap = { laps = laps + stopwatchElapsedMillis; persistState() },
-                onReset = {
-                    stopwatchRunning = false
-                    stopwatchElapsedMillis = 0L
-                    laps = emptyList()
-                    persistState()
-                    syncWidget()
-                },
+                elapsedMillis = state.stopwatchElapsedMillis,
+                isRunning = state.stopwatchRunning,
+                laps = state.laps,
+                onToggleRunning = { change { it.copy(stopwatchRunning = !it.stopwatchRunning) } },
+                onLap = { change { if (it.stopwatchRunning) it.copy(laps = it.laps + it.stopwatchElapsedMillis) else it } },
+                onReset = { change { it.copy(stopwatchRunning = false, stopwatchElapsedMillis = 0, laps = emptyList()) } },
             )
-
-            ClockMode.TIMER -> TimerSection(
-                remainingMillis = timerRemainingMillis,
-                isRunning = timerRunning,
-                finished = timerFinished,
-                minutesInput = minutesInput,
-                secondsInput = secondsInput,
-                onMinutesChange = { minutesInput = it },
-                onSecondsChange = { secondsInput = it },
-                onStartPause = {
-                    if (timerRunning) {
-                        timerRunning = false
-                    } else {
-                        if (timerRemainingMillis == 0L) {
-                            val minutes = minutesInput.trim().toLongOrNull()?.coerceIn(0, 999) ?: 0
-                            val seconds = secondsInput.trim().toLongOrNull()?.coerceIn(0, 59) ?: 0
-                            timerRemainingMillis = (minutes * 60 + seconds) * 1000
-                            timerFinished = false
+            ClockMode.TIMER -> {
+                Text(
+                    if (notificationsAllowed && exactAllowed && !TimerAlerts.schedulingFailed)
+                        "Completion notifications use Android alarms. No ongoing notification is shown."
+                    else "Background alerts are not guaranteed. Enable notifications and precise alarms for the best timing.",
+                    style = MaterialTheme.typography.bodySmall,
+                )
+                Text("Android battery restrictions, Do Not Disturb and force-stop can delay or prevent alerts. An active timer is restored after reboot and unlock.",
+                    style = MaterialTheme.typography.bodySmall)
+                if (!notificationsAllowed) {
+                    Text("Notification permission lets GearBox show and sound the completion alert after you leave this screen.",
+                        style = MaterialTheme.typography.bodySmall)
+                    if (Build.VERSION.SDK_INT >= 33) {
+                        OutlinedButton(onClick = { permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS) }) {
+                            Text("Allow notifications")
                         }
-                        if (timerRemainingMillis > 0) timerRunning = true
                     }
-                    persistState()
-                    syncWidget()
-                },
-                onReset = {
-                    timerRunning = false
-                    timerRemainingMillis = 0L
-                    timerFinished = false
-                    persistState()
-                    syncWidget()
-                },
-            )
+                    OutlinedButton(onClick = {
+                        runCatching { context.startActivity(Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
+                            .putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)) }
+                            .onFailure { error = "Open GearBox notification settings in Android Settings." }
+                    }) { Text("Notification settings") }
+                }
+                if (!exactAllowed && Build.VERSION.SDK_INT >= 31) {
+                    Text("Precise alarm access lets Android deliver near the deadline. Without it, a best-effort alert may be late.",
+                        style = MaterialTheme.typography.bodySmall)
+                    OutlinedButton(onClick = {
+                        runCatching { context.startActivity(Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM,
+                            Uri.parse("package:${context.packageName}"))) }
+                            .onFailure { error = "Open GearBox's Alarms & reminders access in Android Settings." }
+                    }) { Text("Allow precise alarms") }
+                }
+                Spacer(Modifier.height(12.dp))
+                TimerSection(
+                    remainingMillis = state.timerRemainingMillis,
+                    isRunning = state.timerRunning,
+                    finished = state.timerFinished,
+                    minutesInput = draftMinutes,
+                    secondsInput = draftSeconds,
+                    onMinutesChange = { value ->
+                        draftMinutes = value
+                        change(updateWidgets = false) { it.copy(minutesInput = value) }
+                    },
+                    onSecondsChange = { value ->
+                        draftSeconds = value
+                        change(updateWidgets = false) { it.copy(secondsInput = value) }
+                    },
+                    onStartPause = {
+                        val requestedMinutes = draftMinutes
+                        val requestedSeconds = draftSeconds
+                        if (!state.timerRunning && state.timerRemainingMillis == 0L &&
+                            timerDurationMillis(requestedMinutes, requestedSeconds) == null) {
+                            error = "Enter 0–999 minutes and 0–59 seconds, with a total above zero."
+                        } else change { toggleCountdown(it.copy(minutesInput = requestedMinutes, secondsInput = requestedSeconds)) }
+                    },
+                    onReset = { change { resetCountdown(it) } },
+                )
+            }
         }
     }
 }
@@ -373,25 +316,6 @@ private fun TimerSection(
             Text("Reset")
         }
     }
-}
-
-/** Best-effort alert sound + vibration when a timer finishes; a silent failure isn't fatal. */
-private fun playTimerAlert(context: Context) {
-    try {
-        val uri = RingtoneManager.getActualDefaultRingtoneUri(context, RingtoneManager.TYPE_ALARM)
-            ?: RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
-        RingtoneManager.getRingtone(context, uri)?.play()
-    } catch (_: Exception) {
-        // Some devices/emulators have no ringtone configured, or a flaky audio service.
-    }
-
-    val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-        (context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as? VibratorManager)?.defaultVibrator
-    } else {
-        @Suppress("DEPRECATION")
-        context.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
-    }
-    vibrator?.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE))
 }
 
 private fun formatDuration(millis: Long): String {

@@ -19,6 +19,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -32,17 +33,13 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.glance.appwidget.updateAll
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.compose.LocalLifecycleOwner
-import com.jaguar.gearbox.data.SimplePrefsStore
+import com.jaguar.gearbox.data.CounterStore
 import com.jaguar.gearbox.data.Tools
 import com.jaguar.gearbox.ui.components.ToolScaffold
 import com.jaguar.gearbox.ui.theme.LocalHapticsEnabled
 import com.jaguar.gearbox.widget.CounterWidget
 import kotlinx.coroutines.launch
 
-private const val KEY_COUNT = "counter.count"
 private val STEP_OPTIONS = listOf(1, 5, 10)
 
 @Composable
@@ -51,27 +48,27 @@ fun CounterScreen(onNavigateBack: () -> Unit) {
     val haptic = LocalHapticFeedback.current
     val hapticsEnabled = LocalHapticsEnabled.current
     val scope = rememberCoroutineScope()
-    val store = remember { SimplePrefsStore(context) }
-    var count by rememberSaveable { mutableIntStateOf(store.getInt(KEY_COUNT, 0)) }
+    val store = remember { CounterStore(context) }
+    var count by remember { mutableIntStateOf(store.count) }
+    var limitReached by remember { mutableStateOf(store.limitReached) }
     var step by rememberSaveable { mutableIntStateOf(1) }
 
-    // The Counter home-screen widget writes to the same key while this screen is backgrounded;
-    // pick that up as soon as the user returns instead of showing a stale in-memory value.
-    val lifecycleOwner = LocalLifecycleOwner.current
-    DisposableEffect(lifecycleOwner) {
-        val observer = LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_RESUME) {
-                count = store.getInt(KEY_COUNT, count)
-            }
+    DisposableEffect(store) {
+        val stopObserving = store.observe {
+            count = store.count
+            limitReached = store.limitReached
         }
-        lifecycleOwner.lifecycle.addObserver(observer)
-        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+        // Register before reading so a concurrent widget update cannot be missed.
+        count = store.count
+        limitReached = store.limitReached
+        onDispose { stopObserving() }
     }
 
-    fun update(newCount: Int) {
+    fun update(delta: Int? = null) {
         if (hapticsEnabled) haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-        count = newCount
-        store.putInt(KEY_COUNT, newCount)
+        if (delta == null) store.reset() else store.adjust(delta)
+        count = store.count
+        limitReached = store.limitReached
         scope.launch { CounterWidget().updateAll(context) }
     }
 
@@ -87,6 +84,9 @@ fun CounterScreen(onNavigateBack: () -> Unit) {
             textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth(),
         )
+        if (limitReached) {
+            Text("Counter limit reached. The count has not changed.", color = MaterialTheme.colorScheme.error)
+        }
         Spacer(Modifier.height(20.dp))
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -106,16 +106,16 @@ fun CounterScreen(onNavigateBack: () -> Unit) {
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            FilledTonalButton(onClick = { update(count - step) }, modifier = Modifier.weight(1f)) {
+            FilledTonalButton(onClick = { update(-step) }, modifier = Modifier.weight(1f)) {
                 Icon(Icons.Filled.Remove, contentDescription = "Decrement")
             }
-            FilledTonalButton(onClick = { update(count + step) }, modifier = Modifier.weight(1f)) {
+            FilledTonalButton(onClick = { update(step) }, modifier = Modifier.weight(1f)) {
                 Icon(Icons.Filled.Add, contentDescription = "Increment")
             }
         }
         Spacer(Modifier.height(12.dp))
         Button(
-            onClick = { update(0) },
+            onClick = { update() },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 4.dp),

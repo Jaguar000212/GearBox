@@ -7,12 +7,17 @@ package com.jaguar.gearbox.logic
  */
 data class GstResult(val baseAmount: Double, val taxAmount: Double, val totalAmount: Double)
 
-fun calculateGst(amount: Double, ratePercent: Double, inclusive: Boolean): GstResult {
-    return if (inclusive) {
+/** Returns null for negative/non-finite inputs or overflow in the result. */
+fun calculateGst(amount: Double, ratePercent: Double, inclusive: Boolean): GstResult? {
+    if (!amount.isFinite() || !ratePercent.isFinite() || amount < 0 || ratePercent < 0) return null
+    val result = if (inclusive) {
         val base = amount / (1 + ratePercent / 100.0)
         GstResult(baseAmount = base, taxAmount = amount - base, totalAmount = amount)
     } else {
-        val tax = amount * ratePercent / 100.0
+        val tax = amount * (ratePercent / 100.0)
         GstResult(baseAmount = amount, taxAmount = tax, totalAmount = amount + tax)
+    }
+    return result.takeIf {
+        it.baseAmount.isFinite() && it.taxAmount.isFinite() && it.totalAmount.isFinite()
     }
 }

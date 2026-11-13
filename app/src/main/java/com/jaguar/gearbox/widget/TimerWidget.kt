@@ -26,18 +26,17 @@ import androidx.glance.text.Text
 import androidx.glance.text.TextAlign
 import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
-import com.jaguar.gearbox.data.SimplePrefsStore
-import com.jaguar.gearbox.logic.catchUpTimerState
+import android.content.Intent
+import androidx.glance.appwidget.updateAll
+import androidx.glance.appwidget.action.actionStartActivity
+import com.jaguar.gearbox.MainActivity
+import com.jaguar.gearbox.data.EXTRA_SHORTCUT_ROUTE
+import com.jaguar.gearbox.data.Tools
+import com.jaguar.gearbox.timer.ClockRepository
 import com.jaguar.gearbox.logic.formatDurationCompact
+import com.jaguar.gearbox.logic.toggleCountdown
+import com.jaguar.gearbox.logic.resetCountdown
 
-private const val KEY_MODE = "timer_stopwatch.mode"
-private const val KEY_SW_ELAPSED = "timer_stopwatch.sw_elapsed"
-private const val KEY_SW_RUNNING = "timer_stopwatch.sw_running"
-private const val KEY_LAPS = "timer_stopwatch.laps"
-private const val KEY_TIMER_REMAINING = "timer_stopwatch.timer_remaining"
-private const val KEY_TIMER_RUNNING = "timer_stopwatch.timer_running"
-private const val KEY_TIMER_FINISHED = "timer_stopwatch.timer_finished"
-private const val KEY_SAVED_AT = "timer_stopwatch.saved_at"
 private const val MODE_STOPWATCH = "STOPWATCH"
 
 private val KEY_OP = ActionParameters.Key<String>("op")
@@ -50,22 +49,11 @@ private val KEY_OP = ActionParameters.Key<String>("op")
  */
 class TimerWidget : GlanceAppWidget() {
     override suspend fun provideGlance(context: Context, id: GlanceId) {
-        val store = SimplePrefsStore(context)
         provideContent {
-            val isStopwatch = store.getString(KEY_MODE, MODE_STOPWATCH) == MODE_STOPWATCH
-            val snapshot = catchUpTimerState(
-                stopwatchElapsedMillis = store.getLong(KEY_SW_ELAPSED, 0L),
-                stopwatchRunning = store.getBoolean(KEY_SW_RUNNING, false),
-                timerRemainingMillis = store.getLong(KEY_TIMER_REMAINING, 0L),
-                timerRunning = store.getBoolean(KEY_TIMER_RUNNING, false),
-                timerFinished = store.getBoolean(KEY_TIMER_FINISHED, false),
-                savedAt = store.getLong(KEY_SAVED_AT, 0L),
-                now = System.currentTimeMillis(),
-            )
-            val running =
-                if (isStopwatch) store.getBoolean(KEY_SW_RUNNING, false) else snapshot.timerRunning
-            val displayMillis =
-                if (isStopwatch) snapshot.stopwatchElapsedMillis else snapshot.timerRemainingMillis
+            val snapshot = ClockRepository.snapshot(context)
+            val isStopwatch = snapshot.mode == MODE_STOPWATCH
+            val running = if (isStopwatch) snapshot.stopwatchRunning else snapshot.timerRunning
+            val displayMillis = if (isStopwatch) snapshot.stopwatchElapsedMillis else snapshot.timerRemainingMillis
             val canStart = isStopwatch || running || snapshot.timerRemainingMillis > 0
 
             Column(
@@ -100,7 +88,9 @@ class TimerWidget : GlanceAppWidget() {
                             color = ColorProvider(Color(0xFF6B5F10)),
                         ),
                         modifier = GlanceModifier.clickable(
-                            actionRunCallback<TimerWidgetAction>(actionParametersOf(KEY_OP to "toggle")),
+                            if (canStart) actionRunCallback<TimerWidgetAction>(actionParametersOf(KEY_OP to "toggle"))
+                            else actionStartActivity(Intent(context, MainActivity::class.java)
+                                .putExtra(EXTRA_SHORTCUT_ROUTE, Tools.ROUTE_TIMER_STOPWATCH)),
                         ),
                     )
                     Spacer(modifier = GlanceModifier.width(16.dp))
@@ -126,62 +116,18 @@ class TimerWidgetAction : ActionCallback {
         glanceId: GlanceId,
         parameters: ActionParameters
     ) {
-        val store = SimplePrefsStore(context)
-        val isStopwatch = store.getString(KEY_MODE, MODE_STOPWATCH) == MODE_STOPWATCH
-        val now = System.currentTimeMillis()
-
-        // Catch up first so pausing a running clock freezes it at the correct point, not wherever
-        // it was left at the last periodic in-app save.
-        val snapshot = catchUpTimerState(
-            stopwatchElapsedMillis = store.getLong(KEY_SW_ELAPSED, 0L),
-            stopwatchRunning = store.getBoolean(KEY_SW_RUNNING, false),
-            timerRemainingMillis = store.getLong(KEY_TIMER_REMAINING, 0L),
-            timerRunning = store.getBoolean(KEY_TIMER_RUNNING, false),
-            timerFinished = store.getBoolean(KEY_TIMER_FINISHED, false),
-            savedAt = store.getLong(KEY_SAVED_AT, 0L),
-            now = now,
-        )
-
-        when (parameters[KEY_OP]) {
-            "toggle" -> if (isStopwatch) {
-                val running = store.getBoolean(KEY_SW_RUNNING, false)
-                store.edit {
-                    putLong(KEY_SW_ELAPSED, snapshot.stopwatchElapsedMillis)
-                    putBoolean(KEY_SW_RUNNING, !running)
-                    putLong(KEY_SAVED_AT, now)
-                }
-            } else {
-                // No text input on a widget: this can only pause/resume a timer already
-                // configured from inside the app, not start one from a duration of zero.
-                store.edit {
-                    putLong(KEY_TIMER_REMAINING, snapshot.timerRemainingMillis)
-                    putBoolean(
-                        KEY_TIMER_RUNNING,
-                        !snapshot.timerRunning && snapshot.timerRemainingMillis > 0,
-                    )
-                    putBoolean(KEY_TIMER_FINISHED, snapshot.timerFinished)
-                    putLong(KEY_SAVED_AT, now)
-                }
-            }
-
-            "reset" -> if (isStopwatch) {
-                store.edit {
-                    putLong(KEY_SW_ELAPSED, 0L)
-                    putBoolean(KEY_SW_RUNNING, false)
-                    putString(KEY_LAPS, "")
-                    putLong(KEY_SAVED_AT, now)
-                }
-            } else {
-                store.edit {
-                    putLong(KEY_TIMER_REMAINING, 0L)
-                    putBoolean(KEY_TIMER_RUNNING, false)
-                    putBoolean(KEY_TIMER_FINISHED, false)
-                    putLong(KEY_SAVED_AT, now)
-                }
+        ClockRepository.update(context) { state ->
+            val isStopwatch = state.mode == MODE_STOPWATCH
+            when (parameters[KEY_OP]) {
+                "toggle" -> if (isStopwatch) state.copy(stopwatchRunning = !state.stopwatchRunning)
+                else toggleCountdown(state, allowNewDuration = false)
+                "reset" -> if (isStopwatch) state.copy(
+                    stopwatchRunning = false, stopwatchElapsedMillis = 0, laps = emptyList(),
+                ) else resetCountdown(state)
+                else -> state
             }
         }
-
-        TimerWidget().update(context, glanceId)
+        TimerWidget().updateAll(context)
     }
 }
 

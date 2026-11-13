@@ -27,21 +27,21 @@ import androidx.glance.text.Text
 import androidx.glance.text.TextAlign
 import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
-import com.jaguar.gearbox.data.SimplePrefsStore
+import com.jaguar.gearbox.data.CounterStore
+import androidx.glance.appwidget.updateAll
 
-private const val KEY_COUNT = "counter.count"
 private val KEY_OP = ActionParameters.Key<String>("op")
 
 /**
  * Home-screen widget mirroring the Counter tool's tally. Reads/writes the same
- * [SimplePrefsStore] key as `CounterScreen`, so the widget and the open app never disagree about
- * the count - whichever one changes it last wins, and the other picks it up next time it updates.
+ * [CounterStore] as `CounterScreen`. Every action updates all widget instances; the screen
+ * observes preference changes while composed.
  */
 class CounterWidget : GlanceAppWidget() {
     override suspend fun provideGlance(context: Context, id: GlanceId) {
-        val store = SimplePrefsStore(context)
+        val store = CounterStore(context)
         provideContent {
-            val count = store.getInt(KEY_COUNT, 0)
+            val count = store.count
             Column(
                 modifier = GlanceModifier
                     .fillMaxSize()
@@ -58,7 +58,7 @@ class CounterWidget : GlanceAppWidget() {
                     ),
                 )
                 Text(
-                    text = count.toString(),
+                    text = if (store.limitReached) "$count (limit reached)" else count.toString(),
                     style = TextStyle(
                         fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.Center,
@@ -98,14 +98,14 @@ class CounterWidgetAction : ActionCallback {
         glanceId: GlanceId,
         parameters: ActionParameters
     ) {
-        val store = SimplePrefsStore(context)
-        val newCount = when (parameters[KEY_OP]) {
-            "inc" -> store.getInt(KEY_COUNT, 0) + 1
-            "dec" -> store.getInt(KEY_COUNT, 0) - 1
-            else -> 0
+        val store = CounterStore(context)
+        when (parameters[KEY_OP]) {
+            "inc" -> store.adjust(1)
+            "dec" -> store.adjust(-1)
+            "reset" -> store.reset()
+            else -> return
         }
-        store.putInt(KEY_COUNT, newCount)
-        CounterWidget().update(context, glanceId)
+        CounterWidget().updateAll(context)
     }
 }
 

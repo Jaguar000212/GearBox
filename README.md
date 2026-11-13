@@ -66,7 +66,7 @@ a published release may contain fewer tools.
 | Chess Scoreboard | Win/draw/loss tracking with standard chess scoring (1 / ½ / 0) and an undo for the last result; persisted across restarts. |
 | Color Picker | Pick a color via RGB sliders or a HEX input; view HEX, RGB and HSL; save recent colors (persisted across restarts). |
 | Text Tools | Word/character counts, case conversion (upper/lower/title/camel), and palindrome checking. |
-| Timer / Stopwatch | Stopwatch with laps or a countdown timer. Persisted state catches up when reopened; background completion alerts are not guaranteed. |
+| Timer / Stopwatch | Stopwatch with laps or a countdown timer. OS-scheduled completion notification with explicit permission guidance; timing remains subject to Android restrictions. |
 | Password Generator | Cryptographically random password (`SecureRandom`) guaranteeing at least one character from each enabled class, with a strength meter and a sensitive-marked clipboard copy. |
 | Hash Generator | Generate MD5, SHA-1, SHA-256 or SHA-512 hashes of text. |
 | QR Code Generator | Generate and share a QR image from text or a URL. |
@@ -146,7 +146,9 @@ On a connected Android 11+ device or emulator, run instrumentation separately:
 bash ./gradlew :app:connectedDebugAndroidTest
 ```
 
-The current instrumentation test is a package-name smoke check, not comprehensive UI coverage.
+Instrumentation includes package, saved-date/password state, and shared counter-store regressions.
+It is not comprehensive device/UI coverage. See [Phase B correctness](docs/phase-b-correctness.md)
+and [timer behavior and permissions](docs/timer-behavior.md) for the acceptance checklist.
 
 ## Build
 

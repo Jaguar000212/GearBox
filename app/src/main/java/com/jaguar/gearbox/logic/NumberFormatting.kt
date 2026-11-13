@@ -9,6 +9,8 @@ import java.util.Locale
  * tool screens before being consolidated here.
  */
 fun formatTrimmed(value: Double, decimals: Int = 6): String {
-    val rounded = String.format(Locale.US, "%.${decimals}f", value).trimEnd('0').trimEnd('.')
-    return rounded.ifEmpty { "0" }
+    require(decimals >= 0) { "Decimal places must be non-negative" }
+    val formatted = String.format(Locale.US, "%.${decimals}f", value)
+    val rounded = if (decimals == 0) formatted else formatted.trimEnd('0').trimEnd('.')
+    return if (rounded == "-0") "0" else rounded.ifEmpty { "0" }
 }

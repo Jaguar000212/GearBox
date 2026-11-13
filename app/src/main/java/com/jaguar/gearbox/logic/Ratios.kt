@@ -1,38 +1,22 @@
 package com.jaguar.gearbox.logic
 
-import java.util.Locale
-import kotlin.math.abs
+import java.math.BigDecimal
 
-/** Simplifies a:b to lowest whole-number terms, scaling up first if either value has decimals. */
-fun simplifyRatio(a: Double, b: Double): String {
-    val decimalPlaces = maxOf(decimalPlacesOf(a), decimalPlacesOf(b))
-
-    // Cap the scale so a*scale/b*scale can't overflow Long (Math.round() silently clamps to
-    // Long.MAX_VALUE/MIN_VALUE on overflow instead of throwing, which would corrupt the ratio).
-    val maxMagnitude = maxOf(abs(a), abs(b), 1.0)
-    val maxSafeExponent = kotlin.math.floor(kotlin.math.log10(Long.MAX_VALUE / maxMagnitude / 10.0))
-        .toInt()
-        .coerceIn(0, decimalPlaces)
-    val scale = Math.pow(10.0, maxSafeExponent.toDouble())
-
-    var scaledA = Math.round(a * scale)
-    var scaledB = Math.round(b * scale)
-
-    // Safe now: scaledA/scaledB are bounded well within Long range by the exponent cap above, so
-    // this can't hit the kotlin.math.abs(Long.MIN_VALUE) overflow that stays negative.
-    val divisor = gcd(abs(scaledA), abs(scaledB))
-    if (divisor != 0L) {
-        scaledA /= divisor
-        scaledB /= divisor
-    }
-
-    return "$scaledA : $scaledB"
-}
-
-fun decimalPlacesOf(value: Double): Int {
-    val text = String.format(Locale.ROOT, "%.6f", value).trimEnd('0')
-    val dotIndex = text.indexOf('.')
-    return if (dotIndex == -1) 0 else text.length - dotIndex - 1
+/**
+ * Simplifies finite a:b to whole-number terms without rounding tiny values to zero or clamping
+ * large values to Long limits. BigDecimal.valueOf uses each Double's decimal representation;
+ * this cannot recover precision already lost when input text was parsed as a Double.
+ * A ratio of zero to zero, or a non-finite input, is undefined and returns null.
+ */
+fun simplifyRatio(a: Double, b: Double): String? {
+    if (!a.isFinite() || !b.isFinite() || (a == 0.0 && b == 0.0)) return null
+    val decimalA = BigDecimal.valueOf(a)
+    val decimalB = BigDecimal.valueOf(b)
+    val scale = maxOf(decimalA.scale(), decimalB.scale())
+    val integerA = decimalA.movePointRight(scale).toBigIntegerExact()
+    val integerB = decimalB.movePointRight(scale).toBigIntegerExact()
+    val divisor = integerA.abs().gcd(integerB.abs())
+    return "${integerA / divisor} : ${integerB / divisor}"
 }
 
 tailrec fun gcd(x: Long, y: Long): Long = if (y == 0L) x else gcd(y, x % y)

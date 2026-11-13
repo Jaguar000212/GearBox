@@ -196,7 +196,7 @@ fun UnitConverterScreen(onNavigateBack: () -> Unit) {
             val from = units.first { it.label == fromUnit }
             val to = units.first { it.label == toUnit }
             val result = to.fromBase(from.toBase(value))
-            String.format(
+            if (!result.isFinite()) null else String.format(
                 Locale.US,
                 "%s %s = %s %s",
                 formatTrimmed(value),

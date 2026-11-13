@@ -28,7 +28,6 @@ import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -37,6 +36,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.jaguar.gearbox.data.Tools
 import com.jaguar.gearbox.ui.components.ToolScaffold
+import com.jaguar.gearbox.ui.components.LocalDateSaver
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
@@ -57,8 +57,8 @@ private enum class DateDirection(val label: String) {
 @Composable
 fun DateCalculatorScreen(onNavigateBack: () -> Unit) {
     val context = LocalContext.current
-    var baseDate by remember { mutableStateOf<LocalDate?>(LocalDate.now()) }
-    var showPicker by remember { mutableStateOf(false) }
+    var baseDate by rememberSaveable(stateSaver = LocalDateSaver) { mutableStateOf(LocalDate.now()) }
+    var showPicker by rememberSaveable { mutableStateOf(false) }
     var amountInput by rememberSaveable { mutableStateOf("1") }
     var unit by rememberSaveable { mutableStateOf(DateUnit.DAYS.name) }
     var unitExpanded by rememberSaveable { mutableStateOf(false) }
@@ -69,7 +69,9 @@ fun DateCalculatorScreen(onNavigateBack: () -> Unit) {
     val selectedDirection = DateDirection.valueOf(direction)
 
     if (showPicker) {
-        val state = rememberDatePickerState()
+        val state = rememberDatePickerState(
+            initialSelectedDateMillis = baseDate.atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli(),
+        )
         DatePickerDialog(
             onDismissRequest = { showPicker = false },
             confirmButton = {
@@ -89,9 +91,9 @@ fun DateCalculatorScreen(onNavigateBack: () -> Unit) {
     }
 
     val amount = amountInput.trim().toLongOrNull()
-    val result = if (amount != null && baseDate != null) {
+    val result = if (amount != null) {
         try {
-            computeResultDate(baseDate!!, amount, selectedUnit, selectedDirection)
+            computeResultDate(baseDate, amount, selectedUnit, selectedDirection)
         } catch (_: java.time.DateTimeException) {
             null // out of LocalDate's representable year range
         } catch (_: ArithmeticException) {
@@ -108,7 +110,7 @@ fun DateCalculatorScreen(onNavigateBack: () -> Unit) {
     ) {
         OutlinedButton(onClick = { showPicker = true }, modifier = Modifier.fillMaxWidth()) {
             Icon(Icons.Filled.DateRange, contentDescription = null)
-            Text("  Date: ${baseDate?.let { formatDate(it) } ?: "select"}")
+            Text("  Date: ${formatDate(baseDate)}")
         }
 
         Spacer(Modifier.height(16.dp))
@@ -219,7 +221,7 @@ private fun computeResultDate(
     unit: DateUnit,
     direction: DateDirection
 ): LocalDate {
-    val signedAmount = if (direction == DateDirection.SUBTRACT) -amount else amount
+    val signedAmount = if (direction == DateDirection.SUBTRACT) Math.negateExact(amount) else amount
     return when (unit) {
         DateUnit.DAYS -> base.plusDays(signedAmount)
         DateUnit.WEEKS -> base.plusWeeks(signedAmount)

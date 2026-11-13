@@ -112,15 +112,22 @@ private fun computePercentResult(mode: PercentMode, f1: String, f2: String): Str
     val y = f2.trim().toDoubleOrNull()?.takeIf { it.isFinite() } ?: return null
 
     return when (mode) {
-        PercentMode.OF_VALUE -> "Result: ${fmt(x / 100 * y)}"
+        PercentMode.OF_VALUE -> {
+            val result = x / 100 * y
+            if (!result.isFinite()) return null
+            "Result: ${fmt(result)}"
+        }
         PercentMode.WHAT_PERCENT -> {
             if (y == 0.0) return null
-            "Result: ${fmt(x / y * 100)}%"
+            val result = x / y * 100
+            if (!result.isFinite()) return null
+            "Result: ${fmt(result)}%"
         }
 
         PercentMode.CHANGE -> {
             if (x == 0.0) return null
             val change = (y - x) / x * 100
+            if (!change.isFinite()) return null
             val direction = if (change >= 0) "increase" else "decrease"
             "Change: ${fmt(kotlin.math.abs(change))}% $direction"
         }

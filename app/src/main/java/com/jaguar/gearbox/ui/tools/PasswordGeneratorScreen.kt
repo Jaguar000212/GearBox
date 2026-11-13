@@ -20,6 +20,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -31,7 +32,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.jaguar.gearbox.data.Tools
 import com.jaguar.gearbox.ui.components.ToolScaffold
-import java.security.SecureRandom
+import com.jaguar.gearbox.logic.generatePassword
+import com.jaguar.gearbox.logic.passwordStrength
 
 private const val UPPERCASE_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 private const val LOWERCASE_CHARS = "abcdefghijklmnopqrstuvwxyz"
@@ -47,6 +49,7 @@ fun PasswordGeneratorScreen(onNavigateBack: () -> Unit) {
     var useNumbers by rememberSaveable { mutableStateOf(true) }
     var useSymbols by rememberSaveable { mutableStateOf(false) }
     var password by rememberSaveable { mutableStateOf("") }
+    var generatedCharsetSize by rememberSaveable { mutableIntStateOf(0) }
 
     val enabledClasses = buildList {
         if (useUpper) add(UPPERCASE_CHARS)
@@ -77,7 +80,10 @@ fun PasswordGeneratorScreen(onNavigateBack: () -> Unit) {
 
         Spacer(Modifier.height(12.dp))
         Button(
-            onClick = { password = generatePassword(length.toInt(), enabledClasses) },
+            onClick = {
+                password = generatePassword(length.toInt(), enabledClasses)
+                generatedCharsetSize = charset.length
+            },
             enabled = charset.isNotEmpty(),
             modifier = Modifier.fillMaxWidth(),
         ) {
@@ -104,7 +110,7 @@ fun PasswordGeneratorScreen(onNavigateBack: () -> Unit) {
             }
 
             Spacer(Modifier.height(12.dp))
-            val strength = passwordStrength(password.length, charset.length)
+            val strength = passwordStrength(password.length, generatedCharsetSize)
             Text(strength.first, style = MaterialTheme.typography.labelLarge)
             Spacer(Modifier.height(4.dp))
             LinearProgressIndicator(
@@ -133,40 +139,5 @@ private fun ToggleRow(label: String, checked: Boolean, onCheckedChange: (Boolean
     ) {
         Text(label, style = MaterialTheme.typography.bodyLarge)
         Switch(checked = checked, onCheckedChange = onCheckedChange)
-    }
-}
-
-private val secureRandom = SecureRandom()
-
-/**
- * Guarantees at least one character from every enabled class (many sites reject a password with
- * "no digit" even if it's otherwise long and random), then fills the rest from the combined
- * charset and Fisher-Yates shuffles so the guaranteed characters aren't predictably at the front.
- */
-private fun generatePassword(length: Int, enabledClasses: List<String>): String {
-    if (enabledClasses.isEmpty()) return ""
-    val charset = enabledClasses.joinToString("")
-    val required = enabledClasses.take(length).map { it[secureRandom.nextInt(it.length)] }
-    val fillCount = (length - required.size).coerceAtLeast(0)
-    val chars = (required + (1..fillCount).map { charset[secureRandom.nextInt(charset.length)] })
-        .toMutableList()
-
-    for (i in chars.indices.reversed()) {
-        val j = secureRandom.nextInt(i + 1)
-        val temp = chars[i]
-        chars[i] = chars[j]
-        chars[j] = temp
-    }
-    return chars.joinToString("")
-}
-
-/** Rough strength estimate from entropy bits (length * log2(charset size)), not a security audit. */
-private fun passwordStrength(length: Int, charsetSize: Int): Pair<String, Float> {
-    val entropyBits = length * (kotlin.math.ln(charsetSize.toDouble()) / kotlin.math.ln(2.0))
-    return when {
-        entropyBits < 40 -> "Weak" to 0.25f
-        entropyBits < 60 -> "Medium" to 0.5f
-        entropyBits < 80 -> "Strong" to 0.75f
-        else -> "Very strong" to 1f
     }
 }

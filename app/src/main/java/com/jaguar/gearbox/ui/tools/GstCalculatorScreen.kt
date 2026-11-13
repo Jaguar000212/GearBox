@@ -32,6 +32,9 @@ fun GstCalculatorScreen(onNavigateBack: () -> Unit) {
 
     val amountValue = amount.trim().toDoubleOrNull()?.takeIf { it.isFinite() && it >= 0 }
     val rateValue = rate.trim().toDoubleOrNull()?.takeIf { it.isFinite() && it >= 0 }
+    val result = if (amountValue != null && rateValue != null) {
+        calculateGst(amountValue, rateValue, inclusive)
+    } else null
 
     ToolScaffold(
         title = "GST / Tax Calculator",
@@ -70,8 +73,7 @@ fun GstCalculatorScreen(onNavigateBack: () -> Unit) {
             label = "Tax rate (%)",
         )
 
-        if (amountValue != null && rateValue != null) {
-            val result = calculateGst(amountValue, rateValue, inclusive)
+        if (result != null) {
             val summary = "Base amount: ${formatTrimmed(result.baseAmount, 2)}\n" +
                     "Tax amount: ${formatTrimmed(result.taxAmount, 2)}\n" +
                     "Total: ${formatTrimmed(result.totalAmount, 2)}"
@@ -84,7 +86,7 @@ fun GstCalculatorScreen(onNavigateBack: () -> Unit) {
             )
         } else if (amount.isNotBlank()) {
             Spacer(Modifier.height(12.dp))
-            Text("Enter a valid amount and tax rate.", color = MaterialTheme.colorScheme.error)
+            Text("Enter a valid amount and tax rate within the supported numeric range.", color = MaterialTheme.colorScheme.error)
         }
     }
 }

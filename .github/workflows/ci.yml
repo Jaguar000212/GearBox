@@ -24,6 +24,9 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Test release packaging guardrails
+        run: python3 -m unittest discover -s scripts/tests -v
+
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
@@ -47,7 +50,7 @@ jobs:
         run: >-
           bash ./gradlew --no-daemon --stacktrace --continue
           :app:assembleDebug :app:assembleDebugAndroidTest :app:assembleRelease
-          :app:testDebugUnitTest :app:lintDebug
+          :app:testDebugUnitTest :app:lintDebug :app:lintRelease
 
       - name: Upload diagnostic reports
         if: always()

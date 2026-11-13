@@ -21,10 +21,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.jaguar.gearbox.data.Tools
-import com.jaguar.gearbox.logic.formatTrimmed
+import com.jaguar.gearbox.logic.computeAverageResult
 import com.jaguar.gearbox.ui.components.ResultCard
 import com.jaguar.gearbox.ui.components.ToolScaffold
-import kotlin.math.pow
 
 @Composable
 fun AverageCalculatorScreen(onNavigateBack: () -> Unit) {
@@ -79,50 +78,3 @@ fun AverageCalculatorScreen(onNavigateBack: () -> Unit) {
         }
     }
 }
-
-/**
- * Replicates the statistics produced by the Java `AverageCalculator`: arithmetic mean, geometric
- * mean, harmonic mean, sum, count, largest and smallest. Returns null (rather than an error
- * string) on invalid input, so the caller can show the error as plain text instead of inside a
- * card styled as a successful result.
- */
-private fun computeAverageResult(input: String): String? {
-    val numbers = try {
-        input.split(",")
-            .map { it.trim() }
-            .filter { it.isNotEmpty() }
-            .map { it.toDouble() }
-    } catch (_: NumberFormatException) {
-        return null
-    }
-
-    if (numbers.isEmpty()) return null
-
-    val sum = numbers.sum()
-    val average = sum / numbers.size
-
-    // Harmonic mean divides by each value, so any zero in the list makes it undefined (the naive
-    // formula silently gives 0, which looks like a valid answer rather than an error).
-    val harmonicMeanText = if (numbers.any { it == 0.0 }) {
-        "N/A (list contains zero)"
-    } else {
-        formatTrimmed(numbers.size / numbers.sumOf { 1 / it })
-    }
-
-    // A fractional power of a negative base is NaN in Java/Kotlin regardless of whether the
-    // implied root would be odd, so a negative number also makes the geometric mean undefined.
-    val geometricMeanText = if (numbers.any { it < 0.0 }) {
-        "N/A (list contains a negative number)"
-    } else {
-        formatTrimmed(numbers.fold(1.0) { acc, n -> acc * n }.pow(1.0 / numbers.size))
-    }
-
-    val largest = numbers.max()
-    val smallest = numbers.min()
-
-    return "Result: ${formatTrimmed(average)}\n\n" +
-            "Geometric Mean: $geometricMeanText\nHarmonic Mean: $harmonicMeanText\n\n" +
-            "Sum: ${formatTrimmed(sum)}\nCount: ${numbers.size}\n" +
-            "Largest: ${formatTrimmed(largest)}\nSmallest: ${formatTrimmed(smallest)}"
-}
-

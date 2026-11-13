@@ -10,8 +10,11 @@ import com.google.zxing.qrcode.QRCodeWriter
  * the Bitmap conversion, which needs android.graphics and lives in the screen composable instead.
  */
 fun generateQrMatrix(text: String, size: Int = 512): BitMatrix? {
-    if (text.isEmpty()) return null
+    if (text.isEmpty() || size <= 0) return null
     return runCatching {
-        QRCodeWriter().encode(text, BarcodeFormat.QR_CODE, size, size, mapOf(EncodeHintType.MARGIN to 1))
+        QRCodeWriter().encode(text, BarcodeFormat.QR_CODE, size, size, mapOf(
+            EncodeHintType.MARGIN to 1,
+            EncodeHintType.CHARACTER_SET to "UTF-8",
+        ))
     }.getOrNull()
 }

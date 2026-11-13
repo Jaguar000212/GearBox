@@ -149,6 +149,7 @@ private fun computeResult(shape: Shape, f1: String, f2: String, f3: String): Str
             if (r <= 0) return null
             val area = PI * r * r
             val circumference = 2 * PI * r
+            if (!area.isFinite() || area <= 0 || !circumference.isFinite()) return null
             "Area: ${fmt(area)}\nCircumference: ${fmt(circumference)}"
         }
 
@@ -158,6 +159,7 @@ private fun computeResult(shape: Shape, f1: String, f2: String, f3: String): Str
             if (w <= 0 || h <= 0) return null
             val area = w * h
             val perimeter = 2 * (w + h)
+            if (!area.isFinite() || area <= 0 || !perimeter.isFinite()) return null
             "Area: ${fmt(area)}\nPerimeter: ${fmt(perimeter)}"
         }
 
@@ -170,6 +172,7 @@ private fun computeResult(shape: Shape, f1: String, f2: String, f3: String): Str
             val perimeter = a + b + c
             val s = perimeter / 2
             val area = sqrt(s * (s - a) * (s - b) * (s - c))
+            if (!area.isFinite() || area <= 0 || !perimeter.isFinite()) return null
             "Area: ${fmt(area)}\nPerimeter: ${fmt(perimeter)}"
         }
     }

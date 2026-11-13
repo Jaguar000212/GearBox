@@ -39,7 +39,7 @@ fun DecimalToFractionScreen(onNavigateBack: () -> Unit) {
     val error = when {
         input.isBlank() -> ""
         parsed == null -> "Enter a valid decimal number."
-        fraction == null -> "Number is too large to convert."
+        fraction == null -> "Value is outside the supported fraction range."
         else -> ""
     }
 

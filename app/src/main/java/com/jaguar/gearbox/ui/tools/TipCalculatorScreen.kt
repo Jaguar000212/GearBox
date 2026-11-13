@@ -44,6 +44,8 @@ fun TipCalculatorScreen(onNavigateBack: () -> Unit) {
 
     val billAmount = bill.trim().toDoubleOrNull()?.takeIf { it.isFinite() && it >= 0 }
     val tip = tipPercent.trim().toDoubleOrNull()?.takeIf { it.isFinite() && it >= 0 }
+    val calculatedTip = if (billAmount != null && tip != null) billAmount * (tip / 100.0) else null
+    val calculatedTotal = if (billAmount != null && calculatedTip != null) billAmount + calculatedTip else null
 
     ToolScaffold(
         title = "Tip Calculator",
@@ -89,9 +91,11 @@ fun TipCalculatorScreen(onNavigateBack: () -> Unit) {
             }
         }
 
-        if (billAmount != null && tip != null) {
-            val tipAmount = billAmount * tip / 100.0
-            val total = billAmount + tipAmount
+        if (billAmount != null && calculatedTip != null && calculatedTotal != null &&
+            calculatedTip.isFinite() && calculatedTotal.isFinite()
+        ) {
+            val tipAmount = calculatedTip
+            val total = calculatedTotal
             val perPerson = total / splitCount
             val shareText = "Bill: ${formatCurrency(billAmount)}\n" +
                     "Tip amount: ${formatCurrency(tipAmount)}\n" +

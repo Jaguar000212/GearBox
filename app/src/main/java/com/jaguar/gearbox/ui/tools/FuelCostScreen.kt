@@ -68,6 +68,9 @@ fun FuelCostScreen(onNavigateBack: () -> Unit) {
                     onCopy = { context.copyToClipboard("Fuel cost", summary) },
                     onShare = { context.shareText(summary) },
                 )
+            } else {
+                Spacer(Modifier.height(12.dp))
+                Text("Values exceed the supported numeric range.", color = MaterialTheme.colorScheme.error)
             }
         } else if (distance.isNotBlank() && mileage.isNotBlank() && price.isNotBlank()) {
             Spacer(Modifier.height(12.dp))

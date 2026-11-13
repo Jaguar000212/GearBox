@@ -31,6 +31,7 @@ fun RatiosScreen(onNavigateBack: () -> Unit) {
 
     val a = partA.trim().toDoubleOrNull()?.takeIf { it.isFinite() }
     val b = partB.trim().toDoubleOrNull()?.takeIf { it.isFinite() }
+    val result = if (a != null && b != null) simplifyRatio(a, b) else null
 
     ToolScaffold(
         title = "Ratios",
@@ -57,11 +58,11 @@ fun RatiosScreen(onNavigateBack: () -> Unit) {
             )
         }
 
-        if (a != null && b != null && (a != 0.0 || b != 0.0)) {
+        if (result != null) {
             Spacer(Modifier.height(20.dp))
             Card(modifier = Modifier.fillMaxWidth()) {
                 Text(
-                    text = simplifyRatio(a, b),
+                    text = result,
                     style = MaterialTheme.typography.headlineSmall,
                     textAlign = TextAlign.Center,
                     modifier = Modifier

@@ -19,11 +19,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.jaguar.gearbox.data.Tools
+import com.jaguar.gearbox.logic.computeLoanResult
+import androidx.compose.material3.MaterialTheme
 import com.jaguar.gearbox.ui.components.DecimalField
 import com.jaguar.gearbox.ui.components.ResultCard
 import com.jaguar.gearbox.ui.components.ToolScaffold
-import java.util.Locale
-import kotlin.math.pow
 
 @Composable
 fun LoanCalculatorScreen(onNavigateBack: () -> Unit) {
@@ -89,6 +89,9 @@ fun LoanCalculatorScreen(onNavigateBack: () -> Unit) {
                 },
                 onShare = { context.shareText(shareBody(principal, rate, time, result)) },
             )
+        } else if (loanAmount != null && interestRate != null && loanTerm != null) {
+            Spacer(Modifier.height(12.dp))
+            Text("Values exceed the supported numeric range.", color = MaterialTheme.colorScheme.error)
         }
 
         Spacer(Modifier.height(16.dp))
@@ -112,27 +115,3 @@ private fun shareBody(principal: String, rate: String, time: String, result: Str
             "Rate of Interest: $rate%\n" +
             "Loan Term: $time Years\n" +
             result
-
-/** Replicates the EMI/interest math from the Java `LoanCalculator`. Inputs are pre-validated. */
-private fun computeLoanResult(loanAmount: Double, interestRate: Double, loanTerm: Double): String {
-    val monthlyInterestRate = interestRate / 100 / 12
-    val tenure = loanTerm * 12
-    // At 0% interest, the standard EMI formula divides by (1+r)^n - 1 = 0, producing NaN.
-    // A zero-interest loan is just the principal split evenly across the term.
-    val emi = if (monthlyInterestRate == 0.0) {
-        loanAmount / tenure
-    } else {
-        loanAmount * monthlyInterestRate * (1 + monthlyInterestRate).pow(tenure) /
-                ((1 + monthlyInterestRate).pow(tenure) - 1)
-    }
-
-    val totalAmount = emi * loanTerm * 12
-    val totalInterest = totalAmount - loanAmount
-    val interestPercentage = if (totalAmount == 0.0) 0.0 else totalInterest / totalAmount * 100
-
-    return String.format(
-        Locale.US,
-        "Monthly Installment: %.2f\nTotal Amount Repayable: %.2f\nTotal Interest Repayable: %.2f\nInterest Percentage: %.2f%%",
-        emi, totalAmount, totalInterest, interestPercentage,
-    )
-}

@@ -1,0 +1,30 @@
+<resources>
+    <string name="input_invalid_number">Enter a finite number.</string>
+    <string name="sensor_waiting">Waiting for an orientation reading…</string>
+    <string name="sensor_unavailable">This device does not provide the orientation sensor this tool needs.</string>
+    <string name="sensor_failed">Could not read the orientation sensor. Close and reopen this tool to retry.</string>
+    <string name="sensor_unreliable">Sensor accuracy is low. Move away from magnets and metal, and recalibrate your device.</string>
+    <string name="bubble_level_title">Bubble Level</string>
+    <string name="bubble_level_ready">Level!</string>
+    <string name="bubble_level_tilt">Tilt the device to level it</string>
+    <string name="bubble_level_reading">Pitch: %1$s°   Roll: %2$s°</string>
+    <string name="compass_title">Compass</string>
+    <string name="compass_heading">%1$s   %2$s°</string>
+    <string name="compass_facing">Facing direction</string>
+    <string name="compass_note">Shows magnetic heading. Nearby metal and magnets can affect accuracy.</string>
+    <string name="flashlight_title">Flashlight</string>
+    <string name="flashlight_on">On</string>
+    <string name="flashlight_off">Off</string>
+    <string name="flashlight_turn_on">Turn on flashlight</string>
+    <string name="flashlight_turn_off">Turn off flashlight</string>
+    <string name="flashlight_no_hardware">No camera flash is available on this device.</string>
+    <string name="flashlight_busy">The flashlight is unavailable. Close any app using the camera and try again.</string>
+    <string name="flashlight_denied">Android denied flashlight access. Check device restrictions or try again.</string>
+    <string name="flashlight_failed">Could not change the flashlight. Please try again.</string>
+    <string name="flashlight_retry">Retry</string>
+    <string name="ruler_title">Screen Ruler</string>
+    <string name="ruler_cm">cm</string>
+    <string name="ruler_inches">in</string>
+    <string name="ruler_guidance">Line up an object\'s edge with the top of the ruler below. Physical accuracy depends on your device correctly reporting its screen density.</string>
+    <string name="ruler_description">Screen ruler, 0 to 30 %1$s. Visual measurement aid; verify against a physical ruler.</string>
+</resources>

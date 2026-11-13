@@ -12,51 +12,87 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.jaguar.gearbox.logic.OrientationSnapshot
 import com.jaguar.gearbox.logic.smoothOrientation
 
-/**
- * Shared by the Bubble Level and Compass screens - both derive from the same fused
- * TYPE_ROTATION_VECTOR sensor (accelerometer + magnetometer + gyroscope where available) rather
- * than each smoothing raw accelerometer/magnetometer readings separately, which is noisier and can
- * drift out of sync between the two screens.
- *
- * Returns null while no sensor reading has arrived yet, or if the device has no rotation-vector
- * sensor at all - callers should show a "sensor not available" message in that case.
- */
+enum class OrientationStatus { WAITING, UNAVAILABLE, FAILED, UNRELIABLE, READY }
+data class OrientationState(
+    val snapshot: OrientationSnapshot? = null,
+    val status: OrientationStatus = OrientationStatus.WAITING,
+)
+
+/** Distinguish missing hardware, a failed registration and an initial wait; stop sensors off-screen. */
 @Composable
-fun rememberOrientationSnapshot(): OrientationSnapshot? {
+fun rememberOrientationState(): OrientationState {
     val context = LocalContext.current
-    var snapshot by remember { mutableStateOf<OrientationSnapshot?>(null) }
-
-    DisposableEffect(Unit) {
-        val sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
-        val rotationSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
+    var state by remember { mutableStateOf(OrientationState()) }
+    DisposableEffect(context, lifecycle) {
+        val manager = context.getSystemService(Context.SENSOR_SERVICE) as? SensorManager
+        val sensor = manager?.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
+        var registered = false
         var smoothed: OrientationSnapshot? = null
-
+        var reliable = true
         val listener = object : SensorEventListener {
             override fun onSensorChanged(event: SensorEvent) {
-                val rotationMatrix = FloatArray(9)
-                val orientation = FloatArray(3)
-                SensorManager.getRotationMatrixFromVector(rotationMatrix, event.values)
-                SensorManager.getOrientation(rotationMatrix, orientation)
-                val raw = OrientationSnapshot(orientation[0], orientation[1], orientation[2])
-
-                val previous = smoothed
-                val next = if (previous == null) raw else smoothOrientation(previous, raw) ?: previous
-                smoothed = next
-                snapshot = next
+                try {
+                    val rotation = FloatArray(9)
+                    val angles = FloatArray(3)
+                    SensorManager.getRotationMatrixFromVector(rotation, event.values)
+                    SensorManager.getOrientation(rotation, angles)
+                    if (angles.any { !it.isFinite() }) {
+                        state = OrientationState(status = OrientationStatus.FAILED)
+                        return
+                    }
+                    val raw = OrientationSnapshot(angles[0], angles[1], angles[2])
+                    val previous = smoothed
+                    val next = if (previous == null) raw else smoothOrientation(previous, raw) ?: previous
+                    smoothed = next
+                    state = OrientationState(next, if (reliable) OrientationStatus.READY else OrientationStatus.UNRELIABLE)
+                } catch (_: IllegalArgumentException) {
+                    state = OrientationState(status = OrientationStatus.FAILED)
+                }
             }
-
-            override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) = Unit
+            override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
+                reliable = accuracy != SensorManager.SENSOR_STATUS_UNRELIABLE
+                state = state.copy(status = when {
+                    !reliable -> OrientationStatus.UNRELIABLE
+                    state.snapshot == null -> OrientationStatus.WAITING
+                    else -> OrientationStatus.READY
+                })
+            }
         }
-
-        if (rotationSensor != null) {
-            sensorManager.registerListener(listener, rotationSensor, SensorManager.SENSOR_DELAY_GAME)
+        fun start() {
+            if (registered) return
+            if (manager == null || sensor == null) {
+                state = OrientationState(status = OrientationStatus.UNAVAILABLE)
+                return
+            }
+            state = OrientationState()
+            smoothed = null
+            reliable = true
+            registered = runCatching {
+                manager.registerListener(listener, sensor, SensorManager.SENSOR_DELAY_UI)
+            }.getOrDefault(false)
+            if (!registered) state = OrientationState(status = OrientationStatus.FAILED)
         }
-
-        onDispose { sensorManager.unregisterListener(listener) }
+        fun stop() {
+            if (registered) manager?.unregisterListener(listener)
+            registered = false
+        }
+        val observer = LifecycleEventObserver { _, event ->
+            when (event) {
+                Lifecycle.Event.ON_START -> start()
+                Lifecycle.Event.ON_STOP -> stop()
+                else -> Unit
+            }
+        }
+        lifecycle.addObserver(observer)
+        if (lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) start()
+        onDispose { lifecycle.removeObserver(observer); stop() }
     }
-
-    return snapshot
+    return state
 }

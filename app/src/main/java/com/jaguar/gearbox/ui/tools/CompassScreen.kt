@@ -25,35 +25,38 @@ import com.jaguar.gearbox.data.Tools
 import com.jaguar.gearbox.logic.azimuthDegrees
 import com.jaguar.gearbox.logic.compassPoint
 import com.jaguar.gearbox.ui.components.ToolScaffold
-import com.jaguar.gearbox.ui.components.rememberOrientationSnapshot
+import com.jaguar.gearbox.ui.components.rememberOrientationState
+import com.jaguar.gearbox.ui.components.OrientationState
+import com.jaguar.gearbox.ui.components.OrientationStatusMessage
+import androidx.compose.ui.res.stringResource
+import com.jaguar.gearbox.R
 
 @Composable
-fun CompassScreen(onNavigateBack: () -> Unit) {
-    val snapshot = rememberOrientationSnapshot()
+fun CompassScreen(
+    onNavigateBack: () -> Unit,
+    sensorState: OrientationState = rememberOrientationState(),
+) {
+    val snapshot = sensorState.snapshot
 
     ToolScaffold(
-        title = "Compass",
+        title = stringResource(R.string.compass_title),
         icon = Tools.byRoute(Tools.ROUTE_COMPASS)!!.icon,
         onNavigateBack = onNavigateBack,
     ) {
-        if (snapshot == null) {
-            Text(
-                "Waiting for the orientation sensor... if this doesn't change, your device may not support it.",
-                style = MaterialTheme.typography.bodyMedium,
-            )
-            return@ToolScaffold
-        }
+        OrientationStatusMessage(sensorState.status)
+        if (snapshot == null) return@ToolScaffold
 
         val heading = azimuthDegrees(snapshot.azimuthRad)
         val point = compassPoint(heading)
 
         Text(
-            text = "$point   ${"%.0f".format(heading)}°",
+            text = stringResource(R.string.compass_heading, point, "%.0f".format(heading)),
             style = MaterialTheme.typography.headlineMedium,
             textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth(),
         )
 
+        Text(stringResource(R.string.compass_note), style = MaterialTheme.typography.bodySmall)
         Spacer(Modifier.height(24.dp))
         Box(
             modifier = Modifier
@@ -65,7 +68,7 @@ fun CompassScreen(onNavigateBack: () -> Unit) {
             val trackColor = MaterialTheme.colorScheme.surfaceVariant
             val labelColor = MaterialTheme.colorScheme.onSurfaceVariant
 
-            // The dial rotates opposite the heading so its "N" mark always points true north,
+            // The dial rotates opposite the heading so its "N" mark always points magnetic north,
             // like a physical compass card; the needle below stays fixed, pointing at the top of
             // the screen (i.e. wherever the device is currently facing).
             Box(
@@ -98,7 +101,7 @@ fun CompassScreen(onNavigateBack: () -> Unit) {
 
             Icon(
                 Icons.Filled.ArrowDropDown,
-                contentDescription = "Facing direction",
+                contentDescription = stringResource(R.string.compass_facing),
                 tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier
                     .align(Alignment.TopCenter)

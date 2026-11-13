@@ -37,6 +37,13 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.semantics
+import com.jaguar.gearbox.R
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -69,10 +76,11 @@ fun ColorPickerScreen(onNavigateBack: () -> Unit) {
     val color = Color(red / 255f, green / 255f, blue / 255f)
     val hex =
         String.format("#%02X%02X%02X", red.roundToInt(), green.roundToInt(), blue.roundToInt())
+    val previewDescription = stringResource(R.string.color_preview, hex)
     val hsl = rgbToHsl(red.roundToInt(), green.roundToInt(), blue.roundToInt())
 
     ToolScaffold(
-        title = "Color Picker",
+        title = stringResource(R.string.color_picker_title),
         icon = Tools.byRoute(Tools.ROUTE_COLOR_PICKER)!!.icon,
         onNavigateBack = onNavigateBack,
     ) {
@@ -85,7 +93,8 @@ fun ColorPickerScreen(onNavigateBack: () -> Unit) {
                     .weight(1f)
                     .height(120.dp)
                     .background(color, RoundedCornerShape(12.dp))
-                    .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(12.dp)),
+                    .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(12.dp))
+                    .semantics { contentDescription = previewDescription },
             )
             IconButton(
                 onClick = {
@@ -94,12 +103,13 @@ fun ColorPickerScreen(onNavigateBack: () -> Unit) {
                     store.putString(KEY_RECENT_COLORS, recentColors.joinToString(","))
                 },
             ) {
-                Icon(Icons.Filled.BookmarkAdd, contentDescription = "Save this color")
+                Icon(Icons.Filled.BookmarkAdd, contentDescription = stringResource(R.string.color_save, hex))
             }
         }
 
         if (recentColors.isNotEmpty()) {
             Spacer(Modifier.height(12.dp))
+            Text(stringResource(R.string.color_saved_palette), style = MaterialTheme.typography.labelLarge)
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -109,38 +119,45 @@ fun ColorPickerScreen(onNavigateBack: () -> Unit) {
                 recentColors.forEach { savedHex ->
                     val parsed = parseHex(savedHex)
                     if (parsed != null) {
-                        Box(
+                        val swatchDescription = stringResource(R.string.color_saved_swatch, savedHex)
+                        val selectLabel = stringResource(R.string.color_select_swatch, savedHex)
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
                             modifier = Modifier
-                                .size(32.dp)
-                                .background(
-                                    Color(
-                                        parsed.first / 255f,
-                                        parsed.second / 255f,
-                                        parsed.third / 255f
-                                    ), CircleShape
-                                )
-                                .border(1.dp, MaterialTheme.colorScheme.outline, CircleShape)
-                                .clickable {
+                                .clickable(role = Role.Button, onClickLabel = selectLabel) {
                                     red = parsed.first.toFloat()
                                     green = parsed.second.toFloat()
                                     blue = parsed.third.toFloat()
                                     hexInput = ""
                                     hexError = ""
+                                }
+                                .padding(4.dp)
+                                .semantics {
+                                    contentDescription = swatchDescription
+                                    selected = savedHex.equals(hex, ignoreCase = true)
                                 },
-                        )
+                        ) {
+                            Box(
+                                Modifier.size(48.dp)
+                                    .background(Color(parsed.first / 255f, parsed.second / 255f, parsed.third / 255f), CircleShape)
+                                    .border(1.dp, MaterialTheme.colorScheme.outline, CircleShape),
+                            )
+                            Text(savedHex, style = MaterialTheme.typography.labelSmall,
+                                modifier = Modifier.clearAndSetSemantics { })
+                        }
                     }
                 }
             }
         }
 
         Spacer(Modifier.height(20.dp))
-        Text("RGB", style = MaterialTheme.typography.titleMedium)
+        Text(stringResource(R.string.color_rgb), style = MaterialTheme.typography.titleMedium)
         // Clearing hexInput lets the field fall back to displaying the live `hex` computed from
         // the sliders - otherwise it kept showing whatever was last typed even after a slider
         // moved the color elsewhere, showing a swatch and a hex value that no longer matched.
-        ColorSlider("Red", red) { red = it; hexInput = "" }
-        ColorSlider("Green", green) { green = it; hexInput = "" }
-        ColorSlider("Blue", blue) { blue = it; hexInput = "" }
+        ColorSlider(stringResource(R.string.color_red), red) { red = it; hexInput = "" }
+        ColorSlider(stringResource(R.string.color_green), green) { green = it; hexInput = "" }
+        ColorSlider(stringResource(R.string.color_blue), blue) { blue = it; hexInput = "" }
 
         Spacer(Modifier.height(16.dp))
         HorizontalDivider()
@@ -160,14 +177,14 @@ fun ColorPickerScreen(onNavigateBack: () -> Unit) {
                 // way to "#FF0000") - only validate once the field loses focus, below.
                 hexError = ""
             },
-            label = { Text("HEX") },
+            label = { Text(stringResource(R.string.color_hex)) },
             isError = hexError.isNotEmpty(),
             supportingText = { if (hexError.isNotEmpty()) Text(hexError) },
             modifier = Modifier
                 .fillMaxWidth()
                 .onFocusChanged { focusState ->
                     if (!focusState.isFocused && hexInput.isNotBlank() && parseHex(hexInput) == null) {
-                        hexError = "Enter a valid hex color, e.g. #6750A4"
+                        hexError = context.getString(R.string.color_hex_error)
                     }
                 },
         )
@@ -181,21 +198,21 @@ fun ColorPickerScreen(onNavigateBack: () -> Unit) {
                     .fillMaxWidth()
                     .padding(16.dp)
             ) {
-                ValueRow("HEX", hex)
+                ValueRow(stringResource(R.string.color_hex), hex)
                 Spacer(Modifier.height(8.dp))
-                ValueRow("RGB", rgbText)
+                ValueRow(stringResource(R.string.color_rgb), rgbText)
                 Spacer(Modifier.height(8.dp))
-                ValueRow("HSL", hslText)
+                ValueRow(stringResource(R.string.color_hsl), hslText)
             }
         }
 
         Spacer(Modifier.height(12.dp))
         OutlinedButton(
-            onClick = { context.copyToClipboard("Color", "$hex\n$rgbText\n$hslText") },
+            onClick = { context.copyToClipboard(context.getString(R.string.color_copy_label), "$hex\n$rgbText\n$hslText") },
             modifier = Modifier.fillMaxWidth(),
         ) {
             Icon(Icons.Filled.ContentCopy, contentDescription = null)
-            Text(" Copy all")
+            Text(stringResource(R.string.color_copy_all))
         }
     }
 }
@@ -209,5 +226,6 @@ private fun ColorSlider(label: String, value: Float, onValueChange: (Float) -> U
         Text(label, style = MaterialTheme.typography.bodyMedium)
         Text(value.roundToInt().toString(), style = MaterialTheme.typography.bodyMedium)
     }
-    Slider(value = value, onValueChange = onValueChange, valueRange = 0f..255f)
+    Slider(value = value, onValueChange = onValueChange, valueRange = 0f..255f,
+        modifier = Modifier.semantics { contentDescription = label })
 }

@@ -1,0 +1,33 @@
+<resources>
+    <string name="tic_tac_toe_title">Tic-tac-toe</string>
+    <string name="tic_tac_toe_winner">%1$s wins!</string>
+    <string name="tic_tac_toe_draw">Draw!</string>
+    <string name="tic_tac_toe_turn">%1$s\'s turn</string>
+    <string name="tic_tac_toe_cell">Row %1$d, column %2$d</string>
+    <string name="tic_tac_toe_empty">Empty</string>
+    <string name="tic_tac_toe_winning_cell">%1$s, winning cell</string>
+    <string name="tic_tac_toe_tally">X wins: %1$d   O wins: %2$d   Draws: %3$d</string>
+    <string name="tic_tac_toe_new_round">New round</string>
+    <string name="color_picker_title">Color Picker</string>
+    <string name="color_preview">Current color %1$s</string>
+    <string name="color_save">Save color %1$s</string>
+    <string name="color_saved_palette">Saved colors</string>
+    <string name="color_saved_swatch">Saved color %1$s</string>
+    <string name="color_select_swatch">Select color %1$s</string>
+    <string name="color_red">Red</string>
+    <string name="color_green">Green</string>
+    <string name="color_blue">Blue</string>
+    <string name="color_hex" translatable="false">HEX</string>
+    <string name="color_rgb" translatable="false">RGB</string>
+    <string name="color_hsl" translatable="false">HSL</string>
+    <string name="color_hex_error">Enter a valid hex color, e.g. #6750A4</string>
+    <string name="color_copy_label">Color</string>
+    <string name="color_copy_all">Copy all</string>
+    <string name="favorites_empty">No favourites yet.\nTap the star on a tool to add it here.</string>
+    <string name="favorites_remove">Remove %1$s from favourites</string>
+    <string name="favorites_move_up">Move %1$s up</string>
+    <string name="favorites_move_down">Move %1$s down</string>
+    <string name="favorites_drag">Drag to reorder %1$s</string>
+    <string name="favorites_position">Position %1$d of %2$d</string>
+    <string name="favorites_reorder_hint">Use the arrows or long-press the handle to reorder.</string>
+</resources>

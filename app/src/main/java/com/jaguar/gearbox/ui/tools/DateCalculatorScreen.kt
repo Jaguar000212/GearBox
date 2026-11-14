@@ -6,6 +6,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.focus.onFocusChanged
+import com.jaguar.gearbox.ui.components.ResultCard
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ContentCopy
@@ -59,6 +63,8 @@ fun DateCalculatorScreen(onNavigateBack: () -> Unit) {
     val context = LocalContext.current
     var baseDate by rememberSaveable(stateSaver = LocalDateSaver) { mutableStateOf(LocalDate.now()) }
     var showPicker by rememberSaveable { mutableStateOf(false) }
+    var amountTouched by rememberSaveable { mutableStateOf(false) }
+    var amountFocused by rememberSaveable { mutableStateOf(false) }
     var amountInput by rememberSaveable { mutableStateOf("1") }
     var unit by rememberSaveable { mutableStateOf(DateUnit.DAYS.name) }
     var unitExpanded by rememberSaveable { mutableStateOf(false) }
@@ -108,20 +114,22 @@ fun DateCalculatorScreen(onNavigateBack: () -> Unit) {
         icon = Tools.byRoute(Tools.ROUTE_DATE_CALCULATOR)!!.icon,
         onNavigateBack = onNavigateBack,
     ) {
+        Text("Move forward or backward from a starting date.", style = MaterialTheme.typography.bodyMedium)
+        Spacer(Modifier.height(12.dp))
         OutlinedButton(onClick = { showPicker = true }, modifier = Modifier.fillMaxWidth()) {
             Icon(Icons.Filled.DateRange, contentDescription = null)
-            Text("  Date: ${formatDate(baseDate)}")
+            Text("  Starting date: ${formatDate(baseDate)}")
         }
 
         Spacer(Modifier.height(16.dp))
-        Row(
+        androidx.compose.foundation.layout.Column(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             ExposedDropdownMenuBox(
                 expanded = directionExpanded,
                 onExpandedChange = { directionExpanded = it },
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.fillMaxWidth(),
             ) {
                 OutlinedTextField(
                     value = selectedDirection.label,
@@ -150,9 +158,13 @@ fun DateCalculatorScreen(onNavigateBack: () -> Unit) {
             OutlinedTextField(
                 value = amountInput,
                 onValueChange = { amountInput = it },
-                label = { Text("Amount") },
+                label = { Text("Number of ${selectedUnit.label.lowercase()}") },
+                singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.fillMaxWidth().onFocusChanged {
+                    if (amountFocused && !it.isFocused) amountTouched = true
+                    amountFocused = it.isFocused
+                },
             )
         }
 
@@ -186,23 +198,19 @@ fun DateCalculatorScreen(onNavigateBack: () -> Unit) {
 
         if (result != null) {
             Spacer(Modifier.height(20.dp))
-            Card(modifier = Modifier.fillMaxWidth()) {
-                Text(
-                    text = formatDate(result),
-                    style = MaterialTheme.typography.headlineSmall,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(24.dp),
-                )
-            }
-            Spacer(Modifier.height(12.dp))
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                OutlinedButton(onClick = { context.copyToClipboard("Date", formatDate(result)) }) {
-                    Icon(Icons.Filled.ContentCopy, contentDescription = null)
-                    Text(" Copy")
-                }
-            }
-        } else if (amountInput.isNotBlank()) {
+            Text("Resulting date", style = MaterialTheme.typography.labelLarge)
+            Spacer(Modifier.height(8.dp))
+            val summary = "${formatDate(baseDate)} • ${selectedDirection.label} $amount ${selectedUnit.label.lowercase()}\n${formatDate(result)}"
+            ResultCard(
+                text = formatDate(result),
+                textStyle = MaterialTheme.typography.headlineMedium,
+                onCopy = { context.copyToClipboard("Date", summary) },
+                onShare = { context.shareText(summary) },
+            )
+            Spacer(Modifier.height(8.dp))
+            Text("${selectedDirection.label} $amount ${selectedUnit.label.lowercase()} from ${formatDate(baseDate)}",
+                style = MaterialTheme.typography.bodyMedium)
+        } else if (amountTouched && !amountFocused && amountInput.isNotBlank()) {
             Spacer(Modifier.height(12.dp))
             Text(
                 "Enter a valid amount that keeps the date in range.",
@@ -213,7 +221,7 @@ fun DateCalculatorScreen(onNavigateBack: () -> Unit) {
 }
 
 private fun formatDate(date: LocalDate): String =
-    "${date.dayOfMonth}/${date.monthValue}/${date.year}"
+    date.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM))
 
 private fun computeResultDate(
     base: LocalDate,

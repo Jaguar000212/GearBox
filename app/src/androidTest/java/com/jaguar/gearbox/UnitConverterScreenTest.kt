@@ -39,7 +39,7 @@ class UnitConverterScreenTest {
         showConverter()
         rule.onNodeWithText("Value").performTextReplacement("NaN")
         rule.onNodeWithText("Enter a valid finite number.").assertExists()
-        rule.onNodeWithText(" Copy").assertIsNotEnabled()
-        rule.onNodeWithText(" Share").assertIsNotEnabled()
+        rule.onNodeWithText("Copy").assertIsNotEnabled()
+        rule.onNodeWithText("Share").assertIsNotEnabled()
     }
 }

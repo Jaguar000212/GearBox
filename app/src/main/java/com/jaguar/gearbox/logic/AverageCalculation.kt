@@ -6,7 +6,18 @@ package com.jaguar.gearbox.logic
  * string) on invalid input, so the caller can show the error as plain text instead of inside a
  * card styled as a successful result.
  */
-fun computeAverageResult(input: String): String? {
+data class AverageStatistics(
+    val arithmetic: String, val geometric: String, val harmonic: String,
+    val sum: String, val count: Int, val largest: String, val smallest: String,
+) {
+    fun asText(): String = "Result: $arithmetic\n\n" +
+        "Geometric Mean: $geometric\nHarmonic Mean: $harmonic\n\n" +
+        "Sum: $sum\nCount: $count\nLargest: $largest\nSmallest: $smallest"
+}
+
+fun computeAverageResult(input: String): String? = computeAverageStatistics(input)?.asText()
+
+fun computeAverageStatistics(input: String): AverageStatistics? {
     val numbers = try {
         input.split(",")
             .map { it.trim() }
@@ -50,9 +61,6 @@ fun computeAverageResult(input: String): String? {
     val largest = numbers.max()
     val smallest = numbers.min()
 
-    return "Result: ${formatTrimmed(average)}\n\n" +
-            "Geometric Mean: $geometricMeanText\nHarmonic Mean: $harmonicMeanText\n\n" +
-            "Sum: ${formatTrimmed(sum)}\nCount: ${numbers.size}\n" +
-            "Largest: ${formatTrimmed(largest)}\nSmallest: ${formatTrimmed(smallest)}"
+    return AverageStatistics(formatTrimmed(average), geometricMeanText, harmonicMeanText,
+        formatTrimmed(sum), numbers.size, formatTrimmed(largest), formatTrimmed(smallest))
 }
-

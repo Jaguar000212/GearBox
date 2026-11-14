@@ -32,6 +32,7 @@ import com.jaguar.gearbox.logic.formatTrimmed
 import com.jaguar.gearbox.ui.components.DecimalField
 import com.jaguar.gearbox.logic.PercentageOperation
 import com.jaguar.gearbox.logic.calculatePercentage
+import com.jaguar.gearbox.ui.components.ToolActions
 import com.jaguar.gearbox.ui.components.ToolScaffold
 
 private enum class PercentMode(
@@ -139,14 +140,10 @@ fun PercentageCalculatorScreen(onNavigateBack: () -> Unit) {
                 }
             }
             Spacer(Modifier.height(12.dp))
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                Button(onClick = { context.copyToClipboard("Percentage", detail) }, modifier = Modifier.weight(1f)) {
-                    Text("Copy")
-                }
-                OutlinedButton(onClick = { context.shareText(detail) }, modifier = Modifier.weight(1f)) {
-                    Text("Share")
-                }
-            }
+            ToolActions(
+                onCopy = { context.copyToClipboard("Percentage", detail) },
+                onShare = { context.shareText(detail) },
+            )
         } else {
             Text(
                 if (x != null && y != null &&

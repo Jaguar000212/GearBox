@@ -1,16 +1,21 @@
 package com.jaguar.gearbox.ui.tools
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Remove
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
@@ -30,7 +35,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.glance.appwidget.updateAll
 import com.jaguar.gearbox.data.CounterStore
@@ -72,22 +80,53 @@ fun CounterScreen(onNavigateBack: () -> Unit) {
         scope.launch { CounterWidget().updateAll(context) }
     }
 
+    var confirmReset by rememberSaveable { mutableStateOf(false) }
+    if (confirmReset) {
+        AlertDialog(
+            onDismissRequest = { confirmReset = false },
+            title = { Text("Reset count?") },
+            text = { Text("The current count ($count) will be set to zero.") },
+            confirmButton = {
+                TextButton(onClick = { confirmReset = false; update() }) { Text("Reset count") }
+            },
+            dismissButton = {
+                TextButton(onClick = { confirmReset = false }) { Text("Keep counting") }
+            },
+        )
+    }
+
     ToolScaffold(
         title = "Counter",
         icon = Tools.byRoute(Tools.ROUTE_COUNTER)!!.icon,
         onNavigateBack = onNavigateBack,
     ) {
-        Spacer(Modifier.height(24.dp))
-        Text(
-            text = count.toString(),
-            style = MaterialTheme.typography.displayLarge,
-            textAlign = TextAlign.Center,
+        Spacer(Modifier.height(16.dp))
+        Surface(
+            color = MaterialTheme.colorScheme.surfaceContainer,
+            shape = MaterialTheme.shapes.extraLarge,
             modifier = Modifier.fillMaxWidth(),
-        )
+        ) {
+            Column(
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 28.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Text("Count", style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(
+                    text = count.toString(),
+                    style = MaterialTheme.typography.displayLarge.copy(fontFamily = FontFamily.Monospace),
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+        }
         if (limitReached) {
             Text("Counter limit reached. The count has not changed.", color = MaterialTheme.colorScheme.error)
         }
-        Spacer(Modifier.height(20.dp))
+        Spacer(Modifier.height(24.dp))
+        Text("Step", style = MaterialTheme.typography.titleSmall)
+        Text("Amount added or removed with each tap", style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant)
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -96,7 +135,8 @@ fun CounterScreen(onNavigateBack: () -> Unit) {
                 FilterChip(
                     selected = step == option,
                     onClick = { step = option },
-                    label = { Text("+$option") },
+                    label = { Text(option.toString()) },
+                    modifier = Modifier.heightIn(min = 48.dp),
                 )
             }
         }
@@ -106,19 +146,21 @@ fun CounterScreen(onNavigateBack: () -> Unit) {
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            FilledTonalButton(onClick = { update(-step) }, modifier = Modifier.weight(1f)) {
-                Icon(Icons.Filled.Remove, contentDescription = "Decrement")
+            FilledTonalButton(onClick = { update(-step) },
+                modifier = Modifier.weight(1f).heightIn(min = 64.dp).semantics { contentDescription = "Decrease by $step" }) {
+                Icon(Icons.Filled.Remove, contentDescription = null)
+                Text(" $step", style = MaterialTheme.typography.titleLarge)
             }
-            FilledTonalButton(onClick = { update(step) }, modifier = Modifier.weight(1f)) {
-                Icon(Icons.Filled.Add, contentDescription = "Increment")
+            Button(onClick = { update(step) },
+                modifier = Modifier.weight(1f).heightIn(min = 64.dp).semantics { contentDescription = "Increase by $step" }) {
+                Icon(Icons.Filled.Add, contentDescription = null)
+                Text(" $step", style = MaterialTheme.typography.titleLarge)
             }
         }
         Spacer(Modifier.height(12.dp))
-        Button(
-            onClick = { update() },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 4.dp),
+        TextButton(
+            onClick = { if (count != 0) confirmReset = true else update() },
+            modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
         ) {
             Icon(Icons.Filled.Refresh, contentDescription = null)
             Text("  Reset")

@@ -1,8 +1,15 @@
 package com.jaguar.gearbox.ui.tools
 
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.material3.Card
+import androidx.compose.material3.Button
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -11,6 +18,7 @@ import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.runtime.key
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -22,13 +30,20 @@ import androidx.compose.ui.unit.dp
 import com.jaguar.gearbox.data.Tools
 import com.jaguar.gearbox.logic.formatTrimmed
 import com.jaguar.gearbox.ui.components.DecimalField
-import com.jaguar.gearbox.ui.components.ResultCard
+import com.jaguar.gearbox.logic.PercentageOperation
+import com.jaguar.gearbox.logic.calculatePercentage
 import com.jaguar.gearbox.ui.components.ToolScaffold
 
-private enum class PercentMode(val label: String, val hint1: String, val hint2: String) {
-    OF_VALUE("X% of Y", "Percentage (X)", "Value (Y)"),
-    WHAT_PERCENT("X is what % of Y", "Value (X)", "Total (Y)"),
-    CHANGE("% change from X to Y", "Original value (X)", "New value (Y)"),
+private enum class PercentMode(
+    val label: String, val hint1: String, val hint2: String,
+    val example: String, val operation: PercentageOperation,
+) {
+    OF_VALUE("Percentage of a value", "Percentage", "Value",
+        "Example: 15% of 240 = 36", PercentageOperation.OF_VALUE),
+    WHAT_PERCENT("What percentage?", "Part", "Total",
+        "Example: 30 out of 150 = 20%", PercentageOperation.WHAT_PERCENT),
+    CHANGE("Percentage change", "Original value", "New value",
+        "Example: 80 to 100 = 25% increase", PercentageOperation.CHANGE),
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -74,62 +89,74 @@ fun PercentageCalculatorScreen(onNavigateBack: () -> Unit) {
             }
         }
 
-        Spacer(Modifier.height(16.dp))
-        DecimalField(
-            value = field1,
-            onValueChange = { field1 = it },
-            label = selectedMode.hint1,
-        )
         Spacer(Modifier.height(12.dp))
-        DecimalField(
-            value = field2,
-            onValueChange = { field2 = it },
-            label = selectedMode.hint2,
-        )
+        Text(selectedMode.example, style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Spacer(Modifier.height(20.dp))
 
-        val result = computePercentResult(selectedMode, field1, field2)
-        if (result != null) {
-            Spacer(Modifier.height(20.dp))
-            ResultCard(
-                text = result,
-                onCopy = { context.copyToClipboard("Percentage", result) },
-                onShare = { context.shareText(result) },
+        val x = field1.trim().toDoubleOrNull()?.takeIf { it.isFinite() }
+        val y = field2.trim().toDoubleOrNull()?.takeIf { it.isFinite() }
+        // Reset focus/validation state when the meaning of the inputs changes.
+        key(selectedMode) {
+            DecimalField(
+                value = field1,
+                onValueChange = { field1 = it },
+                label = selectedMode.hint1,
+                errorText = if (selectedMode == PercentMode.CHANGE && x == 0.0)
+                    "Original value must not be zero." else null,
             )
-        } else if (field1.isNotBlank() && field2.isNotBlank()) {
-            // Both fields (not just one) must be filled in before flagging an error - otherwise
-            // this fired as soon as the user typed into the first field, before touching the
-            // second.
             Spacer(Modifier.height(12.dp))
-            Text("Enter valid numbers.", color = MaterialTheme.colorScheme.error)
-        }
-    }
-}
-
-private fun computePercentResult(mode: PercentMode, f1: String, f2: String): String? {
-    fun fmt(value: Double) = formatTrimmed(value, decimals = 4)
-
-    val x = f1.trim().toDoubleOrNull()?.takeIf { it.isFinite() } ?: return null
-    val y = f2.trim().toDoubleOrNull()?.takeIf { it.isFinite() } ?: return null
-
-    return when (mode) {
-        PercentMode.OF_VALUE -> {
-            val result = x / 100 * y
-            if (!result.isFinite()) return null
-            "Result: ${fmt(result)}"
-        }
-        PercentMode.WHAT_PERCENT -> {
-            if (y == 0.0) return null
-            val result = x / y * 100
-            if (!result.isFinite()) return null
-            "Result: ${fmt(result)}%"
+            DecimalField(
+                value = field2,
+                onValueChange = { field2 = it },
+                label = selectedMode.hint2,
+                errorText = if (selectedMode == PercentMode.WHAT_PERCENT && y == 0.0)
+                    "Total must not be zero." else null,
+            )
         }
 
-        PercentMode.CHANGE -> {
-            if (x == 0.0) return null
-            val change = (y - x) / x * 100
-            if (!change.isFinite()) return null
-            val direction = if (change >= 0) "increase" else "decrease"
-            "Change: ${fmt(kotlin.math.abs(change))}% $direction"
+        val result = if (x != null && y != null) calculatePercentage(selectedMode.operation, x, y) else null
+        Spacer(Modifier.height(20.dp))
+        if (result != null && x != null && y != null) {
+            fun fmt(value: Double) = formatTrimmed(value, decimals = 4)
+            val answer = when (selectedMode) {
+                PercentMode.OF_VALUE -> fmt(result)
+                PercentMode.WHAT_PERCENT -> "${fmt(result)}%"
+                PercentMode.CHANGE -> "${fmt(kotlin.math.abs(result))}%"
+            }
+            // Retain the existing signed-base percentage-change semantics.
+            val detail = when (selectedMode) {
+                PercentMode.OF_VALUE -> "${fmt(x)}% of ${fmt(y)} = $answer"
+                PercentMode.WHAT_PERCENT -> "${fmt(x)} out of ${fmt(y)} = $answer"
+                PercentMode.CHANGE -> "${fmt(x)} → ${fmt(y)}: $answer ${if (result >= 0) "increase" else "decrease"}"
+            }
+            Card(Modifier.fillMaxWidth()) {
+                Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("Result", style = MaterialTheme.typography.labelLarge)
+                    Text(answer, style = MaterialTheme.typography.headlineLarge,
+                        color = MaterialTheme.colorScheme.primary)
+                    Text(detail, style = MaterialTheme.typography.bodyLarge)
+                }
+            }
+            Spacer(Modifier.height(12.dp))
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Button(onClick = { context.copyToClipboard("Percentage", detail) }, modifier = Modifier.weight(1f)) {
+                    Text("Copy")
+                }
+                OutlinedButton(onClick = { context.shareText(detail) }, modifier = Modifier.weight(1f)) {
+                    Text("Share")
+                }
+            }
+        } else {
+            Text(
+                if (x != null && y != null &&
+                    !(selectedMode == PercentMode.CHANGE && x == 0.0) &&
+                    !(selectedMode == PercentMode.WHAT_PERCENT && y == 0.0))
+                    "These values produce a result outside the supported range. Try smaller values."
+                else "Enter both values to see your result.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
     }
 }

@@ -4,8 +4,10 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -52,10 +54,13 @@ fun DiscountCalculatorScreen(onNavigateBack: () -> Unit) {
             onValueChange = { price = it },
             label = "Original price",
             placeholder = "e.g. 1500",
+            errorText = if (price.isNotBlank() && originalPrice == null) "Enter a non-negative price." else null,
         )
 
         Spacer(Modifier.height(16.dp))
-        Text("Discounts (applied in order)", style = MaterialTheme.typography.titleMedium)
+        Text("Successive discounts", style = MaterialTheme.typography.titleMedium)
+        Text("Each discount applies to the reduced price, not the original price. For example, 20% then 10% saves 28%, not 30%.",
+            style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
 
         discounts.forEachIndexed { index, value ->
             Spacer(Modifier.height(8.dp))
@@ -66,6 +71,8 @@ fun DiscountCalculatorScreen(onNavigateBack: () -> Unit) {
                         discounts = discounts.toMutableList().also { it[index] = newValue }
                     },
                     label = "Discount ${index + 1} (%)",
+                    errorText = if (value.isNotBlank() && value.trim().toDoubleOrNull()?.let { it.isFinite() && it in 0.0..100.0 } != true)
+                        "Enter a percentage from 0 to 100." else null,
                     modifier = Modifier.weight(1f),
                 )
                 if (discounts.size > 1) {
@@ -101,17 +108,21 @@ fun DiscountCalculatorScreen(onNavigateBack: () -> Unit) {
                     } (${formatTrimmed(result.effectivePercent, 2)}% effective)"
 
             Spacer(Modifier.height(20.dp))
+            Text("Final price", style = MaterialTheme.typography.labelLarge)
+            Text(formatTrimmed(result.finalPrice, 2), style = MaterialTheme.typography.headlineLarge, color = MaterialTheme.colorScheme.primary)
+            Spacer(Modifier.height(12.dp))
             ResultCard(
                 text = summary,
                 onCopy = { context.copyToClipboard("Discount", summary) },
                 onShare = { context.shareText(summary) },
             )
-        } else if (price.isNotBlank() && (originalPrice == null || !allDiscountsValid)) {
-            Spacer(Modifier.height(12.dp))
-            Text(
-                "Enter a valid price and discount percentages (0-100).",
-                color = MaterialTheme.colorScheme.error,
-            )
+        }
+        Spacer(Modifier.height(16.dp))
+        androidx.compose.material3.TextButton(modifier = Modifier.fillMaxWidth(), onClick = { price = ""; discounts = listOf("") },
+            enabled = price.isNotEmpty() || discounts != listOf("")) {
+            Icon(Icons.Filled.Clear, contentDescription = null)
+            Spacer(Modifier.width(8.dp))
+            Text("Clear")
         }
     }
 }

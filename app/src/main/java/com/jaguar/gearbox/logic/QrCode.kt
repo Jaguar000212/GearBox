@@ -13,7 +13,8 @@ fun generateQrMatrix(text: String, size: Int = 512): BitMatrix? {
     if (text.isEmpty() || size <= 0) return null
     return runCatching {
         QRCodeWriter().encode(text, BarcodeFormat.QR_CODE, size, size, mapOf(
-            EncodeHintType.MARGIN to 1,
+            // Include the quiet zone in the bitmap itself, including exported PNGs.
+            EncodeHintType.MARGIN to 4,
             EncodeHintType.CHARACTER_SET to "UTF-8",
         ))
     }.getOrNull()

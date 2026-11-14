@@ -53,4 +53,23 @@ class QrCodeTest {
         assertNull(generateQrMatrix("hello", size = -1))
         assertNull(generateQrMatrix("x".repeat(5000)))
     }
+    @Test fun `payloads decode exactly across sizes with four module quiet zone`() {
+        for (text in listOf("https", "https://example.com/a?b=c", "  नमस्ते 世界 👋  ", "abc123 ".repeat(100))) {
+            for (size in listOf(256, 512)) {
+                val matrix = generateQrMatrix(text, size)!!
+                val pixels = IntArray(matrix.width * matrix.height) { i ->
+                    if (matrix[i % matrix.width, i / matrix.width]) 0xFF000000.toInt() else 0xFFFFFFFF.toInt()
+                }
+                assertEquals(text, MultiFormatReader().decode(BinaryBitmap(HybridBinarizer(
+                    RGBLuminanceSource(matrix.width, matrix.height, pixels)
+                ))).text)
+                val start = matrix.topLeftOnBit!!
+                var finderWidth = 0
+                while (start[0] + finderWidth < matrix.width && matrix[start[0] + finderWidth, start[1]]) finderWidth++
+                val moduleSize = finderWidth / 7
+                assertTrue(start[0] >= 4 * moduleSize)
+                assertTrue(start[1] >= 4 * moduleSize)
+            }
+        }
+    }
 }

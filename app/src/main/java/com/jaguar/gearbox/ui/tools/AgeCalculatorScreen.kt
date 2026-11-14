@@ -29,6 +29,8 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.Period
 import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -40,7 +42,10 @@ fun AgeCalculatorScreen(onNavigateBack: () -> Unit) {
     var pickerTarget by rememberSaveable { mutableStateOf(0) }
 
     if (pickerTarget != 0) {
-        val state = rememberDatePickerState()
+        val selectedDate = if (pickerTarget == 1) laterDate else earlierDate
+        val state = rememberDatePickerState(
+            initialSelectedDateMillis = selectedDate?.atStartOfDay(ZoneOffset.UTC)?.toInstant()?.toEpochMilli(),
+        )
         DatePickerDialog(
             onDismissRequest = { pickerTarget = 0 },
             confirmButton = {
@@ -83,36 +88,44 @@ fun AgeCalculatorScreen(onNavigateBack: () -> Unit) {
         onNavigateBack = onNavigateBack,
     ) {
         Text(
-            "Age = Later date − Earlier date",
+            "Choose an earlier date and a later date to compare.",
             style = MaterialTheme.typography.bodyMedium,
         )
         Spacer(Modifier.height(12.dp))
-        OutlinedButton(onClick = { pickerTarget = 1 }, modifier = Modifier.fillMaxWidth()) {
-            Icon(Icons.Filled.DateRange, contentDescription = null)
-            Text("  Later date: ${laterDate?.let { formatDate(it) } ?: "select"}")
-        }
-        Spacer(Modifier.height(8.dp))
         OutlinedButton(onClick = { pickerTarget = 2 }, modifier = Modifier.fillMaxWidth()) {
             Icon(Icons.Filled.DateRange, contentDescription = null)
-            Text("  Earlier date: ${earlierDate?.let { formatDate(it) } ?: "select"}")
+            Text("  Earlier date: ${earlierDate?.let { formatDate(it) } ?: "Choose date"}")
+        }
+        Spacer(Modifier.height(8.dp))
+        OutlinedButton(onClick = { pickerTarget = 1 }, modifier = Modifier.fillMaxWidth()) {
+            Icon(Icons.Filled.DateRange, contentDescription = null)
+            Text("  Later date: ${laterDate?.let { formatDate(it) } ?: "Choose date"}")
         }
 
         if (result != null) {
             Spacer(Modifier.height(16.dp))
             ResultCard(
                 text = result,
+                textStyle = MaterialTheme.typography.headlineSmall,
                 onCopy = { context.copyToClipboard("Age", result) },
                 onShare = { context.shareText(result) },
             )
+            Spacer(Modifier.height(8.dp))
+            Text("Calendar years, months and days between ${formatDate(earlier!!)} and ${formatDate(later!!)}.",
+                style = MaterialTheme.typography.bodyMedium)
         } else if (error != null) {
             Spacer(Modifier.height(12.dp))
             Text(error, color = MaterialTheme.colorScheme.error)
+        } else {
+            Spacer(Modifier.height(20.dp))
+            Text("Your age difference will appear here once both dates are selected.",
+                style = MaterialTheme.typography.bodyMedium)
         }
     }
 }
 
 private fun formatDate(date: LocalDate): String =
-    "${date.dayOfMonth}/${date.monthValue}/${date.year}"
+    date.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM))
 
 /**
  * Period.between does calendar-correct year/month/day math (respecting actual month lengths),

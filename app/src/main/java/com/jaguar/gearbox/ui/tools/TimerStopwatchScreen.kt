@@ -7,12 +7,17 @@ import android.os.Build
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.Card
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -28,6 +33,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
@@ -66,6 +73,7 @@ fun TimerStopwatchScreen(onNavigateBack: () -> Unit) {
     var state by remember { mutableStateOf(ClockRepository.snapshot(context)) }
     var draftMinutes by rememberSaveable { mutableStateOf(state.minutesInput) }
     var draftSeconds by rememberSaveable { mutableStateOf(state.secondsInput) }
+    var alertDetailsExpanded by rememberSaveable { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
     var notificationsAllowed by remember { mutableStateOf(TimerAlerts.notificationsAllowed(context)) }
     var exactAllowed by remember { mutableStateOf(TimerAlerts.exactAlarmsAllowed(context)) }
@@ -146,14 +154,24 @@ fun TimerStopwatchScreen(onNavigateBack: () -> Unit) {
                 onReset = { change { it.copy(stopwatchRunning = false, stopwatchElapsedMillis = 0, laps = emptyList()) } },
             )
             ClockMode.TIMER -> {
-                Text(
-                    if (notificationsAllowed && exactAllowed && !TimerAlerts.schedulingFailed)
-                        "Completion notifications use Android alarms. No ongoing notification is shown."
-                    else "Background alerts are not guaranteed. Enable notifications and precise alarms for the best timing.",
-                    style = MaterialTheme.typography.bodySmall,
-                )
-                Text("Android battery restrictions, Do Not Disturb and force-stop can delay or prevent alerts. An active timer is restored after reboot and unlock.",
-                    style = MaterialTheme.typography.bodySmall)
+                val alertsReady = notificationsAllowed && exactAllowed && !TimerAlerts.schedulingFailed
+                Card(modifier = Modifier.fillMaxWidth()) {
+                    Column(Modifier.padding(16.dp)) {
+                        Text(if (alertsReady) "Completion alerts configured" else "Background alerts need attention",
+                            style = MaterialTheme.typography.titleSmall)
+                        TextButton(onClick = { alertDetailsExpanded = !alertDetailsExpanded }) {
+                            Text(if (alertDetailsExpanded) "Hide alert details" else "How alerts work")
+                        }
+                        if (alertDetailsExpanded) {
+                            Text("Completion notifications use Android alarms. No ongoing notification is shown.",
+                                style = MaterialTheme.typography.bodySmall)
+                            Text("Android battery restrictions, Do Not Disturb and force-stop can delay or prevent alerts. An active timer is restored after reboot and unlock.",
+                                style = MaterialTheme.typography.bodySmall)
+                        }
+                        if (!alertsReady) Text("Background alerts are not guaranteed. Enable notifications and precise alarms for the best timing.",
+                            style = MaterialTheme.typography.bodySmall)
+                    }
+                }
                 if (!notificationsAllowed) {
                     Text("Notification permission lets GearBox show and sound the completion alert after you leave this screen.",
                         style = MaterialTheme.typography.bodySmall)
@@ -208,7 +226,7 @@ fun TimerStopwatchScreen(onNavigateBack: () -> Unit) {
 }
 
 @Composable
-private fun StopwatchSection(
+internal fun StopwatchSection(
     elapsedMillis: Long,
     isRunning: Boolean,
     laps: List<Long>,
@@ -216,42 +234,46 @@ private fun StopwatchSection(
     onLap: () -> Unit,
     onReset: () -> Unit,
 ) {
-    Text(
-        text = formatDuration(elapsedMillis),
-        style = MaterialTheme.typography.displayMedium,
-        textAlign = TextAlign.Center,
-        modifier = Modifier.fillMaxWidth(),
-    )
+    ClockFace(elapsedMillis, when {
+        isRunning -> "Running"
+        elapsedMillis > 0L -> "Paused"
+        else -> "Ready"
+    })
 
     Spacer(Modifier.height(20.dp))
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        Button(onClick = onToggleRunning, modifier = Modifier.weight(1f)) {
-            Text(if (isRunning) "Pause" else "Start")
-        }
+    Button(onClick = onToggleRunning, modifier = Modifier.fillMaxWidth()) {
+        Text(if (isRunning) "Pause" else if (elapsedMillis > 0L) "Resume" else "Start")
+    }
+    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         OutlinedButton(onClick = onLap, enabled = isRunning, modifier = Modifier.weight(1f)) {
             Text("Lap")
         }
-        OutlinedButton(onClick = onReset, modifier = Modifier.weight(1f)) {
+        OutlinedButton(onClick = onReset, enabled = elapsedMillis > 0L || laps.isNotEmpty(), modifier = Modifier.weight(1f)) {
             Text("Reset")
         }
     }
 
     if (laps.isNotEmpty()) {
         Spacer(Modifier.height(16.dp))
-        laps.asReversed().forEachIndexed { index, lapTime ->
-            Text(
-                text = "Lap ${laps.size - index}: ${formatDuration(lapTime)}",
-                style = MaterialTheme.typography.bodyMedium,
-            )
+        Text("Laps", style = MaterialTheme.typography.titleMedium)
+        laps.indices.reversed().forEach { index ->
+            val total = laps[index]
+            val split = total - (laps.getOrNull(index - 1) ?: 0L)
+            Card(Modifier.fillMaxWidth().padding(top = 8.dp)) {
+                Column(Modifier.padding(16.dp)) {
+                    Text("Lap ${index + 1}", style = MaterialTheme.typography.labelLarge)
+                    Text("Split ${formatDuration(split)}", style = MaterialTheme.typography.titleMedium,
+                        fontFamily = FontFamily.Monospace)
+                    Text("Total ${formatDuration(total)}", style = MaterialTheme.typography.bodyMedium,
+                        fontFamily = FontFamily.Monospace)
+                }
+            }
         }
     }
 }
 
 @Composable
-private fun TimerSection(
+internal fun TimerSection(
     remainingMillis: Long,
     isRunning: Boolean,
     finished: Boolean,
@@ -273,6 +295,7 @@ private fun TimerSection(
                 onValueChange = onMinutesChange,
                 label = { Text("Minutes") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                singleLine = true,
                 modifier = Modifier.weight(1f),
             )
             OutlinedTextField(
@@ -280,29 +303,25 @@ private fun TimerSection(
                 onValueChange = onSecondsChange,
                 label = { Text("Seconds") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                singleLine = true,
                 modifier = Modifier.weight(1f),
             )
+        }
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            listOf(1, 5, 10).forEach { minutes ->
+                TextButton(onClick = { onMinutesChange(minutes.toString()); onSecondsChange("0") },
+                    modifier = Modifier.weight(1f)) { Text("$minutes min") }
+            }
         }
         Spacer(Modifier.height(20.dp))
     }
 
-    Text(
-        text = formatDuration(remainingMillis),
-        style = MaterialTheme.typography.displayMedium,
-        textAlign = TextAlign.Center,
-        modifier = Modifier.fillMaxWidth(),
-    )
-
-    if (finished) {
-        Spacer(Modifier.height(8.dp))
-        Text(
-            text = "Time's up!",
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.primary,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth(),
-        )
-    }
+    ClockFace(remainingMillis, when {
+        finished -> "Time's up!"
+        isRunning -> "Running"
+        remainingMillis > 0L -> "Paused"
+        else -> "Ready"
+    })
 
     Spacer(Modifier.height(20.dp))
     Row(
@@ -310,10 +329,28 @@ private fun TimerSection(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Button(onClick = onStartPause, modifier = Modifier.weight(1f)) {
-            Text(if (isRunning) "Pause" else "Start")
+            Text(when { isRunning -> "Pause"; remainingMillis > 0L -> "Resume"; finished -> "Start again"; else -> "Start" })
         }
         OutlinedButton(onClick = onReset, modifier = Modifier.weight(1f)) {
             Text("Reset")
+        }
+    }
+}
+
+/** Stable digits without animated transitions; wraps long durations at large font scales. */
+@Composable
+private fun ClockFace(millis: Long, status: String) {
+    Card(Modifier.fillMaxWidth()) {
+        Column(Modifier.fillMaxWidth().padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(status, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
+            Spacer(Modifier.height(12.dp))
+            BoxWithConstraints(Modifier.fillMaxWidth()) {
+                Text(formatDuration(millis),
+                    style = if (maxWidth < 320.dp) MaterialTheme.typography.headlineLarge else MaterialTheme.typography.displayMedium,
+                    fontFamily = FontFamily.Monospace,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth())
+            }
         }
     }
 }

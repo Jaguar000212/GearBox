@@ -26,6 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.font.FontWeight
 import com.jaguar.gearbox.R
 import com.jaguar.gearbox.data.Tool
 
@@ -41,18 +42,20 @@ fun ToolCard(
     onClick: () -> Unit,
     onToggleFavorite: () -> Unit,
     modifier: Modifier = Modifier,
+    compact: Boolean = false,
 ) {
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .heightIn(min = 188.dp)
+            .heightIn(min = if (compact) 156.dp else 188.dp)
             .clickable(
                 role = Role.Button,
                 onClickLabel = stringResource(R.string.layout_open_tool, tool.name),
                 onClick = onClick,
             ),
         shape = RoundedCornerShape(20.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = if (compact) 0.dp else 4.dp),
+        colors = CardDefaults.cardColors(containerColor = if (compact) MaterialTheme.colorScheme.surfaceContainerLow else MaterialTheme.colorScheme.surfaceContainerHighest),
     ) {
         Column(
             modifier = Modifier
@@ -62,12 +65,12 @@ fun ToolCard(
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Top,
+                verticalAlignment = if (compact) Alignment.CenterVertically else Alignment.Top,
             ) {
                 Icon(
                     imageVector = tool.icon,
                     contentDescription = null,
-                    modifier = Modifier.size(36.dp),
+                    modifier = Modifier.size(if (compact) 28.dp else 36.dp),
                     tint = MaterialTheme.colorScheme.primary,
                 )
                 IconButton(onClick = onToggleFavorite, modifier = Modifier.size(48.dp)) {
@@ -81,10 +84,10 @@ fun ToolCard(
                     )
                 }
             }
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(if (compact) 4.dp else 12.dp))
             Text(
                 text = tool.name,
-                style = MaterialTheme.typography.titleMedium,
+                style = if (compact) MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold) else MaterialTheme.typography.titleMedium,
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(

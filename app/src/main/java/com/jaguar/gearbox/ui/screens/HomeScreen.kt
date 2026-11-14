@@ -19,6 +19,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
@@ -30,6 +31,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -38,6 +40,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
@@ -83,11 +86,6 @@ fun HomeScreen(
     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
         val columns = adaptiveToolColumnCount(maxWidth.value, LocalDensity.current.fontScale)
         LazyColumn(modifier = Modifier.fillMaxSize()) {
-            if (query.isBlank() && recentToolObjs.isNotEmpty()) {
-                item {
-                    RecentToolsRow(tools = recentToolObjs, onOpenTool = onOpenTool)
-                }
-            }
             item {
                 OutlinedTextField(
                     value = query,
@@ -102,6 +100,7 @@ fun HomeScreen(
                         }
                     },
                     singleLine = true,
+                    shape = RoundedCornerShape(20.dp),
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 12.dp, vertical = 8.dp),
@@ -132,28 +131,52 @@ fun HomeScreen(
                 }
             }
 
+            if (query.isBlank() && selectedCategory == null && recentToolObjs.isNotEmpty()) {
+                item(key = "recent-tools") {
+                    RecentToolsRow(tools = recentToolObjs, onOpenTool = onOpenTool)
+                }
+            }
+
             if (grouped.isEmpty()) {
                 item {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(32.dp),
-                        contentAlignment = Alignment.Center,
+                    Column(
+                        modifier = Modifier.fillMaxWidth().padding(32.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
-                        Text(stringResource(R.string.layout_no_tools_found), style = MaterialTheme.typography.bodyLarge)
+                        Icon(
+                            Icons.Filled.Search,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(32.dp),
+                        )
+                        Text(stringResource(R.string.layout_no_tools_found), style = MaterialTheme.typography.titleMedium)
+                        Text(stringResource(R.string.home_empty_hint),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        TextButton(onClick = { query = ""; selectedCategory = null }) {
+                            Text(stringResource(R.string.home_reset_filters))
+                        }
                     }
                 }
             }
 
             grouped.forEach { (category, toolsInCategory) ->
-                item {
-                    Text(
-                        text = category.label,
-                        style = MaterialTheme.typography.titleMedium,
-                        modifier = Modifier.padding(start = 12.dp, top = 16.dp, bottom = 8.dp).semantics { heading() },
-                    )
+                item(key = "category-${category.name}") {
+                    Column(Modifier.padding(start = 12.dp, top = 20.dp, bottom = 4.dp)) {
+                        Text(
+                            text = category.label,
+                            style = MaterialTheme.typography.titleMedium,
+                            modifier = Modifier.semantics { heading() },
+                        )
+                        Text(
+                            text = pluralStringResource(R.plurals.home_tool_count, toolsInCategory.size, toolsInCategory.size),
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
                 }
-                items(toolsInCategory.chunked(columns)) { row ->
+                items(toolsInCategory.chunked(columns), key = { row -> "tools-${row.first().route}" }) { row ->
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -168,6 +191,7 @@ fun HomeScreen(
                                 onClick = { onOpenTool(tool) },
                                 onToggleFavorite = { favorites.toggle(tool.route) },
                                 modifier = Modifier.weight(1f).fillMaxHeight(),
+                                compact = true,
                             )
                         }
                         repeat(columns - row.size) {
@@ -180,13 +204,14 @@ fun HomeScreen(
     }
 }
 
-/** Quick-access row for the last few opened tools, shown above search while it's empty. */
+/** Quick-access row for the last few opened tools, shown beneath discovery controls when no filters are active. */
 @Composable
 private fun RecentToolsRow(tools: List<Tool>, onOpenTool: (Tool) -> Unit) {
     Column {
         Text(
             text = stringResource(R.string.layout_recent_tools),
-            style = MaterialTheme.typography.titleMedium,
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(start = 12.dp, top = 12.dp, bottom = 4.dp).semantics { heading() },
         )
         LazyRow(

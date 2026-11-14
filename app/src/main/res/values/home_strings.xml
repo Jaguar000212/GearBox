@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="home_empty_hint">Try another search or clear your filters.</string>
+    <string name="home_reset_filters">Clear filters</string>
+    <plurals name="home_tool_count">
+        <item quantity="one">%d tool</item>
+        <item quantity="other">%d tools</item>
+    </plurals>
+</resources>

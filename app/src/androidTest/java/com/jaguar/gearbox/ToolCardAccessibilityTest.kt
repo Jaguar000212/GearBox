@@ -27,7 +27,11 @@ import org.junit.Test
 class ToolCardAccessibilityTest {
     @get:Rule val rule = createComposeRule()
 
-    @Test fun favoriteHasNamedTouchTargetAndLargeTextRemainsVisible() {
+    @Test fun favoriteHasNamedTouchTargetAndLargeTextRemainsVisible() = verifyCard(compact = false)
+
+    @Test fun compactCardKeepsDescriptionAndFavoriteTouchTargetAtLargeText() = verifyCard(compact = true)
+
+    private fun verifyCard(compact: Boolean) {
         var toggled = false
         val tool = Tool(
             name = "Example tool",
@@ -42,7 +46,7 @@ class ToolCardAccessibilityTest {
             CompositionLocalProvider(LocalDensity provides Density(density, fontScale = 2f)) {
                 MaterialTheme {
                     Box(Modifier.width(320.dp)) {
-                        ToolCard(tool, false, {}, { toggled = true })
+                        ToolCard(tool, false, {}, { toggled = true }, compact = compact)
                     }
                 }
             }

@@ -1,0 +1,16 @@
+<resources>
+    <string name="timer_status_channel">Timer and stopwatch</string>
+    <string name="timer_status_channel_description">Optional quiet timer and stopwatch controls</string>
+    <string name="timer_status_running">Timer running</string>
+    <string name="timer_status_paused">Timer paused</string>
+    <string name="timer_status_countdown">Countdown remaining</string>
+    <string name="timer_status_remaining">%1$s remaining</string>
+    <string name="timer_status_pause">Pause</string>
+    <string name="timer_status_resume">Resume</string>
+    <string name="timer_status_cancel">Cancel timer</string>
+    <string name="timer_status_setting">Show timer and stopwatch notifications</string>
+    <string name="timer_status_help">Optional and off by default. Shows countdown or elapsed time and controls. Supported Android versions may promote a running clock to a Live Update; Android and your settings decide. Paused clocks use ordinary notifications. Stopwatch Reset opens a confirmation.</string>
+    <string name="timer_status_hidden">Hidden for this countdown. Completion alerts are unaffected.</string>
+    <string name="timer_status_show_again">Show this timer again</string>
+    <string name="timer_status_blocked">Timer and stopwatch status notifications are blocked in Android settings. Completion alerts have a separate channel.</string>
+</resources>

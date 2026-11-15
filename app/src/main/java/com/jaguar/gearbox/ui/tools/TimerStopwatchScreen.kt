@@ -16,6 +16,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.Switch
+import androidx.compose.ui.res.stringResource
+import com.jaguar.gearbox.R
+import com.jaguar.gearbox.timer.TimerStatusNotification
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.TextButton
@@ -37,6 +41,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.platform.LocalContext
@@ -69,7 +74,10 @@ import java.util.Locale
 private enum class ClockMode(val label: String) { STOPWATCH("Stopwatch"), TIMER("Timer") }
 
 @Composable
-fun TimerStopwatchScreen(onNavigateBack: () -> Unit) {
+fun TimerStopwatchScreen(onNavigateBack: () -> Unit) = TimerStopwatchScreen(onNavigateBack, false)
+
+@Composable
+fun TimerStopwatchScreen(onNavigateBack: () -> Unit, requestStopwatchReset: Boolean) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val scope = rememberCoroutineScope()
@@ -84,6 +92,7 @@ fun TimerStopwatchScreen(onNavigateBack: () -> Unit) {
     val selectedMode = ClockMode.entries.firstOrNull { it.name == state.mode } ?: ClockMode.STOPWATCH
     val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
         notificationsAllowed = TimerAlerts.notificationsAllowed(context)
+        scope.launch(Dispatchers.IO) { ClockRepository.restoreAlarm(context) }
     }
 
     fun change(updateWidgets: Boolean = true, transform: (ClockState) -> ClockState) {
@@ -148,6 +157,39 @@ fun TimerStopwatchScreen(onNavigateBack: () -> Unit) {
         }
         error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
         Spacer(Modifier.height(20.dp))
+                Card(Modifier.fillMaxWidth()) {
+                    Column(Modifier.padding(16.dp)) {
+                        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                            Text(stringResource(R.string.timer_status_setting), Modifier.weight(1f))
+                            Switch(checked = state.ongoingNotificationEnabled, onCheckedChange = { enabled ->
+                                change { it.copy(ongoingNotificationEnabled = enabled, ongoingNotificationDismissed = false, stopwatchNotificationDismissed = false) }
+                                if (enabled && Build.VERSION.SDK_INT >= 33 && androidx.core.content.ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                                    permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                                }
+                            }, modifier = Modifier.semantics {
+                                contentDescription = context.getString(R.string.timer_status_setting)
+                            })
+                        }
+                        Text(stringResource(R.string.timer_status_help), style = MaterialTheme.typography.bodySmall)
+                        if (state.ongoingNotificationEnabled && !TimerStatusNotification.allowed(context)) {
+                            Text(stringResource(R.string.timer_status_blocked), style = MaterialTheme.typography.bodySmall)
+                            TextButton(onClick = {
+                                runCatching { context.startActivity(Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
+                                    .putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)) }
+                            }) { Text("Notification settings") }
+                        }
+                        if (state.ongoingNotificationEnabled && state.stopwatchNotificationDismissed && (state.stopwatchRunning || state.stopwatchElapsedMillis > 0)) {
+                            Text("Stopwatch notification hidden for this session.", style = MaterialTheme.typography.bodySmall)
+                            TextButton(onClick = { change { it.copy(stopwatchNotificationDismissed = false) } }) { Text("Show stopwatch again") }
+                        }
+                        if (state.ongoingNotificationEnabled && state.ongoingNotificationDismissed && state.timerRemainingMillis > 0) {
+                            Text(stringResource(R.string.timer_status_hidden), style = MaterialTheme.typography.bodySmall)
+                            TextButton(onClick = { change { it.copy(ongoingNotificationDismissed = false) } }) {
+                                Text(stringResource(R.string.timer_status_show_again))
+                            }
+                        }
+                    }
+                }
         when (selectedMode) {
             ClockMode.STOPWATCH -> StopwatchSection(
                 elapsedMillis = state.stopwatchElapsedMillis,
@@ -156,6 +198,7 @@ fun TimerStopwatchScreen(onNavigateBack: () -> Unit) {
                 onToggleRunning = { change { it.copy(stopwatchRunning = !it.stopwatchRunning) } },
                 onLap = { change { if (it.stopwatchRunning) it.copy(laps = it.laps + it.stopwatchElapsedMillis) else it } },
                 onReset = { change { it.copy(stopwatchRunning = false, stopwatchElapsedMillis = 0, laps = emptyList()) } },
+                requestReset = requestStopwatchReset,
             )
             ClockMode.TIMER -> {
                 val alertsReady = notificationsAllowed && exactAllowed && !TimerAlerts.schedulingFailed
@@ -167,7 +210,7 @@ fun TimerStopwatchScreen(onNavigateBack: () -> Unit) {
                             Text(if (alertDetailsExpanded) "Hide alert details" else "How alerts work")
                         }
                         if (alertDetailsExpanded) {
-                            Text("Completion notifications use Android alarms. No ongoing notification is shown.",
+                            Text("Completion notifications use Android alarms. Active timer notifications are optional and do not control alarm delivery.",
                                 style = MaterialTheme.typography.bodySmall)
                             Text("Android battery restrictions, Do Not Disturb and force-stop can delay or prevent alerts. An active timer is restored after reboot and unlock.",
                                 style = MaterialTheme.typography.bodySmall)
@@ -237,9 +280,10 @@ internal fun StopwatchSection(
     onToggleRunning: () -> Unit,
     onLap: () -> Unit,
     onReset: () -> Unit,
+    requestReset: Boolean = false,
 ) {
     val context = LocalContext.current
-    var confirmReset by rememberSaveable { mutableStateOf(false) }
+    var confirmReset by rememberSaveable { mutableStateOf(requestReset && (isRunning || elapsedMillis > 0L || laps.isNotEmpty())) }
     if (confirmReset) {
         ClockResetDialog(
             title = "Reset stopwatch?",

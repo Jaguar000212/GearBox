@@ -1,5 +1,7 @@
 package com.jaguar.gearbox.ui.tools
 
+import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -13,6 +15,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -40,6 +45,7 @@ import androidx.compose.ui.semantics.semantics
 import com.jaguar.gearbox.R
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.jaguar.gearbox.data.SimplePrefsStore
@@ -64,11 +70,13 @@ fun TicTacToeScreen(onNavigateBack: () -> Unit) {
     var xWins by rememberSaveable { mutableStateOf(store.getInt(KEY_X_WINS, 0)) }
     var oWins by rememberSaveable { mutableStateOf(store.getInt(KEY_O_WINS, 0)) }
     var draws by rememberSaveable { mutableStateOf(store.getInt(KEY_DRAWS, 0)) }
+    var pendingAction by rememberSaveable { mutableStateOf<String?>(null) }
 
     val cells = board.map { it.ifEmpty { null } }
     val winningCells = winningLine(cells)
     val winner = winningCells?.let { cells[it[0]] }
     val boardFull = isBoardFull(cells)
+    val roundInProgress = board.any { it.isNotEmpty() } && winner == null && !boardFull
 
     fun persistTally() {
         store.edit {
@@ -89,17 +97,64 @@ fun TicTacToeScreen(onNavigateBack: () -> Unit) {
         else -> stringResource(R.string.tic_tac_toe_turn, currentPlayer)
     }
 
+    fun requestBack() {
+        if (roundInProgress) pendingAction = "leave" else onNavigateBack()
+    }
+    BackHandler(enabled = roundInProgress && pendingAction == null) { requestBack() }
+
+    if (pendingAction != null) {
+        val leaving = pendingAction == "leave"
+        AlertDialog(
+            onDismissRequest = { pendingAction = null },
+            title = { Text(stringResource(R.string.ttt_abandon_title)) },
+            text = { Text(stringResource(R.string.ttt_abandon_message)) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        pendingAction = null
+                        if (leaving) onNavigateBack() else newRound()
+                    },
+                    modifier = Modifier.testTag("tic_confirm_discard"),
+                ) {
+                    Text(stringResource(if (leaving) R.string.ttt_leave else R.string.tic_tac_toe_new_round))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { pendingAction = null }) {
+                    Text(stringResource(R.string.ttt_keep_playing))
+                }
+            },
+        )
+    }
+
     ToolScaffold(
         title = stringResource(R.string.tic_tac_toe_title),
         icon = Tools.byRoute(Tools.ROUTE_TIC_TAC_TOE)!!.icon,
-        onNavigateBack = onNavigateBack,
+        onNavigateBack = { requestBack() },
     ) {
-        Text(
-            text = statusText,
-            style = MaterialTheme.typography.titleLarge,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth().semantics { liveRegion = LiveRegionMode.Polite },
-        )
+        Card(
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Column(
+                modifier = Modifier.fillMaxWidth().padding(20.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Text(stringResource(R.string.ttt_local_players), style = MaterialTheme.typography.labelLarge)
+                Text(
+                    text = statusText,
+                    style = MaterialTheme.typography.headlineMedium,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth().semantics { liveRegion = LiveRegionMode.Polite },
+                )
+                Text(
+                    text = stringResource(if (winner != null || boardFull) R.string.ttt_round_complete else R.string.ttt_how_to_play),
+                    style = MaterialTheme.typography.bodyMedium,
+                    textAlign = TextAlign.Center,
+                )
+            }
+        }
 
         Spacer(Modifier.height(16.dp))
         // A non-scrolling square board belongs to the screen's single vertical scroll container.
@@ -107,7 +162,7 @@ fun TicTacToeScreen(onNavigateBack: () -> Unit) {
         Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
             BoxWithConstraints(Modifier.widthIn(max = 420.dp).fillMaxWidth()) {
                 val symbolLineHeight = with(LocalDensity.current) { MaterialTheme.typography.headlineLarge.lineHeight.toDp() }
-                val minimumCellHeight = maxOf(48.dp, symbolLineHeight + 24.dp)
+                val minimumCellHeight = maxOf(48.dp, symbolLineHeight + 40.dp)
                 // Remain square normally, but grow vertically rather than clip large-font symbols.
                 val boardHeight = maxOf(maxWidth, minimumCellHeight * 3 + 12.dp)
                 Column(
@@ -138,6 +193,7 @@ fun TicTacToeScreen(onNavigateBack: () -> Unit) {
                                             currentPlayer = if (currentPlayer == "X") "O" else "X"
                                         }
                                     },
+                                    border = if (isWinningCell) BorderStroke(3.dp, MaterialTheme.colorScheme.onPrimary) else null,
                                     colors = CardDefaults.cardColors(
                                         containerColor = MaterialTheme.colorScheme.surfaceVariant,
                                         disabledContainerColor = if (isWinningCell) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
@@ -150,9 +206,18 @@ fun TicTacToeScreen(onNavigateBack: () -> Unit) {
                                         },
                                 ) {
                                     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                        if (isWinningCell) {
+                                            Icon(
+                                                Icons.Filled.Check,
+                                                contentDescription = null,
+                                                tint = MaterialTheme.colorScheme.onPrimary,
+                                                modifier = Modifier.align(Alignment.TopEnd).padding(4.dp),
+                                            )
+                                        }
                                         Text(
                                             text = cells[index] ?: "",
                                             style = MaterialTheme.typography.headlineLarge,
+                                            fontWeight = if (isWinningCell) FontWeight.Bold else FontWeight.Normal,
                                             modifier = Modifier.clearAndSetSemantics { },
                                             textAlign = TextAlign.Center,
                                             color = if (isWinningCell) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
@@ -167,17 +232,38 @@ fun TicTacToeScreen(onNavigateBack: () -> Unit) {
         }
 
         Spacer(Modifier.height(16.dp))
-        Text(
-            text = stringResource(R.string.tic_tac_toe_tally, xWins, oWins, draws),
-            style = MaterialTheme.typography.bodyMedium,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth(),
-        )
+        val tallyDescription = stringResource(R.string.tic_tac_toe_tally, xWins, oWins, draws)
+        Row(
+            modifier = Modifier.fillMaxWidth().clearAndSetSemantics { contentDescription = tallyDescription },
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            TallyCard("X", xWins, Modifier.weight(1f))
+            TallyCard(stringResource(R.string.ttt_draws_label), draws, Modifier.weight(1f))
+            TallyCard("O", oWins, Modifier.weight(1f))
+        }
 
         Spacer(Modifier.height(12.dp))
-        OutlinedButton(onClick = { newRound() }, modifier = Modifier.fillMaxWidth()) {
-            Icon(Icons.Filled.Refresh, contentDescription = null)
+        OutlinedButton(
+            onClick = { if (roundInProgress) pendingAction = "restart" else newRound() },
+            modifier = Modifier.fillMaxWidth().testTag("tic_new_round"),
+        ) {
+            Icon(Icons.Filled.Refresh, contentDescription = null, modifier = Modifier.padding(end = 8.dp))
             Text(stringResource(R.string.tic_tac_toe_new_round))
+        }
+    }
+}
+
+
+@Composable
+private fun TallyCard(label: String, value: Int, modifier: Modifier = Modifier) {
+    Card(modifier = modifier) {
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(12.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+        ) {
+            Text(label, style = MaterialTheme.typography.labelLarge, textAlign = TextAlign.Center)
+            Text(value.toString(), style = MaterialTheme.typography.titleLarge, textAlign = TextAlign.Center)
         }
     }
 }

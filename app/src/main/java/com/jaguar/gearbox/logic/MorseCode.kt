@@ -1,5 +1,9 @@
 package com.jaguar.gearbox.logic
 
+import java.nio.ByteBuffer
+import java.nio.charset.CharacterCodingException
+import java.nio.charset.CodingErrorAction
+
 private val MORSE_TABLE: Map<Char, String> = mapOf(
     'A' to ".-", 'B' to "-...", 'C' to "-.-.", 'D' to "-..", 'E' to ".",
     'F' to "..-.", 'G' to "--.", 'H' to "....", 'I' to "..", 'J' to ".---",
@@ -34,16 +38,35 @@ fun morseToText(morse: String): String =
                 .joinToString("")
         }
 
+/** UTF-8 bytes, one eight-bit token per byte. ASCII output is unchanged. */
 fun textToBinary(text: String): String =
-    text.map { ch -> ch.code.toString(2).padStart(8, '0') }.joinToString(" ")
+    text.toByteArray(Charsets.UTF_8)
+        .joinToString(" ") { byte -> (byte.toInt() and 0xff).toString(2).padStart(8, '0') }
 
-/** Returns null if any whitespace-separated token isn't a valid 8-bit binary byte. */
+/** Accepts whitespace-separated 1–8 bit bytes; rejects malformed UTF-8 instead of replacing it. */
 fun binaryToText(binary: String): String? {
     val tokens = binary.trim().split(Regex("\\s+")).filter { it.isNotEmpty() }
     if (tokens.isEmpty()) return null
-    val chars = tokens.map { token ->
+    val bytes = ByteArray(tokens.size)
+    tokens.forEachIndexed { index, token ->
         if (!token.matches(Regex("[01]{1,8}"))) return null
-        token.toInt(2).toChar()
+        bytes[index] = token.toInt(2).toByte()
     }
-    return chars.joinToString("")
+    return try {
+        Charsets.UTF_8.newDecoder()
+            .onMalformedInput(CodingErrorAction.REPORT)
+            .onUnmappableCharacter(CodingErrorAction.REPORT)
+            .decode(ByteBuffer.wrap(bytes)).toString()
+    } catch (_: CharacterCodingException) {
+        null
+    }
 }
+
+/** These warnings mirror the existing permissive Morse conversion without changing its output. */
+fun hasUnsupportedMorseText(text: String): Boolean =
+    text.uppercase().any { it != ' ' && it !in MORSE_TABLE }
+
+fun hasUnknownMorseTokens(morse: String): Boolean =
+    morse.trim().split(" / ").any { word ->
+        word.trim().split(" ").any { it.isNotEmpty() && it !in MORSE_TO_CHAR }
+    }

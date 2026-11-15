@@ -2,6 +2,8 @@ package com.jaguar.gearbox
 
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.test.*
+import androidx.compose.ui.semantics.SemanticsActions
+import org.junit.Assert.assertEquals
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.test.platform.app.InstrumentationRegistry
 import com.jaguar.gearbox.data.SimplePrefsStore
@@ -32,6 +34,21 @@ class TambolaRefreshTest {
         rule.onNodeWithText("Reset").performClick()
         rule.onNodeWithText("Ready to play").assertExists()
         rule.onNodeWithText("Reset game").assertIsNotEnabled()
+    }
+
+    @Test fun repeatedDrawsBeforeRecompositionRemainUniqueAndPersisted() {
+        rule.setContent { MaterialTheme { TambolaScreen {} } }
+        val draw = rule.onNodeWithText("Call number")
+            .fetchSemanticsNode().config[SemanticsActions.OnClick].action!!
+        // Invoke the SAME captured callback without allowing an intervening recomposition.
+        rule.runOnIdle {
+            repeat(95) { draw() }
+            val called = store.getIntList("tambola.called")
+            assertEquals(90, called.size)
+            assertEquals((1..90).toSet(), called.toSet())
+            assertEquals(called.last(), store.getInt("tambola.last_called", 0))
+        }
+        rule.onNodeWithText("Game complete").assertIsNotEnabled()
     }
 
     @Test fun boardExposesCalledStateAndLastNumberIsReachable() {

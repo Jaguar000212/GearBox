@@ -21,8 +21,13 @@ import com.jaguar.gearbox.ui.components.ToolScaffold
 import kotlin.random.Random
 
 @Composable
-fun OneOfTwoScreen(
-    chooseIndex: () -> Int = { Random.nextInt(2) },
+fun OneOfTwoScreen(onNavigateBack: () -> Unit) {
+    OneOfTwoScreen(chooseIndex = { Random.nextInt(2) }, onNavigateBack = onNavigateBack)
+}
+
+@Composable
+internal fun OneOfTwoScreen(
+    chooseIndex: () -> Int,
     onNavigateBack: () -> Unit,
 ) {
     var optionA by rememberSaveable { mutableStateOf("") }

@@ -171,7 +171,7 @@ fun TeamPickerScreen(onNavigateBack: () -> Unit) {
                 Text("Number of teams", style = MaterialTheme.typography.titleMedium)
                 Spacer(Modifier.height(8.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    FilledTonalIconButton(onClick = { teamCount--; teams = emptyList() }, enabled = teamCount > 2) {
+                    FilledTonalIconButton(onClick = { if (teamCount > 2) { teamCount--; teams = emptyList() } }, enabled = teamCount > 2) {
                         Icon(Icons.Filled.Remove, contentDescription = "Fewer teams")
                     }
                     Text(
@@ -179,7 +179,7 @@ fun TeamPickerScreen(onNavigateBack: () -> Unit) {
                         style = MaterialTheme.typography.titleLarge,
                         modifier = Modifier.padding(horizontal = 12.dp),
                     )
-                    FilledTonalIconButton(onClick = { teamCount++; teams = emptyList() }, enabled = teamCount < names.size) {
+                    FilledTonalIconButton(onClick = { if (teamCount < names.size) { teamCount++; teams = emptyList() } }, enabled = teamCount < names.size) {
                         Icon(Icons.Filled.Add, contentDescription = "More teams")
                     }
                 }

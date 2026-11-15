@@ -10,6 +10,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Undo
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
+import com.jaguar.gearbox.ui.components.ToolActions
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -25,6 +28,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -37,6 +41,7 @@ import com.jaguar.gearbox.ui.components.ToolScaffold
 @Composable
 fun ChessScoreboardScreen(onNavigateBack: () -> Unit) {
     val context = LocalContext.current
+    var confirmReset by rememberSaveable { mutableStateOf(false) }
     val store = remember { ChessMatchStore(context) }
     val initial = remember { store.load() }
 
@@ -99,8 +104,8 @@ fun ChessScoreboardScreen(onNavigateBack: () -> Unit) {
                     .padding(16.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly,
             ) {
-                ScoreColumn(whiteName, whiteScore)
-                Column {
+                ScoreColumn(whiteName.ifBlank { "White" }, whiteScore, Modifier.weight(1f).testTag("white-score"))
+                Column(Modifier.weight(0.7f)) {
                     Text(
                         text = "Games",
                         style = MaterialTheme.typography.labelLarge,
@@ -114,7 +119,7 @@ fun ChessScoreboardScreen(onNavigateBack: () -> Unit) {
                         modifier = Modifier.fillMaxWidth(),
                     )
                 }
-                ScoreColumn(blackName, blackScore)
+                ScoreColumn(blackName.ifBlank { "Black" }, blackScore, Modifier.weight(1f).testTag("black-score"))
             }
         }
 
@@ -158,38 +163,59 @@ fun ChessScoreboardScreen(onNavigateBack: () -> Unit) {
         ) {
             OutlinedButton(
                 onClick = {
+                    if (canUndo && gamesPlayed > 0) {
                     whiteScore -= lastWhiteDelta
                     blackScore -= lastBlackDelta
                     gamesPlayed--
                     canUndo = false
                     persist()
+                    }
                 },
                 enabled = canUndo,
                 modifier = Modifier.weight(1f),
             ) {
                 Icon(Icons.AutoMirrored.Filled.Undo, contentDescription = null)
-                Text(" Undo")
+                Text(" Undo last result")
             }
             OutlinedButton(
-                onClick = {
-                    whiteScore = 0f
-                    blackScore = 0f
-                    gamesPlayed = 0
-                    canUndo = false
-                    persist()
-                },
+                onClick = { confirmReset = true },
+                enabled = gamesPlayed > 0,
                 modifier = Modifier.weight(1f),
             ) {
                 Icon(Icons.Filled.Refresh, contentDescription = null)
                 Text(" Reset match")
             }
         }
+        Spacer(Modifier.height(12.dp))
+        val summary = "Chess match\n${whiteName.ifBlank { "White" }}: $whiteScore\n${blackName.ifBlank { "Black" }}: $blackScore\nGames: $gamesPlayed"
+        ToolActions(
+            onCopy = { context.copyToClipboard("Score summary", summary) },
+            onShare = {
+                context.shareText(summary)
+            },
+        )
+    }
+    if (confirmReset) {
+        AlertDialog(
+            onDismissRequest = { confirmReset = false },
+            title = { Text("Reset match?") },
+            text = { Text("Clear both scores and the game count? Player names will be kept.") },
+            confirmButton = { TextButton(onClick = {
+                whiteScore = 0f
+                blackScore = 0f
+                gamesPlayed = 0
+                canUndo = false
+                persist()
+                confirmReset = false
+            }) { Text("Reset") } },
+            dismissButton = { TextButton(onClick = { confirmReset = false }) { Text("Cancel") } },
+        )
     }
 }
 
 @Composable
-private fun ScoreColumn(name: String, score: Float) {
-    Column {
+private fun ScoreColumn(name: String, score: Float, modifier: Modifier = Modifier) {
+    Column(modifier) {
         Text(
             text = name,
             style = MaterialTheme.typography.labelLarge,

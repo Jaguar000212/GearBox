@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.Button
@@ -36,6 +37,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -51,6 +54,7 @@ import com.jaguar.gearbox.logic.toggleCountdown
 import com.jaguar.gearbox.logic.resetCountdown
 import com.jaguar.gearbox.timer.ClockRepository
 import com.jaguar.gearbox.timer.TimerAlerts
+import com.jaguar.gearbox.ui.components.ToolActions
 import com.jaguar.gearbox.ui.components.ToolScaffold
 import com.jaguar.gearbox.widget.TimerWidget
 import kotlinx.coroutines.CancellationException
@@ -234,6 +238,16 @@ internal fun StopwatchSection(
     onLap: () -> Unit,
     onReset: () -> Unit,
 ) {
+    val context = LocalContext.current
+    var confirmReset by rememberSaveable { mutableStateOf(false) }
+    if (confirmReset) {
+        ClockResetDialog(
+            title = "Reset stopwatch?",
+            message = "Elapsed time and all recorded laps will be cleared.",
+            onDismiss = { confirmReset = false },
+            onConfirm = { confirmReset = false; onReset() },
+        )
+    }
     ClockFace(elapsedMillis, when {
         isRunning -> "Running"
         elapsedMillis > 0L -> "Paused"
@@ -248,9 +262,20 @@ internal fun StopwatchSection(
         OutlinedButton(onClick = onLap, enabled = isRunning, modifier = Modifier.weight(1f)) {
             Text("Lap")
         }
-        OutlinedButton(onClick = onReset, enabled = elapsedMillis > 0L || laps.isNotEmpty(), modifier = Modifier.weight(1f)) {
+        OutlinedButton(onClick = { confirmReset = true }, enabled = isRunning || elapsedMillis > 0L || laps.isNotEmpty(), modifier = Modifier.weight(1f)) {
             Text("Reset")
         }
+    }
+
+    if (elapsedMillis > 0L || laps.isNotEmpty()) {
+        Spacer(Modifier.height(8.dp))
+        ToolActions(
+            onCopy = { if (!isRunning) context.copyToClipboard("Stopwatch", stopwatchResultText(elapsedMillis, laps)) },
+            onShare = { if (!isRunning) context.shareText(stopwatchResultText(elapsedMillis, laps)) },
+            resultEnabled = !isRunning,
+        )
+        if (isRunning) Text("Pause to copy or share the elapsed time and laps.",
+            style = MaterialTheme.typography.bodySmall)
     }
 
     if (laps.isNotEmpty()) {
@@ -284,6 +309,15 @@ internal fun TimerSection(
     onStartPause: () -> Unit,
     onReset: () -> Unit,
 ) {
+    var confirmReset by rememberSaveable { mutableStateOf(false) }
+    if (confirmReset) {
+        ClockResetDialog(
+            title = "Reset timer?",
+            message = "The current countdown will be stopped and cleared.",
+            onDismiss = { confirmReset = false },
+            onConfirm = { confirmReset = false; onReset() },
+        )
+    }
     val isEditable = !isRunning && remainingMillis == 0L
     if (isEditable) {
         Row(
@@ -331,9 +365,31 @@ internal fun TimerSection(
         Button(onClick = onStartPause, modifier = Modifier.weight(1f)) {
             Text(when { isRunning -> "Pause"; remainingMillis > 0L -> "Resume"; finished -> "Start again"; else -> "Start" })
         }
-        OutlinedButton(onClick = onReset, modifier = Modifier.weight(1f)) {
+        OutlinedButton(onClick = { if (isRunning || remainingMillis > 0L) confirmReset = true else onReset() }, modifier = Modifier.weight(1f)) {
             Text("Reset")
         }
+    }
+}
+
+@Composable
+private fun ClockResetDialog(title: String, message: String, onDismiss: () -> Unit, onConfirm: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(title) },
+        text = { Text(message) },
+        confirmButton = { TextButton(onClick = onConfirm) { Text("Reset now") } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text("Keep timing") } },
+    )
+}
+
+/** Stable snapshot export; callers expose it only when the stopwatch is paused. */
+internal fun stopwatchResultText(elapsedMillis: Long, laps: List<Long>): String = buildString {
+    append("Stopwatch: ").append(formatDuration(elapsedMillis))
+    laps.forEachIndexed { index, total ->
+        val split = total - (laps.getOrNull(index - 1) ?: 0L)
+        append("\nLap ").append(index + 1)
+            .append(": split ").append(formatDuration(split))
+            .append(", total ").append(formatDuration(total))
     }
 }
 
@@ -349,7 +405,11 @@ private fun ClockFace(millis: Long, status: String) {
                     style = if (maxWidth < 320.dp) MaterialTheme.typography.headlineLarge else MaterialTheme.typography.displayMedium,
                     fontFamily = FontFamily.Monospace,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth())
+                    modifier = Modifier.fillMaxWidth().clearAndSetSemantics {
+                        // Do not make continuously ticking centiseconds a live announcement.
+                        val seconds = millis / 1000
+                        contentDescription = "${seconds / 3600} hours, ${(seconds % 3600) / 60} minutes, ${seconds % 60} seconds"
+                    })
             }
         }
     }

@@ -1,0 +1,11 @@
+<resources>
+    <string name="hash_title">Hash Generator</string>
+    <string name="hash_input">Text</string>
+    <string name="hash_exact_input">UTF-8 input. Whitespace and line breaks affect the hash.</string>
+    <string name="hash_help">Hashing produces a digest, not encrypted text.</string>
+    <string name="hash_legacy">Legacy compatibility algorithm. Do not use MD5 or SHA-1 where collision resistance is required. Hashing is not encryption.</string>
+    <string name="hash_digest_title">%1$s digest</string>
+    <string name="hash_length">%1$d hexadecimal characters</string>
+    <string name="hash_empty">Enter text to generate its digest.</string>
+    <string name="hash_working">Calculating digest…</string>
+</resources>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ttt_local_players">Two players · Pass and play</string>
+    <string name="ttt_how_to_play">Tap an empty square. Get three in a row to win.</string>
+    <string name="ttt_round_complete">Round complete. Start a new round to play again.</string>
+    <string name="ttt_draws_label">Draws</string>
+    <string name="ttt_abandon_title">Discard this round?</string>
+    <string name="ttt_abandon_message">Your unfinished round will be lost. Saved scores will stay unchanged.</string>
+    <string name="ttt_keep_playing">Keep playing</string>
+    <string name="ttt_leave">Leave game</string>
+</resources>

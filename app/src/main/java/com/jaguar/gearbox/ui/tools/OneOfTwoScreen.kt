@@ -21,7 +21,10 @@ import com.jaguar.gearbox.ui.components.ToolScaffold
 import kotlin.random.Random
 
 @Composable
-fun OneOfTwoScreen(onNavigateBack: () -> Unit) {
+fun OneOfTwoScreen(
+    chooseIndex: () -> Int = { Random.nextInt(2) },
+    onNavigateBack: () -> Unit,
+) {
     var optionA by rememberSaveable { mutableStateOf("") }
     var optionB by rememberSaveable { mutableStateOf("") }
     // Keep the selected slot, not just its label: identical labels are still two choices.
@@ -63,7 +66,7 @@ fun OneOfTwoScreen(onNavigateBack: () -> Unit) {
         }
         Spacer(Modifier.height(20.dp))
         Button(
-            onClick = { focusManager.clearFocus(); chosenIndex = Random.nextInt(2) },
+            onClick = { focusManager.clearFocus(); chosenIndex = chooseIndex() },
             enabled = optionA.isNotBlank() && optionB.isNotBlank(),
             modifier = Modifier.fillMaxWidth(),
         ) {

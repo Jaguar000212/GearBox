@@ -1,7 +1,5 @@
 package com.jaguar.gearbox.ui.tools
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -9,8 +7,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.ContentCopy
-import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -27,6 +23,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.jaguar.gearbox.data.Tools
+import com.jaguar.gearbox.ui.components.ResultCard
 import com.jaguar.gearbox.ui.components.ToolScaffold
 
 @Composable
@@ -59,40 +56,27 @@ fun NumberToRomanScreen(onNavigateBack: () -> Unit) {
             modifier = Modifier.fillMaxWidth(),
         )
 
-        if (roman != null) {
-            Spacer(Modifier.height(16.dp))
-            Card(modifier = Modifier.fillMaxWidth()) {
-                Text(
-                    text = roman,
-                    style = MaterialTheme.typography.displaySmall,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(24.dp),
-                )
-            }
-        }
-
         Spacer(Modifier.height(16.dp))
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            OutlinedButton(
-                onClick = { input = "" },
-                modifier = Modifier.weight(1f),
-            ) {
-                Icon(Icons.Filled.Clear, contentDescription = null)
-                Text(" Clear")
-            }
-            OutlinedButton(
-                onClick = { if (roman != null) context.copyToClipboard("Roman numeral", roman) },
-                enabled = roman != null,
-                modifier = Modifier.weight(1f),
-            ) {
-                Icon(Icons.Filled.ContentCopy, contentDescription = null)
-                Text(" Copy")
-            }
+        if (roman != null) {
+            Text("Roman numeral", style = MaterialTheme.typography.titleMedium)
+            Spacer(Modifier.height(8.dp))
+            ResultCard(
+                text = roman,
+                textStyle = MaterialTheme.typography.headlineLarge,
+                textAlign = TextAlign.Center,
+                onCopy = { context.copyToClipboard("Roman numeral", roman) },
+                onShare = { context.shareText("$parsed → $roman") },
+            )
+            Text("$parsed → $roman", style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(top = 8.dp))
+        } else if (input.isBlank()) {
+            Text("Enter a whole number to see its Roman numeral. For example, 1994 → MCMXCIV.",
+                style = MaterialTheme.typography.bodyMedium)
+        }
+        Spacer(Modifier.height(12.dp))
+        OutlinedButton(onClick = { input = "" }, enabled = input.isNotEmpty(), modifier = Modifier.fillMaxWidth()) {
+            Icon(Icons.Filled.Clear, contentDescription = null)
+            Text(" Clear")
         }
     }
 }

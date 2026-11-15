@@ -6,7 +6,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.Icon
@@ -49,6 +52,7 @@ fun CompassScreen(
         val heading = azimuthDegrees(snapshot.azimuthRad)
         val point = compassPoint(heading)
 
+        Text(stringResource(R.string.compass_magnetic_label), style = MaterialTheme.typography.labelLarge)
         Text(
             text = stringResource(R.string.compass_heading, point, "%.0f".format(heading)),
             style = MaterialTheme.typography.headlineMedium,
@@ -58,10 +62,12 @@ fun CompassScreen(
 
         Text(stringResource(R.string.compass_note), style = MaterialTheme.typography.bodySmall)
         Spacer(Modifier.height(24.dp))
+        Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
         Box(
             modifier = Modifier
+                .widthIn(max = 280.dp)
                 .fillMaxWidth()
-                .height(280.dp),
+                .aspectRatio(1f),
             contentAlignment = Alignment.Center,
         ) {
             val outlineColor = MaterialTheme.colorScheme.outline
@@ -73,11 +79,11 @@ fun CompassScreen(
             // the screen (i.e. wherever the device is currently facing).
             Box(
                 modifier = Modifier
-                    .size(240.dp)
+                    .fillMaxSize().padding(20.dp).clearAndSetSemantics { }
                     .graphicsLayer { rotationZ = -heading.toFloat() },
                 contentAlignment = Alignment.Center,
             ) {
-                Canvas(modifier = Modifier.size(240.dp)) {
+                Canvas(modifier = Modifier.fillMaxSize()) {
                     val radius = size.minDimension / 2
                     val center = Offset(size.width / 2, size.height / 2)
                     drawCircle(color = trackColor, radius = radius, center = center)
@@ -108,5 +114,7 @@ fun CompassScreen(
                     .graphicsLayer { rotationZ = 180f },
             )
         }
+        }
+        Text(stringResource(R.string.compass_usage_help), style = MaterialTheme.typography.bodyMedium)
     }
 }

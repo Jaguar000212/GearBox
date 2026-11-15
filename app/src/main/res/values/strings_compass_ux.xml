@@ -1,0 +1,4 @@
+<resources>
+    <string name="compass_magnetic_label">Magnetic heading</string>
+    <string name="compass_usage_help">Hold the device flat and point its top edge in the direction you want to check. Keep away from magnets and metal. This is a sensor estimate, not a navigation guarantee.</string>
+</resources>

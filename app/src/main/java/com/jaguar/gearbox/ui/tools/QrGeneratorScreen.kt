@@ -39,7 +39,6 @@ import com.jaguar.gearbox.data.Tools
 import com.jaguar.gearbox.logic.generateQrMatrix
 import com.jaguar.gearbox.ui.components.ToolScaffold
 import java.io.File
-import java.io.FileOutputStream
 import java.io.IOException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -141,15 +140,13 @@ private suspend fun shareQrBitmap(context: android.content.Context, bitmap: Bitm
     return try {
         val uri = withContext(Dispatchers.IO) {
             val qrDir = File(context.cacheDir, "qr")
-            if (!qrDir.isDirectory && !qrDir.mkdirs()) throw IOException("QR cache unavailable")
-            // A previously shared URI must not change when a new code is shared.
-            val file = File.createTempFile("qr_share_", ".png", qrDir)
-            FileOutputStream(file).use { out ->
+            prepareQrShareFile(qrDir, write = { out ->
                 if (!bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)) {
                     throw IOException("PNG encoding failed")
                 }
-            }
-            FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
+            }, prepare = { file ->
+                FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
+            })
         }
         val intent = Intent(Intent.ACTION_SEND).apply {
             type = "image/png"

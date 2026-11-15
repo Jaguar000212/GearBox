@@ -5,7 +5,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -59,18 +63,22 @@ fun GstCalculatorScreen(onNavigateBack: () -> Unit) {
             )
         }
 
+        Text(if (inclusive) "Extract the tax already included in the amount." else "Calculate tax on top of the base amount.",
+            style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Spacer(Modifier.height(16.dp))
         DecimalField(
             value = amount,
             onValueChange = { amount = it },
             label = if (inclusive) "Amount (tax included)" else "Amount (before tax)",
             placeholder = "e.g. 1000",
+            errorText = if (amount.isNotBlank() && amountValue == null) "Enter a valid, finite, non-negative amount." else null,
         )
         Spacer(Modifier.height(12.dp))
         DecimalField(
             value = rate,
             onValueChange = { rate = it },
             label = "Tax rate (%)",
+            errorText = if (rate.isNotBlank() && rateValue == null) "Enter a valid, finite, non-negative rate." else null,
         )
 
         if (result != null) {
@@ -79,14 +87,26 @@ fun GstCalculatorScreen(onNavigateBack: () -> Unit) {
                     "Total: ${formatTrimmed(result.totalAmount, 2)}"
 
             Spacer(Modifier.height(20.dp))
+            Text(if (inclusive) "Before tax" else "Including tax", style = MaterialTheme.typography.labelLarge)
+            Text(formatTrimmed(if (inclusive) result.baseAmount else result.totalAmount, 2), style = MaterialTheme.typography.headlineLarge, color = MaterialTheme.colorScheme.primary)
+            Spacer(Modifier.height(12.dp))
             ResultCard(
                 text = summary,
                 onCopy = { context.copyToClipboard("GST", summary) },
                 onShare = { context.shareText(summary) },
             )
-        } else if (amount.isNotBlank()) {
+        } else if (amountValue != null && rateValue != null) {
             Spacer(Modifier.height(12.dp))
-            Text("Enter a valid amount and tax rate within the supported numeric range.", color = MaterialTheme.colorScheme.error)
+            Text("The result exceeds the supported numeric range. Reduce the amount or tax rate.", color = MaterialTheme.colorScheme.error)
+        }
+        Spacer(Modifier.height(16.dp))
+        Text("Use the applicable rate; the default is not a tax recommendation.", style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant)
+        androidx.compose.material3.TextButton(modifier = Modifier.fillMaxWidth(), onClick = { amount = ""; rate = "18"; inclusive = false },
+            enabled = amount.isNotEmpty() || rate != "18" || inclusive) {
+            Icon(Icons.Filled.Clear, contentDescription = null)
+            Spacer(Modifier.width(8.dp))
+            Text("Clear")
         }
     }
 }

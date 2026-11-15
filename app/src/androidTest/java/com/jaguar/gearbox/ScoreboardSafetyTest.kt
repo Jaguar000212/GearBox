@@ -12,7 +12,7 @@ class ScoreboardSafetyTest {
     private val key = "scoreboard_safety_test"
     private val prefs get() = context.getSharedPreferences("gearbox_prefs", 0)
 
-    @Before fun clear() { prefs.edit().remove(key).remove("${key}_v2").commit() }
+    @Before fun clear() { prefs.edit().remove(key).remove("${key}_v2").remove("${key}_v2_recovery").commit() }
 
     @Test fun rapidAdjustmentsUseLatestScoreAndRejectOverflow() {
         val store = ScoreboardStore(context, key)
@@ -34,6 +34,17 @@ class ScoreboardSafetyTest {
         store.adjustScore(0, 1)
         assertEquals(raw, prefs.getString(key, null))
         assertEquals(-2, ScoreboardStore(context, key).players[0].score)
+    }
+
+    @Test fun malformedV2IsReadOnlyAndNeverReplaced() {
+        val broken = "[{broken post-migration data"
+        prefs.edit().putString("${key}_v2", broken).commit()
+        val store = ScoreboardStore(context, key)
+        assertTrue(store.hasUnreadableSavedData)
+        store.add(ScorePlayer("New", 7))
+        assertEquals(broken, prefs.getString("${key}_v2", null))
+        assertTrue(store.isReadOnly)
+        assertTrue(store.players.isEmpty())
     }
 
     @Test fun namesWithLegacySeparatorsAndDuplicatesRoundTrip() {

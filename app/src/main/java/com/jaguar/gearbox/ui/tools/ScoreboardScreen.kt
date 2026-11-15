@@ -13,11 +13,8 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Remove
-import android.content.Intent
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.TextButton
-import androidx.compose.ui.platform.LocalClipboardManager
-import androidx.compose.ui.text.AnnotatedString
 import com.jaguar.gearbox.ui.components.ToolActions
 import androidx.compose.material3.Card
 import androidx.compose.material3.FilledTonalIconButton
@@ -45,7 +42,6 @@ import com.jaguar.gearbox.ui.components.ToolScaffold
 @Composable
 fun ScoreboardScreen(onNavigateBack: () -> Unit) {
     val context = LocalContext.current
-    val clipboard = LocalClipboardManager.current
     var pendingAction by remember { mutableStateOf<String?>(null) }
     var pendingRemoval by remember { mutableStateOf<Int?>(null) }
     var limitMessage by remember { mutableStateOf<String?>(null) }
@@ -71,7 +67,7 @@ fun ScoreboardScreen(onNavigateBack: () -> Unit) {
                 modifier = Modifier.weight(1f),
             )
             FilledTonalIconButton(
-                enabled = newName.isNotBlank(),
+                enabled = newName.isNotBlank() && !store.isReadOnly,
                 onClick = {
                     val name = newName.trim()
                     if (name.isNotEmpty()) {
@@ -84,9 +80,9 @@ fun ScoreboardScreen(onNavigateBack: () -> Unit) {
             }
         }
 
-        if (store.hasUnrecoverableLegacyRows) {
+        if (store.hasUnreadableSavedData) {
             Text(
-                "Some older saved entries could not be read. Their original data has been retained.",
+                "Some saved entries could not be read. Their original data has been retained for recovery; avoid further edits until recovered.",
                 color = MaterialTheme.colorScheme.error,
             )
         }
@@ -115,17 +111,17 @@ fun ScoreboardScreen(onNavigateBack: () -> Unit) {
                             style = MaterialTheme.typography.headlineMedium,
                         )
                     }
-                    IconButton(onClick = {
+                    IconButton(enabled = !store.isReadOnly, onClick = {
                         limitMessage = if (store.adjustScore(index, -1)) null else "Score limit reached."
                     }) {
                         Icon(Icons.Filled.Remove, contentDescription = "Decrease score for ${player.name}")
                     }
-                    IconButton(onClick = {
+                    IconButton(enabled = !store.isReadOnly, onClick = {
                         limitMessage = if (store.adjustScore(index, 1)) null else "Score limit reached."
                     }) {
                         Icon(Icons.Filled.Add, contentDescription = "Increase score for ${player.name}")
                     }
-                    IconButton(onClick = { pendingRemoval = index; pendingAction = "Remove player" }) {
+                    IconButton(enabled = !store.isReadOnly, onClick = { pendingRemoval = index; pendingAction = "Remove player" }) {
                         Icon(Icons.Filled.Delete, contentDescription = "Remove ${player.name}")
                     }
                 }
@@ -137,12 +133,9 @@ fun ScoreboardScreen(onNavigateBack: () -> Unit) {
             val summary = players.mapIndexed { i, p -> "${i + 1}. ${p.name}: ${p.score}" }.joinToString("\n")
             Spacer(Modifier.height(12.dp))
             ToolActions(
-                onCopy = { clipboard.setText(AnnotatedString(summary)) },
+                onCopy = { context.copyToClipboard("Score summary", summary) },
                 onShare = {
-                    context.startActivity(Intent.createChooser(Intent(Intent.ACTION_SEND).apply {
-                        type = "text/plain"
-                        putExtra(Intent.EXTRA_TEXT, summary)
-                    }, "Share scoreboard"))
+                    context.shareText(summary)
                 },
             )
             Spacer(Modifier.height(20.dp))
@@ -151,6 +144,7 @@ fun ScoreboardScreen(onNavigateBack: () -> Unit) {
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 OutlinedButton(
+                    enabled = !store.isReadOnly,
                     onClick = { pendingAction = "Reset scores" },
                     modifier = Modifier.weight(1f),
                 ) {
@@ -158,6 +152,7 @@ fun ScoreboardScreen(onNavigateBack: () -> Unit) {
                     Text(" Reset scores")
                 }
                 OutlinedButton(
+                    enabled = !store.isReadOnly,
                     onClick = { pendingAction = "Clear all" },
                     modifier = Modifier.weight(1f),
                 ) {

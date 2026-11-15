@@ -21,6 +21,8 @@ class ScoreboardStore(context: Context, private val key: String) {
     private val prefs = context.applicationContext
         .getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
+    private var unreadableV2: String? = null
+
     /** The untouched legacy data remains available if a row could not be decoded. */
     val hasUnrecoverableLegacyRows: Boolean = prefs.getString(key, null)?.split(ENTRY_SEPARATOR)
         ?.filter { it.isNotEmpty() }?.any {
@@ -31,18 +33,26 @@ class ScoreboardStore(context: Context, private val key: String) {
     val players: SnapshotStateList<ScorePlayer> =
         mutableStateListOf<ScorePlayer>().also { it.addAll(readFromPrefs()) }
 
+    val hasUnreadableSavedData: Boolean
+        get() = hasUnrecoverableLegacyRows || unreadableV2 != null
+
+    val isReadOnly: Boolean get() = unreadableV2 != null
+
     fun add(player: ScorePlayer) {
+        if (isReadOnly) return
         players.add(player)
         persist()
     }
 
     fun update(index: Int, player: ScorePlayer) {
+        if (isReadOnly) return
         players[index] = player
         persist()
     }
 
     /** Adjust the latest state, not the score captured by the last composition. */
     fun adjustScore(index: Int, delta: Int): Boolean {
+        if (isReadOnly) return false
         val current = players.getOrNull(index) ?: return false
         val next = current.score.toLong() + delta
         if (next !in Int.MIN_VALUE.toLong()..Int.MAX_VALUE.toLong()) return false
@@ -52,12 +62,14 @@ class ScoreboardStore(context: Context, private val key: String) {
     }
 
     fun removeAt(index: Int) {
+        if (isReadOnly) return
         if (index !in players.indices) return
         players.removeAt(index)
         persist()
     }
 
     fun resetScores() {
+        if (isReadOnly) return
         for (i in players.indices) {
             players[i] = players[i].copy(score = 0)
         }
@@ -65,6 +77,7 @@ class ScoreboardStore(context: Context, private val key: String) {
     }
 
     fun clear() {
+        if (isReadOnly) return
         players.clear()
         persist()
     }
@@ -75,9 +88,9 @@ class ScoreboardStore(context: Context, private val key: String) {
                 val array = JSONArray(encoded)
                 return List(array.length()) { i ->
                     val item = array.getJSONObject(i)
-                    ScorePlayer(item.getString("name"), item.getInt("score"))
+                    ScorePlayer(item.getString("name"), item.get("score").toString().toInt())
                 }
-            }
+            }.onFailure { unreadableV2 = encoded }
         }
         val raw = prefs.getString(key, null) ?: return emptyList()
         return raw.split(ENTRY_SEPARATOR)
@@ -96,6 +109,8 @@ class ScoreboardStore(context: Context, private val key: String) {
         }
         // Never overwrite the legacy raw value: malformed/ambiguous rows cannot be
         // reconstructed reliably, so retain the original for recovery after migration.
+        // Never replace unreadable v2 data with a partial fallback.
+        if (isReadOnly) return
         prefs.edit { putString("${key}_v2", array.toString()) }
     }
 

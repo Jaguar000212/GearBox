@@ -1,0 +1,5 @@
+<resources>
+    <string name="color_saved_notice">Saved %1$s to your palette</string>
+    <string name="color_copy_format">Copy %1$s</string>
+    <string name="color_draft_help">Enter a HEX color. Preview and exports use the last valid color.</string>
+</resources>

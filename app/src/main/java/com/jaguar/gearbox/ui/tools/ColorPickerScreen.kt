@@ -25,6 +25,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.TextButton
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.liveRegion
+import com.jaguar.gearbox.ui.components.ToolActions
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
@@ -47,6 +51,7 @@ import com.jaguar.gearbox.R
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.jaguar.gearbox.data.SimplePrefsStore
 import com.jaguar.gearbox.data.Tools
@@ -67,8 +72,9 @@ fun ColorPickerScreen(onNavigateBack: () -> Unit) {
     var red by rememberSaveable { mutableFloatStateOf(103f) }
     var green by rememberSaveable { mutableFloatStateOf(80f) }
     var blue by rememberSaveable { mutableFloatStateOf(164f) }
-    var hexInput by rememberSaveable { mutableStateOf("") }
+    var hexInput by rememberSaveable { mutableStateOf("#6750A4") }
     var hexError by rememberSaveable { mutableStateOf("") }
+    var savedNotice by remember { mutableStateOf("") }
     var recentColors by rememberSaveable(stateSaver = StringListSaver) {
         mutableStateOf(store.getString(KEY_RECENT_COLORS, "").split(",").filter { it.isNotBlank() })
     }
@@ -101,6 +107,7 @@ fun ColorPickerScreen(onNavigateBack: () -> Unit) {
                     recentColors =
                         (listOf(hex) + recentColors.filterNot { it == hex }).take(MAX_RECENT_COLORS)
                     store.putString(KEY_RECENT_COLORS, recentColors.joinToString(","))
+                    savedNotice = context.getString(R.string.color_saved_notice, hex)
                 },
             ) {
                 Icon(Icons.Filled.BookmarkAdd, contentDescription = stringResource(R.string.color_save, hex))
@@ -128,7 +135,7 @@ fun ColorPickerScreen(onNavigateBack: () -> Unit) {
                                     red = parsed.first.toFloat()
                                     green = parsed.second.toFloat()
                                     blue = parsed.third.toFloat()
-                                    hexInput = ""
+                                    hexInput = savedHex
                                     hexError = ""
                                 }
                                 .padding(4.dp)
@@ -152,19 +159,20 @@ fun ColorPickerScreen(onNavigateBack: () -> Unit) {
 
         Spacer(Modifier.height(20.dp))
         Text(stringResource(R.string.color_rgb), style = MaterialTheme.typography.titleMedium)
-        // Clearing hexInput lets the field fall back to displaying the live `hex` computed from
-        // the sliders - otherwise it kept showing whatever was last typed even after a slider
-        // moved the color elsewhere, showing a swatch and a hex value that no longer matched.
-        ColorSlider(stringResource(R.string.color_red), red) { red = it; hexInput = "" }
-        ColorSlider(stringResource(R.string.color_green), green) { green = it; hexInput = "" }
-        ColorSlider(stringResource(R.string.color_blue), blue) { blue = it; hexInput = "" }
+        fun updateDraft() {
+            hexInput = String.format("#%02X%02X%02X", red.roundToInt(), green.roundToInt(), blue.roundToInt())
+            hexError = ""
+        }
+        ColorSlider(stringResource(R.string.color_red), red) { red = it; updateDraft() }
+        ColorSlider(stringResource(R.string.color_green), green) { green = it; updateDraft() }
+        ColorSlider(stringResource(R.string.color_blue), blue) { blue = it; updateDraft() }
 
         Spacer(Modifier.height(16.dp))
         HorizontalDivider()
         Spacer(Modifier.height(16.dp))
 
         OutlinedTextField(
-            value = hexInput.ifEmpty { hex },
+            value = hexInput,
             onValueChange = { value ->
                 hexInput = value
                 val parsed = parseHex(value)
@@ -179,9 +187,10 @@ fun ColorPickerScreen(onNavigateBack: () -> Unit) {
             },
             label = { Text(stringResource(R.string.color_hex)) },
             isError = hexError.isNotEmpty(),
-            supportingText = { if (hexError.isNotEmpty()) Text(hexError) },
+            supportingText = { Text(hexError.ifEmpty { stringResource(R.string.color_draft_help) }) },
             modifier = Modifier
                 .fillMaxWidth()
+                .testTag("colorHexInput")
                 .onFocusChanged { focusState ->
                     if (!focusState.isFocused && hexInput.isNotBlank() && parseHex(hexInput) == null) {
                         hexError = context.getString(R.string.color_hex_error)
@@ -198,21 +207,32 @@ fun ColorPickerScreen(onNavigateBack: () -> Unit) {
                     .fillMaxWidth()
                     .padding(16.dp)
             ) {
-                ValueRow(stringResource(R.string.color_hex), hex)
+                ColorValue(stringResource(R.string.color_hex), hex)
                 Spacer(Modifier.height(8.dp))
-                ValueRow(stringResource(R.string.color_rgb), rgbText)
+                ColorValue(stringResource(R.string.color_rgb), rgbText)
                 Spacer(Modifier.height(8.dp))
-                ValueRow(stringResource(R.string.color_hsl), hslText)
+                ColorValue(stringResource(R.string.color_hsl), hslText)
             }
         }
 
         Spacer(Modifier.height(12.dp))
-        OutlinedButton(
-            onClick = { context.copyToClipboard(context.getString(R.string.color_copy_label), "$hex\n$rgbText\n$hslText") },
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-            Icon(Icons.Filled.ContentCopy, contentDescription = null)
-            Text(stringResource(R.string.color_copy_all))
+        ToolActions(
+            onCopy = { context.copyToClipboard(context.getString(R.string.color_copy_label), "$hex\n$rgbText\n$hslText") },
+            onShare = { context.shareText("$hex\n$rgbText\n$hslText") },
+        )
+        if (savedNotice.isNotEmpty()) {
+            Text(savedNotice, modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite })
+        }
+    }
+}
+
+@Composable
+private fun ColorValue(label: String, value: String) {
+    val context = LocalContext.current
+    Column(Modifier.fillMaxWidth()) {
+        ValueRow(label, value)
+        TextButton(onClick = { context.copyToClipboard(label, value) }) {
+            Text(stringResource(R.string.color_copy_format, label))
         }
     }
 }

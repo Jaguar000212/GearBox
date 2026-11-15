@@ -6,7 +6,18 @@ package com.jaguar.gearbox.logic
  * string) on invalid input, so the caller can show the error as plain text instead of inside a
  * card styled as a successful result.
  */
-fun computeAverageResult(input: String): String? {
+data class AverageStatistics(
+    val arithmetic: String, val geometric: String, val harmonic: String,
+    val sum: String, val count: Int, val largest: String, val smallest: String,
+) {
+    fun asText(): String = "Result: $arithmetic\n\n" +
+        "Geometric Mean: $geometric\nHarmonic Mean: $harmonic\n\n" +
+        "Sum: $sum\nCount: $count\nLargest: $largest\nSmallest: $smallest"
+}
+
+fun computeAverageResult(input: String): String? = computeAverageStatistics(input)?.asText()
+
+fun computeAverageStatistics(input: String): AverageStatistics? {
     val numbers = try {
         input.split(",")
             .map { it.trim() }
@@ -31,7 +42,7 @@ fun computeAverageResult(input: String): String? {
         val harmonicMean = numbers.size / reciprocalSum
         if (!reciprocalSum.isFinite() || reciprocalSum == 0.0 || !harmonicMean.isFinite()) {
             "N/A (undefined or outside numeric range)"
-        } else formatTrimmed(harmonicMean)
+        } else formatNonzeroTrimmed(harmonicMean)
     }
 
     // A fractional power of a negative base is NaN in Java/Kotlin regardless of whether the
@@ -43,16 +54,13 @@ fun computeAverageResult(input: String): String? {
     } else {
         // Log-space avoids overflowing the product for ordinary large, positive inputs.
         val geometricMean = kotlin.math.exp(numbers.sumOf { kotlin.math.ln(it) } / numbers.size)
-        if (geometricMean.isFinite()) formatTrimmed(geometricMean)
+        if (geometricMean.isFinite()) formatNonzeroTrimmed(geometricMean)
         else "N/A (outside numeric range)"
     }
 
     val largest = numbers.max()
     val smallest = numbers.min()
 
-    return "Result: ${formatTrimmed(average)}\n\n" +
-            "Geometric Mean: $geometricMeanText\nHarmonic Mean: $harmonicMeanText\n\n" +
-            "Sum: ${formatTrimmed(sum)}\nCount: ${numbers.size}\n" +
-            "Largest: ${formatTrimmed(largest)}\nSmallest: ${formatTrimmed(smallest)}"
+    return AverageStatistics(formatNonzeroTrimmed(average), geometricMeanText, harmonicMeanText,
+        formatNonzeroTrimmed(sum), numbers.size, formatNonzeroTrimmed(largest), formatNonzeroTrimmed(smallest))
 }
-

@@ -38,7 +38,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.jaguar.gearbox.data.Tools
-import com.jaguar.gearbox.logic.formatTrimmed
+import com.jaguar.gearbox.logic.formatNonzeroTrimmed
+import com.jaguar.gearbox.ui.components.ToolActions
 import com.jaguar.gearbox.ui.components.ToolScaffold
 
 private enum class UnitCategory(val label: String) {
@@ -166,7 +167,7 @@ fun UnitConverterScreen(onNavigateBack: () -> Unit) {
         val to = units.first { it.label == toUnit }
         val result = value?.let { to.fromBase(from.toBase(it)) }?.takeIf { it.isFinite() }
         val equation = if (value != null && result != null) {
-            "${formatTrimmed(value)} ${from.symbol} = ${formatTrimmed(result)} ${to.symbol}"
+            "${formatNonzeroTrimmed(value)} ${from.symbol} = ${formatNonzeroTrimmed(result)} ${to.symbol}"
         } else null
 
         Spacer(Modifier.height(20.dp))
@@ -230,7 +231,7 @@ fun UnitConverterScreen(onNavigateBack: () -> Unit) {
                 )
                 if (result != null && equation != null) {
                     // Separate the value from the unit so long values and large fonts can wrap.
-                    Text(formatTrimmed(result), style = MaterialTheme.typography.displaySmall)
+                    Text(formatNonzeroTrimmed(result), style = MaterialTheme.typography.displaySmall)
                     Text(to.symbol, style = MaterialTheme.typography.titleMedium)
                     Text(equation, style = MaterialTheme.typography.bodyMedium)
                 } else {
@@ -244,28 +245,11 @@ fun UnitConverterScreen(onNavigateBack: () -> Unit) {
             }
         }
         Spacer(Modifier.height(12.dp))
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            FilledTonalButton(
-                onClick = { equation?.let { context.copyToClipboard("Unit conversion", it) } },
-                enabled = equation != null,
-                modifier = Modifier.weight(1f),
-            ) {
-                Icon(Icons.Filled.ContentCopy, contentDescription = null)
-                Text(" Copy")
-            }
-            TextButton(
-                onClick = { equation?.let { context.shareText(it) } },
-                enabled = equation != null,
-                modifier = Modifier.weight(1f),
-            ) {
-                Icon(Icons.Filled.Share, contentDescription = null)
-                Text(" Share")
-            }
-        }
+        ToolActions(
+            onCopy = { equation?.let { context.copyToClipboard("Unit conversion", it) } },
+            onShare = { equation?.let { context.shareText(it) } },
+            resultEnabled = equation != null,
+        )
     }
 }
 

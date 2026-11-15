@@ -50,23 +50,7 @@ fun ResultCard(
 
         if (onCopy != null || onShare != null) {
             Spacer(Modifier.height(12.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                if (onCopy != null) {
-                    OutlinedButton(onClick = onCopy, modifier = Modifier.weight(1f)) {
-                        Icon(Icons.Filled.ContentCopy, contentDescription = null)
-                        Text(" Copy")
-                    }
-                }
-                if (onShare != null) {
-                    OutlinedButton(onClick = onShare, modifier = Modifier.weight(1f)) {
-                        Icon(Icons.Filled.Share, contentDescription = null)
-                        Text(" Share")
-                    }
-                }
-            }
+            ToolActions(onCopy = onCopy, onShare = onShare)
         }
     }
 }

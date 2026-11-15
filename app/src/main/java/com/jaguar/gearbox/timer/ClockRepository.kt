@@ -6,6 +6,7 @@ import android.provider.Settings
 import com.jaguar.gearbox.logic.ClockState
 import com.jaguar.gearbox.logic.advanceClockState
 import com.jaguar.gearbox.logic.claimTimerCompletion
+import com.jaguar.gearbox.logic.prepareTimerNotificationChange
 
 /** One process-wide owner prevents stale screen snapshots from overwriting widget/alarm actions. */
 object ClockRepository {
@@ -33,6 +34,11 @@ object ClockRepository {
             bootCount = p.getInt(PREFIX + "boot_count", -1),
             generation = p.getLong(PREFIX + "generation", if (running) 1 else 0),
             alertedGeneration = p.getLong(PREFIX + "alerted_generation", 0),
+            ongoingNotificationEnabled = p.getBoolean(PREFIX + "ongoing_enabled", false),
+            ongoingNotificationDismissed = p.getBoolean(PREFIX + "ongoing_dismissed", false),
+            notificationRevision = p.getLong(PREFIX + "notification_revision", 0),
+            stopwatchNotificationDismissed = p.getBoolean(PREFIX + "sw_notification_dismissed", false),
+            stopwatchNotificationRevision = p.getLong(PREFIX + "sw_notification_revision", 0),
         )
     }
 
@@ -58,6 +64,11 @@ object ClockRepository {
             .putInt(PREFIX + "boot_count", s.bootCount)
             .putLong(PREFIX + "generation", s.generation)
             .putLong(PREFIX + "alerted_generation", s.alertedGeneration)
+            .putBoolean(PREFIX + "ongoing_enabled", s.ongoingNotificationEnabled)
+            .putBoolean(PREFIX + "ongoing_dismissed", s.ongoingNotificationDismissed)
+            .putLong(PREFIX + "notification_revision", s.notificationRevision)
+            .putBoolean(PREFIX + "sw_notification_dismissed", s.stopwatchNotificationDismissed)
+            .putLong(PREFIX + "sw_notification_revision", s.stopwatchNotificationRevision)
             .commit()) { "Could not save timer state" }
     }
 
@@ -66,10 +77,12 @@ object ClockRepository {
     /** The caller transforms fresh state, not a Compose or widget snapshot. */
     fun update(context: Context, transform: (ClockState) -> ClockState): ClockState = synchronized(lock) {
         val current = refresh(context)
-        val next = transform(current)
+        val next = prepareTimerNotificationChange(current, transform(current))
         save(context, next)
         if (!next.timerFinished) TimerAlerts.dismissCompletion(context)
         TimerAlerts.schedule(context, next)
+        TimerStatusNotification.sync(context, next)
+        StopwatchStatusNotification.sync(context, next)
         next
     }
 
@@ -80,6 +93,7 @@ object ClockRepository {
         if (claimed != null) {
             save(context, claimed)
             TimerAlerts.cancel(context)
+            TimerStatusNotification.cancel(context)
             TimerAlerts.notifyCompletion(context)
             claimed
         } else current
@@ -91,5 +105,7 @@ object ClockRepository {
             save(context, state)
             TimerAlerts.schedule(context, state)
         }
+        TimerStatusNotification.sync(context, state)
+        StopwatchStatusNotification.sync(context, state)
     }
 }

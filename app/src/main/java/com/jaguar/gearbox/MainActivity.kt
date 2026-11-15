@@ -159,8 +159,14 @@ fun GearBoxApp(
 
     // Deep-links straight into a tool when GearBox is launched from one of its own app shortcuts.
     LaunchedEffect(pendingRoute) {
-        val route = pendingRoute ?: return@LaunchedEffect
-        if (Tools.byRoute(route) != null) {
+        val requestedRoute = pendingRoute ?: return@LaunchedEffect
+        val route = if (requestedRoute == com.jaguar.gearbox.timer.TimerStatusNotification.COUNTDOWN_ROUTE || requestedRoute == com.jaguar.gearbox.timer.StopwatchStatusNotification.STOPWATCH_ROUTE || requestedRoute == com.jaguar.gearbox.timer.StopwatchStatusNotification.RESET_ROUTE) {
+            kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                com.jaguar.gearbox.timer.ClockRepository.update(context) { it.copy(mode = if (requestedRoute == com.jaguar.gearbox.timer.TimerStatusNotification.COUNTDOWN_ROUTE) "TIMER" else "STOPWATCH") }
+            }
+            if (requestedRoute == com.jaguar.gearbox.timer.StopwatchStatusNotification.RESET_ROUTE) requestedRoute else Tools.ROUTE_TIMER_STOPWATCH
+        } else requestedRoute
+        if (Tools.byRoute(route) != null || route == com.jaguar.gearbox.timer.StopwatchStatusNotification.RESET_ROUTE) {
             recentTools.recordOpened(route)
             navController.navigate(route)
         }
@@ -179,6 +185,10 @@ fun GearBoxApp(
     ) { padding ->
         Box(modifier = Modifier.padding(padding)) {
             NavHost(navController = navController, startDestination = ROUTE_HOME) {
+                composable(com.jaguar.gearbox.timer.StopwatchStatusNotification.RESET_ROUTE) {
+                    com.jaguar.gearbox.ui.tools.TimerStopwatchScreen(
+                        onNavigateBack = { navController.popBackStack() }, requestStopwatchReset = true)
+                }
                 composable(ROUTE_HOME) {
                     HomeScreen(
                         tools = Tools.all,

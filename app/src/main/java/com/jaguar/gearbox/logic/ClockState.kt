@@ -16,6 +16,11 @@ data class ClockState(
     val bootCount: Int = -1,
     val generation: Long = 0,
     val alertedGeneration: Long = 0,
+    val ongoingNotificationEnabled: Boolean = false,
+    val ongoingNotificationDismissed: Boolean = false,
+    val notificationRevision: Long = 0,
+    val stopwatchNotificationDismissed: Boolean = false,
+    val stopwatchNotificationRevision: Long = 0,
 )
 
 /** Use a monotonic clock within one boot; wall time is only a reboot/legacy fallback. */
@@ -71,3 +76,48 @@ fun toggleCountdown(state: ClockState, allowNewDuration: Boolean = true): ClockS
 fun resetCountdown(state: ClockState): ClockState = state.copy(
     timerRunning = false, timerRemainingMillis = 0, timerFinished = false,
 )
+
+/** Invalidates old action PendingIntents on every timer control/settings transition. */
+fun prepareTimerNotificationChange(previous: ClockState, next: ClockState): ClockState {
+    val newTimer = next.timerRunning && previous.timerRemainingMillis == 0L
+    val changed = previous.timerRunning != next.timerRunning ||
+        previous.timerRemainingMillis != next.timerRemainingMillis ||
+        previous.generation != next.generation ||
+        previous.ongoingNotificationEnabled != next.ongoingNotificationEnabled ||
+        previous.ongoingNotificationDismissed != next.ongoingNotificationDismissed
+    return next.copy(
+        ongoingNotificationDismissed = if (newTimer) false else next.ongoingNotificationDismissed,
+        stopwatchNotificationDismissed = if (next.stopwatchRunning && previous.stopwatchElapsedMillis == 0L)
+            false else next.stopwatchNotificationDismissed,
+        stopwatchNotificationRevision = if (previous.stopwatchRunning != next.stopwatchRunning ||
+            previous.stopwatchElapsedMillis != next.stopwatchElapsedMillis ||
+            previous.ongoingNotificationEnabled != next.ongoingNotificationEnabled ||
+            previous.stopwatchNotificationDismissed != next.stopwatchNotificationDismissed)
+            previous.stopwatchNotificationRevision + 1 else previous.stopwatchNotificationRevision,
+        notificationRevision = if (changed) previous.notificationRevision + 1 else previous.notificationRevision,
+    )
+}
+
+enum class TimerNotificationAction { PAUSE, RESUME, CANCEL, DISMISS }
+
+fun applyTimerNotificationAction(state: ClockState, revision: Long, action: TimerNotificationAction): ClockState {
+    if (revision != state.notificationRevision || !state.ongoingNotificationEnabled ||
+        state.ongoingNotificationDismissed || state.timerFinished || state.timerRemainingMillis <= 0) return state
+    return when (action) {
+        TimerNotificationAction.PAUSE -> if (state.timerRunning) state.copy(timerRunning = false) else state
+        TimerNotificationAction.RESUME -> if (!state.timerRunning) toggleCountdown(state, false) else state
+        TimerNotificationAction.CANCEL -> resetCountdown(state)
+        TimerNotificationAction.DISMISS -> state.copy(ongoingNotificationDismissed = true)
+    }
+}
+
+fun applyStopwatchNotificationAction(state: ClockState, revision: Long, action: TimerNotificationAction): ClockState {
+    if (revision != state.stopwatchNotificationRevision || !state.ongoingNotificationEnabled ||
+        state.stopwatchNotificationDismissed || (!state.stopwatchRunning && state.stopwatchElapsedMillis <= 0)) return state
+    return when (action) {
+        TimerNotificationAction.PAUSE -> if (state.stopwatchRunning) state.copy(stopwatchRunning = false) else state
+        TimerNotificationAction.RESUME -> if (!state.stopwatchRunning) state.copy(stopwatchRunning = true) else state
+        TimerNotificationAction.CANCEL -> state.copy(stopwatchRunning = false, stopwatchElapsedMillis = 0, laps = emptyList())
+        TimerNotificationAction.DISMISS -> state.copy(stopwatchNotificationDismissed = true)
+    }
+}

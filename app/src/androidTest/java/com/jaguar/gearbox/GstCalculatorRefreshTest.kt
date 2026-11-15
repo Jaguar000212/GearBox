@@ -21,11 +21,13 @@ class GstCalculatorRefreshTest {
         rule.setContent { MaterialTheme { GstCalculatorScreen {} } }
         for (value in listOf("NaN", "Infinity", "invalid", "-1")) {
             rule.onNodeWithText("Amount (before tax)").performTextReplacement(value)
+            rule.onNodeWithText("Tax rate (%)").performClick()
             rule.onNodeWithText("Enter a valid, finite, non-negative amount.").assertExists()
         }
         rule.onNodeWithText("Amount (before tax)").performTextReplacement("100")
         for (value in listOf("NaN", "Infinity", "invalid", "-1")) {
             rule.onNodeWithText("Tax rate (%)").performTextReplacement(value)
+            rule.onNodeWithText("Amount (before tax)").performClick()
             rule.onNodeWithText("Enter a valid, finite, non-negative rate.").assertExists()
         }
         rule.onNodeWithText("Tax rate (%)").performTextReplacement("100")

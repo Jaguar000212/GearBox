@@ -10,11 +10,16 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.material3.Card
+import androidx.compose.material3.Button
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -34,7 +39,6 @@ import com.jaguar.gearbox.data.Tools
 import com.jaguar.gearbox.logic.generateQrMatrix
 import com.jaguar.gearbox.ui.components.ToolScaffold
 import java.io.File
-import java.io.FileOutputStream
 import java.io.IOException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -61,26 +65,45 @@ fun QrGeneratorScreen(onNavigateBack: () -> Unit) {
             onValueChange = { input = it; shareError = null },
             label = { Text("Text or URL") },
             placeholder = { Text("e.g. https://example.com") },
+            readOnly = sharing,
+            supportingText = { Text("Your code updates as you type. Text and links are both supported.") },
             modifier = Modifier.fillMaxWidth(),
         )
 
+        Spacer(Modifier.height(20.dp))
+        Card(Modifier.fillMaxWidth()) {
+            Column(Modifier.fillMaxWidth().padding(20.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                Text("QR preview", style = MaterialTheme.typography.titleMedium)
+                Spacer(Modifier.height(16.dp))
+                when {
+                    bitmap != null -> {
+                        Image(
+                            bitmap = bitmap.asImageBitmap(),
+                            contentDescription = "QR code containing your entered text",
+                            modifier = Modifier.widthIn(max = 280.dp).fillMaxWidth().aspectRatio(1f),
+                        )
+                        Spacer(Modifier.height(12.dp))
+                        Text("Ready to scan or share", style = MaterialTheme.typography.bodyMedium)
+                    }
+                    input.isEmpty() -> {
+                        Icon(Tools.byRoute(Tools.ROUTE_QR_GENERATOR)!!.icon, contentDescription = null, modifier = Modifier.size(48.dp))
+                        Spacer(Modifier.height(12.dp))
+                        Text("Your QR code will appear here", style = MaterialTheme.typography.titleMedium)
+                        Spacer(Modifier.height(8.dp))
+                        Text("Enter text or a link above to get started.")
+                    }
+                    else -> Text("Couldn't generate a QR code. Try shorter text.", color = MaterialTheme.colorScheme.error)
+                }
+            }
+        }
         if (bitmap != null) {
-            Spacer(Modifier.height(20.dp))
-            Image(
-                bitmap = bitmap.asImageBitmap(),
-                contentDescription = "Generated QR code",
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .size(240.dp),
-                alignment = Alignment.Center,
-            )
-
             Spacer(Modifier.height(16.dp))
-            OutlinedButton(
+            Button(
                 onClick = {
+                    // Lock the input before starting IO so the preview and shared payload agree.
+                    sharing = true
+                    shareError = null
                     scope.launch {
-                        sharing = true
-                        shareError = null
                         try {
                             shareError = shareQrBitmap(context, bitmap)
                         } finally {
@@ -92,11 +115,8 @@ fun QrGeneratorScreen(onNavigateBack: () -> Unit) {
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 Icon(Icons.Filled.Share, contentDescription = null)
-                Text(" Share QR code")
+                Text(if (sharing) " Preparing image…" else " Share QR image")
             }
-        } else if (input.isNotEmpty()) {
-            Spacer(Modifier.height(12.dp))
-            Text("Couldn't generate a QR code. Try shorter text.", color = MaterialTheme.colorScheme.error)
         }
         shareError?.let {
             Spacer(Modifier.height(12.dp))
@@ -105,7 +125,7 @@ fun QrGeneratorScreen(onNavigateBack: () -> Unit) {
     }
 }
 
-private fun matrixToBitmap(matrix: com.google.zxing.common.BitMatrix): Bitmap {
+internal fun matrixToBitmap(matrix: com.google.zxing.common.BitMatrix): Bitmap {
     val bitmap = Bitmap.createBitmap(matrix.width, matrix.height, Bitmap.Config.RGB_565)
     for (x in 0 until matrix.width) {
         for (y in 0 until matrix.height) {
@@ -120,14 +140,13 @@ private suspend fun shareQrBitmap(context: android.content.Context, bitmap: Bitm
     return try {
         val uri = withContext(Dispatchers.IO) {
             val qrDir = File(context.cacheDir, "qr")
-            if (!qrDir.isDirectory && !qrDir.mkdirs()) throw IOException("QR cache unavailable")
-            val file = File(qrDir, "qr_share.png")
-            FileOutputStream(file).use { out ->
+            prepareQrShareFile(qrDir, write = { out ->
                 if (!bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)) {
                     throw IOException("PNG encoding failed")
                 }
-            }
-            FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
+            }, prepare = { file ->
+                FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
+            })
         }
         val intent = Intent(Intent.ACTION_SEND).apply {
             type = "image/png"

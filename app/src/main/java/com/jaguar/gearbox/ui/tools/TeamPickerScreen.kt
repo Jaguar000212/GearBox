@@ -83,8 +83,8 @@ fun TeamPickerScreen(onNavigateBack: () -> Unit) {
     if (confirmClear) {
         AlertDialog(
             onDismissRequest = { confirmClear = false },
-            title = { Text("Clear saved names?") },
-            text = { Text("This removes every participant and the current results. You cannot undo it.") },
+            title = { Text("Clear names and results?") },
+            text = { Text("This clears saved participants, any name you are typing, and current results. You cannot undo it.") },
             confirmButton = { TextButton(onClick = {
                 persistNames(emptyList()); newName = ""; confirmClear = false
             }) { Text("Clear names") } },

@@ -22,6 +22,22 @@ class RandomNumberRefreshTest {
         rule.onNodeWithText("Share").assertIsNotEnabled()
     }
 
+    @Test fun signToggleNormalizesExplicitSignsAndWhitespace() {
+        rule.setContent { MaterialTheme { RandomNumberScreen {} } }
+        rule.onNodeWithText("Minimum").performTextInput(" +12 ")
+        rule.onNodeWithText("Maximum").performTextInput(" 12 ")
+        rule.onNodeWithContentDescription("Toggle Minimum sign").performClick()
+        rule.onNodeWithContentDescription("Toggle Maximum sign").performClick()
+        rule.onNodeWithText("Minimum").assertTextContains("-12")
+        rule.onNodeWithText("Maximum").assertTextContains("-12")
+        rule.onNodeWithText("Generate").performScrollTo().performClick()
+        rule.onNodeWithText("Range: -12 to -12 (inclusive)").assertExists()
+        rule.onNodeWithText("Minimum").performScrollTo().performTextReplacement(" -12 ")
+        rule.onNodeWithContentDescription("Toggle Minimum sign").performClick()
+        rule.onNodeWithText("Minimum").assertTextContains("12")
+        rule.onNodeWithText("Copy").performScrollTo().assertIsNotEnabled()
+    }
+
     @Test fun invalidBoundsHaveFieldErrorsAndClearResetsForm() {
         rule.setContent { MaterialTheme { RandomNumberScreen {} } }
         rule.onNodeWithText("Minimum").performTextInput("20")

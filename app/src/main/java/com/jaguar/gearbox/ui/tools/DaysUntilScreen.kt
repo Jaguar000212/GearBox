@@ -9,6 +9,9 @@ import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -30,7 +33,8 @@ import com.jaguar.gearbox.ui.components.ToolScaffold
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
-import java.time.temporal.ChronoUnit
+import com.jaguar.gearbox.logic.daysUntilSummary
+import com.jaguar.gearbox.ui.components.rememberCurrentLocalDate
 
 private const val KEY_LABEL = "days_until.label"
 private const val KEY_TARGET_DATE = "days_until.target_date"
@@ -39,6 +43,7 @@ private const val KEY_TARGET_DATE = "days_until.target_date"
 @Composable
 fun DaysUntilScreen(onNavigateBack: () -> Unit) {
     val context = LocalContext.current
+    val today by rememberCurrentLocalDate()
     val store = remember { SimplePrefsStore(context) }
     var label by rememberSaveable { mutableStateOf(store.getString(KEY_LABEL, "")) }
     var targetDate by rememberSaveable {
@@ -56,7 +61,9 @@ fun DaysUntilScreen(onNavigateBack: () -> Unit) {
     }
 
     if (showPicker) {
-        val state = rememberDatePickerState()
+        val state = rememberDatePickerState(
+            initialSelectedDateMillis = targetDate?.atStartOfDay(ZoneOffset.UTC)?.toInstant()?.toEpochMilli(),
+        )
         DatePickerDialog(
             onDismissRequest = { showPicker = false },
             confirmButton = {
@@ -82,6 +89,9 @@ fun DaysUntilScreen(onNavigateBack: () -> Unit) {
         icon = Tools.byRoute(Tools.ROUTE_DAYS_UNTIL)!!.icon,
         onNavigateBack = onNavigateBack,
     ) {
+        Text("Count calendar days to a date, or days since it passed.",
+            style = MaterialTheme.typography.bodyMedium)
+        Spacer(Modifier.height(12.dp))
         OutlinedTextField(
             value = label,
             onValueChange = {
@@ -95,28 +105,30 @@ fun DaysUntilScreen(onNavigateBack: () -> Unit) {
         Spacer(Modifier.height(12.dp))
         OutlinedButton(onClick = { showPicker = true }, modifier = Modifier.fillMaxWidth()) {
             Icon(Icons.Filled.DateRange, contentDescription = null)
-            Text("  Target date: ${targetDate?.let { formatDate(it) } ?: "select"}")
+            Text("  Target date: ${targetDate?.let { formatDate(it) } ?: "Choose date"}")
         }
 
         val target = targetDate
         if (target != null) {
-            val days = ChronoUnit.DAYS.between(LocalDate.now(), target)
-            val eventName = label.ifBlank { "the date" }
-            val summary = when {
-                days > 0 -> "$days day${if (days == 1L) "" else "s"} until $eventName"
-                days == 0L -> "$eventName is today!"
-                else -> "${-days} day${if (days == -1L) "" else "s"} since $eventName"
-            }
+            val summary = daysUntilSummary(today, target, label)
 
             Spacer(Modifier.height(20.dp))
             ResultCard(
                 text = summary,
-                onCopy = { context.copyToClipboard("Days Until", summary) },
-                onShare = { context.shareText(summary) },
+                textStyle = MaterialTheme.typography.headlineMedium,
+                onCopy = { context.copyToClipboard("Days Until", daysUntilSummary(LocalDate.now(), target, label)) },
+                onShare = { context.shareText(daysUntilSummary(LocalDate.now(), target, label)) },
             )
+            Spacer(Modifier.height(8.dp))
+            Text("From ${formatDate(today)} to ${formatDate(target)}",
+                style = MaterialTheme.typography.bodyMedium)
+        } else {
+            Spacer(Modifier.height(20.dp))
+            Text("Choose a target date to see your countdown. An event name is optional.",
+                style = MaterialTheme.typography.bodyMedium)
         }
     }
 }
 
 private fun formatDate(date: LocalDate): String =
-    "${date.dayOfMonth}/${date.monthValue}/${date.year}"
+    date.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM))

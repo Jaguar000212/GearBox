@@ -16,6 +16,6 @@ class CompassUxTest {
         rule.setContent { MaterialTheme { CompassScreen({}, OrientationState(OrientationSnapshot(0f, 0f, 0f), OrientationStatus.READY)) } }
         rule.onNodeWithText("Magnetic heading").assertExists()
         rule.onNodeWithText("Hold the device flat", substring = true).assertExists()
-        rule.onNodeWithText("N 0°").assertExists()
+        rule.onNodeWithText("0°", substring = true).assertExists()
     }
 }

@@ -1,5 +1,8 @@
 package com.jaguar.gearbox.ui.tools
 
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -9,6 +12,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
@@ -26,6 +31,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import com.jaguar.gearbox.data.SimplePrefsStore
 import com.jaguar.gearbox.data.Tools
 import com.jaguar.gearbox.ui.components.ToolScaffold
@@ -34,18 +43,7 @@ private const val KEY_WINS = "rps.wins"
 private const val KEY_LOSSES = "rps.losses"
 private const val KEY_DRAWS = "rps.draws"
 
-private enum class Move(val emoji: String) {
-    ROCK("✊"),
-    PAPER("✋"),
-    SCISSORS("✌"),
-}
-
-private fun Move.beats(other: Move): Boolean = when (this) {
-    Move.ROCK -> other == Move.SCISSORS
-    Move.PAPER -> other == Move.ROCK
-    Move.SCISSORS -> other == Move.PAPER
-}
-
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun RockPaperScissorsScreen(onNavigateBack: () -> Unit) {
     val context = LocalContext.current
@@ -56,6 +54,8 @@ fun RockPaperScissorsScreen(onNavigateBack: () -> Unit) {
     var wins by rememberSaveable { mutableStateOf(store.getInt(KEY_WINS, 0)) }
     var losses by rememberSaveable { mutableStateOf(store.getInt(KEY_LOSSES, 0)) }
     var draws by rememberSaveable { mutableStateOf(store.getInt(KEY_DRAWS, 0)) }
+
+    var confirmReset by rememberSaveable { mutableStateOf(false) }
 
     fun persistTally() {
         store.edit {
@@ -70,6 +70,8 @@ fun RockPaperScissorsScreen(onNavigateBack: () -> Unit) {
         icon = Tools.byRoute(Tools.ROUTE_RPS)!!.icon,
         onNavigateBack = onNavigateBack,
     ) {
+        Text("Pick a move. The CPU chooses randomly.", style = MaterialTheme.typography.bodyMedium)
+        Spacer(Modifier.height(12.dp))
         Card(modifier = Modifier.fillMaxWidth()) {
             Column(
                 modifier = Modifier
@@ -88,70 +90,87 @@ fun RockPaperScissorsScreen(onNavigateBack: () -> Unit) {
                     text = resultText,
                     style = MaterialTheme.typography.titleMedium,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().semantics { liveRegion = LiveRegionMode.Polite },
                 )
             }
         }
 
         Spacer(Modifier.height(20.dp))
-        Row(
+        FlowRow(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            Move.entries.forEach { move ->
+            RpsMove.entries.forEach { move ->
                 Button(
                     onClick = {
-                        val computer = Move.entries.random()
+                        val computer = RpsMove.entries.random()
                         playerMove = move.name
                         computerMove = computer.name
-                        resultText = when {
-                            move == computer -> {
-                                draws++
-                                "Draw"
-                            }
-
-                            move.beats(computer) -> {
-                                wins++
-                                "You win!"
-                            }
-
-                            else -> {
-                                losses++
-                                "You lose"
-                            }
+                        val outcome = rpsOutcome(move, computer)
+                        resultText = outcome.message
+                        when (outcome) {
+                            RpsOutcome.DRAW -> draws++
+                            RpsOutcome.WIN -> wins++
+                            RpsOutcome.LOSS -> losses++
                         }
                         persistTally()
                     },
-                    modifier = Modifier.weight(1f),
-                ) { Text(move.emoji) }
+                    modifier = Modifier.widthIn(min = 100.dp),
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(move.emoji, style = MaterialTheme.typography.headlineMedium,
+                            modifier = Modifier.clearAndSetSemantics { })
+                        Text(move.label, textAlign = TextAlign.Center)
+                    }
+                }
             }
         }
 
         Spacer(Modifier.height(20.dp))
-        Text(
-            text = "Wins: $wins   Losses: $losses   Draws: $draws",
-            style = MaterialTheme.typography.bodyMedium,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth(),
-        )
+        FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            listOf("Wins" to wins, "Losses" to losses, "Draws" to draws).forEach { (label, count) ->
+                Card(Modifier.widthIn(min = 100.dp)) {
+                    Column(Modifier.padding(12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(count.toString(), style = MaterialTheme.typography.headlineSmall)
+                        Text(label, style = MaterialTheme.typography.labelLarge)
+                    }
+                }
+            }
+        }
 
         Spacer(Modifier.height(12.dp))
         OutlinedButton(
-            onClick = {
-                playerMove = null
-                computerMove = null
-                resultText = "Choose your move"
-                wins = 0
-                losses = 0
-                draws = 0
-                persistTally()
-            },
+            onClick = { confirmReset = true },
+            enabled = wins != 0 || losses != 0 || draws != 0,
             modifier = Modifier.fillMaxWidth(),
         ) {
             Icon(Icons.Filled.Refresh, contentDescription = null)
             Text(" Reset tally")
         }
     }
+    if (confirmReset) {
+        AlertDialog(
+            onDismissRequest = { confirmReset = false },
+            title = { Text("Reset tally?") },
+            text = { Text("This clears your saved wins, losses, draws and the current round.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    playerMove = null
+                    computerMove = null
+                    resultText = "Choose your move"
+                    wins = 0
+                    losses = 0
+                    draws = 0
+                    persistTally()
+                    confirmReset = false
+                }) { Text("Reset") }
+            },
+            dismissButton = { TextButton(onClick = { confirmReset = false }) { Text("Cancel") } },
+        )
+    }
+
 }
 
 @Composable
@@ -159,8 +178,10 @@ private fun MoveDisplay(label: String, moveName: String?) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(label, style = MaterialTheme.typography.labelLarge)
         Text(
-            text = moveName?.let { Move.valueOf(it).emoji } ?: "?",
+            text = moveName?.let { RpsMove.valueOf(it).emoji } ?: "?",
             style = MaterialTheme.typography.displaySmall,
+            modifier = Modifier.clearAndSetSemantics { },
         )
+        Text(moveName?.let { RpsMove.valueOf(it).label } ?: "Not chosen", style = MaterialTheme.typography.bodyMedium)
     }
 }

@@ -5,7 +5,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -53,11 +56,14 @@ fun BubbleLevelScreen(
             modifier = Modifier.fillMaxWidth(),
         )
 
+        Text(stringResource(R.string.level_tolerance_help), style = MaterialTheme.typography.bodyMedium)
         Spacer(Modifier.height(24.dp))
+        Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
         Box(
             modifier = Modifier
+                .widthIn(max = 280.dp)
                 .fillMaxWidth()
-                .height(280.dp),
+                .aspectRatio(1f),
             contentAlignment = Alignment.Center,
         ) {
             val outlineColor = MaterialTheme.colorScheme.outline
@@ -68,7 +74,8 @@ fun BubbleLevelScreen(
                 MaterialTheme.colorScheme.error
             }
 
-            Canvas(modifier = Modifier.size(240.dp)) {
+            val dialDescription = stringResource(if (isLevel) R.string.bubble_level_ready else R.string.bubble_level_tilt)
+            Canvas(modifier = Modifier.fillMaxWidth().aspectRatio(1f).semantics { contentDescription = dialDescription }) {
                 val radius = size.minDimension / 2
                 val center = Offset(size.width / 2, size.height / 2)
 
@@ -78,6 +85,7 @@ fun BubbleLevelScreen(
                 drawLine(outlineColor, Offset(center.x, center.y - radius), Offset(center.x, center.y + radius), strokeWidth = 1.5f)
 
                 val bubbleRadius = radius * 0.16f
+                drawCircle(outlineColor, radius = bubbleRadius, center = center, style = Stroke(width = 2.dp.toPx()))
                 val maxOffset = radius - bubbleRadius
                 val rawOffsetX = rollDeg.toFloat() * BUBBLE_SENSITIVITY * (radius / 100f)
                 val rawOffsetY = pitchDeg.toFloat() * BUBBLE_SENSITIVITY * (radius / 100f)
@@ -92,6 +100,7 @@ fun BubbleLevelScreen(
             }
         }
 
+        }
         Spacer(Modifier.height(24.dp))
         Text(
             text = stringResource(R.string.bubble_level_reading, "%.1f".format(pitchDeg), "%.1f".format(rollDeg)),
@@ -99,5 +108,6 @@ fun BubbleLevelScreen(
             textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth(),
         )
+        Text(stringResource(R.string.level_usage_help), style = MaterialTheme.typography.bodyMedium)
     }
 }

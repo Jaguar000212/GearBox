@@ -1,0 +1,4 @@
+<resources>
+    <string name="level_tolerance_help">Level means pitch and roll are both less than 1° from zero.</string>
+    <string name="level_usage_help">Place the device flat, screen facing up. Center the bubble in the target ring. Readings are estimates affected by sensor accuracy and the device or case shape.</string>
+</resources>

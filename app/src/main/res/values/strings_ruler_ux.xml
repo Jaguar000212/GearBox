@@ -1,0 +1,5 @@
+<resources>
+<string name="ruler_estimate_guidance">Estimated scale, not calibrated. Align the object with the 0 line. Accuracy depends on the screen density reported by your device; check against a physical ruler before relying on a measurement.</string>
+<string name="ruler_metric_divisions">Centimetres · each small division is 1 mm</string>
+<string name="ruler_imperial_divisions">Inches · each small division is 1/16 inch</string>
+</resources>

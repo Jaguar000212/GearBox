@@ -1,36 +1,23 @@
 package com.jaguar.gearbox.ui.tools
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Casino
-import androidx.compose.material.icons.filled.ContentCopy
-import androidx.compose.material.icons.filled.Share
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.*
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.jaguar.gearbox.data.Tools
 import com.jaguar.gearbox.logic.randomLongInclusive
+import com.jaguar.gearbox.ui.components.ResultCard
+import com.jaguar.gearbox.ui.components.ToolActions
 import com.jaguar.gearbox.ui.components.ToolScaffold
 
 @Composable
@@ -39,131 +26,87 @@ fun RandomNumberScreen(onNavigateBack: () -> Unit) {
     var min by rememberSaveable { mutableStateOf("") }
     var max by rememberSaveable { mutableStateOf("") }
     var result by rememberSaveable { mutableStateOf("") }
-    var error by rememberSaveable { mutableStateOf("") }
+    var submitted by rememberSaveable { mutableStateOf(false) }
+    val low = min.trim().toLongOrNull()
+    val high = max.trim().toLongOrNull()
+    val minError = if (submitted && low == null) "Enter a whole number within the 64-bit range." else null
+    val maxError = when {
+        !submitted -> null
+        high == null -> "Enter a whole number within the 64-bit range."
+        low != null && low > high -> "Maximum must be at least the minimum."
+        else -> null
+    }
 
-    ToolScaffold(
-        title = "Random Number Generator",
-        icon = Tools.byRoute(Tools.ROUTE_RANDOM)!!.icon,
-        onNavigateBack = onNavigateBack,
-    ) {
-        SignedNumberField(
-            label = "Minimum",
-            placeholder = "e.g. 1",
-            value = min,
-            onValueChange = { min = it },
-        )
+    ToolScaffold("Random Number Generator", Tools.byRoute(Tools.ROUTE_RANDOM)!!.icon, onNavigateBack) {
+        Text("Choose your range", style = MaterialTheme.typography.titleLarge)
+        Text("Both endpoints are included. Negative numbers are welcome.",
+            style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Spacer(Modifier.height(20.dp))
+        SignedNumberField("Minimum", "e.g. 1", min, minError) { min = it; result = ""; submitted = false }
         Spacer(Modifier.height(12.dp))
-        SignedNumberField(
-            label = "Maximum",
-            placeholder = "e.g. 100",
-            value = max,
-            onValueChange = { max = it },
-        )
-        Spacer(Modifier.height(12.dp))
+        SignedNumberField("Maximum", "e.g. 100", max, maxError) { max = it; result = ""; submitted = false }
+        Spacer(Modifier.height(16.dp))
         Button(
             onClick = {
-                val low = min.trim().toLongOrNull()
-                val high = max.trim().toLongOrNull()
-                when {
-                    low == null || high == null -> {
-                        error = "Enter valid whole numbers for both bounds."
-                        result = ""
-                    }
-
-                    low > high -> {
-                        error = "Minimum must not be greater than maximum."
-                        result = ""
-                    }
-
-                    else -> {
-                        error = ""
-                        result = randomLongInclusive(low, high).toString()
-                    }
-                }
+                submitted = true
+                result = if (low != null && high != null && low <= high) randomLongInclusive(low, high).toString() else ""
             },
             modifier = Modifier.fillMaxWidth(),
         ) {
-            Icon(Icons.Filled.Casino, contentDescription = null)
-            Text("  Generate")
+            Icon(Icons.Default.Casino, contentDescription = null)
+            Spacer(Modifier.width(8.dp))
+            Text(if (result.isEmpty()) "Generate" else "Generate again")
         }
-
-        if (error.isNotEmpty()) {
-            Spacer(Modifier.height(16.dp))
-            Text(
-                text = error,
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodyMedium,
-            )
-        }
-
+        Spacer(Modifier.height(20.dp))
         if (result.isNotEmpty()) {
-            Spacer(Modifier.height(16.dp))
-            Card(modifier = Modifier.fillMaxWidth()) {
-                Text(
-                    text = result,
-                    style = MaterialTheme.typography.displayMedium,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(24.dp),
-                )
-            }
-            Spacer(Modifier.height(16.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                OutlinedButton(
-                    onClick = { context.copyToClipboard("Random Number", result) },
-                    modifier = Modifier.weight(1f),
-                ) {
-                    Icon(Icons.Filled.ContentCopy, contentDescription = null)
-                    Text(" Copy")
-                }
-                OutlinedButton(
-                    onClick = { context.shareText("Random number ($min–$max): $result") },
-                    modifier = Modifier.weight(1f),
-                ) {
-                    Icon(Icons.Filled.Share, contentDescription = null)
-                    Text(" Share")
-                }
-            }
+            Text("Your number", style = MaterialTheme.typography.titleMedium)
+            Spacer(Modifier.height(8.dp))
+            ResultCard(
+                text = result,
+                textStyle = MaterialTheme.typography.headlineLarge,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
+            )
+            Text("Range: ${low} to ${high} (inclusive)", Modifier.padding(vertical = 8.dp),
+                style = MaterialTheme.typography.bodyMedium)
+        } else {
+            Text("Generate a number to see your result here.", style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
+        Spacer(Modifier.height(8.dp))
+        ToolActions(
+            onCopy = { context.copyToClipboard("Random Number", result) },
+            onShare = { context.shareText("Random number ($low–$high): $result") },
+            onClear = { min = ""; max = ""; result = ""; submitted = false },
+            resultEnabled = result.isNotEmpty(),
+            clearEnabled = min.isNotEmpty() || max.isNotEmpty() || result.isNotEmpty(),
+        )
     }
 }
 
-/**
- * A number field paired with a "±" toggle button, since [KeyboardType.Number] often omits a
- * minus key on the numeric keypad — without this, a negative bound is simply untypeable on many
- * devices even though the generator fully supports negative ranges.
- */
+/** The explicit sign control supports numeric keyboards that omit a minus key. */
 @Composable
 private fun SignedNumberField(
     label: String,
     placeholder: String,
     value: String,
+    fieldError: String?,
     onValueChange: (String) -> Unit,
 ) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
+    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         OutlinedTextField(
-            value = value,
-            onValueChange = onValueChange,
-            label = { Text(label) },
-            placeholder = { Text(placeholder) },
+            value = value, onValueChange = onValueChange,
+            label = { Text(label) }, placeholder = { Text(placeholder) },
+            isError = fieldError != null,
+            supportingText = fieldError?.let { { Text(it) } },
+            singleLine = true,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             modifier = Modifier.weight(1f),
         )
-        OutlinedButton(onClick = { onValueChange(toggleSign(value)) }) {
-            Text("±")
-        }
+        OutlinedButton(
+            onClick = { onValueChange(if (value.startsWith("-")) value.removePrefix("-") else "-$value") },
+            modifier = Modifier.semantics { contentDescription = "Toggle $label sign" },
+        ) { Text("±") }
     }
-}
-
-private fun toggleSign(text: String): String = when {
-    text.startsWith("-") -> text.removePrefix("-")
-    else -> "-$text"
 }

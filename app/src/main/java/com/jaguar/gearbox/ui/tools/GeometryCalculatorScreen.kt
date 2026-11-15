@@ -1,5 +1,11 @@
 package com.jaguar.gearbox.ui.tools
 
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.material3.TextButton
+import androidx.compose.ui.platform.LocalContext
+import com.jaguar.gearbox.ui.components.ResultCard
+import com.jaguar.gearbox.ui.components.DecimalField
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -37,6 +43,7 @@ private enum class Shape(val label: String) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GeometryCalculatorScreen(onNavigateBack: () -> Unit) {
+    val context = LocalContext.current
     var shape by rememberSaveable { mutableStateOf(Shape.CIRCLE.name) }
     var shapeExpanded by rememberSaveable { mutableStateOf(false) }
     val selectedShape = Shape.valueOf(shape)
@@ -77,6 +84,8 @@ fun GeometryCalculatorScreen(onNavigateBack: () -> Unit) {
             }
         }
 
+        Spacer(Modifier.height(12.dp))
+        Text("Use the same unit for every measurement. Area is in square units; perimeter and circumference use the input unit.", style = MaterialTheme.typography.bodyMedium)
         Spacer(Modifier.height(16.dp))
 
         when (selectedShape) {
@@ -110,15 +119,12 @@ fun GeometryCalculatorScreen(onNavigateBack: () -> Unit) {
         }
         if (result != null) {
             Spacer(Modifier.height(20.dp))
-            Card(modifier = Modifier.fillMaxWidth()) {
-                Text(
-                    text = result,
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                )
-            }
+            Text("${selectedShape.label} results", style = MaterialTheme.typography.titleMedium)
+            Spacer(Modifier.height(8.dp))
+            val summary = "${selectedShape.label}\n$result\nMeasurements use a common input unit."
+            ResultCard(text = result, textStyle = MaterialTheme.typography.headlineSmall,
+                onCopy = { context.copyToClipboard("Geometry", summary) },
+                onShare = { context.shareText(summary) })
         } else if (requiredFieldsFilled) {
             Spacer(Modifier.height(12.dp))
             Text(
@@ -126,18 +132,19 @@ fun GeometryCalculatorScreen(onNavigateBack: () -> Unit) {
                 color = MaterialTheme.colorScheme.error,
             )
         }
+        Spacer(Modifier.height(8.dp))
+        TextButton(onClick = { field1 = ""; field2 = ""; field3 = "" },
+            enabled = field1.isNotEmpty() || field2.isNotEmpty() || field3.isNotEmpty(),
+            modifier = Modifier.fillMaxWidth()) { Text("Clear") }
     }
 }
 
 @Composable
 private fun NumberField(label: String, value: String, onValueChange: (String) -> Unit) {
-    OutlinedTextField(
-        value = value,
-        onValueChange = onValueChange,
-        label = { Text(label) },
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-        modifier = Modifier.fillMaxWidth(),
-    )
+    DecimalField(value = value, onValueChange = onValueChange, label = label,
+        placeholder = "e.g. 5", errorText = if (value.isNotBlank() &&
+            (value.toDoubleOrNull()?.let { it.isFinite() && it > 0 } != true)) "Enter a positive measurement." else null)
+
 }
 
 private fun computeResult(shape: Shape, f1: String, f2: String, f3: String): String? {
@@ -150,7 +157,7 @@ private fun computeResult(shape: Shape, f1: String, f2: String, f3: String): Str
             val area = PI * r * r
             val circumference = 2 * PI * r
             if (!area.isFinite() || area <= 0 || !circumference.isFinite()) return null
-            "Area: ${fmt(area)}\nCircumference: ${fmt(circumference)}"
+            "Area: ${fmt(area)} square units\nCircumference: ${fmt(circumference)} units"
         }
 
         Shape.RECTANGLE -> {
@@ -160,7 +167,7 @@ private fun computeResult(shape: Shape, f1: String, f2: String, f3: String): Str
             val area = w * h
             val perimeter = 2 * (w + h)
             if (!area.isFinite() || area <= 0 || !perimeter.isFinite()) return null
-            "Area: ${fmt(area)}\nPerimeter: ${fmt(perimeter)}"
+            "Area: ${fmt(area)} square units\nPerimeter: ${fmt(perimeter)} units"
         }
 
         Shape.TRIANGLE -> {
@@ -173,7 +180,7 @@ private fun computeResult(shape: Shape, f1: String, f2: String, f3: String): Str
             val s = perimeter / 2
             val area = sqrt(s * (s - a) * (s - b) * (s - c))
             if (!area.isFinite() || area <= 0 || !perimeter.isFinite()) return null
-            "Area: ${fmt(area)}\nPerimeter: ${fmt(perimeter)}"
+            "Area: ${fmt(area)} square units\nPerimeter: ${fmt(perimeter)} units"
         }
     }
 }

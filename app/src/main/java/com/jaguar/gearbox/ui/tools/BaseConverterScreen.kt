@@ -28,6 +28,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.jaguar.gearbox.data.Tools
 import com.jaguar.gearbox.ui.components.ToolScaffold
+import com.jaguar.gearbox.ui.components.ResultCard
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.focus.onFocusChanged
 
 private enum class NumberBase(val label: String, val radix: Int) {
     BINARY("Binary", 2),
@@ -43,15 +46,18 @@ fun BaseConverterScreen(onNavigateBack: () -> Unit) {
     var input by rememberSaveable { mutableStateOf("") }
     var fromBase by rememberSaveable { mutableStateOf(NumberBase.DECIMAL.name) }
     var fromExpanded by rememberSaveable { mutableStateOf(false) }
-    var error by rememberSaveable { mutableStateOf("") }
+    var touched by rememberSaveable { mutableStateOf(false) }
+    var focused by rememberSaveable { mutableStateOf(false) }
 
     val selectedBase = NumberBase.valueOf(fromBase)
     val parsed = input.trim().toLongOrNull(selectedBase.radix)
 
-    error = if (input.isNotBlank() && parsed == null) {
-        "Not a valid ${selectedBase.label.lowercase()} number."
-    } else {
-        ""
+    val digits = input.trim().removePrefix("-").removePrefix("+")
+    val invalidDigits = digits.isEmpty() || digits.any { it.digitToIntOrNull(selectedBase.radix) == null }
+    val error = when {
+        input.isBlank() || parsed != null || focused || !touched -> ""
+        invalidDigits -> "Use ${digitGuidance(selectedBase)} with an optional leading sign."
+        else -> "Outside the signed 64-bit whole-number range."
     }
 
     ToolScaffold(
@@ -64,7 +70,7 @@ fun BaseConverterScreen(onNavigateBack: () -> Unit) {
             onExpandedChange = { fromExpanded = it },
         ) {
             OutlinedTextField(
-                value = selectedBase.label,
+                value = "${selectedBase.label} (base ${selectedBase.radix})",
                 onValueChange = {},
                 readOnly = true,
                 label = { Text("From base") },
@@ -76,7 +82,7 @@ fun BaseConverterScreen(onNavigateBack: () -> Unit) {
             DropdownMenu(expanded = fromExpanded, onDismissRequest = { fromExpanded = false }) {
                 NumberBase.entries.forEach { base ->
                     DropdownMenuItem(
-                        text = { Text(base.label) },
+                        text = { Text("${base.label} · base ${base.radix}") },
                         onClick = {
                             fromBase = base.name
                             fromExpanded = false
@@ -93,58 +99,44 @@ fun BaseConverterScreen(onNavigateBack: () -> Unit) {
             label = { Text("Value") },
             placeholder = { Text(placeholderFor(selectedBase)) },
             isError = error.isNotEmpty(),
-            supportingText = { if (error.isNotEmpty()) Text(error) },
-            modifier = Modifier.fillMaxWidth(),
+            supportingText = { Text(error.ifEmpty { "Whole numbers: ${digitGuidance(selectedBase)}. Optional + or − sign." }) },
+            modifier = Modifier.fillMaxWidth().onFocusChanged {
+                if (focused && !it.isFocused) touched = true
+                focused = it.isFocused
+            },
         )
 
         if (parsed != null) {
-            Spacer(Modifier.height(20.dp))
-            NumberBase.entries.forEach { base ->
-                Spacer(Modifier.height(8.dp))
-                val converted =
-                    parsed.toString(base.radix).let { if (base.radix == 16) it.uppercase() else it }
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                ) {
-                    Text(text = base.label, style = MaterialTheme.typography.labelLarge)
-                    Text(text = converted, style = MaterialTheme.typography.bodyLarge)
-                }
+            Spacer(Modifier.height(16.dp))
+            Text("Converted values", style = MaterialTheme.typography.titleMedium)
+            Spacer(Modifier.height(8.dp))
+            val summary = NumberBase.entries.joinToString("\n\n") { base ->
+                val value = parsed.toString(base.radix).let { if (base.radix == 16) it.uppercase() else it }
+                "${base.label} (base ${base.radix})\n$value"
             }
+            ResultCard(
+                text = summary,
+                textStyle = MaterialTheme.typography.bodyLarge.copy(fontFamily = FontFamily.Monospace),
+                onCopy = { context.copyToClipboard("Base conversion", summary) },
+                onShare = { context.shareText(summary) },
+            )
+        } else if (input.isBlank()) {
+            Spacer(Modifier.height(16.dp))
+            Text("Enter a whole number to see binary, octal, decimal and hexadecimal results.")
         }
-
-        Spacer(Modifier.height(20.dp))
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            OutlinedButton(
-                onClick = { input = "" },
-                modifier = Modifier.weight(1f),
-            ) {
-                Icon(Icons.Filled.Clear, contentDescription = null)
-                Text(" Clear")
-            }
-            OutlinedButton(
-                onClick = {
-                    if (parsed != null) {
-                        val summary = NumberBase.entries.joinToString("\n") { base ->
-                            "${base.label}: ${
-                                parsed.toString(base.radix)
-                                    .let { s -> if (base.radix == 16) s.uppercase() else s }
-                            }"
-                        }
-                        context.copyToClipboard("Base Conversion", summary)
-                    }
-                },
-                enabled = parsed != null,
-                modifier = Modifier.weight(1f),
-            ) {
-                Icon(Icons.Filled.ContentCopy, contentDescription = null)
-                Text(" Copy all")
-            }
+        Spacer(Modifier.height(12.dp))
+        OutlinedButton(onClick = { input = ""; touched = false }, enabled = input.isNotEmpty(), modifier = Modifier.fillMaxWidth()) {
+            Icon(Icons.Filled.Clear, contentDescription = null)
+            Text(" Clear")
         }
     }
+}
+
+private fun digitGuidance(base: NumberBase): String = when (base) {
+    NumberBase.BINARY -> "digits 0–1"
+    NumberBase.OCTAL -> "digits 0–7"
+    NumberBase.DECIMAL -> "digits 0–9"
+    NumberBase.HEXADECIMAL -> "digits 0–9 and A–F"
 }
 
 private fun placeholderFor(base: NumberBase): String = when (base) {

@@ -105,7 +105,13 @@ private fun SignedNumberField(
             modifier = Modifier.weight(1f),
         )
         OutlinedButton(
-            onClick = { onValueChange(if (value.startsWith("-")) value.removePrefix("-") else "-$value") },
+            onClick = {
+                val normalized = value.trim()
+                onValueChange(
+                    if (normalized.startsWith("-")) normalized.removePrefix("-")
+                    else "-" + normalized.removePrefix("+"),
+                )
+            },
             modifier = Modifier.semantics { contentDescription = "Toggle $label sign" },
         ) { Text("±") }
     }

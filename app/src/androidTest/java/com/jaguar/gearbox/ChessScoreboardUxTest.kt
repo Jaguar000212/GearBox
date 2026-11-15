@@ -22,8 +22,8 @@ class ChessScoreboardUxTest {
 
     @Test fun bothPlayersAndGamesAreVisible() {
         rule.onNodeWithText("Games").assertIsDisplayed()
-        rule.onNodeWithText("Black", useUnmergedTree = true).assertIsDisplayed()
-        rule.onNodeWithText("White", useUnmergedTree = true).assertIsDisplayed()
+        rule.onNodeWithTag("black-score").assertIsDisplayed()
+        rule.onNodeWithTag("white-score").assertIsDisplayed()
     }
 
     @Test fun drawUndoAndResetCancellation() {

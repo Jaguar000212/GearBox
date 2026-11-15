@@ -49,7 +49,7 @@ fun SpinBottleScreen(onNavigateBack: () -> Unit) {
                 Text(status, style = MaterialTheme.typography.titleMedium, textAlign = TextAlign.Center,
                     modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite })
                 Spacer(Modifier.height(16.dp))
-                Box(Modifier.fillMaxWidth().aspectRatio(1f).sizeIn(maxWidth = 320.dp, maxHeight = 320.dp),
+                Box(Modifier.widthIn(max = 320.dp).fillMaxWidth().aspectRatio(1f),
                     contentAlignment = Alignment.Center) {
                     val ring = MaterialTheme.colorScheme.outlineVariant
                     Canvas(Modifier.fillMaxSize()) {

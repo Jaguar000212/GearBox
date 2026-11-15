@@ -23,18 +23,13 @@ class ScoreboardStore(context: Context, private val key: String) {
 
     private var unreadableV2: String? = null
 
-    /** The untouched legacy data remains available if a row could not be decoded. */
-    val hasUnrecoverableLegacyRows: Boolean = prefs.getString(key, null)?.split(ENTRY_SEPARATOR)
-        ?.filter { it.isNotEmpty() }?.any {
-            val parts = it.split(FIELD_SEPARATOR)
-            parts.size != 2 || parts.getOrNull(1)?.toIntOrNull() == null
-        } ?: false
-
     val players: SnapshotStateList<ScorePlayer> =
         mutableStateListOf<ScorePlayer>().also { it.addAll(readFromPrefs()) }
 
     val hasUnreadableSavedData: Boolean
-        get() = hasUnrecoverableLegacyRows || unreadableV2 != null
+        get() = hasRetainedLegacyData || unreadableV2 != null
+
+    val hasRetainedLegacyData: Boolean get() = prefs.contains(key)
 
     val isReadOnly: Boolean get() = unreadableV2 != null
 
@@ -82,42 +77,70 @@ class ScoreboardStore(context: Context, private val key: String) {
         persist()
     }
 
+    private fun decodeV2(encoded: String): List<ScorePlayer> {
+        val array = JSONArray(encoded)
+        return List(array.length()) { i ->
+            val item = array.getJSONObject(i)
+            ScorePlayer(item.getString("name"), item.get("score").toString().toInt())
+        }
+    }
+
+    private fun encodeV2(values: List<ScorePlayer>): String {
+        val array = JSONArray()
+        values.forEach { array.put(JSONObject().put("name", it.name).put("score", it.score)) }
+        return array.toString()
+    }
+
+    private fun decodeLegacyRow(entry: String): ScorePlayer? {
+        val parts = entry.split(FIELD_SEPARATOR)
+        val score = parts.getOrNull(1)?.toIntOrNull()
+        return if (parts.size != 2 || score == null) null else ScorePlayer(parts[0], score)
+    }
+
+    /** Only remove legacy data when every row has an exact verified v2 equivalent. */
+    private fun retireEquivalentLegacy(values: List<ScorePlayer>) {
+        val raw = prefs.getString(key, null) ?: return
+        val rows = if (raw.isEmpty()) emptyList() else raw.split(ENTRY_SEPARATOR)
+        val decoded = rows.map { decodeLegacyRow(it) }
+        if (decoded.any { it == null } || decoded.filterNotNull() != values) return
+        val verified = prefs.getString("${key}_v2", null)
+            ?.let { runCatching { decodeV2(it) }.getOrNull() }
+        if (verified == values && prefs.getString(key, null) == raw) {
+            prefs.edit().remove(key).commit()
+        }
+    }
+
     private fun readFromPrefs(): List<ScorePlayer> {
         prefs.getString("${key}_v2", null)?.let { encoded ->
-            runCatching {
-                val array = JSONArray(encoded)
-                return List(array.length()) { i ->
-                    val item = array.getJSONObject(i)
-                    ScorePlayer(item.getString("name"), item.get("score").toString().toInt())
-                }
-            }.onFailure { unreadableV2 = encoded }
+            val decoded = runCatching { decodeV2(encoded) }.getOrNull()
+            if (decoded != null) {
+                retireEquivalentLegacy(decoded)
+                return decoded
+            }
+            unreadableV2 = encoded
         }
         val raw = prefs.getString(key, null) ?: return emptyList()
-        return raw.split(ENTRY_SEPARATOR)
-            .filter { it.isNotEmpty() }
-            .mapNotNull { entry ->
-                val parts = entry.split(FIELD_SEPARATOR)
-                val score = parts.getOrNull(1)?.toIntOrNull()
-                if (parts.size != 2 || score == null) null else ScorePlayer(parts[0], score)
+        val decoded = raw.split(ENTRY_SEPARATOR).filter { it.isNotEmpty() }
+            .mapNotNull(::decodeLegacyRow)
+        if (!isReadOnly) {
+            // Migrate before the first user edit, then read back and compare before
+            // retiring a fully readable legacy value. Ambiguous rows stay untouched.
+            if (prefs.edit().putString("${key}_v2", encodeV2(decoded)).commit()) {
+                retireEquivalentLegacy(decoded)
             }
+        }
+        return decoded
     }
 
     private fun persist() {
-        val array = JSONArray()
-        players.forEach { player ->
-            array.put(JSONObject().put("name", player.name).put("score", player.score))
-        }
-        // Never overwrite the legacy raw value: malformed/ambiguous rows cannot be
-        // reconstructed reliably, so retain the original for recovery after migration.
-        // Never replace unreadable v2 data with a partial fallback.
         if (isReadOnly) return
-        prefs.edit { putString("${key}_v2", array.toString()) }
+        prefs.edit { putString("${key}_v2", encodeV2(players.toList())) }
     }
 
     private companion object {
         const val PREFS_NAME = "gearbox_prefs"
 
-        // Legacy format only; new writes use escaped JSON and retain the original raw data.
+        // Legacy format only; unreadable or non-equivalent raw values are retained.
         const val FIELD_SEPARATOR = ""
         const val ENTRY_SEPARATOR = ""
     }

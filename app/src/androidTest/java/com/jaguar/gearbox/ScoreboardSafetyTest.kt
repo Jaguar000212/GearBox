@@ -36,6 +36,46 @@ class ScoreboardSafetyTest {
         assertEquals(-2, ScoreboardStore(context, key).players[0].score)
     }
 
+    @Test fun verifiedLegacyMigrationRetiresOldCopyBeforeEdits() {
+        prefs.edit().putString(key, "Alice\u0001-3\u0002Bob\u00014").commit()
+        val store = ScoreboardStore(context, key)
+        assertFalse(prefs.contains(key))
+        assertFalse(store.hasRetainedLegacyData)
+        assertEquals(store.players.toList(), ScoreboardStore(context, key).players.toList())
+        store.removeAt(0)
+        assertEquals(listOf(ScorePlayer("Bob", 4)), ScoreboardStore(context, key).players.toList())
+        store.resetScores()
+        assertEquals(listOf(ScorePlayer("Bob", 0)), ScoreboardStore(context, key).players.toList())
+        store.clear()
+        assertTrue(ScoreboardStore(context, key).players.isEmpty())
+        assertFalse(prefs.contains(key))
+    }
+
+    @Test fun malformedLegacyRemainsDisclosedAfterResetAndClear() {
+        val raw = "Alice\u0001-3\u0002broken"
+        prefs.edit().putString(key, raw).commit()
+        val store = ScoreboardStore(context, key)
+        store.resetScores()
+        assertEquals(0, ScoreboardStore(context, key).players[0].score)
+        store.removeAt(0)
+        store.clear()
+        val reopened = ScoreboardStore(context, key)
+        assertTrue(reopened.players.isEmpty())
+        assertTrue(reopened.hasRetainedLegacyData)
+        assertEquals(raw, prefs.getString(key, null))
+    }
+
+    @Test fun differingLegacyAndV2DataIsNotDeleted() {
+        prefs.edit().putString(key, "Old\u00011")
+            .putString("${key}_v2", "[{\"name\":\"New\",\"score\":2}]").commit()
+        val store = ScoreboardStore(context, key)
+        assertEquals(listOf(ScorePlayer("New", 2)), store.players.toList())
+        assertTrue(store.hasRetainedLegacyData)
+        store.clear()
+        assertEquals("Old\u00011", prefs.getString(key, null))
+        assertTrue(ScoreboardStore(context, key).players.isEmpty())
+    }
+
     @Test fun malformedV2IsReadOnlyAndNeverReplaced() {
         val broken = "[{broken post-migration data"
         prefs.edit().putString("${key}_v2", broken).commit()

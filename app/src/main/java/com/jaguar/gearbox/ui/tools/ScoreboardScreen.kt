@@ -82,7 +82,8 @@ fun ScoreboardScreen(onNavigateBack: () -> Unit) {
 
         if (store.hasUnreadableSavedData) {
             Text(
-                "Some saved entries could not be read. Their original data has been retained for recovery; avoid further edits until recovered.",
+                if (store.isReadOnly) "Saved data could not be read. Editing is disabled to protect it."
+                else "Older recovery data is retained separately. Removing players, resetting scores or clearing this scoreboard will not erase that recovery data.",
                 color = MaterialTheme.colorScheme.error,
             )
         }
@@ -169,7 +170,7 @@ fun ScoreboardScreen(onNavigateBack: () -> Unit) {
             text = { Text(when (action) {
                 "Remove player" -> "Remove this player and their score?"
                 "Reset scores" -> "Set every score to zero? Player names will be kept."
-                else -> "Remove every player and score?"
+                else -> if (store.hasRetainedLegacyData) "Remove every current player and score? Older recovery data will remain stored." else "Remove every player and score?"
             }) },
             confirmButton = { TextButton(onClick = {
                 when (action) {

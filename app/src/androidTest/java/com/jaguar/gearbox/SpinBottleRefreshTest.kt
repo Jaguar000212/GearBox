@@ -2,6 +2,8 @@ package com.jaguar.gearbox
 
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.test.*
+import androidx.compose.ui.test.junit4.StateRestorationTester
+import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.junit4.createComposeRule
 import com.jaguar.gearbox.ui.tools.SpinBottleScreen
 import org.junit.Rule
@@ -9,6 +11,18 @@ import org.junit.Test
 
 class SpinBottleRefreshTest {
     @get:Rule val rule = createComposeRule()
+
+    @Test fun completedAngleSurvivesSavedStateRestoration() {
+        val restoration = StateRestorationTester(rule)
+        restoration.setContent { MaterialTheme { SpinBottleScreen {} } }
+        rule.onNodeWithText("Spin").performScrollTo().performClick()
+        rule.onNodeWithText("Spin again").assertIsEnabled()
+        val status = rule.onNodeWithText("Bottle points", substring = true)
+            .fetchSemanticsNode().config[SemanticsProperties.Text].single().text
+        restoration.emulateSavedInstanceStateRestore()
+        rule.onNodeWithText(status).assertExists()
+        rule.onNodeWithText("Spin again").assertIsEnabled()
+    }
 
     @Test fun spinLocksUntilAnimationFinishesThenAllowsAnotherSpin() {
         rule.mainClock.autoAdvance = false

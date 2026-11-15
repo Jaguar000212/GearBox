@@ -136,6 +136,7 @@ internal fun FlashlightControls(isOn: Boolean, onToggle: () -> Unit) {
                 modifier = Modifier.size(96.dp).semantics { stateDescription = status },
                 colors = IconButtonDefaults.filledIconButtonColors(
                     containerColor = if (isOn) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
+                    contentColor = if (isOn) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
                 ),
             ) {
                 Icon(if (isOn) Icons.Filled.FlashOn else Icons.Filled.FlashOff,

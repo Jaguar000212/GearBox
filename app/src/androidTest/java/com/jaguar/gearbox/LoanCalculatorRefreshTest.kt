@@ -12,13 +12,13 @@ class LoanCalculatorRefreshTest {
 
     @Test fun calculationAndClearStayConsistent() {
         rule.setContent { MaterialTheme { LoanCalculatorScreen {} } }
-        rule.onNodeWithText("Clear").assertIsNotEnabled()
+        rule.onNodeWithText("Clear", substring = true).assertIsNotEnabled()
         rule.onNodeWithText("Loan amount").performTextInput("120")
         rule.onNodeWithText("Annual interest rate (%)").performTextInput("12")
         rule.onNodeWithText("Loan term (years)").performTextInput("5")
         rule.onNodeWithText("Interest share of total repayment: 25.07%", substring = true).assertExists()
-        rule.onNodeWithText("Clear").assertIsEnabled().performScrollTo().performClick()
-        rule.onNodeWithText("Clear").assertIsNotEnabled()
+        rule.onNodeWithText("Clear", substring = true).assertIsEnabled().performScrollTo().performClick()
+        rule.onNodeWithText("Clear", substring = true).assertIsNotEnabled()
         rule.onNodeWithText("Interest share of total repayment: 25.07%", substring = true).assertDoesNotExist()
     }
 }

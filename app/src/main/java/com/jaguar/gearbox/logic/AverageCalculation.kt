@@ -42,7 +42,7 @@ fun computeAverageStatistics(input: String): AverageStatistics? {
         val harmonicMean = numbers.size / reciprocalSum
         if (!reciprocalSum.isFinite() || reciprocalSum == 0.0 || !harmonicMean.isFinite()) {
             "N/A (undefined or outside numeric range)"
-        } else formatTrimmed(harmonicMean)
+        } else formatNonzeroTrimmed(harmonicMean)
     }
 
     // A fractional power of a negative base is NaN in Java/Kotlin regardless of whether the
@@ -54,13 +54,13 @@ fun computeAverageStatistics(input: String): AverageStatistics? {
     } else {
         // Log-space avoids overflowing the product for ordinary large, positive inputs.
         val geometricMean = kotlin.math.exp(numbers.sumOf { kotlin.math.ln(it) } / numbers.size)
-        if (geometricMean.isFinite()) formatTrimmed(geometricMean)
+        if (geometricMean.isFinite()) formatNonzeroTrimmed(geometricMean)
         else "N/A (outside numeric range)"
     }
 
     val largest = numbers.max()
     val smallest = numbers.min()
 
-    return AverageStatistics(formatTrimmed(average), geometricMeanText, harmonicMeanText,
-        formatTrimmed(sum), numbers.size, formatTrimmed(largest), formatTrimmed(smallest))
+    return AverageStatistics(formatNonzeroTrimmed(average), geometricMeanText, harmonicMeanText,
+        formatNonzeroTrimmed(sum), numbers.size, formatNonzeroTrimmed(largest), formatNonzeroTrimmed(smallest))
 }

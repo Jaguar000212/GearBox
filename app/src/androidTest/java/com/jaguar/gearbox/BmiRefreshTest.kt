@@ -15,9 +15,9 @@ class BmiRefreshTest {
         rule.onNodeWithText("Height (cm)").performTextInput("175")
         rule.onNodeWithText("Weight (kg)").performTextInput("70")
         rule.onNodeWithText("Body mass index").assertExists()
-        rule.onNodeWithText("Copy").assertExists()
+        rule.onNodeWithText("Copy", substring = true).assertExists()
         rule.onNodeWithText("Clear").performScrollTo().performClick()
-        rule.onNodeWithText("Copy").assertDoesNotExist()
+        rule.onNodeWithText("Copy", substring = true).assertDoesNotExist()
     }
     @Test fun imperialWholeFeetStillWorks() {
         rule.setContent { MaterialTheme { BmiCalculatorScreen {} } }

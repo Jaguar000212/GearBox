@@ -14,17 +14,28 @@ import org.junit.Test
 class PasswordStateRestorationTest {
     @get:Rule val rule = createComposeRule()
 
+    @Test fun preciseLengthAndClear() {
+        rule.setContent { MaterialTheme { PasswordGeneratorScreen {} } }
+        rule.onNodeWithText("Longer").performClick()
+        rule.onNodeWithText("17").assertExists()
+        rule.onNodeWithText("Shorter").performClick()
+        rule.onNodeWithText("16").assertExists()
+        rule.onNodeWithText("Generate", substring = true).performScrollTo().performClick()
+        rule.onNodeWithText("Clear password").performScrollTo().performClick()
+        rule.onNodeWithText("Estimated strength: Very strong").assertDoesNotExist()
+    }
+
     @Test fun changingControlsAndRestoringDoesNotRerateExistingPassword() {
         val restoration = StateRestorationTester(rule)
         restoration.setContent { MaterialTheme { PasswordGeneratorScreen {} } }
         rule.onNodeWithText("Generate", substring = true).performScrollTo().performClick()
-        rule.onNodeWithText("Very strong").assertExists()
+        rule.onNodeWithText("Estimated strength: Very strong").assertExists()
         // Disable the three initially enabled classes without generating a new password.
         repeat(3) { index ->
             rule.onAllNodes(isToggleable())[index].performScrollTo().performClick()
         }
-        rule.onNodeWithText("Very strong").assertExists()
+        rule.onNodeWithText("Estimated strength: Very strong").assertExists()
         restoration.emulateSavedInstanceStateRestore()
-        rule.onNodeWithText("Very strong").assertExists()
+        rule.onNodeWithText("Estimated strength: Very strong").assertExists()
     }
 }

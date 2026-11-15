@@ -69,6 +69,8 @@ fun SpinBottleScreen(onNavigateBack: () -> Unit) {
                 if (!spinning) {
                     // Lock synchronously so rapid taps cannot launch concurrent spins.
                     spinning = true
+                    // An interrupted spin must not restore the previous round as its result.
+                    finalAngle = -1
                     val nextAngle = Random.nextInt(360)
                     val current = ((rotation.value % 360f) + 360f) % 360f
                     val delta = (nextAngle - current + 360f) % 360f

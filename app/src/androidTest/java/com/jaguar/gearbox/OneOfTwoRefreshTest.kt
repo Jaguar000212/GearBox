@@ -23,11 +23,15 @@ class OneOfTwoRefreshTest {
         rule.onNodeWithText("Pick one").performScrollTo().assertIsNotEnabled()
     }
 
-    @Test fun duplicateLabelsRemainSelectableWithSlotIdentity() {
-        rule.setContent { MaterialTheme { OneOfTwoScreen {} } }
+    @Test fun duplicateLabelsIdentifyFirstSlot() = assertDuplicateSlot(0)
+
+    @Test fun duplicateLabelsIdentifySecondSlot() = assertDuplicateSlot(1)
+
+    private fun assertDuplicateSlot(index: Int) {
+        rule.setContent { MaterialTheme { OneOfTwoScreen(chooseIndex = { index }) {} } }
         rule.onNodeWithText("Option 1").performTextInput("Same")
         rule.onNodeWithText("Option 2").performTextInput("Same")
         rule.onNodeWithText("Pick one").performScrollTo().performClick()
-        rule.onNodeWithText("selected\nSame", substring = true).assertExists()
+        rule.onNodeWithText("Option ${index + 1} selected\nSame").assertExists()
     }
 }

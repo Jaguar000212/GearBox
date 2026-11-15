@@ -22,6 +22,12 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.material3.TextButton
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.semantics
+import kotlinx.coroutines.delay
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -52,8 +58,24 @@ fun QrGeneratorScreen(onNavigateBack: () -> Unit) {
     var sharing by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
 
-    val matrix = remember(input) { generateQrMatrix(input) }
-    val bitmap = remember(matrix) { matrix?.let { matrixToBitmap(it) } }
+    var renderedInput by remember { mutableStateOf<String?>(null) }
+    var renderedBitmap by remember { mutableStateOf<Bitmap?>(null) }
+    LaunchedEffect(input) {
+        val requestedInput = input
+        renderedInput = null
+        renderedBitmap = null
+        if (requestedInput.isNotEmpty()) {
+            delay(150)
+            val result = withContext(Dispatchers.Default) {
+                generateQrMatrix(requestedInput)?.let { matrixToBitmap(it) }
+            }
+            renderedBitmap = result
+        }
+        renderedInput = requestedInput
+    }
+    // Never display or share an obsolete payload while the latest input is processing.
+    val bitmap = renderedBitmap.takeIf { renderedInput == input }
+    val generating = input.isNotEmpty() && renderedInput != input
 
     ToolScaffold(
         title = "QR Code Generator",
@@ -66,16 +88,19 @@ fun QrGeneratorScreen(onNavigateBack: () -> Unit) {
             label = { Text("Text or URL") },
             placeholder = { Text("e.g. https://example.com") },
             readOnly = sharing,
+            maxLines = 6,
             supportingText = { Text("Your code updates as you type. Text and links are both supported.") },
             modifier = Modifier.fillMaxWidth(),
         )
 
+        TextButton(onClick = { input = ""; shareError = null }, enabled = input.isNotEmpty() && !sharing) { Text("Clear") }
         Spacer(Modifier.height(20.dp))
         Card(Modifier.fillMaxWidth()) {
             Column(Modifier.fillMaxWidth().padding(20.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                 Text("QR preview", style = MaterialTheme.typography.titleMedium)
                 Spacer(Modifier.height(16.dp))
                 when {
+                    generating -> Text("Generating QR code…")
                     bitmap != null -> {
                         Image(
                             bitmap = bitmap.asImageBitmap(),
@@ -101,6 +126,7 @@ fun QrGeneratorScreen(onNavigateBack: () -> Unit) {
             Button(
                 onClick = {
                     // Lock the input before starting IO so the preview and shared payload agree.
+                    if (sharing || renderedInput != input) return@Button
                     sharing = true
                     shareError = null
                     scope.launch {
@@ -120,7 +146,7 @@ fun QrGeneratorScreen(onNavigateBack: () -> Unit) {
         }
         shareError?.let {
             Spacer(Modifier.height(12.dp))
-            Text(it, color = MaterialTheme.colorScheme.error)
+            Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite })
         }
     }
 }

@@ -8,7 +8,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -20,7 +20,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.jaguar.gearbox.data.Tools
 import com.jaguar.gearbox.logic.computeLoanResult
-import androidx.compose.material3.MaterialTheme
 import com.jaguar.gearbox.ui.components.DecimalField
 import com.jaguar.gearbox.ui.components.ResultCard
 import com.jaguar.gearbox.ui.components.ToolScaffold
@@ -56,17 +55,21 @@ fun LoanCalculatorScreen(onNavigateBack: () -> Unit) {
         icon = Tools.byRoute(Tools.ROUTE_LOAN)!!.icon,
         onNavigateBack = onNavigateBack,
     ) {
+        Text("Monthly repayment estimate", style = MaterialTheme.typography.titleMedium)
+        Text("Fixed annual rate, equal monthly payments. Fees are not included. Use one currency for all amounts.",
+            style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Spacer(Modifier.height(16.dp))
         DecimalField(
             value = principal,
             onValueChange = { principal = it },
-            label = "Principal amount",
+            label = "Loan amount",
             errorText = principalError,
         )
         Spacer(Modifier.height(8.dp))
         DecimalField(
             value = rate,
             onValueChange = { rate = it },
-            label = "Rate of interest (% per year)",
+            label = "Annual interest rate (%)",
             errorText = rateError,
         )
         Spacer(Modifier.height(8.dp))
@@ -77,17 +80,18 @@ fun LoanCalculatorScreen(onNavigateBack: () -> Unit) {
             errorText = timeError,
         )
 
-        if (result != null) {
+        val displayResult = result?.replace("Interest Percentage:", "Interest share of total repayment:")
+        if (displayResult != null) {
             Spacer(Modifier.height(16.dp))
             ResultCard(
-                text = result,
+                text = displayResult,
                 onCopy = {
                     context.copyToClipboard(
                         "Loan Calculator",
-                        shareBody(principal, rate, time, result)
+                        shareBody(principal, rate, time, displayResult)
                     )
                 },
-                onShare = { context.shareText(shareBody(principal, rate, time, result)) },
+                onShare = { context.shareText(shareBody(principal, rate, time, displayResult)) },
             )
         } else if (loanAmount != null && interestRate != null && loanTerm != null) {
             Spacer(Modifier.height(12.dp))
@@ -99,9 +103,10 @@ fun LoanCalculatorScreen(onNavigateBack: () -> Unit) {
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            OutlinedButton(
+            androidx.compose.material3.TextButton(
                 onClick = { principal = ""; rate = ""; time = "" },
                 modifier = Modifier.weight(1f),
+                enabled = principal.isNotEmpty() || rate.isNotEmpty() || time.isNotEmpty(),
             ) {
                 Icon(Icons.Filled.Clear, contentDescription = null)
                 Text(" Clear")

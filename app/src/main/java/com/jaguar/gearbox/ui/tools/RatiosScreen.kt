@@ -42,8 +42,15 @@ fun RatiosScreen(onNavigateBack: () -> Unit) {
             Spacer(Modifier.height(8.dp))
             Text(summary, style = MaterialTheme.typography.bodyMedium)
         } else {
-            Text(if (a != null && b != null) "These values cannot be simplified. Check that the ratio is defined and within the supported range."
-                else "Enter both values to see the simplified ratio.", style = MaterialTheme.typography.bodyMedium)
+            val guidance = when {
+                (partA.isNotBlank() && a == null) || (partB.isNotBlank() && b == null) ->
+                    "Enter valid, finite numbers in both fields."
+                partA.isBlank() || partB.isBlank() ->
+                    "Enter both values to see the simplified ratio."
+                else ->
+                    "These values cannot be simplified. Check that the ratio is defined and within the supported range."
+            }
+            Text(guidance, style = MaterialTheme.typography.bodyMedium)
         }
         TextButton(onClick = { partA = ""; partB = "" }, enabled = partA.isNotEmpty() || partB.isNotEmpty(),
             modifier = Modifier.fillMaxWidth()) { Text("Clear") }

@@ -91,7 +91,10 @@ fun NumberToWordsScreen(onNavigateBack: () -> Unit) {
                 focused = it.isFocused
             },
         )
-        OutlinedButton(onClick = { input = if (input.startsWith("-")) input.drop(1) else "-" + input.removePrefix("+") }) {
+        OutlinedButton(onClick = {
+            val normalized = input.trim()
+            input = if (normalized.startsWith("-")) normalized.drop(1) else "-" + normalized.removePrefix("+")
+        }) {
             Text("Change sign (±)")
         }
 

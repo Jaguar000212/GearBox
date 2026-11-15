@@ -5,6 +5,7 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.performTextReplacement
 import com.jaguar.gearbox.ui.tools.NumberToWordsScreen
 import org.junit.Rule
 import org.junit.Test
@@ -20,5 +21,19 @@ class NumberWordsScreenTest {
         rule.onNodeWithText("Negative twelve", ignoreCase = true).assertExists()
         rule.onNodeWithText("Clear", substring = true).performClick()
         rule.onNodeWithText("Share").assertDoesNotExist()
+    }
+    @Test fun signToggleNormalizesWhitespaceAndPreservesExplicitSigns() {
+        rule.setContent { MaterialTheme { NumberToWordsScreen {} } }
+        listOf(" 12 ", " +12 ").forEach { input ->
+            rule.onNodeWithText("Whole number").performTextReplacement(input)
+            rule.onNodeWithText("Twelve").assertExists()
+            rule.onNodeWithText("Change sign (±)").performClick()
+            rule.onNodeWithText("Negative twelve", ignoreCase = true).assertExists()
+            rule.onNodeWithText("Change sign (±)").performClick()
+            rule.onNodeWithText("Twelve").assertExists()
+        }
+        rule.onNodeWithText("Whole number").performTextReplacement(" -12 ")
+        rule.onNodeWithText("Change sign (±)").performClick()
+        rule.onNodeWithText("Twelve").assertExists()
     }
 }

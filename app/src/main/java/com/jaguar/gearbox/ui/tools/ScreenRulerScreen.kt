@@ -3,6 +3,8 @@ package com.jaguar.gearbox.ui.tools
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Card
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -45,7 +47,8 @@ fun ScreenRulerScreen(onNavigateBack: () -> Unit) {
     val pxPerCm = pxPerInch / 2.54f
     val pxPerUnit = if (useMetric) pxPerCm else pxPerInch
     val totalUnits = 30
-    val totalHeightDp = with(density) { (pxPerUnit * totalUnits).toDp() }
+    val labelPaddingPx = with(density) { 16.sp.toPx() }
+    val totalHeightDp = with(density) { (pxPerUnit * totalUnits + labelPaddingPx * 2).toDp() }
 
     val outlineColor = MaterialTheme.colorScheme.outline
     val labelColor = MaterialTheme.colorScheme.onSurface
@@ -65,12 +68,18 @@ fun ScreenRulerScreen(onNavigateBack: () -> Unit) {
         }
 
         Spacer(Modifier.height(8.dp))
+        Card(Modifier.fillMaxWidth()) {
         Text(
-            stringResource(R.string.ruler_guidance),
+            stringResource(R.string.ruler_estimate_guidance),
+            modifier = Modifier.padding(16.dp),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
 
+        }
+        Spacer(Modifier.height(8.dp))
+        Text(stringResource(if (useMetric) R.string.ruler_metric_divisions else R.string.ruler_imperial_divisions),
+            style = MaterialTheme.typography.labelLarge)
         Spacer(Modifier.height(16.dp))
         val minorSubdivisions = if (useMetric) 10 else 16
         val rulerDescription = stringResource(R.string.ruler_description, if (useMetric) "cm" else "in")
@@ -86,17 +95,17 @@ fun ScreenRulerScreen(onNavigateBack: () -> Unit) {
                 isAntiAlias = true
             }
             for (unit in 0..totalUnits) {
-                val y = unit * pxPerUnit
+                val y = labelPaddingPx + unit * pxPerUnit
                 drawLine(
                     color = outlineColor,
                     start = Offset(0f, y),
                     end = Offset(size.width * 0.6f, y),
                     strokeWidth = 3f,
                 )
-                if (unit < totalUnits) {
-                    drawIntoCanvas { canvas ->
+                drawIntoCanvas { canvas ->
                         canvas.nativeCanvas.drawText(unit.toString(), size.width * 0.65f, y + textSizePx / 3, paint)
                     }
+                if (unit < totalUnits) {
                     for (sub in 1 until minorSubdivisions) {
                         val subY = y + sub * (pxPerUnit / minorSubdivisions)
                         val isMid = sub == minorSubdivisions / 2

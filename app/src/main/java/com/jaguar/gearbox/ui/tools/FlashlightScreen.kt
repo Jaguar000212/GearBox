@@ -6,6 +6,11 @@ import android.os.Handler
 import android.os.Looper
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraManager
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Card
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -78,7 +83,7 @@ fun FlashlightScreen(onNavigateBack: () -> Unit) {
         }
         onDispose {
             if (isOn && cameraId != null) runCatching { cameraManager?.setTorchMode(cameraId, false) }
-            cameraManager?.unregisterTorchCallback(callback)
+            runCatching { cameraManager?.unregisterTorchCallback(callback) }
         }
     }
 
@@ -97,42 +102,49 @@ fun FlashlightScreen(onNavigateBack: () -> Unit) {
         }
         if (cameraId == null || cameraManager == null) return@ToolScaffold
 
-        Text(
-            text = stringResource(if (isOn) R.string.flashlight_on else R.string.flashlight_off),
-            style = MaterialTheme.typography.titleLarge,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth(),
-        )
+        FlashlightControls(isOn = isOn, onToggle = {
+            val next = !isOn
+            try {
+                cameraManager.setTorchMode(cameraId, next)
+                isOn = next
+                errorResource = null
+            } catch (_: CameraAccessException) {
+                errorResource = R.string.flashlight_busy
+            } catch (_: SecurityException) {
+                errorResource = R.string.flashlight_denied
+            } catch (_: RuntimeException) {
+                errorResource = R.string.flashlight_failed
+            }
+        })
+    }
+}
 
-        Spacer(Modifier.height(32.dp))
-        Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+@Composable
+internal fun FlashlightControls(isOn: Boolean, onToggle: () -> Unit) {
+    val status = stringResource(if (isOn) R.string.flashlight_on else R.string.flashlight_off)
+    val action = stringResource(if (isOn) R.string.flashlight_turn_off else R.string.flashlight_turn_on)
+    Card(Modifier.fillMaxWidth()) {
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(20.dp),
+        ) {
+            Text(status, style = MaterialTheme.typography.headlineMedium,
+                modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite })
             FilledIconButton(
-                onClick = {
-                    val next = !isOn
-                    try {
-                        cameraManager.setTorchMode(cameraId, next)
-                        isOn = next
-                        errorResource = null
-                    } catch (_: CameraAccessException) {
-                        errorResource = R.string.flashlight_busy
-                    } catch (_: SecurityException) {
-                        errorResource = R.string.flashlight_denied
-                    } catch (_: RuntimeException) {
-                        errorResource = R.string.flashlight_failed
-                    }
-                },
-                modifier = Modifier.size(96.dp),
+                onClick = onToggle,
+                modifier = Modifier.size(96.dp).semantics { stateDescription = status },
                 colors = IconButtonDefaults.filledIconButtonColors(
                     containerColor = if (isOn) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
+                    contentColor = if (isOn) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
                 ),
             ) {
-                Icon(
-                    imageVector = if (isOn) Icons.Filled.FlashOn else Icons.Filled.FlashOff,
-                    contentDescription = stringResource(if (isOn) R.string.flashlight_turn_off else R.string.flashlight_turn_on),
-                    tint = if (isOn) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(48.dp),
-                )
+                Icon(if (isOn) Icons.Filled.FlashOn else Icons.Filled.FlashOff,
+                    contentDescription = action, modifier = Modifier.size(48.dp))
             }
+            Text(action, style = MaterialTheme.typography.titleMedium)
+            Text(stringResource(R.string.flashlight_exit_hint),
+                style = MaterialTheme.typography.bodySmall, textAlign = TextAlign.Center)
         }
     }
 }

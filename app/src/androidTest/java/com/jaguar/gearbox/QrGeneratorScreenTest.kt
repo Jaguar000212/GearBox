@@ -5,6 +5,8 @@ import android.graphics.BitmapFactory
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTextReplacement
 import com.jaguar.gearbox.ui.tools.QrGeneratorScreen
@@ -28,12 +30,22 @@ class QrGeneratorScreenTest {
         rule.onNodeWithText("Your QR code will appear here").assertExists()
         rule.onNodeWithText("Share QR image", substring = true).assertDoesNotExist()
         rule.onNodeWithText("Text or URL").performTextInput("https")
+        rule.waitUntil(5000) { rule.onAllNodesWithText("Ready to scan or share").fetchSemanticsNodes().isNotEmpty() }
         rule.onNodeWithText("Ready to scan or share").assertExists()
         rule.onNodeWithText("Text or URL").performTextReplacement("x".repeat(5000))
+        rule.waitUntil(5000) { rule.onAllNodesWithText("Couldn't generate a QR code. Try shorter text.").fetchSemanticsNodes().isNotEmpty() }
         rule.onNodeWithText("Couldn't generate a QR code. Try shorter text.").assertExists()
         rule.onNodeWithText("Share QR image", substring = true).assertDoesNotExist()
         rule.onNodeWithText("Text or URL").performTextReplacement("")
         rule.onNodeWithText("Your QR code will appear here").assertExists()
+    }
+
+    @Test fun clearCancelsPendingPreview() {
+        rule.setContent { MaterialTheme { QrGeneratorScreen {} } }
+        rule.onNodeWithText("Text or URL").performTextInput("pending")
+        rule.onNodeWithText("Clear").performClick()
+        rule.onNodeWithText("Your QR code will appear here").assertExists()
+        rule.onNodeWithText("Share QR image", substring = true).assertDoesNotExist()
     }
 
     @Test fun sharedPngEncodingPreservesExactPayload() {

@@ -1,5 +1,8 @@
 package com.jaguar.gearbox.ui.tools
 
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -40,6 +43,7 @@ private const val KEY_WINS = "rps.wins"
 private const val KEY_LOSSES = "rps.losses"
 private const val KEY_DRAWS = "rps.draws"
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun RockPaperScissorsScreen(onNavigateBack: () -> Unit) {
     val context = LocalContext.current
@@ -92,9 +96,10 @@ fun RockPaperScissorsScreen(onNavigateBack: () -> Unit) {
         }
 
         Spacer(Modifier.height(20.dp))
-        Row(
+        FlowRow(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             RpsMove.entries.forEach { move ->
                 Button(
@@ -111,7 +116,7 @@ fun RockPaperScissorsScreen(onNavigateBack: () -> Unit) {
                         }
                         persistTally()
                     },
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.widthIn(min = 100.dp),
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(move.emoji, style = MaterialTheme.typography.headlineMedium,
@@ -123,10 +128,11 @@ fun RockPaperScissorsScreen(onNavigateBack: () -> Unit) {
         }
 
         Spacer(Modifier.height(20.dp))
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)) {
             listOf("Wins" to wins, "Losses" to losses, "Draws" to draws).forEach { (label, count) ->
-                Card(Modifier.weight(1f)) {
-                    Column(Modifier.fillMaxWidth().padding(12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                Card(Modifier.widthIn(min = 100.dp)) {
+                    Column(Modifier.padding(12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(count.toString(), style = MaterialTheme.typography.headlineSmall)
                         Text(label, style = MaterialTheme.typography.labelLarge)
                     }

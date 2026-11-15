@@ -1,5 +1,7 @@
 package com.jaguar.gearbox.ui.tools
 
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -35,6 +37,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.text.style.TextAlign
@@ -43,6 +47,7 @@ import androidx.compose.ui.unit.dp
 import androidx.glance.appwidget.updateAll
 import com.jaguar.gearbox.data.CounterStore
 import com.jaguar.gearbox.data.Tools
+import com.jaguar.gearbox.ui.components.ToolActions
 import com.jaguar.gearbox.ui.components.ToolScaffold
 import com.jaguar.gearbox.ui.theme.LocalHapticsEnabled
 import com.jaguar.gearbox.widget.CounterWidget
@@ -114,15 +119,22 @@ fun CounterScreen(onNavigateBack: () -> Unit) {
                     color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Text(
                     text = count.toString(),
-                    style = MaterialTheme.typography.displayLarge.copy(fontFamily = FontFamily.Monospace),
+                    style = (if (count.toString().length > 7) MaterialTheme.typography.headlineLarge else MaterialTheme.typography.displayLarge).copy(fontFamily = FontFamily.Monospace),
+                    maxLines = 1,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
                 )
             }
         }
         if (limitReached) {
-            Text("Counter limit reached. The count has not changed.", color = MaterialTheme.colorScheme.error)
+            Text("Counter limit reached. The count has not changed.", color = MaterialTheme.colorScheme.error,
+                modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite })
         }
+        Spacer(Modifier.height(12.dp))
+        ToolActions(
+            onCopy = { context.copyToClipboard("Count", store.count.toString()) },
+            onShare = { context.shareText("Count: ${store.count}") },
+        )
         Spacer(Modifier.height(24.dp))
         Text("Step", style = MaterialTheme.typography.titleSmall)
         Text("Amount added or removed with each tap", style = MaterialTheme.typography.bodySmall,

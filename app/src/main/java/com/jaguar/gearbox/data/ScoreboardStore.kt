@@ -4,6 +4,8 @@ import android.content.Context
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.core.content.edit
+import org.json.JSONArray
+import org.json.JSONObject
 
 /** A single competitor tracked on a [ScoreboardStore]. */
 data class ScorePlayer(val name: String, val score: Int)
@@ -19,6 +21,13 @@ class ScoreboardStore(context: Context, private val key: String) {
     private val prefs = context.applicationContext
         .getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
+    /** The untouched legacy data remains available if a row could not be decoded. */
+    val hasUnrecoverableLegacyRows: Boolean = prefs.getString(key, null)?.split(ENTRY_SEPARATOR)
+        ?.filter { it.isNotEmpty() }?.any {
+            val parts = it.split(FIELD_SEPARATOR)
+            parts.size != 2 || parts.getOrNull(1)?.toIntOrNull() == null
+        } ?: false
+
     val players: SnapshotStateList<ScorePlayer> =
         mutableStateListOf<ScorePlayer>().also { it.addAll(readFromPrefs()) }
 
@@ -32,7 +41,18 @@ class ScoreboardStore(context: Context, private val key: String) {
         persist()
     }
 
+    /** Adjust the latest state, not the score captured by the last composition. */
+    fun adjustScore(index: Int, delta: Int): Boolean {
+        val current = players.getOrNull(index) ?: return false
+        val next = current.score.toLong() + delta
+        if (next !in Int.MIN_VALUE.toLong()..Int.MAX_VALUE.toLong()) return false
+        players[index] = current.copy(score = next.toInt())
+        persist()
+        return true
+    }
+
     fun removeAt(index: Int) {
+        if (index !in players.indices) return
         players.removeAt(index)
         persist()
     }
@@ -50,6 +70,15 @@ class ScoreboardStore(context: Context, private val key: String) {
     }
 
     private fun readFromPrefs(): List<ScorePlayer> {
+        prefs.getString("${key}_v2", null)?.let { encoded ->
+            runCatching {
+                val array = JSONArray(encoded)
+                return List(array.length()) { i ->
+                    val item = array.getJSONObject(i)
+                    ScorePlayer(item.getString("name"), item.getInt("score"))
+                }
+            }
+        }
         val raw = prefs.getString(key, null) ?: return emptyList()
         return raw.split(ENTRY_SEPARATOR)
             .filter { it.isNotEmpty() }
@@ -61,15 +90,19 @@ class ScoreboardStore(context: Context, private val key: String) {
     }
 
     private fun persist() {
-        val encoded =
-            players.joinToString(ENTRY_SEPARATOR) { "${it.name}$FIELD_SEPARATOR${it.score}" }
-        prefs.edit { putString(key, encoded) }
+        val array = JSONArray()
+        players.forEach { player ->
+            array.put(JSONObject().put("name", player.name).put("score", player.score))
+        }
+        // Never overwrite the legacy raw value: malformed/ambiguous rows cannot be
+        // reconstructed reliably, so retain the original for recovery after migration.
+        prefs.edit { putString("${key}_v2", array.toString()) }
     }
 
     private companion object {
         const val PREFS_NAME = "gearbox_prefs"
 
-        // Control characters, so a player-entered name can never collide with the delimiters.
+        // Legacy format only; new writes use escaped JSON and retain the original raw data.
         const val FIELD_SEPARATOR = ""
         const val ENTRY_SEPARATOR = ""
     }

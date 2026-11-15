@@ -1,6 +1,10 @@
 package com.jaguar.gearbox.ui.tools
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.material3.TextButton
+import androidx.compose.ui.platform.LocalContext
+import com.jaguar.gearbox.ui.components.ResultCard
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -32,6 +36,7 @@ private enum class BmiUnitSystem(val label: String) {
 
 @Composable
 fun BmiCalculatorScreen(onNavigateBack: () -> Unit) {
+    val context = LocalContext.current
     var unitSystem by rememberSaveable { mutableStateOf(BmiUnitSystem.METRIC.name) }
     val selectedSystem = BmiUnitSystem.valueOf(unitSystem)
 
@@ -80,10 +85,8 @@ fun BmiCalculatorScreen(onNavigateBack: () -> Unit) {
         icon = Tools.byRoute(Tools.ROUTE_BMI)!!.icon,
         onNavigateBack = onNavigateBack,
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
+        Text("Units", style = MaterialTheme.typography.titleMedium)
+        Column(modifier = Modifier.fillMaxWidth()) {
             BmiUnitSystem.entries.forEach { entry ->
                 FilterChip(
                     selected = entry == selectedSystem,
@@ -113,25 +116,22 @@ fun BmiCalculatorScreen(onNavigateBack: () -> Unit) {
                 modifier = Modifier.fillMaxWidth(),
             )
         } else {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
+            Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 OutlinedTextField(
                     value = heightFt,
                     onValueChange = { heightFt = it },
                     label = { Text("Height (ft)") },
                     placeholder = { Text("e.g. 5") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.fillMaxWidth(),
                 )
                 OutlinedTextField(
                     value = heightIn,
                     onValueChange = { heightIn = it },
-                    label = { Text("Height (in)") },
+                    label = { Text("Additional inches (optional)") },
                     placeholder = { Text("e.g. 9") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.fillMaxWidth(),
                 )
             }
             Spacer(Modifier.height(12.dp))
@@ -147,19 +147,21 @@ fun BmiCalculatorScreen(onNavigateBack: () -> Unit) {
 
         if (result != null) {
             Spacer(Modifier.height(20.dp))
-            Card(modifier = Modifier.fillMaxWidth()) {
-                Text(
-                    text = "BMI: ${result.first}\n${result.second}",
-                    style = MaterialTheme.typography.headlineSmall,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(24.dp),
-                )
-            }
+            Text("Body mass index", style = MaterialTheme.typography.titleMedium)
+            Spacer(Modifier.height(8.dp))
+            val summary = "BMI: ${result.first}\nAdult category: ${result.second}"
+            ResultCard(text = summary, textStyle = MaterialTheme.typography.headlineSmall,
+                onCopy = { context.copyToClipboard("BMI", summary) },
+                onShare = { context.shareText(summary) })
         } else if (error.isNotEmpty()) {
             Spacer(Modifier.height(12.dp))
             Text(error, color = MaterialTheme.colorScheme.error)
         }
+        Spacer(Modifier.height(12.dp))
+        Text("These categories are for adults aged 20 and older. BMI is a screening measure, not a diagnosis; it does not assess health on its own.",
+            style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        TextButton(onClick = { heightCm = ""; weightKg = ""; heightFt = ""; heightIn = ""; weightLbs = "" },
+            enabled = listOf(heightCm, weightKg, heightFt, heightIn, weightLbs).any { it.isNotEmpty() },
+            modifier = Modifier.fillMaxWidth()) { Text("Clear") }
     }
 }

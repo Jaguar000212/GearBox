@@ -30,17 +30,24 @@ import com.jaguar.gearbox.data.Tools
 import com.jaguar.gearbox.logic.numberToWords
 import com.jaguar.gearbox.logic.numberToWordsIndian
 import com.jaguar.gearbox.ui.components.ToolScaffold
+import com.jaguar.gearbox.ui.components.ResultCard
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.ui.focus.onFocusChanged
 
 private enum class NumberSystem(val label: String) {
     INTERNATIONAL("International"),
     INDIAN("Indian (Lakh/Crore)"),
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun NumberToWordsScreen(onNavigateBack: () -> Unit) {
     val context = LocalContext.current
     var input by rememberSaveable { mutableStateOf("") }
     var numberSystem by rememberSaveable { mutableStateOf(NumberSystem.INTERNATIONAL.name) }
+    var focused by rememberSaveable { mutableStateOf(false) }
+    var touched by rememberSaveable { mutableStateOf(false) }
     val selectedSystem = NumberSystem.valueOf(numberSystem)
 
     val parsed = input.trim().toLongOrNull()
@@ -50,14 +57,14 @@ fun NumberToWordsScreen(onNavigateBack: () -> Unit) {
         selectedSystem == NumberSystem.INDIAN -> numberToWordsIndian(parsed)
         else -> numberToWords(parsed)
     }
-    val error = if (input.isNotBlank() && parsed == null) "Enter a valid whole number." else ""
+    val error = if (input.isNotBlank() && parsed == null && !focused && touched) "Enter a signed 64-bit whole number, without commas or decimals." else ""
 
     ToolScaffold(
         title = "Number to Words",
         icon = Tools.byRoute(Tools.ROUTE_NUMBER_TO_WORDS)!!.icon,
         onNavigateBack = onNavigateBack,
     ) {
-        Row(
+        FlowRow(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
@@ -74,47 +81,38 @@ fun NumberToWordsScreen(onNavigateBack: () -> Unit) {
         OutlinedTextField(
             value = input,
             onValueChange = { input = it },
-            label = { Text("Number") },
+            label = { Text("Whole number") },
             placeholder = { Text("e.g. 123456") },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             isError = error.isNotEmpty(),
-            supportingText = { if (error.isNotEmpty()) Text(error) },
-            modifier = Modifier.fillMaxWidth(),
+            supportingText = { Text(error.ifEmpty { if (selectedSystem == NumberSystem.INDIAN) "Example: 100000 is one lakh." else "Example: 100000 is one hundred thousand." }) },
+            modifier = Modifier.fillMaxWidth().onFocusChanged {
+                if (focused && !it.isFocused) touched = true
+                focused = it.isFocused
+            },
         )
+        OutlinedButton(onClick = { input = if (input.startsWith("-")) input.drop(1) else "-" + input.removePrefix("+") }) {
+            Text("Change sign (±)")
+        }
 
         if (words != null) {
             Spacer(Modifier.height(16.dp))
-            Card(modifier = Modifier.fillMaxWidth()) {
-                Text(
-                    text = words,
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                )
-            }
+            Text("${selectedSystem.label} wording", style = MaterialTheme.typography.titleMedium)
+            Spacer(Modifier.height(8.dp))
+            ResultCard(
+                text = words,
+                textStyle = MaterialTheme.typography.headlineSmall,
+                onCopy = { context.copyToClipboard("Number in words", words) },
+                onShare = { context.shareText(words) },
+            )
+        } else if (input.isBlank()) {
+            Spacer(Modifier.height(16.dp))
+            Text("Enter a whole number to write it in English.")
         }
-
-        Spacer(Modifier.height(16.dp))
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            OutlinedButton(
-                onClick = { input = "" },
-                modifier = Modifier.weight(1f),
-            ) {
-                Icon(Icons.Filled.Clear, contentDescription = null)
-                Text(" Clear")
-            }
-            OutlinedButton(
-                onClick = { if (words != null) context.copyToClipboard("Number in words", words) },
-                enabled = words != null,
-                modifier = Modifier.weight(1f),
-            ) {
-                Icon(Icons.Filled.ContentCopy, contentDescription = null)
-                Text(" Copy")
-            }
+        Spacer(Modifier.height(12.dp))
+        OutlinedButton(onClick = { input = ""; touched = false }, enabled = input.isNotEmpty(), modifier = Modifier.fillMaxWidth()) {
+            Icon(Icons.Filled.Clear, contentDescription = null)
+            Text(" Clear")
         }
     }
 }

@@ -96,8 +96,10 @@ fun TambolaScreen(onNavigateBack: () -> Unit) {
         Spacer(Modifier.height(12.dp))
         Button(
             onClick = {
-                if (remaining.isNotEmpty()) {
-                    val next = remaining.random()
+                // Read current state again: repeated taps may arrive before recomposition.
+                val available = (1..90).filter { it !in calledNumbers }
+                if (available.isNotEmpty()) {
+                    val next = available.random()
                     calledNumbers = calledNumbers + next
                     lastCalled = next
                     persistGame(calledNumbers, lastCalled)

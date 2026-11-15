@@ -1,0 +1,9 @@
+<resources>
+    <string name="launch_section">Startup</string>
+    <string name="launch_screen_title">Launch screen</string>
+    <string name="launch_screen_summary">%1$s · On a fresh app launch</string>
+    <string name="launch_screen_help">Choose where a fresh app launch begins. Returning to an open session keeps your place. Tool shortcuts and notifications still open their intended tool.</string>
+    <string name="launch_screen_home">Home</string>
+    <string name="launch_screen_favorites">Favorites</string>
+    <string name="launch_screen_close">Close</string>
+</resources>

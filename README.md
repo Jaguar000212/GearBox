@@ -190,3 +190,10 @@ git push origin v1.0.0
 The workflow reads the signing keystore and passwords from repository secrets
 (`KEYSTORE_BASE64`, `KEYSTORE_PASSWORD`, `KEY_ALIAS`, `KEY_PASSWORD`) — nothing is committed to
 the repo itself.
+
+### Launch screen
+
+Settings → Launch screen chooses Home or Favorites for a fresh app session (Home by
+default). Changing it does not move the current screen. Returning to an existing task
+restores its navigation state; shortcuts and clock notifications continue opening their
+intended tool, with the session's launch tab underneath for Back navigation.

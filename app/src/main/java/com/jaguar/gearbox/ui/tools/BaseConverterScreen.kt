@@ -52,7 +52,8 @@ fun BaseConverterScreen(onNavigateBack: () -> Unit) {
     val selectedBase = NumberBase.valueOf(fromBase)
     val parsed = input.trim().toLongOrNull(selectedBase.radix)
 
-    val digits = input.trim().removePrefix("-").removePrefix("+")
+    val normalized = input.trim()
+    val digits = if (normalized.startsWith("-") || normalized.startsWith("+")) normalized.drop(1) else normalized
     val invalidDigits = digits.isEmpty() || digits.any { it.digitToIntOrNull(selectedBase.radix) == null }
     val error = when {
         input.isBlank() || parsed != null || focused || !touched -> ""
@@ -99,7 +100,7 @@ fun BaseConverterScreen(onNavigateBack: () -> Unit) {
             label = { Text("Value") },
             placeholder = { Text(placeholderFor(selectedBase)) },
             isError = error.isNotEmpty(),
-            supportingText = { Text(error.ifEmpty { "Whole numbers: ${digitGuidance(selectedBase)}. Optional + or − sign." }) },
+            supportingText = { Text(error.ifEmpty { "Whole numbers: ${digitGuidance(selectedBase)}. Optional + or - sign." }) },
             modifier = Modifier.fillMaxWidth().onFocusChanged {
                 if (focused && !it.isFocused) touched = true
                 focused = it.isFocused

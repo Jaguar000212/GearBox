@@ -24,6 +24,35 @@ class SpinBottleRefreshTest {
         rule.onNodeWithText("Spin again").assertIsEnabled()
     }
 
+    @Test fun interruptedFirstSpinRestoresReadyWithoutAResult() {
+        assertInterruptedSpinRestoresReady(completePreviousSpin = false)
+    }
+
+    @Test fun interruptedSecondSpinDoesNotRestorePreviousResult() {
+        assertInterruptedSpinRestoresReady(completePreviousSpin = true)
+    }
+
+    private fun assertInterruptedSpinRestoresReady(completePreviousSpin: Boolean) {
+        val restoration = StateRestorationTester(rule)
+        restoration.setContent { MaterialTheme { SpinBottleScreen {} } }
+        if (completePreviousSpin) {
+            rule.onNodeWithText("Spin").performScrollTo().performClick()
+            rule.onNodeWithText("Spin again").assertIsEnabled()
+            rule.onNodeWithText("Bottle points", substring = true).assertExists()
+        }
+        rule.mainClock.autoAdvance = false
+        rule.onNodeWithText(if (completePreviousSpin) "Spin again" else "Spin")
+            .performScrollTo().performClick()
+        rule.mainClock.advanceTimeByFrame()
+        rule.onNode(hasText("Spinning…") and hasClickAction()).assertIsNotEnabled()
+        restoration.emulateSavedInstanceStateRestore()
+        rule.mainClock.advanceTimeByFrame()
+        rule.onNodeWithText("Ready to spin").assertExists()
+        rule.onNodeWithText("Bottle points", substring = true).assertDoesNotExist()
+        rule.onNodeWithText("Spin").assertIsEnabled()
+        rule.mainClock.autoAdvance = true
+    }
+
     @Test fun spinLocksUntilAnimationFinishesThenAllowsAnotherSpin() {
         rule.mainClock.autoAdvance = false
         rule.setContent { MaterialTheme { SpinBottleScreen {} } }

@@ -33,7 +33,8 @@ import com.jaguar.gearbox.ui.components.ToolScaffold
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
-import java.time.temporal.ChronoUnit
+import com.jaguar.gearbox.logic.daysUntilSummary
+import com.jaguar.gearbox.ui.components.rememberCurrentLocalDate
 
 private const val KEY_LABEL = "days_until.label"
 private const val KEY_TARGET_DATE = "days_until.target_date"
@@ -42,6 +43,7 @@ private const val KEY_TARGET_DATE = "days_until.target_date"
 @Composable
 fun DaysUntilScreen(onNavigateBack: () -> Unit) {
     val context = LocalContext.current
+    val today by rememberCurrentLocalDate()
     val store = remember { SimplePrefsStore(context) }
     var label by rememberSaveable { mutableStateOf(store.getString(KEY_LABEL, "")) }
     var targetDate by rememberSaveable {
@@ -108,23 +110,17 @@ fun DaysUntilScreen(onNavigateBack: () -> Unit) {
 
         val target = targetDate
         if (target != null) {
-            val days = ChronoUnit.DAYS.between(LocalDate.now(), target)
-            val eventName = label.ifBlank { "the date" }
-            val summary = when {
-                days > 0 -> "$days day${if (days == 1L) "" else "s"} until $eventName"
-                days == 0L -> "$eventName is today!"
-                else -> "${-days} day${if (days == -1L) "" else "s"} since $eventName"
-            }
+            val summary = daysUntilSummary(today, target, label)
 
             Spacer(Modifier.height(20.dp))
             ResultCard(
                 text = summary,
                 textStyle = MaterialTheme.typography.headlineMedium,
-                onCopy = { context.copyToClipboard("Days Until", summary) },
-                onShare = { context.shareText(summary) },
+                onCopy = { context.copyToClipboard("Days Until", daysUntilSummary(LocalDate.now(), target, label)) },
+                onShare = { context.shareText(daysUntilSummary(LocalDate.now(), target, label)) },
             )
             Spacer(Modifier.height(8.dp))
-            Text("From ${formatDate(LocalDate.now())} to ${formatDate(target)}",
+            Text("From ${formatDate(today)} to ${formatDate(target)}",
                 style = MaterialTheme.typography.bodyMedium)
         } else {
             Spacer(Modifier.height(20.dp))

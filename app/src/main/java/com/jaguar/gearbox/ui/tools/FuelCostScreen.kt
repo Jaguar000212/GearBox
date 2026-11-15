@@ -1,7 +1,12 @@
 package com.jaguar.gearbox.ui.tools
 
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -35,11 +40,16 @@ fun FuelCostScreen(onNavigateBack: () -> Unit) {
         icon = Tools.byRoute(Tools.ROUTE_FUEL_COST)!!.icon,
         onNavigateBack = onNavigateBack,
     ) {
+        Text("Plan your trip cost", style = MaterialTheme.typography.titleMedium)
+        Text("Keep units consistent: km with km/L and price/L, or miles with miles/gallon and price/gallon. No unit conversion is performed.",
+            style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Spacer(Modifier.height(16.dp))
         DecimalField(
             value = distance,
             onValueChange = { distance = it },
             label = "Trip distance (km/mi)",
             placeholder = "e.g. 300",
+            errorText = if (distance.isNotBlank() && distanceValue == null) "Enter a non-negative distance." else null,
         )
         Spacer(Modifier.height(12.dp))
         DecimalField(
@@ -47,6 +57,7 @@ fun FuelCostScreen(onNavigateBack: () -> Unit) {
             onValueChange = { mileage = it },
             label = "Mileage (distance per unit fuel)",
             placeholder = "e.g. 15",
+            errorText = if (mileage.isNotBlank() && mileageValue == null) "Mileage must be greater than zero." else null,
         )
         Spacer(Modifier.height(12.dp))
         DecimalField(
@@ -54,6 +65,7 @@ fun FuelCostScreen(onNavigateBack: () -> Unit) {
             onValueChange = { price = it },
             label = "Fuel price per unit",
             placeholder = "e.g. 100",
+            errorText = if (price.isNotBlank() && priceValue == null) "Enter a non-negative fuel price." else null,
         )
 
         if (distanceValue != null && mileageValue != null && priceValue != null) {
@@ -63,8 +75,11 @@ fun FuelCostScreen(onNavigateBack: () -> Unit) {
                         "Total cost: ${formatTrimmed(result.totalCost, 2)}"
 
                 Spacer(Modifier.height(20.dp))
+                Text("Estimated trip cost", style = MaterialTheme.typography.labelLarge)
+                Text(formatTrimmed(result.totalCost, 2), style = MaterialTheme.typography.headlineLarge, color = MaterialTheme.colorScheme.primary)
+                Spacer(Modifier.height(12.dp))
                 ResultCard(
-                    text = summary,
+                    text = "Fuel needed: ${formatTrimmed(result.fuelNeeded, 2)} units\nCost uses the currency of your fuel price.",
                     onCopy = { context.copyToClipboard("Fuel cost", summary) },
                     onShare = { context.shareText(summary) },
                 )
@@ -72,12 +87,15 @@ fun FuelCostScreen(onNavigateBack: () -> Unit) {
                 Spacer(Modifier.height(12.dp))
                 Text("Values exceed the supported numeric range.", color = MaterialTheme.colorScheme.error)
             }
-        } else if (distance.isNotBlank() && mileage.isNotBlank() && price.isNotBlank()) {
-            Spacer(Modifier.height(12.dp))
-            Text(
-                "Enter a valid distance, mileage (greater than 0), and fuel price.",
-                color = MaterialTheme.colorScheme.error,
-            )
+        }
+        Spacer(Modifier.height(16.dp))
+        androidx.compose.material3.TextButton(modifier = Modifier.fillMaxWidth(),
+            onClick = { distance = ""; mileage = ""; price = "" },
+            enabled = distance.isNotEmpty() || mileage.isNotEmpty() || price.isNotEmpty(),
+        ) {
+            Icon(Icons.Filled.Clear, contentDescription = null)
+            Spacer(Modifier.width(8.dp))
+            Text("Clear")
         }
     }
 }

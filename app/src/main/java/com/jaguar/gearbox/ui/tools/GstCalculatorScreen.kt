@@ -71,14 +71,14 @@ fun GstCalculatorScreen(onNavigateBack: () -> Unit) {
             onValueChange = { amount = it },
             label = if (inclusive) "Amount (tax included)" else "Amount (before tax)",
             placeholder = "e.g. 1000",
-            errorText = if (amount.isNotBlank() && amountValue == null) "Enter a non-negative amount." else null,
+            errorText = if (amount.isNotBlank() && amountValue == null) "Enter a valid, finite, non-negative amount." else null,
         )
         Spacer(Modifier.height(12.dp))
         DecimalField(
             value = rate,
             onValueChange = { rate = it },
             label = "Tax rate (%)",
-            errorText = if (rate.isNotBlank() && rateValue == null) "Enter a non-negative rate." else null,
+            errorText = if (rate.isNotBlank() && rateValue == null) "Enter a valid, finite, non-negative rate." else null,
         )
 
         if (result != null) {
@@ -97,7 +97,7 @@ fun GstCalculatorScreen(onNavigateBack: () -> Unit) {
             )
         } else if (amountValue != null && rateValue != null) {
             Spacer(Modifier.height(12.dp))
-            Text("Enter a valid amount and tax rate within the supported numeric range.", color = MaterialTheme.colorScheme.error)
+            Text("The result exceeds the supported numeric range. Reduce the amount or tax rate.", color = MaterialTheme.colorScheme.error)
         }
         Spacer(Modifier.height(16.dp))
         Text("Use the applicable rate; the default is not a tax recommendation.", style = MaterialTheme.typography.bodySmall,

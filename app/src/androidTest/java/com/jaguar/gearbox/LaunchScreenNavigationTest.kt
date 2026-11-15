@@ -4,6 +4,7 @@ import androidx.activity.ComponentActivity
 import androidx.compose.runtime.*
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.junit4.StateRestorationTester
 import androidx.test.espresso.Espresso.pressBack
 import com.jaguar.gearbox.data.LaunchScreen
 import com.jaguar.gearbox.ui.theme.ThemeMode
@@ -22,9 +23,20 @@ class LaunchScreenNavigationTest {
         compose.onNode(hasText("Favorites") and isSelectable()).assertIsSelected()
         compose.onNode(hasText("Settings") and isSelectable()).performClick()
         compose.onNodeWithText("Launch screen").performClick()
-        compose.onNode(hasText("Home") and isSelectable()).performClick()
+        compose.onNode(hasText("Home") and isSelectable() and hasAnyAncestor(isDialog())).performClick()
         compose.onNode(hasText("Settings") and isSelectable()).assertIsSelected()
         compose.onNodeWithText("Home · On a fresh app launch").assertExists()
+    }
+
+    @Test fun restorationKeepsSettingsInsteadOfReturningToLaunchTab() {
+        val restoration = StateRestorationTester(compose)
+        restoration.setContent {
+            GearBoxApp(ThemeMode.SYSTEM, {}, false, {}, false, {},
+                launchScreen = LaunchScreen.FAVORITES)
+        }
+        compose.onNode(hasText("Settings") and isSelectable()).performClick()
+        restoration.emulateSavedInstanceStateRestore()
+        compose.onNode(hasText("Settings") and isSelectable()).assertIsSelected()
     }
 
     @Test fun shortcutStillOpensToolAndBackReturnsToPreferredTab() {

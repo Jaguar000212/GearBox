@@ -14,6 +14,8 @@ import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Shuffle
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.FilledTonalIconButton
@@ -31,12 +33,17 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.jaguar.gearbox.data.SimplePrefsStore
 import com.jaguar.gearbox.data.Tools
 import com.jaguar.gearbox.ui.components.ResultCard
 import com.jaguar.gearbox.ui.components.StringListSaver
+import com.jaguar.gearbox.ui.components.ToolActions
 import com.jaguar.gearbox.ui.components.ToolScaffold
 
 private const val KEY_NAMES = "team_picker.names"
@@ -45,6 +52,8 @@ private const val NAME_DELIMITER = "\n"
 @Composable
 fun TeamPickerScreen(onNavigateBack: () -> Unit) {
     val context = LocalContext.current
+    val focusManager = LocalFocusManager.current
+    var confirmClear by rememberSaveable { mutableStateOf(false) }
     val store = remember { SimplePrefsStore(context) }
     var names by rememberSaveable(stateSaver = StringListSaver) {
         val saved = store.getString(KEY_NAMES, "")
@@ -57,6 +66,9 @@ fun TeamPickerScreen(onNavigateBack: () -> Unit) {
 
     fun persistNames(updated: List<String>) {
         names = updated
+        winner = null
+        teams = emptyList()
+        teamCount = teamCount.coerceIn(2, updated.size.coerceAtLeast(2))
         store.putString(KEY_NAMES, updated.joinToString(NAME_DELIMITER))
     }
 
@@ -68,11 +80,27 @@ fun TeamPickerScreen(onNavigateBack: () -> Unit) {
         }
     }
 
+    if (confirmClear) {
+        AlertDialog(
+            onDismissRequest = { confirmClear = false },
+            title = { Text("Clear saved names?") },
+            text = { Text("This removes every participant and the current results. You cannot undo it.") },
+            confirmButton = { TextButton(onClick = {
+                persistNames(emptyList()); newName = ""; confirmClear = false
+            }) { Text("Clear names") } },
+            dismissButton = { TextButton(onClick = { confirmClear = false }) { Text("Cancel") } },
+        )
+    }
+
     ToolScaffold(
         title = "Team / Name Picker",
         icon = Tools.byRoute(Tools.ROUTE_TEAM_PICKER)!!.icon,
         onNavigateBack = onNavigateBack,
     ) {
+        Text("Let chance choose", style = MaterialTheme.typography.titleLarge)
+        Text("Pick one name or make balanced teams. Repeated names count as separate entries.",
+            style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Spacer(Modifier.height(16.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
             OutlinedTextField(
                 value = newName,
@@ -81,13 +109,15 @@ fun TeamPickerScreen(onNavigateBack: () -> Unit) {
                 singleLine = true,
                 modifier = Modifier.weight(1f),
             )
-            IconButton(onClick = { addName() }) {
+            IconButton(onClick = { addName() }, enabled = newName.isNotBlank()) {
                 Icon(Icons.Filled.Add, contentDescription = "Add name")
             }
         }
 
         if (names.isNotEmpty()) {
             Spacer(Modifier.height(12.dp))
+            Text("Participants (${names.size})", style = MaterialTheme.typography.titleMedium)
+            Spacer(Modifier.height(8.dp))
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(vertical = 4.dp)) {
                     names.forEachIndexed { index, name ->
@@ -98,20 +128,20 @@ fun TeamPickerScreen(onNavigateBack: () -> Unit) {
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween,
                         ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
+                            Row(modifier = Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
                                 Icon(
                                     Icons.Filled.Person,
                                     contentDescription = null,
                                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                 )
-                                Text("  $name", style = MaterialTheme.typography.bodyLarge)
+                                Text(name, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f).padding(start = 8.dp))
                             }
                             IconButton(onClick = {
                                 persistNames(names.toMutableList().also { it.removeAt(index) })
                                 winner = null
                                 teams = emptyList()
                             }) {
-                                Icon(Icons.Filled.Close, contentDescription = "Remove $name")
+                                Icon(Icons.Filled.Close, contentDescription = "Remove participant ${index + 1}: $name")
                             }
                         }
                     }
@@ -120,7 +150,7 @@ fun TeamPickerScreen(onNavigateBack: () -> Unit) {
 
             Spacer(Modifier.height(20.dp))
             Button(
-                onClick = { winner = names.random() },
+                onClick = { focusManager.clearFocus(); winner = names.random() },
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 Icon(Icons.Filled.Shuffle, contentDescription = null)
@@ -129,18 +159,19 @@ fun TeamPickerScreen(onNavigateBack: () -> Unit) {
 
             if (winner != null) {
                 Spacer(Modifier.height(12.dp))
-                ResultCard(text = "Picked: $winner")
+                val picked = "Picked: $winner"
+                ResultCard(text = picked,
+                    modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
+                    onCopy = { context.copyToClipboard("Picked name", picked) },
+                    onShare = { context.shareText(picked) })
             }
 
             Spacer(Modifier.height(20.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-            ) {
+            Column(modifier = Modifier.fillMaxWidth()) {
                 Text("Number of teams", style = MaterialTheme.typography.titleMedium)
+                Spacer(Modifier.height(8.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    FilledTonalIconButton(onClick = { if (teamCount > 2) teamCount-- }) {
+                    FilledTonalIconButton(onClick = { teamCount--; teams = emptyList() }, enabled = teamCount > 2) {
                         Icon(Icons.Filled.Remove, contentDescription = "Fewer teams")
                     }
                     Text(
@@ -148,14 +179,18 @@ fun TeamPickerScreen(onNavigateBack: () -> Unit) {
                         style = MaterialTheme.typography.titleLarge,
                         modifier = Modifier.padding(horizontal = 12.dp),
                     )
-                    FilledTonalIconButton(onClick = { if (teamCount < names.size) teamCount++ }) {
+                    FilledTonalIconButton(onClick = { teamCount++; teams = emptyList() }, enabled = teamCount < names.size) {
                         Icon(Icons.Filled.Add, contentDescription = "More teams")
                     }
                 }
             }
+            Text(if (names.size < 2) "Add one more name to make teams. You can already pick one."
+                else "Team sizes differ by at most one participant.",
+                style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(Modifier.height(8.dp))
             OutlinedButton(
                 onClick = {
+                    focusManager.clearFocus()
                     val shuffled = names.shuffled()
                     val groups = List(teamCount) { mutableListOf<String>() }
                     shuffled.forEachIndexed { index, name -> groups[index % teamCount].add(name) }
@@ -177,6 +212,7 @@ fun TeamPickerScreen(onNavigateBack: () -> Unit) {
                 val summary = teams.joinToString("\n")
                 ResultCard(
                     text = summary,
+                    modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
                     onCopy = { context.copyToClipboard("Teams", summary) },
                     onShare = { context.shareText(summary) },
                 )
@@ -184,10 +220,12 @@ fun TeamPickerScreen(onNavigateBack: () -> Unit) {
         } else {
             Spacer(Modifier.height(12.dp))
             Text(
-                "Add at least two names to pick or split into teams.",
+                "Add one name to pick, or at least two to split into teams. Names are saved on this device.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
+        Spacer(Modifier.height(12.dp))
+        ToolActions(onClear = { confirmClear = true }, clearEnabled = names.isNotEmpty() || newName.isNotEmpty())
     }
 }

@@ -1,100 +1,96 @@
 package com.jaguar.gearbox.ui.tools
 
-import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Casino
-import androidx.compose.material3.Button
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.*
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.jaguar.gearbox.data.Tools
+import com.jaguar.gearbox.ui.components.ToolActions
 import com.jaguar.gearbox.ui.components.ToolScaffold
+import kotlinx.coroutines.launch
 import kotlin.random.Random
 
 @Composable
 fun FlipCoinScreen(onNavigateBack: () -> Unit) {
+    val context = LocalContext.current
     var result by rememberSaveable { mutableStateOf<Boolean?>(null) }
-    var flipCount by rememberSaveable { mutableIntStateOf(0) }
+    // Transient animation state is not restored: recreation must never leave controls locked.
+    var flipping by remember { mutableStateOf(false) }
+    val rotation = remember { Animatable(0f) }
+    val scope = rememberCoroutineScope()
+    val resultText = when (result) { true -> "Heads"; false -> "Tails"; null -> "Ready to flip" }
 
-    // A full 360° turn per flip (not 180°) so the coin always settles back at a multiple of 360 —
-    // resting at 180 would draw the "H"/"T" text mirrored, since graphicsLayer rotationY flips the
-    // whole layer including its content, not just a swappable coin face.
-    val rotation by animateFloatAsState(
-        targetValue = flipCount * 360f,
-        animationSpec = tween(durationMillis = 500),
-        label = "coinFlip",
-    )
-
-    ToolScaffold(
-        title = "Flip Coin",
-        icon = Tools.byRoute(Tools.ROUTE_FLIP_COIN)!!.icon,
-        onNavigateBack = onNavigateBack,
-    ) {
-        Spacer(Modifier.height(24.dp))
-        Box(
-            modifier = Modifier.fillMaxWidth(),
-            contentAlignment = Alignment.Center,
-        ) {
+    ToolScaffold("Flip Coin", Tools.byRoute(Tools.ROUTE_FLIP_COIN)!!.icon, onNavigateBack) {
+        Text("Heads or tails?", style = MaterialTheme.typography.titleLarge)
+        Text("One coin. Two equally likely outcomes.", style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Spacer(Modifier.height(32.dp))
+        Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
             Box(
-                modifier = Modifier
-                    .size(160.dp)
-                    .graphicsLayer { rotationY = rotation }
-                    .background(MaterialTheme.colorScheme.primaryContainer, CircleShape),
+                Modifier.size(176.dp)
+                    .graphicsLayer { rotationY = rotation.value; cameraDistance = 12f * density }
+                    .background(MaterialTheme.colorScheme.primaryContainer, CircleShape)
+                    .border(4.dp, MaterialTheme.colorScheme.primary, CircleShape)
+                    .clearAndSetSemantics { },
                 contentAlignment = Alignment.Center,
             ) {
-                Text(
-                    text = when (result) {
-                        null -> "?"
-                        true -> "H"
-                        false -> "T"
-                    },
+                Text(if (flipping) "?" else when (result) { true -> "H"; false -> "T"; null -> "?" },
                     style = MaterialTheme.typography.displayLarge,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
-                )
+                    color = MaterialTheme.colorScheme.onPrimaryContainer)
             }
         }
-
-        Spacer(Modifier.height(16.dp))
-        Text(
-            text = when (result) {
-                null -> "Tap to flip"
-                true -> "Heads!"
-                false -> "Tails!"
-            },
-            style = MaterialTheme.typography.titleLarge,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth(),
-        )
-
+        Spacer(Modifier.height(24.dp))
+        Text(if (flipping) "Flipping…" else resultText,
+            style = MaterialTheme.typography.headlineMedium, textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth().semantics { liveRegion = LiveRegionMode.Polite })
         Spacer(Modifier.height(24.dp))
         Button(
+            enabled = !flipping,
             onClick = {
-                result = Random.nextBoolean()
-                flipCount++
+                if (!flipping) {
+                    flipping = true
+                    result = null
+                    val outcome = Random.nextBoolean()
+                    scope.launch {
+                        try {
+                            rotation.snapTo(0f)
+                            // Animatable honors the system animation duration scale, including zero.
+                            // Whole turns avoid mirrored text and reset each flip to avoid float drift.
+                            rotation.animateTo(720f, tween(500))
+                            result = outcome
+                        } finally {
+                            flipping = false
+                        }
+                    }
+                }
             },
             modifier = Modifier.fillMaxWidth(),
         ) {
-            Icon(Icons.Filled.Casino, contentDescription = null)
-            Text("  Flip")
+            Icon(Icons.Default.Casino, contentDescription = null)
+            Spacer(Modifier.width(8.dp))
+            Text(if (flipping) "Flipping…" else if (result == null) "Flip coin" else "Flip again")
         }
+        Spacer(Modifier.height(12.dp))
+        ToolActions(
+            onCopy = { context.copyToClipboard("Coin flip", resultText) },
+            onShare = { context.shareText("Coin flip: $resultText") },
+            onClear = { result = null },
+            resultEnabled = !flipping && result != null,
+            clearEnabled = !flipping && result != null,
+        )
     }
 }

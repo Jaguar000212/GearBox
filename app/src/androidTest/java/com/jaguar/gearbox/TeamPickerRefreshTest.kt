@@ -23,24 +23,24 @@ class TeamPickerRefreshTest {
     @Test fun rosterChangesInvalidateResultsAndClampTeamCount() {
         rule.setContent { MaterialTheme { TeamPickerScreen {} } }
         add("A"); add("B"); add("C")
-        rule.onNodeWithText("Pick one").performScrollTo().performClick()
+        rule.onNodeWithText("Pick one", substring = true).performScrollTo().performClick()
         rule.onNodeWithText("Picked:", substring = true).assertExists()
         add("D")
         rule.onNodeWithText("Picked:", substring = true).assertDoesNotExist()
         rule.onNodeWithContentDescription("More teams").performScrollTo().performClick()
         rule.onNodeWithContentDescription("More teams").performClick()
-        rule.onNodeWithText("Split into teams").performScrollTo().performClick()
+        rule.onNodeWithText("Split into teams", substring = true).performScrollTo().performClick()
         rule.onNodeWithText("Team 4:", substring = true).assertExists()
         rule.onNodeWithContentDescription("Remove participant 4: D").performScrollTo().performClick()
         rule.onNodeWithText("Team 4:", substring = true).assertDoesNotExist()
-        rule.onNodeWithText("Split into teams").performScrollTo().assertIsEnabled()
+        rule.onNodeWithText("Split into teams", substring = true).performScrollTo().assertIsEnabled()
         rule.onNodeWithContentDescription("More teams").assertIsNotEnabled()
     }
     @Test fun oneNameCanBePickedAndClearRequiresConfirmation() {
         rule.setContent { MaterialTheme { TeamPickerScreen {} } }
         add("Solo")
-        rule.onNodeWithText("Pick one").performScrollTo().assertIsEnabled()
-        rule.onNodeWithText("Split into teams").performScrollTo().assertIsNotEnabled()
+        rule.onNodeWithText("Pick one", substring = true).performScrollTo().assertIsEnabled()
+        rule.onNodeWithText("Split into teams", substring = true).performScrollTo().assertIsNotEnabled()
         rule.onNodeWithText("Clear").performScrollTo().performClick()
         rule.onNodeWithText("Cancel").performClick()
         rule.onNodeWithText("Participants (1)").assertExists()

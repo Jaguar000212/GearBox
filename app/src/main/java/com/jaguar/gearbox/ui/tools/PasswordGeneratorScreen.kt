@@ -21,6 +21,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.foundation.selection.toggleable
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.material3.TextButton
+import kotlin.math.roundToInt
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -43,7 +48,7 @@ private const val SYMBOL_CHARS = "!@#$%^&*()-_=+[]{}"
 @Composable
 fun PasswordGeneratorScreen(onNavigateBack: () -> Unit) {
     val context = LocalContext.current
-    var length by rememberSaveable { mutableFloatStateOf(16f) }
+    var length by rememberSaveable { mutableIntStateOf(16) }
     var useUpper by rememberSaveable { mutableStateOf(true) }
     var useLower by rememberSaveable { mutableStateOf(true) }
     var useNumbers by rememberSaveable { mutableStateOf(true) }
@@ -71,7 +76,11 @@ fun PasswordGeneratorScreen(onNavigateBack: () -> Unit) {
             Text("Length", style = MaterialTheme.typography.bodyMedium)
             Text(length.toInt().toString(), style = MaterialTheme.typography.bodyMedium)
         }
-        Slider(value = length, onValueChange = { length = it }, valueRange = 4f..64f)
+        Slider(value = length.toFloat(), onValueChange = { length = it.roundToInt() }, valueRange = 4f..64f, steps = 59)
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            OutlinedButton(onClick = { if (length > 4) length-- }, enabled = length > 4) { Text("Shorter") }
+            OutlinedButton(onClick = { if (length < 64) length++ }, enabled = length < 64) { Text("Longer") }
+        }
 
         ToggleRow("Uppercase (A-Z)", useUpper) { useUpper = it }
         ToggleRow("Lowercase (a-z)", useLower) { useLower = it }
@@ -101,7 +110,7 @@ fun PasswordGeneratorScreen(onNavigateBack: () -> Unit) {
             Card(modifier = Modifier.fillMaxWidth()) {
                 Text(
                     text = password,
-                    style = MaterialTheme.typography.titleLarge,
+                    style = MaterialTheme.typography.titleLarge.copy(fontFamily = FontFamily.Monospace),
                     textAlign = TextAlign.Center,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -111,7 +120,8 @@ fun PasswordGeneratorScreen(onNavigateBack: () -> Unit) {
 
             Spacer(Modifier.height(12.dp))
             val strength = passwordStrength(password.length, generatedCharsetSize)
-            Text(strength.first, style = MaterialTheme.typography.labelLarge)
+            Text("Estimated strength: ${strength.first}", style = MaterialTheme.typography.labelLarge)
+            Text("An estimate, not a security guarantee.", style = MaterialTheme.typography.bodySmall)
             Spacer(Modifier.height(4.dp))
             LinearProgressIndicator(
                 progress = { strength.second },
@@ -126,6 +136,7 @@ fun PasswordGeneratorScreen(onNavigateBack: () -> Unit) {
                 Icon(Icons.Filled.ContentCopy, contentDescription = null)
                 Text(" Copy")
             }
+            TextButton(onClick = { password = ""; generatedCharsetSize = 0 }, modifier = Modifier.fillMaxWidth()) { Text("Clear password") }
         }
     }
 }
@@ -133,11 +144,11 @@ fun PasswordGeneratorScreen(onNavigateBack: () -> Unit) {
 @Composable
 private fun ToggleRow(label: String, checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().toggleable(value = checked, role = Role.Switch, onValueChange = onCheckedChange).padding(vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
-        Text(label, style = MaterialTheme.typography.bodyLarge)
-        Switch(checked = checked, onCheckedChange = onCheckedChange)
+        Text(label, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
+        Switch(checked = checked, onCheckedChange = null)
     }
 }

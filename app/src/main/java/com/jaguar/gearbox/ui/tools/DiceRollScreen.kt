@@ -29,8 +29,9 @@ fun DiceRollScreen(onNavigateBack: () -> Unit) {
     val context = LocalContext.current
     var diceCount by rememberSaveable { mutableIntStateOf(1) }
     var values by rememberSaveable(stateSaver = IntListSaver) { mutableStateOf(emptyList<Int>()) }
+    val diceLabel = if (diceCount == 1) "die" else "dice"
     val result = values.takeIf { it.isNotEmpty() }?.let {
-        "Dice Roll ($diceCount six-sided dice): ${it.joinToString(", ")}\nTotal: ${it.sum()}"
+        "Dice Roll ($diceCount six-sided $diceLabel): ${it.joinToString(", ")}\nTotal: ${it.sum()}"
     }
 
     fun changeCount(count: Int) {
@@ -54,7 +55,7 @@ fun DiceRollScreen(onNavigateBack: () -> Unit) {
                     }
                     Text(diceCount.toString(), style = MaterialTheme.typography.headlineMedium,
                         modifier = Modifier.padding(horizontal = 24.dp).semantics {
-                            contentDescription = "$diceCount dice selected"
+                            contentDescription = "$diceCount $diceLabel selected"
                         })
                     FilledTonalIconButton(onClick = { changeCount(diceCount + 1) }, enabled = diceCount < 6) {
                         Icon(Icons.Filled.Add, contentDescription = "More dice")

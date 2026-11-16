@@ -54,7 +54,7 @@ fun DiscountCalculatorScreen(onNavigateBack: () -> Unit) {
         output = historyResult?.let { "Final price: ${formatTrimmed(it.finalPrice, 2)}\nYou save: ${formatTrimmed(it.totalSaved, 2)} (${formatTrimmed(it.effectivePercent, 2)}% effective)" },
         onRestore = { saved ->
             price = saved["price"] ?: ""
-            discounts = saved["discounts"]?.split("\n")?.take(100)?.ifEmpty { listOf("") } ?: listOf("")
+            discounts = saved["discounts"]?.split("\n")?.ifEmpty { listOf("") } ?: listOf("")
         },
     )
 

@@ -27,10 +27,10 @@ class HomeCategorySelectionTest {
             }
         }
         compose.onNodeWithText("All tools").performClick()
-        compose.onNodeWithText("Money").performClick()
+        compose.onNode(hasText("Money") and isSelectable()).performClick()
         compose.onNodeWithText("Search tools").performTextInput("Counter")
         compose.onNodeWithText("Search all tools").performScrollTo().performClick()
-        compose.onNode(hasText("Counter") and hasClickAction()).assertExists()
+        compose.onNode(hasText("Counter") and hasClickAction() and !hasSetTextAction()).assertExists()
         compose.onNode(hasText("Counter") and hasSetTextAction()).assertExists()
     }
 }

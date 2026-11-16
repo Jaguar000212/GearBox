@@ -51,14 +51,14 @@ class CounterWidget : GlanceAppWidget() {
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
-                    text = "Counter",
+                    text = context.getString(com.jaguar.gearbox.R.string.system_counter),
                     style = TextStyle(
                         fontWeight = FontWeight.Medium,
                         color = ColorProvider(Color(0xFF6B5F10)),
                     ),
                 )
                 Text(
-                    text = if (store.limitReached) "$count (limit reached)" else count.toString(),
+                    text = if (store.limitReached) context.getString(com.jaguar.gearbox.R.string.system_counter_limit, count) else count.toString(),
                     style = TextStyle(
                         fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.Center,
@@ -69,7 +69,7 @@ class CounterWidget : GlanceAppWidget() {
                 Row(horizontalAlignment = Alignment.CenterHorizontally) {
                     WidgetActionText(label = "−", op = "dec")
                     Spacer(modifier = GlanceModifier.width(16.dp))
-                    WidgetActionText(label = "Reset", op = "reset")
+                    WidgetActionText(label = context.getString(com.jaguar.gearbox.R.string.system_reset), op = "reset")
                     Spacer(modifier = GlanceModifier.width(16.dp))
                     WidgetActionText(label = "+", op = "inc")
                 }

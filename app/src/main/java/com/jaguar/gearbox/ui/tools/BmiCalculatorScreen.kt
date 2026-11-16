@@ -1,5 +1,7 @@
 package com.jaguar.gearbox.ui.tools
 
+import androidx.compose.ui.res.stringResource
+import com.jaguar.gearbox.R
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.TextButton
@@ -32,9 +34,9 @@ import com.jaguar.gearbox.ui.components.ToolActions
 import com.jaguar.gearbox.ui.components.ToolScaffold
 import com.jaguar.gearbox.ui.components.rememberToolHistory
 
-private enum class BmiUnitSystem(val label: String) {
-    METRIC("Metric (cm / kg)"),
-    IMPERIAL("Imperial (ft, in / lbs)"),
+private enum class BmiUnitSystem(val label: Int) {
+    METRIC(R.string.calc_metric_cm_kg),
+    IMPERIAL(R.string.calc_imperial_ft_in_lbs),
 }
 
 @Composable
@@ -71,14 +73,14 @@ fun BmiCalculatorScreen(onNavigateBack: () -> Unit) {
     }
 
     val result = if (heightM != null && weightKgValue != null && heightM > 0 && weightKgValue > 0) {
-        computeBmi(heightM = heightM, weightKg = weightKgValue)
+        computeBmi(heightM = heightM, weightKg = weightKgValue)?.let { it.first to localizedBmiCategory(context, it.second) }
     } else {
         null
     }
     // Only flag an error once every required field for the active unit system has something in
     // it - otherwise this fires the moment the user types the first character of the first field.
     val error = if (requiredFieldsFilled && result == null) {
-        "Enter valid, positive height and weight."
+        context.getString(R.string.calc_enter_valid_positive_height_and_weight)
     } else {
         ""
     }
@@ -87,7 +89,7 @@ fun BmiCalculatorScreen(onNavigateBack: () -> Unit) {
     val history = rememberToolHistory(
         route = Tools.ROUTE_BMI,
         inputs = mapOf("unitSystem" to unitSystem, "heightCm" to heightCm, "weightKg" to weightKg, "heightFt" to heightFt, "heightIn" to heightIn, "weightLbs" to weightLbs),
-        output = result?.let { "BMI: ${it.first}\nAdult category: ${it.second}" },
+        output = result?.let { context.getString(R.string.calc_bmi_1_s_nadult_category_2_s, it.first, it.second) },
         modeInputs = mapOf("unitSystem" to unitSystem),
         onRestoreMode = { saved ->
             unitSystem = BmiUnitSystem.entries.firstOrNull { it.name == saved["unitSystem"] }?.name ?: BmiUnitSystem.METRIC.name
@@ -103,19 +105,19 @@ fun BmiCalculatorScreen(onNavigateBack: () -> Unit) {
     )
 
     ToolScaffold(
-        title = "BMI Calculator",
+        title = context.getString(R.string.calc_bmi_calculator),
         icon = Tools.byRoute(Tools.ROUTE_BMI)!!.icon,
         onNavigateBack = onNavigateBack,
         history = history,
     ) {
         AdaptiveToolLayout(input = {
-            Text("Units", style = MaterialTheme.typography.titleMedium)
+            Text(stringResource(R.string.calc_units), style = MaterialTheme.typography.titleMedium)
             Column(modifier = Modifier.fillMaxWidth()) {
                 BmiUnitSystem.entries.forEach { entry ->
                     FilterChip(
                         selected = entry == selectedSystem,
                         onClick = { unitSystem = entry.name },
-                        label = { Text(entry.label) },
+                        label = { Text(context.getString(entry.label)) },
                     )
                 }
             }
@@ -125,8 +127,8 @@ fun BmiCalculatorScreen(onNavigateBack: () -> Unit) {
                 OutlinedTextField(
                     value = heightCm,
                     onValueChange = { heightCm = it },
-                    label = { Text("Height (cm)") },
-                    placeholder = { Text("e.g. 175") },
+                    label = { Text(stringResource(R.string.calc_height_cm)) },
+                    placeholder = { Text(stringResource(R.string.calc_e_g_175)) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     modifier = Modifier.fillMaxWidth(),
                 )
@@ -134,8 +136,8 @@ fun BmiCalculatorScreen(onNavigateBack: () -> Unit) {
                 OutlinedTextField(
                     value = weightKg,
                     onValueChange = { weightKg = it },
-                    label = { Text("Weight (kg)") },
-                    placeholder = { Text("e.g. 70") },
+                    label = { Text(stringResource(R.string.calc_weight_kg)) },
+                    placeholder = { Text(stringResource(R.string.calc_e_g_70)) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     modifier = Modifier.fillMaxWidth(),
                 )
@@ -144,16 +146,16 @@ fun BmiCalculatorScreen(onNavigateBack: () -> Unit) {
                     OutlinedTextField(
                         value = heightFt,
                         onValueChange = { heightFt = it },
-                        label = { Text("Height (ft)") },
-                        placeholder = { Text("e.g. 5") },
+                        label = { Text(stringResource(R.string.calc_height_ft)) },
+                        placeholder = { Text(stringResource(R.string.calc_e_g_5)) },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                         modifier = Modifier.fillMaxWidth(),
                     )
                     OutlinedTextField(
                         value = heightIn,
                         onValueChange = { heightIn = it },
-                        label = { Text("Additional inches (optional)") },
-                        placeholder = { Text("e.g. 9") },
+                        label = { Text(stringResource(R.string.calc_additional_inches_optional)) },
+                        placeholder = { Text(stringResource(R.string.calc_e_g_9)) },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                         modifier = Modifier.fillMaxWidth(),
                     )
@@ -162,8 +164,8 @@ fun BmiCalculatorScreen(onNavigateBack: () -> Unit) {
                 OutlinedTextField(
                     value = weightLbs,
                     onValueChange = { weightLbs = it },
-                    label = { Text("Weight (lbs)") },
-                    placeholder = { Text("e.g. 154") },
+                    label = { Text(stringResource(R.string.calc_weight_lbs)) },
+                    placeholder = { Text(stringResource(R.string.calc_e_g_154)) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     modifier = Modifier.fillMaxWidth(),
                 )
@@ -171,21 +173,29 @@ fun BmiCalculatorScreen(onNavigateBack: () -> Unit) {
         }, result = {
             if (result != null) {
                 Spacer(Modifier.height(20.dp))
-                Text("Body mass index", style = MaterialTheme.typography.titleMedium)
+                Text(stringResource(R.string.calc_body_mass_index), style = MaterialTheme.typography.titleMedium)
                 Spacer(Modifier.height(8.dp))
-                val summary = "BMI: ${result.first}\nAdult category: ${result.second}"
+                val summary = context.getString(R.string.calc_bmi_1_s_nadult_category_2_s, result.first, result.second)
                 ResultCard(text = summary, textStyle = MaterialTheme.typography.headlineSmall,
-                    onCopy = { context.copyToClipboard("BMI", summary) },
+                    onCopy = { context.copyToClipboard(context.getString(R.string.calc_bmi), summary) },
                     onShare = { context.shareText(summary) })
             } else if (error.isNotEmpty()) {
                 Spacer(Modifier.height(12.dp))
                 Text(error, color = MaterialTheme.colorScheme.error)
             }
             Spacer(Modifier.height(12.dp))
-            Text("These categories are for adults aged 20 and older. BMI is a screening measure, not a diagnosis; it does not assess health on its own.",
+            Text(stringResource(R.string.calc_these_categories_are_for_adults_aged_20_and_older_bmi_i),
                 style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             ToolActions(onClear = { heightCm = ""; weightKg = ""; heightFt = ""; heightIn = ""; weightLbs = "" },
                 clearEnabled = listOf(heightCm, weightKg, heightFt, heightIn, weightLbs).any { it.isNotEmpty() })
         })
     }
+}
+
+internal fun localizedBmiCategory(context: android.content.Context, category: String): String = when (category) {
+    "Underweight" -> context.getString(R.string.calc_underweight)
+    "Normal weight" -> context.getString(R.string.calc_normal_weight)
+    "Overweight" -> context.getString(R.string.calc_overweight)
+    "Obese" -> context.getString(R.string.calc_obese)
+    else -> category
 }

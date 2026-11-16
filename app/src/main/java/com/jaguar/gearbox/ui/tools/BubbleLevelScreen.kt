@@ -55,26 +55,26 @@ fun BubbleLevelScreen(
     var captureId by remember { mutableStateOf("") }
     val history = rememberToolHistory(
         route = Tools.ROUTE_BUBBLE_LEVEL,
-        inputs = mapOf("source" to "Device orientation sensor", "_capture" to captureId),
+        inputs = mapOf("source" to context.getString(R.string.special_device_orientation_sensor), "_capture" to captureId),
         output = capturedOutput.takeIf { it.isNotEmpty() },
         expectedHistoryGeneration = captureGeneration,
         onRestore = {}, allowRestore = false, restoreLastResult = false, recordingDelayMillis = 0L,
     )
 
     var focusView by rememberSaveable { mutableStateOf(false) }
-    if (focusView) ToolFocusView("Bubble level", onExit = { focusView = false }) {
+    if (focusView) ToolFocusView(context.getString(R.string.special_bubble_level), onExit = { focusView = false }) {
         OrientationStatusMessage(sensorState.status)
         if (sensorState.status == OrientationStatus.READY) {
             if (snapshot != null) {
                 val pitch = Math.toDegrees(snapshot.pitchRad.toDouble())
                 val roll = Math.toDegrees(snapshot.rollRad.toDouble())
-                Text("Pitch ${"%.1f".format(pitch)}°", style = MaterialTheme.typography.displayMedium)
-                Text("Roll ${"%.1f".format(roll)}°", style = MaterialTheme.typography.displayMedium)
-                Text(if (abs(pitch) < LEVEL_TOLERANCE_DEGREES && abs(roll) < LEVEL_TOLERANCE_DEGREES) "Within 1° level tolerance" else "Tilted")
-                Text("Device sensor estimate. Check against a physical level for precision work.")
+                Text(context.getString(R.string.special_pitch, "%.1f".format(pitch)), style = MaterialTheme.typography.displayMedium)
+                Text(context.getString(R.string.special_roll, "%.1f".format(roll)), style = MaterialTheme.typography.displayMedium)
+                Text(if (abs(pitch) < LEVEL_TOLERANCE_DEGREES && abs(roll) < LEVEL_TOLERANCE_DEGREES) context.getString(R.string.special_within_1_level_tolerance) else context.getString(R.string.special_tilted))
+                Text(context.getString(R.string.special_device_sensor_estimate_check_against_a_physical_level_for_precisi))
             }
         } else {
-            Text("A reliable reading is not available. No measurement is shown.")
+            Text(context.getString(R.string.special_a_reliable_reading_is_not_available_no_measurement_is_shown))
         }
     }
 
@@ -83,7 +83,7 @@ fun BubbleLevelScreen(
         icon = Tools.byRoute(Tools.ROUTE_BUBBLE_LEVEL)!!.icon,
         onNavigateBack = onNavigateBack,
         history = history,
-        options = { TextButton(onClick = { focusView = true }) { Text("Focus view") } },
+        options = { TextButton(onClick = { focusView = true }) { Text(context.getString(R.string.special_focus_view)) } },
     ) {
         OrientationStatusMessage(sensorState.status)
         if (snapshot == null) return@ToolScaffold
@@ -154,12 +154,12 @@ fun BubbleLevelScreen(
         Text(stringResource(R.string.level_usage_help), style = MaterialTheme.typography.bodyMedium)
         Spacer(Modifier.height(16.dp))
         DeviceSnapshotActions(
-            captureLabel = "Capture reading",
+            captureLabel = context.getString(R.string.special_capture_reading),
             enabled = sensorState.status == OrientationStatus.READY,
             capturedOutput = capturedOutput,
             onCapture = {
                 captureGeneration = historyStore.historyGeneration(Tools.ROUTE_BUBBLE_LEVEL)
-                capturedOutput = "Pitch: ${"%.1f".format(pitchDeg)}°; roll: ${"%.1f".format(rollDeg)}°. ${if (isLevel) "Within 1° level tolerance" else "Tilted"}. Device sensor estimate; check against a physical level for precision work."
+                capturedOutput = context.getString(R.string.special_bubble_capture, "%.1f".format(pitchDeg), "%.1f".format(rollDeg), context.getString(if (isLevel) R.string.special_within_1_level_tolerance else R.string.special_tilted))
                 captureId = UUID.randomUUID().toString()
             },
             onClear = { captureGeneration = null; capturedOutput = ""; captureId = "" },

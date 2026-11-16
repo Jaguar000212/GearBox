@@ -1,5 +1,7 @@
 package com.jaguar.gearbox.ui.tools
 
+import com.jaguar.gearbox.R
+
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -32,11 +34,11 @@ fun RandomNumberScreen(onNavigateBack: () -> Unit) {
     var submitted by rememberSaveable { mutableStateOf(false) }
     val low = min.trim().toLongOrNull()
     val high = max.trim().toLongOrNull()
-    val minError = if (submitted && low == null) "Enter a whole number within the 64-bit range." else null
+    val minError = if (submitted && low == null) context.getString(R.string.game_enter_a_whole_number_within_the_64_bit_range) else null
     val maxError = when {
         !submitted -> null
-        high == null -> "Enter a whole number within the 64-bit range."
-        low != null && low > high -> "Maximum must be at least the minimum."
+        high == null -> context.getString(R.string.game_enter_a_whole_number_within_the_64_bit_range)
+        low != null && low > high -> context.getString(R.string.game_maximum_must_be_at_least_the_minimum)
         else -> null
     }
 
@@ -57,14 +59,14 @@ fun RandomNumberScreen(onNavigateBack: () -> Unit) {
         },
     )
 
-    ToolScaffold("Random Number Generator", Tools.byRoute(Tools.ROUTE_RANDOM)!!.icon, onNavigateBack, history = history) {
-        Text("Choose your range", style = MaterialTheme.typography.titleLarge)
-        Text("Both endpoints are included. Negative numbers are welcome.",
+    ToolScaffold(context.getString(R.string.game_random_number_generator), Tools.byRoute(Tools.ROUTE_RANDOM)!!.icon, onNavigateBack, history = history) {
+        Text(context.getString(R.string.game_choose_your_range), style = MaterialTheme.typography.titleLarge)
+        Text(context.getString(R.string.game_both_endpoints_are_included_negative_numbers_are_welcome),
             style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Spacer(Modifier.height(20.dp))
-        SignedNumberField("Minimum", "e.g. 1", min, minError) { min = it; result = ""; submitted = false }
+        SignedNumberField(context.getString(R.string.game_minimum), context.getString(R.string.game_e_g_1), min, minError) { min = it; result = ""; submitted = false }
         Spacer(Modifier.height(12.dp))
-        SignedNumberField("Maximum", "e.g. 100", max, maxError) { max = it; result = ""; submitted = false }
+        SignedNumberField(context.getString(R.string.game_maximum), context.getString(R.string.game_e_g_100), max, maxError) { max = it; result = ""; submitted = false }
         Spacer(Modifier.height(16.dp))
         Button(
             onClick = {
@@ -76,11 +78,11 @@ fun RandomNumberScreen(onNavigateBack: () -> Unit) {
         ) {
             Icon(Icons.Default.Casino, contentDescription = null)
             Spacer(Modifier.width(8.dp))
-            Text(if (result.isEmpty()) "Generate" else "Generate again")
+            Text(if (result.isEmpty()) context.getString(R.string.game_generate) else context.getString(R.string.game_generate_again))
         }
         Spacer(Modifier.height(20.dp))
         if (result.isNotEmpty()) {
-            Text("Your number", style = MaterialTheme.typography.titleMedium)
+            Text(context.getString(R.string.game_your_number), style = MaterialTheme.typography.titleMedium)
             Spacer(Modifier.height(8.dp))
             ResultCard(
                 text = result,
@@ -88,16 +90,16 @@ fun RandomNumberScreen(onNavigateBack: () -> Unit) {
                 textAlign = TextAlign.Center,
                 modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
             )
-            Text("Range: ${low} to ${high} (inclusive)", Modifier.padding(vertical = 8.dp),
+            Text(context.getString(R.string.game_range_1_s_to_2_s_inclusive, low, high), Modifier.padding(vertical = 8.dp),
                 style = MaterialTheme.typography.bodyMedium)
         } else {
-            Text("Generate a number to see your result here.", style = MaterialTheme.typography.bodyMedium,
+            Text(context.getString(R.string.game_generate_a_number_to_see_your_result_here), style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         Spacer(Modifier.height(8.dp))
         ToolActions(
-            onCopy = { context.copyToClipboard("Random Number", result) },
-            onShare = { context.shareText("Random number ($low–$high): $result") },
+            onCopy = { context.copyToClipboard(context.getString(R.string.game_random_number), result) },
+            onShare = { context.shareText(context.getString(R.string.game_random_number_1_s_2_s_3_s, low, high, result)) },
             onClear = { min = ""; max = ""; result = ""; submitted = false },
             resultEnabled = result.isNotEmpty(),
             clearEnabled = min.isNotEmpty() || max.isNotEmpty() || result.isNotEmpty(),
@@ -114,6 +116,7 @@ private fun SignedNumberField(
     fieldError: String?,
     onValueChange: (String) -> Unit,
 ) {
+    val context = LocalContext.current
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         OutlinedTextField(
@@ -133,7 +136,7 @@ private fun SignedNumberField(
                     else "-" + normalized.removePrefix("+"),
                 )
             },
-            modifier = Modifier.semantics { contentDescription = "Toggle $label sign" },
+            modifier = Modifier.semantics { contentDescription = context.getString(R.string.game_toggle_1_s_sign, label) },
         ) { Text("±") }
     }
 }

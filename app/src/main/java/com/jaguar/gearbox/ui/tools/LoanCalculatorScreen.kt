@@ -1,5 +1,7 @@
 package com.jaguar.gearbox.ui.tools
 
+import androidx.compose.ui.res.stringResource
+import com.jaguar.gearbox.R
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -39,10 +41,10 @@ fun LoanCalculatorScreen(onNavigateBack: () -> Unit) {
     val loanTerm = time.trim().toDoubleOrNull()?.takeIf { it.isFinite() && it > 0 }
 
     val principalError =
-        if (principal.isNotBlank() && loanAmount == null) "Enter a positive amount." else null
+        if (principal.isNotBlank() && loanAmount == null) context.getString(R.string.calc_enter_a_positive_amount) else null
     val rateError =
-        if (rate.isNotBlank() && interestRate == null) "Enter a non-negative rate." else null
-    val timeError = if (time.isNotBlank() && loanTerm == null) "Enter a positive term." else null
+        if (rate.isNotBlank() && interestRate == null) context.getString(R.string.calc_enter_a_non_negative_rate) else null
+    val timeError = if (time.isNotBlank() && loanTerm == null) context.getString(R.string.calc_enter_a_positive_term) else null
 
     // Live compute, like the rest of the app's calculators - a button here previously left a
     // stale result on screen after editing an input, still showing the answer to numbers you'd
@@ -57,7 +59,7 @@ fun LoanCalculatorScreen(onNavigateBack: () -> Unit) {
     val history = rememberToolHistory(
         route = Tools.ROUTE_LOAN,
         inputs = mapOf("principal" to principal, "rate" to rate, "time" to time),
-        output = result,
+        output = result?.let { localizedLoanResult(context, it) },
         onRestore = { saved ->
             principal = saved["principal"] ?: ""
             rate = saved["rate"] ?: ""
@@ -66,53 +68,53 @@ fun LoanCalculatorScreen(onNavigateBack: () -> Unit) {
     )
 
     ToolScaffold(
-        title = "Loan Calculator",
+        title = context.getString(R.string.calc_loan_calculator),
         icon = Tools.byRoute(Tools.ROUTE_LOAN)!!.icon,
         onNavigateBack = onNavigateBack,
         history = history,
     ) {
         AdaptiveToolLayout(input = {
-            Text("Monthly repayment estimate", style = MaterialTheme.typography.titleMedium)
-            Text("Fixed annual rate, equal monthly payments. Fees are not included. Use one currency for all amounts.",
+            Text(stringResource(R.string.calc_monthly_repayment_estimate), style = MaterialTheme.typography.titleMedium)
+            Text(stringResource(R.string.calc_fixed_annual_rate_equal_monthly_payments_fees_are_not_i),
                 style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(Modifier.height(16.dp))
             DecimalField(
                 value = principal,
                 onValueChange = { principal = it },
-                label = "Loan amount",
+                label = context.getString(R.string.calc_loan_amount),
                 errorText = principalError,
             )
             Spacer(Modifier.height(8.dp))
             DecimalField(
                 value = rate,
                 onValueChange = { rate = it },
-                label = "Annual interest rate (%)",
+                label = context.getString(R.string.calc_annual_interest_rate),
                 errorText = rateError,
             )
             Spacer(Modifier.height(8.dp))
             DecimalField(
                 value = time,
                 onValueChange = { time = it },
-                label = "Loan term (years)",
+                label = context.getString(R.string.calc_loan_term_years),
                 errorText = timeError,
             )
         }, result = {
-            val displayResult = result?.replace("Interest Percentage:", "Interest share of total repayment:")
+            val displayResult = result?.let { localizedLoanResult(context, it, interestShareLabel = true) }
             if (displayResult != null) {
                 Spacer(Modifier.height(16.dp))
                 ResultCard(
                     text = displayResult,
                     onCopy = {
                         context.copyToClipboard(
-                            "Loan Calculator",
-                            shareBody(principal, rate, time, displayResult)
+                            context.getString(R.string.calc_loan_calculator),
+                            shareBody(context, principal, rate, time, displayResult)
                         )
                     },
-                    onShare = { context.shareText(shareBody(principal, rate, time, displayResult)) },
+                    onShare = { context.shareText(shareBody(context, principal, rate, time, displayResult)) },
                 )
             } else if (loanAmount != null && interestRate != null && loanTerm != null) {
                 Spacer(Modifier.height(12.dp))
-                Text("Values exceed the supported numeric range.", color = MaterialTheme.colorScheme.error)
+                Text(stringResource(R.string.calc_values_exceed_the_supported_numeric_range), color = MaterialTheme.colorScheme.error)
             }
 
             Spacer(Modifier.height(16.dp))
@@ -122,8 +124,22 @@ fun LoanCalculatorScreen(onNavigateBack: () -> Unit) {
     }
 }
 
-private fun shareBody(principal: String, rate: String, time: String, result: String): String =
-    "Principal Amount: $principal\n" +
-            "Rate of Interest: $rate%\n" +
-            "Loan Term: $time Years\n" +
+private fun shareBody(context: android.content.Context, principal: String, rate: String, time: String, result: String): String =
+    context.getString(R.string.calc_principal_amount_1_s_n, principal) +
+            context.getString(R.string.calc_rate_of_interest_1_s_n, rate) +
+            context.getString(R.string.calc_loan_term_1_s_years_n, time) +
             result
+
+/** Translate known original labels once; translated text is never fed through replacement again. */
+internal fun localizedLoanResult(context: android.content.Context, result: String, interestShareLabel: Boolean = false): String {
+    val labels = mapOf(
+        "Monthly Installment:" to R.string.calc_monthly_installment_label,
+        "Total Amount Repayable:" to R.string.calc_total_repayable_label,
+        "Total Interest Repayable:" to R.string.calc_interest_repayable_label,
+        "Interest Percentage:" to if (interestShareLabel) R.string.calc_interest_share_of_total_repayment else R.string.calc_interest_percentage_label,
+    )
+    return result.lines().joinToString("\n") { line ->
+        val original = labels.keys.firstOrNull { line.startsWith(it) }
+        if (original == null) line else context.getString(labels.getValue(original)) + line.removePrefix(original)
+    }
+}

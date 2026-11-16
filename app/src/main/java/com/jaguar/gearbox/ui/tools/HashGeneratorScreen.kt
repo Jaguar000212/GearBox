@@ -62,15 +62,15 @@ fun HashGeneratorScreen(onNavigateBack: () -> Unit) {
             minLines = 3, maxLines = 8, modifier = Modifier.fillMaxWidth())
         Spacer(Modifier.height(12.dp))
         CompactChoiceSelector(
-            label = "Algorithm", selected = selectedAlgorithm, choices = TextHashAlgorithm.entries,
+            label = context.getString(R.string.special_algorithm), selected = selectedAlgorithm, choices = TextHashAlgorithm.entries,
             choiceLabel = { it.label }, onSelect = { algorithm = it.name; restoredInput = false },
         )
         Text(stringResource(if (selectedAlgorithm.legacy) R.string.hash_legacy else R.string.hash_help),
             style = MaterialTheme.typography.bodySmall)
         Spacer(Modifier.height(20.dp))
         if (restoredInput && input.isNotEmpty()) {
-            Text("Inputs restored. Generate a fresh result when you are ready.")
-            Button(onClick = { restoredInput = false }) { Text("Generate hash") }
+            Text(context.getString(R.string.special_inputs_restored_generate_a_fresh_result_when_you_are_ready))
+            Button(onClick = { restoredInput = false }) { Text(context.getString(R.string.special_generate_hash)) }
         }
         val currentHash = hash
         if (currentHash != null) {

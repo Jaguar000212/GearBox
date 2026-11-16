@@ -28,6 +28,8 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.text.font.FontWeight
 import com.jaguar.gearbox.R
+import com.jaguar.gearbox.data.localizedName
+import com.jaguar.gearbox.data.localizedDescription
 import com.jaguar.gearbox.data.Tool
 
 /**
@@ -44,13 +46,14 @@ fun ToolCard(
     modifier: Modifier = Modifier,
     compact: Boolean = false,
 ) {
+    val context = androidx.compose.ui.platform.LocalContext.current
     Card(
         modifier = modifier
             .fillMaxWidth()
             .heightIn(min = if (compact) 156.dp else 188.dp)
             .clickable(
                 role = Role.Button,
-                onClickLabel = stringResource(R.string.layout_open_tool, tool.name),
+                onClickLabel = stringResource(R.string.layout_open_tool, tool.localizedName(context)),
                 onClick = onClick,
             ),
         shape = RoundedCornerShape(20.dp),
@@ -78,7 +81,7 @@ fun ToolCard(
                         imageVector = if (isFavorite) Icons.Filled.Star else Icons.Outlined.StarBorder,
                         contentDescription = stringResource(
                             if (isFavorite) R.string.layout_remove_favorite else R.string.layout_add_favorite,
-                            tool.name,
+                            tool.localizedName(context),
                         ),
                         tint = MaterialTheme.colorScheme.primary,
                     )
@@ -86,12 +89,12 @@ fun ToolCard(
             }
             Spacer(modifier = Modifier.height(if (compact) 4.dp else 12.dp))
             Text(
-                text = tool.name,
+                text = tool.localizedName(context),
                 style = if (compact) MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold) else MaterialTheme.typography.titleMedium,
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = tool.description,
+                text = tool.localizedDescription(context),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )

@@ -1,5 +1,7 @@
 package com.jaguar.gearbox.ui.tools
 
+import com.jaguar.gearbox.R
+
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Shuffle
@@ -40,7 +42,7 @@ internal fun OneOfTwoScreen(
     val context = LocalContext.current
     val focusManager = LocalFocusManager.current
     val summary = chosenIndex?.let { index ->
-        "Option ${index + 1} selected\n${if (index == 0) optionA.trim() else optionB.trim()}"
+        context.getString(R.string.game_option_1_s_selected_n_2_s, index + 1, if (index == 0) optionA.trim() else optionB.trim())
     }
 
     val history = rememberToolHistory(
@@ -56,19 +58,19 @@ internal fun OneOfTwoScreen(
     )
 
     ToolScaffold(
-        title = "1 of 2",
+        title = context.getString(R.string.game_1_of_2),
         icon = Tools.byRoute(Tools.ROUTE_ONE_OF_TWO)!!.icon,
         onNavigateBack = onNavigateBack,
         history = history,
     ) {
-        Text("Two choices. One decision.", style = MaterialTheme.typography.titleLarge)
-        Text("Each option has an equal chance. Edit either option to start a new choice.",
+        Text(context.getString(R.string.game_two_choices_one_decision), style = MaterialTheme.typography.titleLarge)
+        Text(context.getString(R.string.game_each_option_has_an_equal_chance_edit_either_option_to_star),
             style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Spacer(Modifier.height(20.dp))
         OutlinedTextField(
             value = optionA,
             onValueChange = { optionA = it; chosenIndex = null },
-            label = { Text("Option 1") },
+            label = { Text(context.getString(R.string.game_option_1)) },
             minLines = 1, maxLines = 4,
             modifier = Modifier.fillMaxWidth(),
         )
@@ -76,13 +78,13 @@ internal fun OneOfTwoScreen(
         OutlinedTextField(
             value = optionB,
             onValueChange = { optionB = it; chosenIndex = null },
-            label = { Text("Option 2") },
+            label = { Text(context.getString(R.string.game_option_2)) },
             minLines = 1, maxLines = 4,
             modifier = Modifier.fillMaxWidth(),
         )
         if (optionA.isNotBlank() && optionA.trim() == optionB.trim()) {
             Spacer(Modifier.height(8.dp))
-            Text("Both labels are the same. The selected option number will distinguish them.",
+            Text(context.getString(R.string.game_both_labels_are_the_same_the_selected_option_number_will_d),
                 style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         Spacer(Modifier.height(20.dp))
@@ -93,7 +95,7 @@ internal fun OneOfTwoScreen(
         ) {
             Icon(Icons.Filled.Shuffle, contentDescription = null)
             Spacer(Modifier.width(8.dp))
-            Text(if (chosenIndex == null) "Pick one" else "Pick again")
+            Text(if (chosenIndex == null) context.getString(R.string.game_pick_one) else context.getString(R.string.game_pick_again))
         }
         Spacer(Modifier.height(20.dp))
         if (summary != null) {
@@ -101,12 +103,12 @@ internal fun OneOfTwoScreen(
                 textAlign = TextAlign.Center,
                 modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite })
         } else {
-            Text("Enter both options, then pick one.", style = MaterialTheme.typography.bodyMedium,
+            Text(context.getString(R.string.game_enter_both_options_then_pick_one), style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         Spacer(Modifier.height(12.dp))
         ToolActions(
-            onCopy = { summary?.let { context.copyToClipboard("1 of 2", it) } },
+            onCopy = { summary?.let { context.copyToClipboard(context.getString(R.string.game_1_of_2), it) } },
             onShare = { summary?.let { context.shareText(it) } },
             resultEnabled = summary != null,
             onClear = { optionA = ""; optionB = ""; chosenIndex = null },

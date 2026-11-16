@@ -1,5 +1,6 @@
 package com.jaguar.gearbox.ui.screens
 
+import com.jaguar.gearbox.R
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -18,6 +19,7 @@ import kotlinx.coroutines.withContext
 
 @Composable
 internal fun HomePreferencesSection(store: RecentToolsStore) {
+    val context = androidx.compose.ui.platform.LocalContext.current
     var open by rememberSaveable { mutableStateOf(false) }
     var confirmClear by rememberSaveable { mutableStateOf(false) }
     var busy by remember { mutableStateOf(false) }
@@ -28,59 +30,59 @@ internal fun HomePreferencesSection(store: RecentToolsStore) {
         busy = true
         scope.launch {
             val success = withContext(Dispatchers.IO) { action() }
-            feedback = if (success) successMessage else "Could not save this change. Please try again."
+            feedback = if (success) successMessage else context.getString(R.string.screen_could_not_save_this_change_please_try_again)
             busy = false
         }
     }
-    Text("Home & Favorites", style = MaterialTheme.typography.labelLarge,
+    Text(context.getString(R.string.screen_home_favorites), style = MaterialTheme.typography.labelLarge,
         color = MaterialTheme.colorScheme.primary,
         modifier = Modifier.padding(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 4.dp))
     ListItem(
-        headlineContent = { Text("Recent tools") },
-        supportingContent = { Text("${if (store.showRecentTools) "Visible" else "Hidden"} · ${if (store.recordRecentTools) "Recording" else "Collection paused"}") },
+        headlineContent = { Text(context.getString(R.string.screen_recent_tools)) },
+        supportingContent = { Text(context.getString(R.string.screen_recent_status, context.getString(if (store.showRecentTools) R.string.screen_visible else R.string.screen_hidden), context.getString(if (store.recordRecentTools) R.string.screen_recording else R.string.screen_collection_paused))) },
         modifier = Modifier.clickable { open = true; feedback = null },
     )
     if (open) AlertDialog(
         onDismissRequest = { if (!busy) open = false },
-        title = { Text("Recent tools") },
+        title = { Text(context.getString(R.string.screen_recent_tools)) },
         text = {
             Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("A shortcut to your last ${RecentToolsStore.MAX_RECENTS} tools. This stores only tool names/routes, never their inputs or results. Kept on this device, outside cloud backup.")
+                Text(context.getString(R.string.screen_a_shortcut_to_your_last_1_s_tools_this_stores_only_tool_names_rou, RecentToolsStore.MAX_RECENTS))
                 ListItem(
-                    headlineContent = { Text("Show recent tools") },
-                    supportingContent = { Text("Display the recent-tools row on Home. Hiding it does not stop collection.") },
+                    headlineContent = { Text(context.getString(R.string.screen_show_recent_tools)) },
+                    supportingContent = { Text(context.getString(R.string.screen_display_the_recent_tools_row_on_home_hiding_it_does_not_stop_coll)) },
                     trailingContent = { Switch(checked = store.showRecentTools, enabled = !busy,
-                        modifier = Modifier.semantics { contentDescription = "Show recent tools" },
+                        modifier = Modifier.semantics { contentDescription = context.getString(R.string.screen_show_recent_tools) },
                         onCheckedChange = { value -> update({ store.setShowRecentTools(value) }) }) },
                 )
                 ListItem(
-                    headlineContent = { Text("Record recent tools") },
-                    supportingContent = { Text("Update the list when a tool opens. Pausing keeps the existing list unchanged.") },
+                    headlineContent = { Text(context.getString(R.string.screen_record_recent_tools)) },
+                    supportingContent = { Text(context.getString(R.string.screen_update_the_list_when_a_tool_opens_pausing_keeps_the_existing_list)) },
                     trailingContent = { Switch(checked = store.recordRecentTools, enabled = !busy,
-                        modifier = Modifier.semantics { contentDescription = "Record recent tools" },
+                        modifier = Modifier.semantics { contentDescription = context.getString(R.string.screen_record_recent_tools) },
                         onCheckedChange = { value -> update({ store.setRecordRecentTools(value) }) }) },
                 )
                 if (busy) LinearProgressIndicator(Modifier.fillMaxWidth())
                 TextButton(enabled = !busy && store.recent.isNotEmpty(), onClick = { confirmClear = true }) {
-                    Text("Clear recent history")
+                    Text(context.getString(R.string.screen_clear_recent_history))
                 }
                 feedback?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
-                Text("Tool history, saved results, favorites and active timers are separate and will not be changed.",
+                Text(context.getString(R.string.screen_tool_history_saved_results_favorites_and_active_timers_are_separa),
                     style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         },
-        confirmButton = { TextButton(enabled = !busy, onClick = { open = false }) { Text("Done") } },
+        confirmButton = { TextButton(enabled = !busy, onClick = { open = false }) { Text(context.getString(R.string.screen_done)) } },
     )
     if (confirmClear) AlertDialog(
         onDismissRequest = { if (!busy) confirmClear = false },
-        title = { Text("Clear recent history?") },
-        text = { Text("Remove the list of recently opened tools from this device? This cannot be undone. New tools will be recorded again if Record recent tools stays on.") },
+        title = { Text(context.getString(R.string.screen_clear_recent_history_2)) },
+        text = { Text(context.getString(R.string.screen_remove_the_list_of_recently_opened_tools_from_this_device_this_ca)) },
         confirmButton = {
             TextButton(enabled = !busy, onClick = {
                 confirmClear = false
-                update({ store.clear() }, "Recent history cleared.")
-            }) { Text("Clear") }
+                update({ store.clear() }, context.getString(R.string.screen_recent_history_cleared))
+            }) { Text(context.getString(R.string.screen_clear)) }
         },
-        dismissButton = { TextButton(enabled = !busy, onClick = { confirmClear = false }) { Text("Cancel") } },
+        dismissButton = { TextButton(enabled = !busy, onClick = { confirmClear = false }) { Text(context.getString(R.string.screen_cancel)) } },
     )
 }

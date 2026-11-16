@@ -76,7 +76,7 @@ fun FlashlightScreen(onNavigateBack: () -> Unit) {
     var captureId by remember { mutableStateOf("") }
     val history = rememberToolHistory(
         route = Tools.ROUTE_FLASHLIGHT,
-        inputs = mapOf("source" to "Android torch status", "_capture" to captureId),
+        inputs = mapOf("source" to context.getString(R.string.special_android_torch_status), "_capture" to captureId),
         output = capturedOutput.takeIf { it.isNotEmpty() },
         expectedHistoryGeneration = captureGeneration,
         onRestore = {}, allowRestore = false, restoreLastResult = false, recordingDelayMillis = 0L,
@@ -135,13 +135,13 @@ fun FlashlightScreen(onNavigateBack: () -> Unit) {
         })
         Spacer(Modifier.height(16.dp))
         DeviceSnapshotActions(
-            captureLabel = "Capture torch status",
+            captureLabel = context.getString(R.string.special_capture_torch_status),
             enabled = confirmedIsOn != null && errorResource == null,
             capturedOutput = capturedOutput,
             onCapture = {
                 confirmedIsOn?.let { confirmed ->
                     captureGeneration = historyStore.historyGeneration(Tools.ROUTE_FLASHLIGHT)
-                    capturedOutput = "Flashlight status: ${if (confirmed) "on" else "off"}, reported by Android. This is a status snapshot, not a command to control the torch."
+                    capturedOutput = context.getString(R.string.special_torch_snapshot, context.getString(if (confirmed) R.string.special_torch_on else R.string.special_torch_off))
                     captureId = UUID.randomUUID().toString()
                 }
             },

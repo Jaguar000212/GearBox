@@ -1,5 +1,7 @@
 package com.jaguar.gearbox.ui.tools
 
+import androidx.compose.ui.res.stringResource
+import com.jaguar.gearbox.R
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -35,8 +37,8 @@ fun NumberToRomanScreen(onNavigateBack: () -> Unit) {
     val roman = if (parsed != null && parsed in 1..3999) numberToRoman(parsed) else null
     val error = when {
         input.isBlank() -> ""
-        parsed == null -> "Enter a valid whole number."
-        parsed !in 1..3999 -> "Enter a number between 1 and 3999."
+        parsed == null -> context.getString(R.string.calc_enter_a_valid_whole_number)
+        parsed !in 1..3999 -> context.getString(R.string.calc_enter_a_number_between_1_and_3999)
         else -> ""
     }
 
@@ -45,7 +47,7 @@ fun NumberToRomanScreen(onNavigateBack: () -> Unit) {
         onRestore = { values -> input = values["input"].orEmpty() },
     )
     ToolScaffold(
-        title = "Number to Roman",
+        title = context.getString(R.string.calc_number_to_roman),
         icon = Tools.byRoute(Tools.ROUTE_NUMBER_TO_ROMAN)!!.icon,
         onNavigateBack = onNavigateBack,
         history = history,
@@ -53,8 +55,8 @@ fun NumberToRomanScreen(onNavigateBack: () -> Unit) {
         OutlinedTextField(
             value = input,
             onValueChange = { input = it },
-            label = { Text("Number (1-3999)") },
-            placeholder = { Text("e.g. 1994") },
+            label = { Text(stringResource(R.string.calc_number_1_3999)) },
+            placeholder = { Text(stringResource(R.string.calc_e_g_1994)) },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             isError = error.isNotEmpty(),
             supportingText = { if (error.isNotEmpty()) Text(error) },
@@ -63,25 +65,25 @@ fun NumberToRomanScreen(onNavigateBack: () -> Unit) {
 
         Spacer(Modifier.height(16.dp))
         if (roman != null) {
-            Text("Roman numeral", style = MaterialTheme.typography.titleMedium)
+            Text(stringResource(R.string.calc_roman_numeral), style = MaterialTheme.typography.titleMedium)
             Spacer(Modifier.height(8.dp))
             ResultCard(
                 text = roman,
                 textStyle = MaterialTheme.typography.headlineLarge,
                 textAlign = TextAlign.Center,
-                onCopy = { context.copyToClipboard("Roman numeral", roman) },
-                onShare = { context.shareText("$parsed → $roman") },
+                onCopy = { context.copyToClipboard(context.getString(R.string.calc_roman_numeral), roman) },
+                onShare = { context.shareText(context.getString(R.string.calc_1_s_2_s_3, parsed, roman)) },
             )
-            Text("$parsed → $roman", style = MaterialTheme.typography.bodyMedium,
+            Text(context.getString(R.string.calc_1_s_2_s_3, parsed, roman), style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.padding(top = 8.dp))
         } else if (input.isBlank()) {
-            Text("Enter a whole number to see its Roman numeral. For example, 1994 → MCMXCIV.",
+            Text(stringResource(R.string.calc_enter_a_whole_number_to_see_its_roman_numeral_for_examp),
                 style = MaterialTheme.typography.bodyMedium)
         }
         Spacer(Modifier.height(12.dp))
         OutlinedButton(onClick = { input = "" }, enabled = input.isNotEmpty(), modifier = Modifier.fillMaxWidth()) {
             Icon(Icons.Filled.Clear, contentDescription = null)
-            Text(" Clear")
+            Text(stringResource(R.string.calc_clear))
         }
     }
 }

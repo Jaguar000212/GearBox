@@ -1,5 +1,7 @@
 package com.jaguar.gearbox.ui.tools
 
+import androidx.compose.ui.res.stringResource
+import com.jaguar.gearbox.R
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -47,7 +49,7 @@ fun GstCalculatorScreen(onNavigateBack: () -> Unit) {
     val history = rememberToolHistory(
         route = Tools.ROUTE_GST,
         inputs = mapOf("amount" to amount, "rate" to rate, "inclusive" to inclusive.toString()),
-        output = result?.let { "Base amount: ${formatTrimmed(it.baseAmount, 2)}\nTax amount: ${formatTrimmed(it.taxAmount, 2)}\nTotal: ${formatTrimmed(it.totalAmount, 2)}" },
+        output = result?.let { context.getString(R.string.calc_base_amount_1_s_ntax_amount_2_s_ntotal_3_s, formatTrimmed(it.baseAmount, 2), formatTrimmed(it.taxAmount, 2), formatTrimmed(it.totalAmount, 2)) },
         modeInputs = mapOf("inclusive" to inclusive.toString()),
         onRestoreMode = { saved ->
             inclusive = saved["inclusive"]?.toBooleanStrictOrNull() ?: false
@@ -60,7 +62,7 @@ fun GstCalculatorScreen(onNavigateBack: () -> Unit) {
     )
 
     ToolScaffold(
-        title = "GST / Tax Calculator",
+        title = context.getString(R.string.calc_gst_tax_calculator),
         icon = Tools.byRoute(Tools.ROUTE_GST)!!.icon,
         onNavigateBack = onNavigateBack,
         history = history,
@@ -73,55 +75,55 @@ fun GstCalculatorScreen(onNavigateBack: () -> Unit) {
                 FilterChip(
                     selected = !inclusive,
                     onClick = { inclusive = false },
-                    label = { Text("Add tax") },
+                    label = { Text(stringResource(R.string.calc_add_tax)) },
                     modifier = Modifier.weight(1f),
                 )
                 FilterChip(
                     selected = inclusive,
                     onClick = { inclusive = true },
-                    label = { Text("Remove tax") },
+                    label = { Text(stringResource(R.string.calc_remove_tax)) },
                     modifier = Modifier.weight(1f),
                 )
             }
 
-            Text(if (inclusive) "Extract the tax already included in the amount." else "Calculate tax on top of the base amount.",
+            Text(if (inclusive) context.getString(R.string.calc_extract_the_tax_already_included_in_the_amount) else context.getString(R.string.calc_calculate_tax_on_top_of_the_base_amount),
                 style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(Modifier.height(16.dp))
             DecimalField(
                 value = amount,
                 onValueChange = { amount = it },
-                label = if (inclusive) "Amount (tax included)" else "Amount (before tax)",
-                placeholder = "e.g. 1000",
-                errorText = if (amount.isNotBlank() && amountValue == null) "Enter a valid, finite, non-negative amount." else null,
+                label = if (inclusive) context.getString(R.string.calc_amount_tax_included) else context.getString(R.string.calc_amount_before_tax),
+                placeholder = context.getString(R.string.calc_e_g_1000),
+                errorText = if (amount.isNotBlank() && amountValue == null) context.getString(R.string.calc_enter_a_valid_finite_non_negative_amount) else null,
             )
             Spacer(Modifier.height(12.dp))
             DecimalField(
                 value = rate,
                 onValueChange = { rate = it },
-                label = "Tax rate (%)",
-                errorText = if (rate.isNotBlank() && rateValue == null) "Enter a valid, finite, non-negative rate." else null,
+                label = context.getString(R.string.calc_tax_rate),
+                errorText = if (rate.isNotBlank() && rateValue == null) context.getString(R.string.calc_enter_a_valid_finite_non_negative_rate) else null,
             )
         }, result = {
             if (result != null) {
-                val summary = "Base amount: ${formatTrimmed(result.baseAmount, 2)}\n" +
-                        "Tax amount: ${formatTrimmed(result.taxAmount, 2)}\n" +
-                        "Total: ${formatTrimmed(result.totalAmount, 2)}"
+                val summary = context.getString(R.string.calc_base_amount_1_s_n, formatTrimmed(result.baseAmount, 2)) +
+                        context.getString(R.string.calc_tax_amount_1_s_n, formatTrimmed(result.taxAmount, 2)) +
+                        context.getString(R.string.calc_total_1_s, formatTrimmed(result.totalAmount, 2))
 
                 Spacer(Modifier.height(20.dp))
-                Text(if (inclusive) "Before tax" else "Including tax", style = MaterialTheme.typography.labelLarge)
+                Text(if (inclusive) context.getString(R.string.calc_before_tax) else context.getString(R.string.calc_including_tax), style = MaterialTheme.typography.labelLarge)
                 Text(formatTrimmed(if (inclusive) result.baseAmount else result.totalAmount, 2), style = MaterialTheme.typography.headlineLarge, color = MaterialTheme.colorScheme.primary)
                 Spacer(Modifier.height(12.dp))
                 ResultCard(
                     text = summary,
-                    onCopy = { context.copyToClipboard("GST", summary) },
+                    onCopy = { context.copyToClipboard(context.getString(R.string.calc_gst), summary) },
                     onShare = { context.shareText(summary) },
                 )
             } else if (amountValue != null && rateValue != null) {
                 Spacer(Modifier.height(12.dp))
-                Text("The result exceeds the supported numeric range. Reduce the amount or tax rate.", color = MaterialTheme.colorScheme.error)
+                Text(stringResource(R.string.calc_the_result_exceeds_the_supported_numeric_range_reduce_t), color = MaterialTheme.colorScheme.error)
             }
             Spacer(Modifier.height(16.dp))
-            Text("Use the applicable rate; the default is not a tax recommendation.", style = MaterialTheme.typography.bodySmall,
+            Text(stringResource(R.string.calc_use_the_applicable_rate_the_default_is_not_a_tax_recomm), style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant)
             ToolActions(onClear = { amount = "" }, clearEnabled = amount.isNotEmpty())
         })

@@ -1,5 +1,7 @@
 package com.jaguar.gearbox.ui.tools
 
+import com.jaguar.gearbox.R
+
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -38,7 +40,7 @@ fun FlipCoinScreen(onNavigateBack: () -> Unit) {
     var flipping by remember { mutableStateOf(false) }
     val rotation = remember { Animatable(0f) }
     val scope = rememberCoroutineScope()
-    val resultText = when (result) { true -> "Heads"; false -> "Tails"; null -> "Ready to flip" }
+    val resultText = when (result) { true -> context.getString(R.string.game_heads); false -> context.getString(R.string.game_tails); null -> context.getString(R.string.game_ready_to_flip) }
 
     val history = rememberToolHistory(
         route = Tools.ROUTE_FLIP_COIN,
@@ -53,9 +55,9 @@ fun FlipCoinScreen(onNavigateBack: () -> Unit) {
         },
     )
 
-    ToolScaffold("Flip Coin", Tools.byRoute(Tools.ROUTE_FLIP_COIN)!!.icon, onNavigateBack, history = history) {
-        Text("Heads or tails?", style = MaterialTheme.typography.titleLarge)
-        Text("One coin. Two equally likely outcomes.", style = MaterialTheme.typography.bodyMedium,
+    ToolScaffold(context.getString(R.string.game_flip_coin), Tools.byRoute(Tools.ROUTE_FLIP_COIN)!!.icon, onNavigateBack, history = history) {
+        Text(context.getString(R.string.game_heads_or_tails), style = MaterialTheme.typography.titleLarge)
+        Text(context.getString(R.string.game_one_coin_two_equally_likely_outcomes), style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant)
         Spacer(Modifier.height(32.dp))
         Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
@@ -67,13 +69,13 @@ fun FlipCoinScreen(onNavigateBack: () -> Unit) {
                     .clearAndSetSemantics { },
                 contentAlignment = Alignment.Center,
             ) {
-                Text(if (flipping) "?" else when (result) { true -> "H"; false -> "T"; null -> "?" },
+                Text(if (flipping) "?" else when (result) { true -> context.getString(R.string.game_heads_symbol); false -> context.getString(R.string.game_tails_symbol); null -> "?" },
                     style = MaterialTheme.typography.displayLarge,
                     color = MaterialTheme.colorScheme.onPrimaryContainer)
             }
         }
         Spacer(Modifier.height(24.dp))
-        Text(if (flipping) "Flipping…" else resultText,
+        Text(if (flipping) context.getString(R.string.game_flipping) else resultText,
             style = MaterialTheme.typography.headlineMedium, textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth().semantics { liveRegion = LiveRegionMode.Polite })
         Spacer(Modifier.height(24.dp))
@@ -102,12 +104,12 @@ fun FlipCoinScreen(onNavigateBack: () -> Unit) {
         ) {
             Icon(Icons.Default.Casino, contentDescription = null)
             Spacer(Modifier.width(8.dp))
-            Text(if (flipping) "Flipping…" else if (result == null) "Flip coin" else "Flip again")
+            Text(if (flipping) context.getString(R.string.game_flipping) else if (result == null) context.getString(R.string.game_flip_coin_133) else context.getString(R.string.game_flip_again))
         }
         Spacer(Modifier.height(12.dp))
         ToolActions(
-            onCopy = { context.copyToClipboard("Coin flip", resultText) },
-            onShare = { context.shareText("Coin flip: $resultText") },
+            onCopy = { context.copyToClipboard(context.getString(R.string.game_coin_flip), resultText) },
+            onShare = { context.shareText(context.getString(R.string.game_coin_flip_1_s, resultText)) },
             onClear = { result = null },
             resultEnabled = !flipping && result != null,
             clearEnabled = !flipping && result != null,

@@ -18,20 +18,21 @@ fun SensitiveTextShareDialog(
     text: String,
     onConfirm: () -> Unit,
     onDismiss: () -> Unit,
-    disclosure: String = "The external app you choose will receive this text. It may contain secrets or private information. Cancel if you need to remove anything first.",
-    previewLabel: String = "Text to share",
+    disclosure: String? = null,
+    previewLabel: String? = null,
 ) {
+    val context = androidx.compose.ui.platform.LocalContext.current
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Review before sharing") },
+        title = { Text(context.getString(com.jaguar.gearbox.R.string.shared_review_before_sharing)) },
         text = {
             Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text(disclosure)
-                Text(previewLabel, style = MaterialTheme.typography.titleSmall)
+                Text(disclosure ?: context.getString(com.jaguar.gearbox.R.string.shared_the_external_app_you_choose_will_receive_this_text_it_may_contain_secr))
+                Text(previewLabel ?: context.getString(com.jaguar.gearbox.R.string.shared_text_to_share), style = MaterialTheme.typography.titleSmall)
                 Text(text)
             }
         },
-        confirmButton = { TextButton(onClick = onConfirm) { Text("Continue to share") } },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
+        confirmButton = { TextButton(onClick = onConfirm) { Text(context.getString(com.jaguar.gearbox.R.string.shared_continue_to_share)) } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(context.getString(com.jaguar.gearbox.R.string.shared_cancel)) } },
     )
 }

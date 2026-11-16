@@ -1,5 +1,6 @@
 package com.jaguar.gearbox.ui.tools
 
+import com.jaguar.gearbox.R
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -72,14 +73,14 @@ fun PasswordGeneratorScreen(onNavigateBack: () -> Unit) {
     val charset = enabledClasses.joinToString("")
 
     ToolScaffold(
-        title = "Password Generator",
+        title = context.getString(R.string.special_password_generator),
         icon = Tools.byRoute(Tools.ROUTE_PASSWORD_GENERATOR)!!.icon,
         onNavigateBack = onNavigateBack,
     ) {
         OutlinedButton(onClick = { customize = true }, modifier = Modifier.fillMaxWidth()) {
-            Text("$length characters · Customize")
+            Text(context.resources.getQuantityString(R.plurals.special_password_length, length, length))
         }
-        Text(enabledClasses.size.toString() + " character types enabled", style = MaterialTheme.typography.bodySmall)
+        Text(context.resources.getQuantityString(R.plurals.special_password_types, enabledClasses.size, enabledClasses.size), style = MaterialTheme.typography.bodySmall)
         Spacer(Modifier.height(12.dp))
         Button(
             onClick = {
@@ -90,12 +91,12 @@ fun PasswordGeneratorScreen(onNavigateBack: () -> Unit) {
             modifier = Modifier.fillMaxWidth(),
         ) {
             Icon(Icons.Filled.Refresh, contentDescription = null)
-            Text("  Generate")
+            Text(context.getString(R.string.special_generate))
         }
 
         if (charset.isEmpty()) {
             Spacer(Modifier.height(8.dp))
-            Text("Select at least one character type.", color = MaterialTheme.colorScheme.error)
+            Text(context.getString(R.string.special_select_at_least_one_character_type), color = MaterialTheme.colorScheme.error)
         }
 
         if (password.isNotEmpty()) {
@@ -113,8 +114,14 @@ fun PasswordGeneratorScreen(onNavigateBack: () -> Unit) {
 
             Spacer(Modifier.height(12.dp))
             val strength = passwordStrength(password.length, generatedCharsetSize)
-            Text("Estimated strength: ${strength.first}", style = MaterialTheme.typography.labelLarge)
-            Text("An estimate, not a security guarantee.", style = MaterialTheme.typography.bodySmall)
+            Text(context.getString(R.string.special_password_strength, context.getString(when (strength.second) {
+                0.25f -> R.string.special_strength_weak
+                0.5f -> R.string.special_strength_medium
+                0.75f -> R.string.special_strength_strong
+                1f -> R.string.special_strength_very_strong
+                else -> R.string.special_strength_unavailable
+            })), style = MaterialTheme.typography.labelLarge)
+            Text(context.getString(R.string.special_an_estimate_not_a_security_guarantee), style = MaterialTheme.typography.bodySmall)
             Spacer(Modifier.height(4.dp))
             LinearProgressIndicator(
                 progress = { strength.second },
@@ -123,38 +130,38 @@ fun PasswordGeneratorScreen(onNavigateBack: () -> Unit) {
 
             Spacer(Modifier.height(16.dp))
             OutlinedButton(
-                onClick = { context.copyToClipboard("Password", password, sensitive = true) },
+                onClick = { context.copyToClipboard(context.getString(R.string.special_password), password, sensitive = true) },
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 Icon(Icons.Filled.ContentCopy, contentDescription = null)
-                Text(" Copy")
+                Text(context.getString(R.string.special_copy))
             }
-            TextButton(onClick = { password = ""; generatedCharsetSize = 0 }, modifier = Modifier.fillMaxWidth()) { Text("Clear password") }
+            TextButton(onClick = { password = ""; generatedCharsetSize = 0 }, modifier = Modifier.fillMaxWidth()) { Text(context.getString(R.string.special_clear_password)) }
         }
     }
     if (customize) AlertDialog(onDismissRequest = { customize = false },
-        title = { Text("Customize password") },
+        title = { Text(context.getString(R.string.special_customize_password)) },
         text = { Column(Modifier.verticalScroll(rememberScrollState())) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
-            Text("Length", style = MaterialTheme.typography.bodyMedium)
+            Text(context.getString(R.string.calc_length), style = MaterialTheme.typography.bodyMedium)
             Text(length.toInt().toString(), style = MaterialTheme.typography.bodyMedium)
         }
         Slider(value = length.toFloat(), onValueChange = { length = it.roundToInt() }, valueRange = 4f..64f, steps = 59)
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            OutlinedButton(onClick = { if (length > 4) length-- }, enabled = length > 4) { Text("Shorter") }
-            OutlinedButton(onClick = { if (length < 64) length++ }, enabled = length < 64) { Text("Longer") }
+            OutlinedButton(onClick = { if (length > 4) length-- }, enabled = length > 4) { Text(context.getString(R.string.special_shorter)) }
+            OutlinedButton(onClick = { if (length < 64) length++ }, enabled = length < 64) { Text(context.getString(R.string.special_longer)) }
         }
 
-        ToggleRow("Uppercase (A-Z)", useUpper) { useUpper = it }
-        ToggleRow("Lowercase (a-z)", useLower) { useLower = it }
-        ToggleRow("Numbers (0-9)", useNumbers) { useNumbers = it }
-        ToggleRow("Symbols (!@#...)", useSymbols) { useSymbols = it }
+        ToggleRow(context.getString(R.string.special_uppercase_a_z), useUpper) { useUpper = it }
+        ToggleRow(context.getString(R.string.special_lowercase_a_z), useLower) { useLower = it }
+        ToggleRow(context.getString(R.string.special_numbers_0_9), useNumbers) { useNumbers = it }
+        ToggleRow(context.getString(R.string.special_symbols), useSymbols) { useSymbols = it }
 
         } },
-        confirmButton = { TextButton(onClick = { customize = false }) { Text("Done") } },
+        confirmButton = { TextButton(onClick = { customize = false }) { Text(context.getString(R.string.screen_done)) } },
     )
 
 }

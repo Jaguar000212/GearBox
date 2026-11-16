@@ -1,6 +1,7 @@
 package com.jaguar.gearbox.data
 
 import android.content.Context
+import com.jaguar.gearbox.R
 import android.content.pm.PackageManager
 import android.hardware.Sensor
 import android.hardware.SensorManager
@@ -19,6 +20,21 @@ data class DeviceCapabilities(val orientationSensor: Boolean?, val cameraFlash: 
             null -> "Requires camera flash; availability could not be checked"
         }
         Tools.ROUTE_SCREEN_RULER -> "Estimated scale; check against a physical ruler"
+        else -> null
+    }
+
+    fun localizedHint(context: Context, route: String): String? = when (route) {
+        Tools.ROUTE_COMPASS, Tools.ROUTE_BUBBLE_LEVEL -> when (orientationSensor) {
+            true -> context.getString(R.string.catalog_capability_1)
+            false -> context.getString(R.string.catalog_capability_2)
+            null -> context.getString(R.string.catalog_capability_3)
+        }
+        Tools.ROUTE_FLASHLIGHT -> when (cameraFlash) {
+            true -> context.getString(R.string.catalog_capability_4)
+            false -> context.getString(R.string.catalog_capability_5)
+            null -> context.getString(R.string.catalog_capability_6)
+        }
+        Tools.ROUTE_SCREEN_RULER -> context.getString(R.string.catalog_capability_7)
         else -> null
     }
 

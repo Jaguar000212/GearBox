@@ -92,7 +92,7 @@ import java.util.Locale
 
 val LocalClockNavigationTarget = staticCompositionLocalOf<State<String?>> { mutableStateOf(null) }
 
-private enum class ClockMode(val label: String) { STOPWATCH("Stopwatch"), TIMER("Timer") }
+private enum class ClockMode(val label: Int) { STOPWATCH(R.string.game_stopwatch), TIMER(R.string.game_timer) }
 
 @Composable
 fun TimerStopwatchScreen(onNavigateBack: () -> Unit) = TimerStopwatchScreen(onNavigateBack, false)
@@ -137,7 +137,7 @@ fun TimerStopwatchScreen(onNavigateBack: () -> Unit, requestStopwatchReset: Bool
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (_: Exception) {
-                error = "Could not save the clock state. Please try again."
+                error = context.getString(R.string.game_could_not_save_the_clock_state_please_try_again)
             }
         }
     }
@@ -145,7 +145,7 @@ fun TimerStopwatchScreen(onNavigateBack: () -> Unit, requestStopwatchReset: Bool
     fun importSetup(values: Map<String, String>) {
         userInteracted.value = true
         val setup = parseClockSetup(values)
-        if (setup == null) { error = "This clock setup is invalid. Choose a valid duration."; return }
+        if (setup == null) { error = context.getString(R.string.game_this_clock_setup_is_invalid_choose_a_valid_duration); return }
         scope.launch {
             var refused = false
             try {
@@ -156,14 +156,14 @@ fun TimerStopwatchScreen(onNavigateBack: () -> Unit, requestStopwatchReset: Bool
                     TimerWidget().updateAll(context)
                     updated
                 } }
-                if (refused) error = "Reset running or paused clocks before restoring a setup. Existing clocks were not changed."
+                if (refused) error = context.getString(R.string.game_reset_running_or_paused_clocks_before_restoring_a_setup_ex)
                 else {
                     draftMinutes = setup.minutes; draftSeconds = setup.seconds
                     snapshotInputs = emptyMap(); snapshotOutput = null
                     error = null
                 }
             } catch (cancelled: CancellationException) { throw cancelled }
-            catch (_: Exception) { error = "Could not restore the clock setup. Please try again." }
+            catch (_: Exception) { error = context.getString(R.string.game_could_not_restore_the_clock_setup_please_try_again) }
         }
     }
     val importedSetup = LocalToolImport.current
@@ -184,7 +184,7 @@ fun TimerStopwatchScreen(onNavigateBack: () -> Unit, requestStopwatchReset: Bool
                     if (!userInteracted.value) { draftMinutes = state.minutesInput; draftSeconds = state.secondsInput }
                 }
             } catch (cancelled: CancellationException) { throw cancelled }
-            catch (_: Exception) { error = "Could not load clock preferences. Existing clock state was preserved." }
+            catch (_: Exception) { error = context.getString(R.string.game_could_not_load_clock_preferences_existing_clock_state_was) }
             finally { preferencesInitialized = true }
         }
     }
@@ -208,7 +208,7 @@ fun TimerStopwatchScreen(onNavigateBack: () -> Unit, requestStopwatchReset: Bool
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (_: Exception) {
-                error = "Could not restore the timer alert. Please restart the timer."
+                error = context.getString(R.string.game_could_not_restore_the_timer_alert_please_restart_the_timer)
             }
             while (true) {
                 try {
@@ -219,7 +219,7 @@ fun TimerStopwatchScreen(onNavigateBack: () -> Unit, requestStopwatchReset: Bool
                 } catch (cancelled: CancellationException) {
                     throw cancelled
                 } catch (_: Exception) {
-                    error = "Could not update the clock state."
+                    error = context.getString(R.string.game_could_not_update_the_clock_state)
                 }
                 notificationsAllowed = TimerAlerts.notificationsAllowed(context)
                 exactAllowed = TimerAlerts.exactAlarmsAllowed(context)
@@ -234,29 +234,29 @@ fun TimerStopwatchScreen(onNavigateBack: () -> Unit, requestStopwatchReset: Bool
         val requestedSeconds = draftSeconds
         if (!state.timerRunning && state.timerRemainingMillis == 0L &&
             timerDurationMillis(requestedMinutes, requestedSeconds) == null) {
-            error = "Enter 0–999 minutes and 0–59 seconds, with a total above zero."
+            error = context.getString(R.string.game_enter_0_999_minutes_and_0_59_seconds_with_a_total_above_ze)
         } else change { toggleCountdown(it.copy(minutesInput = requestedMinutes, secondsInput = requestedSeconds)) }
     }
     if (showFocus) {
-        ToolFocusView(selectedMode.label, onExit = { showFocus = false }) {
+        ToolFocusView(context.getString(selectedMode.label), onExit = { showFocus = false }) {
             val isTimer = selectedMode == ClockMode.TIMER
             val elapsed = if (isTimer) state.timerRemainingMillis else state.stopwatchElapsedMillis
             val running = if (isTimer) state.timerRunning else state.stopwatchRunning
             ClockFace(elapsed, when {
-                isTimer && state.timerFinished -> "Finished"
-                running -> "Running"
-                elapsed > 0L -> "Paused / Ready"
-                else -> "Ready"
+                isTimer && state.timerFinished -> context.getString(R.string.game_finished)
+                running -> context.getString(R.string.game_running)
+                elapsed > 0L -> context.getString(R.string.game_paused_ready)
+                else -> context.getString(R.string.game_ready)
             })
             Button(onClick = {
                 if (isTimer) toggleTimerFromView()
                 else change { it.copy(stopwatchRunning = !it.stopwatchRunning) }
             }, modifier = Modifier.fillMaxWidth()) {
-                Text(if (running) "Pause" else if (elapsed > 0L) "Resume" else "Start")
+                Text(if (running) context.getString(R.string.game_pause) else if (elapsed > 0L) context.getString(R.string.game_resume) else context.getString(R.string.game_start))
             }
             error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
             if (isTimer && (!notificationsAllowed || !exactAllowed || TimerAlerts.schedulingFailed)) {
-                Text("Alerts need attention. Exit focus view and open Clock options.", color = MaterialTheme.colorScheme.error)
+                Text(context.getString(R.string.game_alerts_need_attention_exit_focus_view_and_open_clock_optio), color = MaterialTheme.colorScheme.error)
             }
         }
     }
@@ -264,19 +264,19 @@ fun TimerStopwatchScreen(onNavigateBack: () -> Unit, requestStopwatchReset: Bool
         com.jaguar.gearbox.ui.screens.ClockOptionsDialog { showClockOptions = false }
     }
     ToolScaffold(
-        title = "Timer / Stopwatch",
+        title = context.getString(R.string.game_timer_stopwatch),
         icon = Tools.byRoute(Tools.ROUTE_TIMER_STOPWATCH)!!.icon,
         onNavigateBack = onNavigateBack,
         history = history,
         options = {
-            IconButton(onClick = { showFocus = true }) { Icon(Icons.Filled.Fullscreen, contentDescription = "Focus view") }
-            IconButton(onClick = { showClockOptions = true }) { Icon(Icons.Filled.Settings, contentDescription = "Clock options") }
+            IconButton(onClick = { showFocus = true }) { Icon(Icons.Filled.Fullscreen, contentDescription = context.getString(R.string.game_focus_view)) }
+            IconButton(onClick = { showClockOptions = true }) { Icon(Icons.Filled.Settings, contentDescription = context.getString(R.string.game_clock_options)) }
         },
     ) {
         TabRow(selectedTabIndex = ClockMode.entries.indexOf(selectedMode)) {
             ClockMode.entries.forEach { entry ->
                 Tab(selected = entry == selectedMode, onClick = { change { it.copy(mode = entry.name) } },
-                    text = { Text(entry.label) })
+                    text = { Text(context.getString(entry.label)) })
             }
         }
         error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
@@ -289,18 +289,18 @@ fun TimerStopwatchScreen(onNavigateBack: () -> Unit, requestStopwatchReset: Bool
                     val captured = withContext(Dispatchers.IO) { ClockRepository.snapshot(context) }
                     val inputs = mapOf("mode" to captured.mode, "minutes" to captured.minutesInput, "seconds" to captured.secondsInput)
                     val output = if (captured.mode == "TIMER") {
-                        "Timer snapshot: ${formatDuration(captured.timerRemainingMillis)} remaining · " +
-                            if (captured.timerFinished) "Finished" else if (captured.timerRunning) "Running" else "Paused / Ready"
-                    } else stopwatchResultText(captured.stopwatchElapsedMillis, captured.laps)
+                        context.getString(R.string.game_timer_snapshot_1_s_remaining, formatDuration(captured.timerRemainingMillis)) +
+                            if (captured.timerFinished) context.getString(R.string.game_finished) else if (captured.timerRunning) context.getString(R.string.game_running) else context.getString(R.string.game_paused_ready)
+                    } else stopwatchResultText(captured.stopwatchElapsedMillis, captured.laps, context)
                     snapshotInputs = inputs; snapshotOutput = output
                     val recorded = withContext(Dispatchers.IO) { memory.record(Tools.ROUTE_TIMER_STOPWATCH, inputs, output, expectedGeneration = historyGeneration) }
-                    snapshotMessage = if (recorded) "Snapshot added to history. Restore loads setup only, never elapsed time."
-                        else "Snapshot ready in History → Keep result. It was not added to history because collection is off, history changed, or storage is unavailable."
+                    snapshotMessage = if (recorded) context.getString(R.string.game_snapshot_added_to_history_restore_loads_setup_only_never_e)
+                        else context.getString(R.string.game_snapshot_ready_in_history_keep_result_it_was_not_added_to)
                 } catch (cancelled: CancellationException) { throw cancelled }
-                catch (_: Exception) { error = "Could not capture the clock snapshot." }
+                catch (_: Exception) { error = context.getString(R.string.game_could_not_capture_the_clock_snapshot) }
                 finally { capturing = false }
             }
-        }) { Text("Capture snapshot") }
+        }) { Text(context.getString(R.string.game_capture_snapshot)) }
         snapshotMessage?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
         Spacer(Modifier.height(20.dp))
         when (selectedMode) {
@@ -317,7 +317,7 @@ fun TimerStopwatchScreen(onNavigateBack: () -> Unit, requestStopwatchReset: Bool
                 val alertsReady = notificationsAllowed && exactAllowed && !TimerAlerts.schedulingFailed
                 if (!alertsReady) {
                     TextButton(onClick = { showClockOptions = true }) {
-                        Text("Alerts need attention · Fix", color = MaterialTheme.colorScheme.error)
+                        Text(context.getString(R.string.game_alerts_need_attention_fix), color = MaterialTheme.colorScheme.error)
                     }
                 }
                 Spacer(Modifier.height(12.dp))
@@ -357,54 +357,54 @@ internal fun StopwatchSection(
     var confirmReset by rememberSaveable { mutableStateOf(requestReset && (isRunning || elapsedMillis > 0L || laps.isNotEmpty())) }
     if (confirmReset) {
         ClockResetDialog(
-            title = "Reset stopwatch?",
-            message = "Elapsed time and all recorded laps will be cleared.",
+            title = context.getString(R.string.game_reset_stopwatch),
+            message = context.getString(R.string.game_elapsed_time_and_all_recorded_laps_will_be_cleared),
             onDismiss = { confirmReset = false },
             onConfirm = { confirmReset = false; onReset() },
         )
     }
     ClockFace(elapsedMillis, when {
-        isRunning -> "Running"
-        elapsedMillis > 0L -> "Paused"
-        else -> "Ready"
+        isRunning -> context.getString(R.string.game_running)
+        elapsedMillis > 0L -> context.getString(R.string.game_paused)
+        else -> context.getString(R.string.game_ready)
     })
 
     Spacer(Modifier.height(20.dp))
     Button(onClick = onToggleRunning, modifier = Modifier.fillMaxWidth()) {
-        Text(if (isRunning) "Pause" else if (elapsedMillis > 0L) "Resume" else "Start")
+        Text(if (isRunning) context.getString(R.string.game_pause) else if (elapsedMillis > 0L) context.getString(R.string.game_resume) else context.getString(R.string.game_start))
     }
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         OutlinedButton(onClick = onLap, enabled = isRunning, modifier = Modifier.weight(1f)) {
-            Text("Lap")
+            Text(context.getString(R.string.game_lap))
         }
         OutlinedButton(onClick = { confirmReset = true }, enabled = isRunning || elapsedMillis > 0L || laps.isNotEmpty(), modifier = Modifier.weight(1f)) {
-            Text("Reset")
+            Text(context.getString(R.string.game_reset_45))
         }
     }
 
     if (elapsedMillis > 0L || laps.isNotEmpty()) {
         Spacer(Modifier.height(8.dp))
         ToolActions(
-            onCopy = { if (!isRunning) context.copyToClipboard("Stopwatch", stopwatchResultText(elapsedMillis, laps)) },
-            onShare = { if (!isRunning) context.shareText(stopwatchResultText(elapsedMillis, laps)) },
+            onCopy = { if (!isRunning) context.copyToClipboard(context.getString(R.string.game_stopwatch), stopwatchResultText(elapsedMillis, laps, context)) },
+            onShare = { if (!isRunning) context.shareText(stopwatchResultText(elapsedMillis, laps, context)) },
             resultEnabled = !isRunning,
         )
-        if (isRunning) Text("Pause to copy or share the elapsed time and laps.",
+        if (isRunning) Text(context.getString(R.string.game_pause_to_copy_or_share_the_elapsed_time_and_laps),
             style = MaterialTheme.typography.bodySmall)
     }
 
     if (laps.isNotEmpty()) {
         Spacer(Modifier.height(16.dp))
-        Text("Laps", style = MaterialTheme.typography.titleMedium)
+        Text(context.getString(R.string.game_laps), style = MaterialTheme.typography.titleMedium)
         laps.indices.reversed().forEach { index ->
             val total = laps[index]
             val split = total - (laps.getOrNull(index - 1) ?: 0L)
             Card(Modifier.fillMaxWidth().padding(top = 8.dp)) {
                 Column(Modifier.padding(16.dp)) {
-                    Text("Lap ${index + 1}", style = MaterialTheme.typography.labelLarge)
-                    Text("Split ${formatDuration(split)}", style = MaterialTheme.typography.titleMedium,
+                    Text(context.getString(R.string.game_lap_1_s, index + 1), style = MaterialTheme.typography.labelLarge)
+                    Text(context.getString(R.string.game_split_1_s, formatDuration(split)), style = MaterialTheme.typography.titleMedium,
                         fontFamily = FontFamily.Monospace)
-                    Text("Total ${formatDuration(total)}", style = MaterialTheme.typography.bodyMedium,
+                    Text(context.getString(R.string.game_total_1_s, formatDuration(total)), style = MaterialTheme.typography.bodyMedium,
                         fontFamily = FontFamily.Monospace)
                 }
             }
@@ -424,11 +424,12 @@ internal fun TimerSection(
     onStartPause: () -> Unit,
     onReset: () -> Unit,
 ) {
+    val context = LocalContext.current
     var confirmReset by rememberSaveable { mutableStateOf(false) }
     if (confirmReset) {
         ClockResetDialog(
-            title = "Reset timer?",
-            message = "The current countdown will be stopped and cleared.",
+            title = context.getString(R.string.game_reset_timer),
+            message = context.getString(R.string.game_the_current_countdown_will_be_stopped_and_cleared),
             onDismiss = { confirmReset = false },
             onConfirm = { confirmReset = false; onReset() },
         )
@@ -442,7 +443,7 @@ internal fun TimerSection(
             OutlinedTextField(
                 value = minutesInput,
                 onValueChange = onMinutesChange,
-                label = { Text("Minutes") },
+                label = { Text(context.getString(R.string.game_minutes)) },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 singleLine = true,
                 modifier = Modifier.weight(1f),
@@ -450,7 +451,7 @@ internal fun TimerSection(
             OutlinedTextField(
                 value = secondsInput,
                 onValueChange = onSecondsChange,
-                label = { Text("Seconds") },
+                label = { Text(context.getString(R.string.game_seconds)) },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 singleLine = true,
                 modifier = Modifier.weight(1f),
@@ -459,17 +460,17 @@ internal fun TimerSection(
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             listOf(1, 5, 10).forEach { minutes ->
                 TextButton(onClick = { onMinutesChange(minutes.toString()); onSecondsChange("0") },
-                    modifier = Modifier.weight(1f)) { Text("$minutes min") }
+                    modifier = Modifier.weight(1f)) { Text(context.getString(R.string.game_1_s_min, minutes)) }
             }
         }
         Spacer(Modifier.height(20.dp))
     }
 
     ClockFace(remainingMillis, when {
-        finished -> "Time's up!"
-        isRunning -> "Running"
-        remainingMillis > 0L -> "Paused"
-        else -> "Ready"
+        finished -> context.getString(R.string.game_time_s_up)
+        isRunning -> context.getString(R.string.game_running)
+        remainingMillis > 0L -> context.getString(R.string.game_paused)
+        else -> context.getString(R.string.game_ready)
     })
 
     Spacer(Modifier.height(20.dp))
@@ -478,39 +479,40 @@ internal fun TimerSection(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Button(onClick = onStartPause, modifier = Modifier.weight(1f)) {
-            Text(when { isRunning -> "Pause"; remainingMillis > 0L -> "Resume"; finished -> "Start again"; else -> "Start" })
+            Text(when { isRunning -> context.getString(R.string.game_pause); remainingMillis > 0L -> context.getString(R.string.game_resume); finished -> context.getString(R.string.game_start_again); else -> context.getString(R.string.game_start) })
         }
         OutlinedButton(onClick = { if (isRunning || remainingMillis > 0L) confirmReset = true else onReset() }, modifier = Modifier.weight(1f)) {
-            Text("Reset")
+            Text(context.getString(R.string.game_reset_45))
         }
     }
 }
 
 @Composable
 private fun ClockResetDialog(title: String, message: String, onDismiss: () -> Unit, onConfirm: () -> Unit) {
+    val context = LocalContext.current
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(title) },
         text = { Text(message) },
-        confirmButton = { TextButton(onClick = onConfirm) { Text("Reset now") } },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Keep timing") } },
+        confirmButton = { TextButton(onClick = onConfirm) { Text(context.getString(R.string.game_reset_now)) } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(context.getString(R.string.game_keep_timing)) } },
     )
 }
 
 /** Stable snapshot export; callers expose it only when the stopwatch is paused. */
-internal fun stopwatchResultText(elapsedMillis: Long, laps: List<Long>): String = buildString {
-    append("Stopwatch: ").append(formatDuration(elapsedMillis))
+internal fun stopwatchResultText(elapsedMillis: Long, laps: List<Long>, context: android.content.Context? = null): String = buildString {
+    append(context?.getString(R.string.game_stopwatch_export, formatDuration(elapsedMillis)) ?: "Stopwatch: ${formatDuration(elapsedMillis)}")
     laps.forEachIndexed { index, total ->
         val split = total - (laps.getOrNull(index - 1) ?: 0L)
-        append("\nLap ").append(index + 1)
-            .append(": split ").append(formatDuration(split))
-            .append(", total ").append(formatDuration(total))
+        append(context?.getString(R.string.game_lap_export, index + 1, formatDuration(split), formatDuration(total))
+            ?: "\nLap ${index + 1}: split ${formatDuration(split)}, total ${formatDuration(total)}")
     }
 }
 
 /** Stable digits without animated transitions; wraps long durations at large font scales. */
 @Composable
 private fun ClockFace(millis: Long, status: String) {
+    val context = LocalContext.current
     Card(Modifier.fillMaxWidth()) {
         Column(Modifier.fillMaxWidth().padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
             Text(status, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
@@ -523,7 +525,7 @@ private fun ClockFace(millis: Long, status: String) {
                     modifier = Modifier.fillMaxWidth().clearAndSetSemantics {
                         // Do not make continuously ticking centiseconds a live announcement.
                         val seconds = millis / 1000
-                        contentDescription = "${seconds / 3600} hours, ${(seconds % 3600) / 60} minutes, ${seconds % 60} seconds"
+                        contentDescription = clockDurationDescription(context, seconds)
                     })
             }
         }
@@ -541,4 +543,14 @@ private fun formatDuration(millis: Long): String {
     } else {
         String.format(Locale.US, "%02d:%02d.%02d", minutes, seconds, centis)
     }
+}
+
+/** Formats accessibility duration only; it never reads or changes a running clock. */
+internal fun clockDurationDescription(context: android.content.Context, seconds: Long): String {
+    fun quantity(resource: Int, count: Long): String = context.resources.getQuantityString(
+        resource, count.coerceAtMost(Int.MAX_VALUE.toLong()).toInt(), count)
+    return context.getString(R.string.game_duration_description,
+        quantity(R.plurals.game_hours, seconds / 3600),
+        quantity(R.plurals.game_minutes, (seconds % 3600) / 60),
+        quantity(R.plurals.game_seconds, seconds % 60))
 }

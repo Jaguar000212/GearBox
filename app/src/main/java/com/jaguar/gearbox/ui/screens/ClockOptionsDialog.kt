@@ -1,5 +1,6 @@
 package com.jaguar.gearbox.ui.screens
 
+import com.jaguar.gearbox.R
 import android.Manifest
 import android.content.Intent
 import android.os.Build
@@ -40,7 +41,7 @@ fun ClockOptionsDialog(onDismiss: () -> Unit) {
         scope.launch {
             try { withContext(Dispatchers.IO) { ClockRepository.restoreAlarm(context) } }
             catch (cancelled: CancellationException) { throw cancelled }
-            catch (_: Exception) { error = "Could not refresh clock alerts. Please try again." }
+            catch (_: Exception) { error = context.getString(R.string.screen_could_not_refresh_clock_alerts_please_try_again) }
         }
     }
     fun change(transform: (ClockState) -> ClockState) {
@@ -55,20 +56,20 @@ fun ClockOptionsDialog(onDismiss: () -> Unit) {
                 }
                 error = null
             } catch (cancelled: CancellationException) { throw cancelled }
-            catch (_: Exception) { error = "Could not save clock options. Please try again." }
+            catch (_: Exception) { error = context.getString(R.string.screen_could_not_save_clock_options_please_try_again) }
             finally { saving = false }
         }
     }
     fun openAndroid(intent: Intent) {
         runCatching { context.startActivity(intent) }
-            .onFailure { error = "Open GearBox’s notification or alarm permissions in Android Settings." }
+            .onFailure { error = context.getString(R.string.screen_open_gearbox_s_notification_or_alarm_permissions_in_android_setti) }
     }
     LaunchedEffect(lifecycle, context) {
         lifecycle.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
             while (true) {
                 try { state = withContext(Dispatchers.IO) { ClockRepository.snapshot(context) } }
                 catch (cancelled: CancellationException) { throw cancelled }
-                catch (_: Exception) { error = "Could not read clock options. Please try again." }
+                catch (_: Exception) { error = context.getString(R.string.screen_could_not_read_clock_options_please_try_again) }
                 notificationsAllowed = TimerAlerts.notificationsAllowed(context)
                 exactAllowed = TimerAlerts.exactAlarmsAllowed(context)
                 delay(500)
@@ -77,13 +78,13 @@ fun ClockOptionsDialog(onDismiss: () -> Unit) {
     }
     AlertDialog(
         onDismissRequest = { if (!saving) onDismiss() },
-        title = { Text("Clock options") },
+        title = { Text(context.getString(R.string.screen_clock_options)) },
         text = {
             Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text("These preferences apply to both Timer and Stopwatch. Changing them does not stop a running clock.")
+                Text(context.getString(R.string.screen_these_preferences_apply_to_both_timer_and_stopwatch_changing_them))
                 ListItem(
-                    headlineContent = { Text("Ongoing clock notifications") },
-                    supportingContent = { Text("Show active clocks outside the app. Eligible notifications may appear as Live Updates depending on Android and device settings.") },
+                    headlineContent = { Text(context.getString(R.string.screen_ongoing_clock_notifications)) },
+                    supportingContent = { Text(context.getString(R.string.screen_show_active_clocks_outside_the_app_eligible_notifications_may_app)) },
                     trailingContent = {
                         Switch(checked = state.ongoingNotificationEnabled, enabled = !saving, onCheckedChange = { enabled ->
                             change { it.copy(ongoingNotificationEnabled = enabled,
@@ -94,34 +95,34 @@ fun ClockOptionsDialog(onDismiss: () -> Unit) {
                     },
                 )
                 if (state.ongoingNotificationEnabled && !TimerStatusNotification.allowed(context))
-                    Text("Ongoing notifications are blocked by Android settings.", color = MaterialTheme.colorScheme.error)
+                    Text(context.getString(R.string.screen_ongoing_notifications_are_blocked_by_android_settings), color = MaterialTheme.colorScheme.error)
                 if (state.ongoingNotificationEnabled && state.stopwatchNotificationDismissed) {
                     TextButton(enabled = !saving, onClick = { change { it.copy(stopwatchNotificationDismissed = false) } }) {
-                        Text("Show stopwatch notification again")
+                        Text(context.getString(R.string.screen_show_stopwatch_notification_again))
                     }
                 }
                 if (state.ongoingNotificationEnabled && state.ongoingNotificationDismissed) {
                     TextButton(enabled = !saving, onClick = { change { it.copy(ongoingNotificationDismissed = false) } }) {
-                        Text("Show timer notification again")
+                        Text(context.getString(R.string.screen_show_timer_notification_again))
                     }
                 }
                 HorizontalDivider()
-                Text("Completion alerts", style = MaterialTheme.typography.titleSmall)
-                Text("Completion alerts are separate from ongoing notifications. Android battery restrictions, Do Not Disturb and force-stop can delay or prevent alerts. Active timers are restored after reboot and unlock.")
+                Text(context.getString(R.string.screen_completion_alerts), style = MaterialTheme.typography.titleSmall)
+                Text(context.getString(R.string.screen_completion_alerts_are_separate_from_ongoing_notifications_android))
                 if (!notificationsAllowed && Build.VERSION.SDK_INT >= 33) {
-                    TextButton(onClick = { permission.launch(Manifest.permission.POST_NOTIFICATIONS) }) { Text("Allow notifications") }
+                    TextButton(onClick = { permission.launch(Manifest.permission.POST_NOTIFICATIONS) }) { Text(context.getString(R.string.screen_allow_notifications)) }
                 }
                 TextButton(onClick = { openAndroid(Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
-                    .putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)) }) { Text("Android notification settings") }
+                    .putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)) }) { Text(context.getString(R.string.screen_android_notification_settings)) }
                 if (!exactAllowed && Build.VERSION.SDK_INT >= 31) {
-                    Text("Without precise alarm access, a best-effort completion alert may be late.")
+                    Text(context.getString(R.string.screen_without_precise_alarm_access_a_best_effort_completion_alert_may_b))
                     TextButton(onClick = { openAndroid(Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM,
-                        "package:${context.packageName}".toUri())) }) { Text("Allow precise alarms") }
+                        "package:${context.packageName}".toUri())) }) { Text(context.getString(R.string.screen_allow_precise_alarms)) }
                 }
-                if (TimerAlerts.schedulingFailed) Text("The alert could not be scheduled. Check Android settings and restart the timer.", color = MaterialTheme.colorScheme.error)
+                if (TimerAlerts.schedulingFailed) Text(context.getString(R.string.screen_the_alert_could_not_be_scheduled_check_android_settings_and_resta), color = MaterialTheme.colorScheme.error)
                 error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
             }
         },
-        confirmButton = { TextButton(enabled = !saving, onClick = onDismiss) { Text("Done") } },
+        confirmButton = { TextButton(enabled = !saving, onClick = onDismiss) { Text(context.getString(R.string.screen_done)) } },
     )
 }

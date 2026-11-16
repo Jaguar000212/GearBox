@@ -53,29 +53,47 @@ fun CompassScreen(
 ) {
     val snapshot = sensorState.snapshot
     val context = LocalContext.current
+    fun pointLabel(point: String): String = context.getString(when (point) {
+        "N" -> R.string.special_n
+        "NE" -> R.string.special_ne
+        "E" -> R.string.special_e
+        "SE" -> R.string.special_se
+        "S" -> R.string.special_s
+        "SW" -> R.string.special_sw
+        "W" -> R.string.special_w
+        "NW" -> R.string.special_nw
+        "NNE" -> R.string.special_nne
+        "ENE" -> R.string.special_ene
+        "ESE" -> R.string.special_ese
+        "SSE" -> R.string.special_sse
+        "SSW" -> R.string.special_ssw
+        "WSW" -> R.string.special_wsw
+        "WNW" -> R.string.special_wnw
+        else -> R.string.special_nnw
+    })
     val historyStore = remember(context) { ToolMemoryStore(context) }
     var captureGeneration by remember { mutableStateOf<Long?>(null) }
     var capturedOutput by remember { mutableStateOf("") }
     var captureId by remember { mutableStateOf("") }
     val history = rememberToolHistory(
         route = Tools.ROUTE_COMPASS,
-        inputs = mapOf("source" to "Device orientation sensor", "_capture" to captureId),
+        inputs = mapOf("source" to context.getString(R.string.special_device_orientation_sensor), "_capture" to captureId),
         output = capturedOutput.takeIf { it.isNotEmpty() },
         expectedHistoryGeneration = captureGeneration,
         onRestore = {}, allowRestore = false, restoreLastResult = false, recordingDelayMillis = 0L,
     )
 
     var focusView by rememberSaveable { mutableStateOf(false) }
-    if (focusView) ToolFocusView("Compass", onExit = { focusView = false }) {
+    if (focusView) ToolFocusView(context.getString(R.string.compass_title), onExit = { focusView = false }) {
         OrientationStatusMessage(sensorState.status)
         if (sensorState.status == OrientationStatus.READY) {
             if (snapshot != null) {
                 val heading = azimuthDegrees(snapshot.azimuthRad)
-                Text("${compassPoint(heading)} ${"%.1f".format(heading)}°", style = MaterialTheme.typography.displayLarge)
-                Text("Magnetic heading, not true north. Nearby metal and magnets can affect accuracy.")
+                Text(context.getString(R.string.special_compass_focus_heading, pointLabel(compassPoint(heading)), "%.1f".format(heading)), style = MaterialTheme.typography.displayLarge)
+                Text(context.getString(R.string.special_magnetic_heading_not_true_north_nearby_metal_and_magnets_can_affe))
             }
         } else {
-            Text("A reliable reading is not available. No measurement is shown.")
+            Text(context.getString(R.string.special_a_reliable_reading_is_not_available_no_measurement_is_shown))
         }
     }
 
@@ -84,13 +102,13 @@ fun CompassScreen(
         icon = Tools.byRoute(Tools.ROUTE_COMPASS)!!.icon,
         onNavigateBack = onNavigateBack,
         history = history,
-        options = { TextButton(onClick = { focusView = true }) { Text("Focus view") } },
+        options = { TextButton(onClick = { focusView = true }) { Text(context.getString(R.string.special_focus_view)) } },
     ) {
         OrientationStatusMessage(sensorState.status)
         if (snapshot == null) return@ToolScaffold
 
         val heading = azimuthDegrees(snapshot.azimuthRad)
-        val point = compassPoint(heading)
+        val point = pointLabel(compassPoint(heading))
 
         Text(stringResource(R.string.compass_magnetic_label), style = MaterialTheme.typography.labelLarge)
         Text(
@@ -139,10 +157,10 @@ fun CompassScreen(
                         }
                     }
                 }
-                Text("N", modifier = Modifier.padding(top = 8.dp).align(Alignment.TopCenter), color = labelColor, style = MaterialTheme.typography.labelLarge)
-                Text("E", modifier = Modifier.padding(end = 8.dp).align(Alignment.CenterEnd), color = labelColor, style = MaterialTheme.typography.labelLarge)
-                Text("S", modifier = Modifier.padding(bottom = 8.dp).align(Alignment.BottomCenter), color = labelColor, style = MaterialTheme.typography.labelLarge)
-                Text("W", modifier = Modifier.padding(start = 8.dp).align(Alignment.CenterStart), color = labelColor, style = MaterialTheme.typography.labelLarge)
+                Text(context.getString(R.string.special_n), modifier = Modifier.padding(top = 8.dp).align(Alignment.TopCenter), color = labelColor, style = MaterialTheme.typography.labelLarge)
+                Text(context.getString(R.string.special_e), modifier = Modifier.padding(end = 8.dp).align(Alignment.CenterEnd), color = labelColor, style = MaterialTheme.typography.labelLarge)
+                Text(context.getString(R.string.special_s), modifier = Modifier.padding(bottom = 8.dp).align(Alignment.BottomCenter), color = labelColor, style = MaterialTheme.typography.labelLarge)
+                Text(context.getString(R.string.special_w), modifier = Modifier.padding(start = 8.dp).align(Alignment.CenterStart), color = labelColor, style = MaterialTheme.typography.labelLarge)
             }
 
             Icon(
@@ -158,12 +176,12 @@ fun CompassScreen(
         Text(stringResource(R.string.compass_usage_help), style = MaterialTheme.typography.bodyMedium)
         Spacer(Modifier.height(16.dp))
         DeviceSnapshotActions(
-            captureLabel = "Capture reading",
+            captureLabel = context.getString(R.string.special_capture_reading),
             enabled = sensorState.status == OrientationStatus.READY,
             capturedOutput = capturedOutput,
             onCapture = {
                 captureGeneration = historyStore.historyGeneration(Tools.ROUTE_COMPASS)
-                capturedOutput = "Magnetic heading: $point ${"%.1f".format(heading)}°. Device sensor estimate, not true north; nearby magnetic fields can affect accuracy."
+                capturedOutput = context.getString(R.string.special_compass_capture, point, "%.1f".format(heading))
                 captureId = UUID.randomUUID().toString()
             },
             onClear = { captureGeneration = null; capturedOutput = ""; captureId = "" },

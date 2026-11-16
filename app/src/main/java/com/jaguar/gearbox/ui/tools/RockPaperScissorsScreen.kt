@@ -1,5 +1,9 @@
 package com.jaguar.gearbox.ui.tools
 
+import com.jaguar.gearbox.data.localizedLabel
+import com.jaguar.gearbox.data.localizedMessage
+import com.jaguar.gearbox.R
+
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.widthIn
@@ -53,7 +57,7 @@ fun RockPaperScissorsScreen(onNavigateBack: () -> Unit) {
     var runId by rememberSaveable { mutableStateOf("") }
     var playerMove by rememberSaveable { mutableStateOf<String?>(null) }
     var computerMove by rememberSaveable { mutableStateOf<String?>(null) }
-    var resultText by rememberSaveable { mutableStateOf("Choose your move") }
+    var resultText by rememberSaveable { mutableStateOf(context.getString(R.string.game_choose_your_move)) }
     var wins by rememberSaveable { mutableStateOf(store.getInt(KEY_WINS, 0)) }
     var losses by rememberSaveable { mutableStateOf(store.getInt(KEY_LOSSES, 0)) }
     var draws by rememberSaveable { mutableStateOf(store.getInt(KEY_DRAWS, 0)) }
@@ -72,16 +76,16 @@ fun RockPaperScissorsScreen(onNavigateBack: () -> Unit) {
         route = Tools.ROUTE_RPS,
         inputs = mapOf("playerMove" to (playerMove ?: ""), "_run" to runId, "_cpuMove" to computerMove.orEmpty()),
         output = if (playerMove != null && computerMove != null)
-            "You: $playerMove\nCPU: $computerMove\n$resultText" else null,
+            context.getString(R.string.game_you_1_s_ncpu_2_s_n_3_s, RpsMove.valueOf(playerMove!!).localizedLabel(context), RpsMove.valueOf(computerMove!!).localizedLabel(context), resultText) else null,
         recordingDelayMillis = 0L,
         onRestore = { saved ->
             playerMove = RpsMove.entries.firstOrNull { it.name == saved["playerMove"] }?.name
             computerMove = null
-            resultText = playerMove?.let { "Previous choice: ${RpsMove.valueOf(it).label}. Tap a move to play." }
-                ?: "Choose your move"
+            resultText = playerMove?.let { context.getString(R.string.game_previous_choice_1_s_tap_a_move_to_play, RpsMove.valueOf(it).localizedLabel(context)) }
+                ?: context.getString(R.string.game_choose_your_move)
             RandomResultSnapshots.rps(saved)?.let { (player, cpu) ->
                 playerMove = player; computerMove = cpu
-                resultText = rpsOutcome(RpsMove.valueOf(player), RpsMove.valueOf(cpu)).message
+                resultText = rpsOutcome(RpsMove.valueOf(player), RpsMove.valueOf(cpu)).localizedMessage(context)
                 runId = saved["_run"].orEmpty()
                 // This is display hydration only: no RNG and no tally update.
             }
@@ -89,12 +93,12 @@ fun RockPaperScissorsScreen(onNavigateBack: () -> Unit) {
     )
 
     ToolScaffold(
-        title = "Rock Paper Scissors",
+        title = context.getString(R.string.game_rock_paper_scissors),
         icon = Tools.byRoute(Tools.ROUTE_RPS)!!.icon,
         onNavigateBack = onNavigateBack,
         history = history,
     ) {
-        Text("Pick a move. The CPU chooses randomly.", style = MaterialTheme.typography.bodyMedium)
+        Text(context.getString(R.string.game_pick_a_move_the_cpu_chooses_randomly), style = MaterialTheme.typography.bodyMedium)
         Spacer(Modifier.height(12.dp))
         Card(modifier = Modifier.fillMaxWidth()) {
             Column(
@@ -106,8 +110,8 @@ fun RockPaperScissorsScreen(onNavigateBack: () -> Unit) {
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    MoveDisplay("You", playerMove)
-                    MoveDisplay("CPU", computerMove)
+                    MoveDisplay(context.getString(R.string.game_you), playerMove)
+                    MoveDisplay(context.getString(R.string.game_cpu), computerMove)
                 }
                 Spacer(Modifier.height(12.dp))
                 Text(
@@ -133,7 +137,7 @@ fun RockPaperScissorsScreen(onNavigateBack: () -> Unit) {
                         playerMove = move.name
                         computerMove = computer.name
                         val outcome = rpsOutcome(move, computer)
-                        resultText = outcome.message
+                        resultText = outcome.localizedMessage(context)
                         when (outcome) {
                             RpsOutcome.DRAW -> draws++
                             RpsOutcome.WIN -> wins++
@@ -146,7 +150,7 @@ fun RockPaperScissorsScreen(onNavigateBack: () -> Unit) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(move.emoji, style = MaterialTheme.typography.headlineMedium,
                             modifier = Modifier.clearAndSetSemantics { })
-                        Text(move.label, textAlign = TextAlign.Center)
+                        Text(move.localizedLabel(context), textAlign = TextAlign.Center)
                     }
                 }
             }
@@ -155,7 +159,7 @@ fun RockPaperScissorsScreen(onNavigateBack: () -> Unit) {
         Spacer(Modifier.height(20.dp))
         FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            listOf("Wins" to wins, "Losses" to losses, "Draws" to draws).forEach { (label, count) ->
+            listOf(context.getString(R.string.game_wins) to wins, context.getString(R.string.game_losses) to losses, context.getString(R.string.game_draws) to draws).forEach { (label, count) ->
                 Card(Modifier.widthIn(min = 100.dp)) {
                     Column(Modifier.padding(12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(count.toString(), style = MaterialTheme.typography.headlineSmall)
@@ -172,27 +176,27 @@ fun RockPaperScissorsScreen(onNavigateBack: () -> Unit) {
             modifier = Modifier.fillMaxWidth(),
         ) {
             Icon(Icons.Filled.Refresh, contentDescription = null)
-            Text(" Reset tally")
+            Text(context.getString(R.string.game_reset_tally))
         }
     }
     if (confirmReset) {
         AlertDialog(
             onDismissRequest = { confirmReset = false },
-            title = { Text("Reset tally?") },
-            text = { Text("This clears your saved wins, losses, draws and the current round.") },
+            title = { Text(context.getString(R.string.game_reset_tally_183)) },
+            text = { Text(context.getString(R.string.game_this_clears_your_saved_wins_losses_draws_and_the_current_r)) },
             confirmButton = {
                 TextButton(onClick = {
                     playerMove = null
                     computerMove = null
-                    resultText = "Choose your move"
+                    resultText = context.getString(R.string.game_choose_your_move)
                     wins = 0
                     losses = 0
                     draws = 0
                     persistTally()
                     confirmReset = false
-                }) { Text("Reset") }
+                }) { Text(context.getString(R.string.game_reset_45)) }
             },
-            dismissButton = { TextButton(onClick = { confirmReset = false }) { Text("Cancel") } },
+            dismissButton = { TextButton(onClick = { confirmReset = false }) { Text(context.getString(R.string.game_cancel)) } },
         )
     }
 
@@ -200,6 +204,7 @@ fun RockPaperScissorsScreen(onNavigateBack: () -> Unit) {
 
 @Composable
 private fun MoveDisplay(label: String, moveName: String?) {
+    val context = LocalContext.current
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(label, style = MaterialTheme.typography.labelLarge)
         Text(
@@ -207,6 +212,6 @@ private fun MoveDisplay(label: String, moveName: String?) {
             style = MaterialTheme.typography.displaySmall,
             modifier = Modifier.clearAndSetSemantics { },
         )
-        Text(moveName?.let { RpsMove.valueOf(it).label } ?: "Not chosen", style = MaterialTheme.typography.bodyMedium)
+        Text(moveName?.let { RpsMove.valueOf(it).localizedLabel(context) } ?: context.getString(R.string.game_not_chosen), style = MaterialTheme.typography.bodyMedium)
     }
 }

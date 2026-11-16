@@ -168,3 +168,15 @@ Corrective PR61 verification: exact head `ee0ce3f07527993e620cdd8fcaf228d24ae4d6
 - Verify flashlight capability text does not promise a camera-permission request flow. Camera/torch contention must show safe errors.
 - Review [the combined scope audit](implementation-scope-audit.md) before declaring completion. In particular, current-input Clear does not delete remembered results; old results can return on reopen if retention is enabled.
 - Test Focus Exit and system Back with keyboard and TalkBack. Shared tool state must remain intact; explicit accessibility-focus return to the launch control is not guaranteed by this implementation.
+
+## String-resource migration
+
+- Verify English labels and actions across all 41 tools, Home/Favorites/Settings/Workbench, Help/Examples and History. Resource extraction must not change saved route IDs, input keys, modes, presets or restore behavior.
+- Check count0/1/2 and maximum values for plurals (dice, password length, history/preset counts and date differences), formatted percentages, apostrophes, leading spaces, line breaks and long text. Compare Copy/Share exports with visible results.
+- Exercise callbacks after dialogs and navigation: errors, snackbars, clipboard confirmations, snapshot captures, example imports, and private-text share review must resolve resources without Compose-context crashes.
+- Check timer-completion channel/title/body, running/paused stopwatch notification actions, Counter/Clock widget labels/actions and launcher shortcut names. Active clocks, notification actions and widget package isolation must remain unchanged.
+- Change device/app locale and recreate screens; catalog names, category/search labels, help, theme choices and live status presentation should resolve current resources. This phase supplies the default English resources, not translated language packs. Translation coverage needs separate language files.
+- Verify Morse partial results cannot be handed off as complete translations after localization; structured `_partial` metadata and legacy English-marker fallback preserve that guard.
+- Legacy history outputs and user-entered names remain stored text, not automatically translated. Stable unit identifiers, route/action/storage keys, algorithm identifiers, number encodings and the English Number-to-Words algorithm deliberately remain technical/domain data.
+
+Static resource guardrails check XML names/references, indexed formats/plural fallback and direct hardcoded Compose labels. Android CI must also compile resources/app/test APKs and run JVM tests/lint. Instrumentation resource-parity tests are compiled only until executed on a device/emulator.

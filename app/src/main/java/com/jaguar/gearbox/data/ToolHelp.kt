@@ -212,5 +212,7 @@ object ToolHelpCatalog {
         ),
     )
 
+    fun localizedForRoute(context: android.content.Context, route: String?): ToolHelp? = localizedToolHelp(context, route)
+
     fun forRoute(route: String?): ToolHelp? = all[route]
 }

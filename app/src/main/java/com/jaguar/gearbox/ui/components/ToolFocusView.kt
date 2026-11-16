@@ -14,6 +14,7 @@ import androidx.compose.ui.window.DialogProperties
 /** Focus is another view of the same state, never another controller or a saved snapshot. */
 @Composable
 fun ToolFocusView(title: String, onExit: () -> Unit, content: @Composable ColumnScope.() -> Unit) {
+    val context = androidx.compose.ui.platform.LocalContext.current
     Dialog(onDismissRequest = onExit, properties = DialogProperties(usePlatformDefaultWidth = false)) {
         Surface(Modifier.fillMaxSize()) {
             Column(Modifier.fillMaxSize().safeDrawingPadding()) {
@@ -21,7 +22,7 @@ fun ToolFocusView(title: String, onExit: () -> Unit, content: @Composable Column
                 Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp),
                     verticalAlignment = Alignment.CenterVertically) {
                     Text(title, style = MaterialTheme.typography.titleLarge, modifier = Modifier.weight(1f))
-                    TextButton(onClick = onExit) { Text("Exit focus view") }
+                    TextButton(onClick = onExit) { Text(context.getString(com.jaguar.gearbox.R.string.shared_exit_focus_view)) }
                 }
                 Column(Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()).padding(24.dp),
                     verticalArrangement = Arrangement.spacedBy(20.dp),

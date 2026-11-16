@@ -1,5 +1,7 @@
 package com.jaguar.gearbox.ui.tools
 
+import com.jaguar.gearbox.R
+
 import com.jaguar.gearbox.ui.components.ToolFocusView
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -90,17 +92,17 @@ fun ChessScoreboardScreen(onNavigateBack: () -> Unit) {
     val memory = remember { ToolMemoryStore(context) }
     val snapshotScope = rememberCoroutineScope()
     val snapshot = ScoreSnapshots.chess(ChessMatch(whiteName, blackName, whiteScore, blackScore, gamesPlayed))
-    val snapshotSummary = "Chess match\n${whiteName.ifBlank { "White" }}: $whiteScore\n${blackName.ifBlank { "Black" }}: $blackScore\nGames: $gamesPlayed"
+    val snapshotSummary = context.getString(R.string.game_chess_match_n_1_s_2_s_n_3_s_4_s_ngames_5_s, whiteName.ifBlank { context.getString(R.string.game_white) }, whiteScore, blackName.ifBlank { context.getString(R.string.game_black) }, blackScore, gamesPlayed)
     val restoreBinding = rememberToolHistory(Tools.ROUTE_CHESS_SCOREBOARD, snapshot.orEmpty(), null,
         onRestore = { values ->
-            if (ScoreSnapshots.readChess(values) == null) historyNotice = "This snapshot cannot be restored safely."
+            if (ScoreSnapshots.readChess(values) == null) historyNotice = context.getString(R.string.game_this_snapshot_cannot_be_restored_safely)
             else pendingRestore = values.toMap()
         }, restoreLastResult = false)
     val history = ToolHistoryBinding(Tools.ROUTE_CHESS_SCOREBOARD, restoreBinding.restore, snapshot.orEmpty(),
         snapshotSummary.takeIf { snapshot != null })
 
     ToolScaffold(
-        title = "Chess Scoreboard",
+        title = context.getString(R.string.game_chess_scoreboard),
         icon = Tools.byRoute(Tools.ROUTE_CHESS_SCOREBOARD)!!.icon,
         onNavigateBack = onNavigateBack,
         history = history,
@@ -114,14 +116,14 @@ fun ChessScoreboardScreen(onNavigateBack: () -> Unit) {
                 savingSnapshot = true
                 snapshotScope.launch {
                     historyNotice = withContext(Dispatchers.IO) {
-                        if (!memory.settings().historyEnabled) "Enable history in Settings → Tool memory to save snapshots."
-                        else if (memory.record(Tools.ROUTE_CHESS_SCOREBOARD, captured, output, expectedGeneration = generation)) "Snapshot saved."
-                        else "Snapshot could not be saved. The data may exceed the history size limit."
+                        if (!memory.settings().historyEnabled) context.getString(R.string.game_enable_history_in_settings_tool_memory_to_save_snapshots)
+                        else if (memory.record(Tools.ROUTE_CHESS_SCOREBOARD, captured, output, expectedGeneration = generation)) context.getString(R.string.game_snapshot_saved)
+                        else context.getString(R.string.game_snapshot_could_not_be_saved_the_data_may_exceed_the_histor)
                     }
                     savingSnapshot = false
                 }
-            }) { Text(if (savingSnapshot) "Saving…" else "Save snapshot") }
-            TextButton(onClick = { focusView = true }) { Text("Focus view") }
+            }) { Text(if (savingSnapshot) context.getString(R.string.game_saving) else context.getString(R.string.game_save_snapshot)) }
+            TextButton(onClick = { focusView = true }) { Text(context.getString(R.string.game_focus_view)) }
         }
         historyNotice?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
         Row(
@@ -131,14 +133,14 @@ fun ChessScoreboardScreen(onNavigateBack: () -> Unit) {
             OutlinedTextField(
                 value = whiteName,
                 onValueChange = { whiteName = it; persist() },
-                label = { Text("White player") },
+                label = { Text(context.getString(R.string.game_white_player)) },
                 singleLine = true,
                 modifier = Modifier.weight(1f),
             )
             OutlinedTextField(
                 value = blackName,
                 onValueChange = { blackName = it; persist() },
-                label = { Text("Black player") },
+                label = { Text(context.getString(R.string.game_black_player)) },
                 singleLine = true,
                 modifier = Modifier.weight(1f),
             )
@@ -152,10 +154,10 @@ fun ChessScoreboardScreen(onNavigateBack: () -> Unit) {
                     .padding(16.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly,
             ) {
-                ScoreColumn(whiteName.ifBlank { "White" }, whiteScore, Modifier.weight(1f).testTag("white-score"))
+                ScoreColumn(whiteName.ifBlank { context.getString(R.string.game_white) }, whiteScore, Modifier.weight(1f).testTag("white-score"))
                 Column(Modifier.weight(0.7f)) {
                     Text(
-                        text = "Games",
+                        text = context.getString(R.string.game_games),
                         style = MaterialTheme.typography.labelLarge,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.fillMaxWidth(),
@@ -167,7 +169,7 @@ fun ChessScoreboardScreen(onNavigateBack: () -> Unit) {
                         modifier = Modifier.fillMaxWidth(),
                     )
                 }
-                ScoreColumn(blackName.ifBlank { "Black" }, blackScore, Modifier.weight(1f).testTag("black-score"))
+                ScoreColumn(blackName.ifBlank { context.getString(R.string.game_black) }, blackScore, Modifier.weight(1f).testTag("black-score"))
             }
         }
 
@@ -181,7 +183,7 @@ fun ChessScoreboardScreen(onNavigateBack: () -> Unit) {
                 modifier = Modifier.weight(1f),
             ) {
                 Text(
-                    "$whiteName wins",
+                    context.getString(R.string.game_1_s_wins, whiteName),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     textAlign = TextAlign.Center,
@@ -190,13 +192,13 @@ fun ChessScoreboardScreen(onNavigateBack: () -> Unit) {
             OutlinedButton(
                 onClick = { recordResult(whiteDelta = 0.5f, blackDelta = 0.5f) },
                 modifier = Modifier.weight(1f),
-            ) { Text("Draw") }
+            ) { Text(context.getString(R.string.game_draw)) }
             OutlinedButton(
                 onClick = { recordResult(whiteDelta = 0f, blackDelta = 1f) },
                 modifier = Modifier.weight(1f),
             ) {
                 Text(
-                    "$blackName wins",
+                    context.getString(R.string.game_1_s_wins, blackName),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     textAlign = TextAlign.Center,
@@ -223,7 +225,7 @@ fun ChessScoreboardScreen(onNavigateBack: () -> Unit) {
                 modifier = Modifier.weight(1f),
             ) {
                 Icon(Icons.AutoMirrored.Filled.Undo, contentDescription = null)
-                Text(" Undo last result")
+                Text(context.getString(R.string.game_undo_last_result))
             }
             OutlinedButton(
                 onClick = { confirmReset = true },
@@ -231,13 +233,13 @@ fun ChessScoreboardScreen(onNavigateBack: () -> Unit) {
                 modifier = Modifier.weight(1f),
             ) {
                 Icon(Icons.Filled.Refresh, contentDescription = null)
-                Text(" Reset match")
+                Text(context.getString(R.string.game_reset_match))
             }
         }
         Spacer(Modifier.height(12.dp))
-        val summary = "Chess match\n${whiteName.ifBlank { "White" }}: $whiteScore\n${blackName.ifBlank { "Black" }}: $blackScore\nGames: $gamesPlayed"
+        val summary = context.getString(R.string.game_chess_match_n_1_s_2_s_n_3_s_4_s_ngames_5_s, whiteName.ifBlank { context.getString(R.string.game_white) }, whiteScore, blackName.ifBlank { context.getString(R.string.game_black) }, blackScore, gamesPlayed)
         ToolActions(
-            onCopy = { context.copyToClipboard("Score summary", summary) },
+            onCopy = { context.copyToClipboard(context.getString(R.string.game_score_summary), summary) },
             onShare = {
                 context.shareText(summary)
             },
@@ -246,8 +248,8 @@ fun ChessScoreboardScreen(onNavigateBack: () -> Unit) {
     if (confirmReset) {
         AlertDialog(
             onDismissRequest = { confirmReset = false },
-            title = { Text("Reset match?") },
-            text = { Text("Clear both scores and the game count? Player names will be kept.") },
+            title = { Text(context.getString(R.string.game_reset_match_78)) },
+            text = { Text(context.getString(R.string.game_clear_both_scores_and_the_game_count_player_names_will_be)) },
             confirmButton = { TextButton(onClick = {
                 whiteScore = 0f
                 blackScore = 0f
@@ -255,32 +257,32 @@ fun ChessScoreboardScreen(onNavigateBack: () -> Unit) {
                 canUndo = false
                 persist()
                 confirmReset = false
-            }) { Text("Reset") } },
-            dismissButton = { TextButton(onClick = { confirmReset = false }) { Text("Cancel") } },
+            }) { Text(context.getString(R.string.game_reset_45)) } },
+            dismissButton = { TextButton(onClick = { confirmReset = false }) { Text(context.getString(R.string.game_cancel)) } },
         )
     }
     pendingRestore?.let { values ->
-        AlertDialog(onDismissRequest = { pendingRestore = null }, title = { Text("Replace current match?") },
-            text = { Text("This replaces both player names, scores and game count. Undo last result will be cleared. Save a snapshot of the current match first if you need it.") },
+        AlertDialog(onDismissRequest = { pendingRestore = null }, title = { Text(context.getString(R.string.game_replace_current_match)) },
+            text = { Text(context.getString(R.string.game_this_replaces_both_player_names_scores_and_game_count_undo)) },
             confirmButton = { TextButton(onClick = {
                 val restored = store.restoreSnapshot(values)
                 if (restored != null) {
                     whiteName = restored.whiteName; blackName = restored.blackName
                     whiteScore = restored.whiteScore; blackScore = restored.blackScore; gamesPlayed = restored.gamesPlayed
                     canUndo = false; lastWhiteDelta = 0f; lastBlackDelta = 0f
-                    historyNotice = "Match restored."
-                } else historyNotice = "Could not restore. Current match was not replaced."
+                    historyNotice = context.getString(R.string.game_match_restored)
+                } else historyNotice = context.getString(R.string.game_could_not_restore_current_match_was_not_replaced)
                 pendingRestore = null
-            }) { Text("Replace match") } },
-            dismissButton = { TextButton(onClick = { pendingRestore = null }) { Text("Cancel") } })
+            }) { Text(context.getString(R.string.game_replace_match)) } },
+            dismissButton = { TextButton(onClick = { pendingRestore = null }) { Text(context.getString(R.string.game_cancel)) } })
     }
-    if (focusView) ToolFocusView("Chess scoreboard", onExit = { focusView = false }) {
+    if (focusView) ToolFocusView(context.getString(R.string.game_chess_scoreboard_86), onExit = { focusView = false }) {
         Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            Text(whiteName.ifBlank { "White" }, style = MaterialTheme.typography.titleLarge)
+            Text(whiteName.ifBlank { context.getString(R.string.game_white) }, style = MaterialTheme.typography.titleLarge)
             Text(whiteScore.toString(), style = MaterialTheme.typography.displayMedium)
-            Text(blackName.ifBlank { "Black" }, style = MaterialTheme.typography.titleLarge)
+            Text(blackName.ifBlank { context.getString(R.string.game_black) }, style = MaterialTheme.typography.titleLarge)
             Text(blackScore.toString(), style = MaterialTheme.typography.displayMedium)
-            Text("Games: $gamesPlayed")
+            Text(context.getString(R.string.game_games_1_s, gamesPlayed))
         }
     }
 

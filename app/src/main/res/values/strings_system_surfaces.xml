@@ -1,0 +1,22 @@
+<resources>
+    <string name="system_stopwatch">Stopwatch</string>
+    <string name="system_timer">Timer</string>
+    <string name="system_pause">Pause</string>
+    <string name="system_start">Start</string>
+    <string name="system_open_app">Open app</string>
+    <string name="system_reset">Reset</string>
+    <string name="system_counter">Counter</string>
+    <string name="system_counter_limit">%1$d (limit reached)</string>
+    <string name="system_timer_completion">Timer completion</string>
+    <string name="system_timer_completion_description">One notification when a countdown finishes</string>
+    <string name="system_timer_finished_title">Time\'s up!</string>
+    <string name="system_timer_finished_body">Your GearBox timer has finished.</string>
+    <string name="system_stopwatch_running">Stopwatch running</string>
+    <string name="system_stopwatch_paused">Stopwatch paused</string>
+    <string name="system_elapsed_time">Elapsed time</string>
+    <string name="system_resume">Resume</string>
+    <string name="system_reset_ellipsis">Reset…</string>
+    <string name="system_stopwatch_elapsed">%1$d:%2$02d:%3$02d elapsed</string>
+    <string name="system_copied_to_clipboard">Copied to clipboard</string>
+    <string name="system_timer_widget_label">Timer / Stopwatch</string>
+</resources>

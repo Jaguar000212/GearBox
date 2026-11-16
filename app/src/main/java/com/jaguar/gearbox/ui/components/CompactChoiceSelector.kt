@@ -25,9 +25,10 @@ fun <T> CompactChoiceSelector(
     onSelect: (T) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val context = androidx.compose.ui.platform.LocalContext.current
     var expanded by rememberSaveable { mutableStateOf(false) }
     OutlinedButton(onClick = { expanded = true }, modifier = modifier.heightIn(min = 48.dp)) {
-        Text("$label: ${choiceLabel(selected)}", Modifier.weight(1f, fill = false))
+        Text(context.getString(com.jaguar.gearbox.R.string.shared_label_value, label, choiceLabel(selected)), Modifier.weight(1f, fill = false))
         Spacer(Modifier.width(8.dp))
         Icon(Icons.Filled.ArrowDropDown, contentDescription = null)
     }
@@ -53,7 +54,7 @@ fun <T> CompactChoiceSelector(
                     }
                 }
             },
-            confirmButton = { TextButton(onClick = { expanded = false }) { Text("Close") } },
+            confirmButton = { TextButton(onClick = { expanded = false }) { Text(context.getString(com.jaguar.gearbox.R.string.shared_close)) } },
         )
     }
 }

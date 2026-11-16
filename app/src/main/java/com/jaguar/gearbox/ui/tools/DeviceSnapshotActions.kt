@@ -27,14 +27,14 @@ internal fun DeviceSnapshotActions(
         OutlinedButton(onClick = onCapture, enabled = enabled, modifier = Modifier.fillMaxWidth()) {
             Text(captureLabel)
         }
-        Text("History keeps captures only when enabled in Settings. Snapshots never control hardware.",
+        Text(context.getString(com.jaguar.gearbox.R.string.shared_device_history_disclosure),
             style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         if (capturedOutput.isNotEmpty()) {
-            Text("Captured snapshot", style = MaterialTheme.typography.titleSmall)
+            Text(context.getString(com.jaguar.gearbox.R.string.shared_captured_snapshot), style = MaterialTheme.typography.titleSmall)
             ResultCard(text = capturedOutput,
-                onCopy = { context.copyToClipboard("Device snapshot", capturedOutput) },
+                onCopy = { context.copyToClipboard(context.getString(com.jaguar.gearbox.R.string.shared_device_snapshot), capturedOutput) },
                 onShare = { context.shareText(capturedOutput) })
-            TextButton(onClick = onClear) { Text("Dismiss snapshot") }
+            TextButton(onClick = onClear) { Text(context.getString(com.jaguar.gearbox.R.string.shared_dismiss_snapshot)) }
         }
     }
 }

@@ -97,8 +97,8 @@ object TimerAlerts {
     private fun ensureChannel(context: Context) {
         val manager = context.getSystemService(NotificationManager::class.java) ?: return
         if (manager.getNotificationChannel(CHANNEL) != null) return
-        val channel = NotificationChannel(CHANNEL, "Timer completion", NotificationManager.IMPORTANCE_HIGH).apply {
-            description = "One notification when a countdown finishes"
+        val channel = NotificationChannel(CHANNEL, context.getString(com.jaguar.gearbox.R.string.system_timer_completion), NotificationManager.IMPORTANCE_HIGH).apply {
+            description = context.getString(com.jaguar.gearbox.R.string.system_timer_completion_description)
             enableVibration(true)
             setSound(
                 RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM),
@@ -119,8 +119,8 @@ object TimerAlerts {
         )
         val notification = NotificationCompat.Builder(context, CHANNEL)
             .setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
-            .setContentTitle("Time's up!")
-            .setContentText("Your GearBox timer has finished.")
+            .setContentTitle(context.getString(com.jaguar.gearbox.R.string.system_timer_finished_title))
+            .setContentText(context.getString(com.jaguar.gearbox.R.string.system_timer_finished_body))
             .setCategory(NotificationCompat.CATEGORY_ALARM)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setContentIntent(contentIntent)

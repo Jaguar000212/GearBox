@@ -1,5 +1,7 @@
 package com.jaguar.gearbox.ui.tools
 
+import androidx.compose.ui.res.stringResource
+import com.jaguar.gearbox.R
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -38,8 +40,8 @@ fun DecimalToFractionScreen(onNavigateBack: () -> Unit) {
     val fractionText = fraction?.let { formatFraction(it) }
     val error = when {
         input.isBlank() -> ""
-        parsed == null -> "Enter a valid decimal number."
-        fraction == null -> "Value is outside the supported fraction range."
+        parsed == null -> context.getString(R.string.calc_enter_a_valid_decimal_number)
+        fraction == null -> context.getString(R.string.calc_value_is_outside_the_supported_fraction_range)
         else -> ""
     }
 
@@ -48,7 +50,7 @@ fun DecimalToFractionScreen(onNavigateBack: () -> Unit) {
         onRestore = { values -> input = values["input"].orEmpty() },
     )
     ToolScaffold(
-        title = "Decimal to Fraction",
+        title = context.getString(R.string.calc_decimal_to_fraction),
         icon = Tools.byRoute(Tools.ROUTE_DECIMAL_TO_FRACTION)!!.icon,
         onNavigateBack = onNavigateBack,
         history = history,
@@ -56,8 +58,8 @@ fun DecimalToFractionScreen(onNavigateBack: () -> Unit) {
         OutlinedTextField(
             value = input,
             onValueChange = { input = it },
-            label = { Text("Decimal number") },
-            placeholder = { Text("e.g. 0.75") },
+            label = { Text(stringResource(R.string.calc_decimal_number)) },
+            placeholder = { Text(stringResource(R.string.calc_e_g_0_75)) },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
             isError = error.isNotEmpty(),
             supportingText = { if (error.isNotEmpty()) Text(error) },
@@ -65,8 +67,8 @@ fun DecimalToFractionScreen(onNavigateBack: () -> Unit) {
         )
 
         Spacer(Modifier.height(16.dp))
-        Text("Fraction approximation", style = MaterialTheme.typography.titleMedium)
-        Text("Uses denominators up to 1,000,000. Some decimal inputs are approximated; the result is not always exact.",
+        Text(stringResource(R.string.calc_fraction_approximation), style = MaterialTheme.typography.titleMedium)
+        Text(stringResource(R.string.calc_uses_denominators_up_to_1_000_000_some_decimal_inputs_a),
             style = MaterialTheme.typography.bodyMedium)
         if (fractionText != null) {
             Spacer(Modifier.height(12.dp))
@@ -75,22 +77,22 @@ fun DecimalToFractionScreen(onNavigateBack: () -> Unit) {
                 text = forms.first(),
                 textStyle = MaterialTheme.typography.headlineLarge,
                 textAlign = TextAlign.Center,
-                onCopy = { context.copyToClipboard("Fraction", fractionText) },
-                onShare = { context.shareText("$input ≈ $fractionText") },
+                onCopy = { context.copyToClipboard(context.getString(R.string.calc_fraction), fractionText) },
+                onShare = { context.shareText(context.getString(R.string.calc_1_s_2_s_2, input, fractionText)) },
             )
             if (forms.size > 1) {
                 Spacer(Modifier.height(12.dp))
-                Text("Mixed number", style = MaterialTheme.typography.titleSmall)
+                Text(stringResource(R.string.calc_mixed_number), style = MaterialTheme.typography.titleSmall)
                 Text(forms[1], style = MaterialTheme.typography.headlineSmall)
             }
         } else if (input.isBlank()) {
             Spacer(Modifier.height(12.dp))
-            Text("For example, 0.75 becomes 3/4.", style = MaterialTheme.typography.bodyMedium)
+            Text(stringResource(R.string.calc_for_example_0_75_becomes_3_4), style = MaterialTheme.typography.bodyMedium)
         }
         Spacer(Modifier.height(12.dp))
         OutlinedButton(onClick = { input = "" }, enabled = input.isNotEmpty(), modifier = Modifier.fillMaxWidth()) {
             Icon(Icons.Filled.Clear, contentDescription = null)
-            Text(" Clear")
+            Text(stringResource(R.string.calc_clear))
         }
     }
 }

@@ -1,0 +1,452 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="catalog_tool_average_name">Average Calculator</string>
+    <string name="catalog_tool_average_description">Calculate average with some other interesting results.</string>
+    <string name="catalog_tool_loan_name">Loan Calculator</string>
+    <string name="catalog_tool_loan_description">Estimates fixed-rate monthly loan repayments.</string>
+    <string name="catalog_tool_age_name">Age Calculator</string>
+    <string name="catalog_tool_age_description">Calculates the age between two dates.</string>
+    <string name="catalog_tool_geometry_name">Geometry Calculator</string>
+    <string name="catalog_tool_geometry_description">Perform calculations for shapes like circles, rectangles, and triangles.</string>
+    <string name="catalog_tool_percentage_name">Percentage Calculator</string>
+    <string name="catalog_tool_percentage_description">Perform percentage-based calculations.</string>
+    <string name="catalog_tool_ratios_name">Ratios</string>
+    <string name="catalog_tool_ratios_description">Calculate and simplify ratios.</string>
+    <string name="catalog_tool_bmi_name">BMI Calculator</string>
+    <string name="catalog_tool_bmi_description">Calculate body mass index and weight category from height and weight.</string>
+    <string name="catalog_tool_tip_name">Tip Calculator</string>
+    <string name="catalog_tool_tip_description">Split a bill with a tip across any number of people.</string>
+    <string name="catalog_tool_date_calculator_name">Date Calculator</string>
+    <string name="catalog_tool_date_calculator_description">Add or subtract days, weeks, months, or years from a date.</string>
+    <string name="catalog_tool_discount_name">Discount Calculator</string>
+    <string name="catalog_tool_discount_description">Apply one or more stacked discounts to a price.</string>
+    <string name="catalog_tool_gst_name">GST / Tax Calculator</string>
+    <string name="catalog_tool_gst_description">Add or remove tax from an amount.</string>
+    <string name="catalog_tool_days_until_name">Days Until</string>
+    <string name="catalog_tool_days_until_description">Count down the days until (or since) a date you pick.</string>
+    <string name="catalog_tool_fuel_cost_name">Fuel Cost Calculator</string>
+    <string name="catalog_tool_fuel_cost_description">Estimate fuel needed and trip cost from distance and mileage.</string>
+    <string name="catalog_tool_base_converter_name">Base Converter</string>
+    <string name="catalog_tool_base_converter_description">Convert numbers between binary, octal, decimal, and hexadecimal bases.</string>
+    <string name="catalog_tool_unit_converter_name">Unit Converters</string>
+    <string name="catalog_tool_unit_converter_description">Convert between various units like length, weight, and volume.</string>
+    <string name="catalog_tool_number_to_words_name">Number to Words</string>
+    <string name="catalog_tool_number_to_words_description">Convert numerical values into word format.</string>
+    <string name="catalog_tool_number_to_roman_name">Number to Roman</string>
+    <string name="catalog_tool_number_to_roman_description">Convert numerical values into Roman numeral format.</string>
+    <string name="catalog_tool_decimal_to_fraction_name">Decimal to Fraction Converter</string>
+    <string name="catalog_tool_decimal_to_fraction_description">Convert decimal numbers into fractions.</string>
+    <string name="catalog_tool_morse_binary_name">Morse / Binary Translator</string>
+    <string name="catalog_tool_morse_binary_description">Translate text to and from Morse code or binary.</string>
+    <string name="catalog_tool_random_name">Random Number Generator</string>
+    <string name="catalog_tool_random_description">Generate random numbers within a specified range.</string>
+    <string name="catalog_tool_tambola_name">Tambola Numbers</string>
+    <string name="catalog_tool_tambola_description">Generate random numbers for Tambola (Housie) games.</string>
+    <string name="catalog_tool_flip_coin_name">Flip Coin</string>
+    <string name="catalog_tool_flip_coin_description">Simulate a coin flip for heads or tails.</string>
+    <string name="catalog_tool_spin_bottle_name">Spin the Bottle</string>
+    <string name="catalog_tool_spin_bottle_description">Simulate spinning a bottle for fun games.</string>
+    <string name="catalog_tool_rps_name">Rock Paper Scissors</string>
+    <string name="catalog_tool_rps_description">Play the classic Rock-Paper-Scissors game.</string>
+    <string name="catalog_tool_dice_name">Dice Roll</string>
+    <string name="catalog_tool_dice_description">Roll a virtual die.</string>
+    <string name="catalog_tool_one_of_two_name">1 of 2</string>
+    <string name="catalog_tool_one_of_two_description">Choose between two options.</string>
+    <string name="catalog_tool_team_picker_name">Team / Name Picker</string>
+    <string name="catalog_tool_team_picker_description">Pick a random name, or split a list of names into teams.</string>
+    <string name="catalog_tool_tic_tac_toe_name">Tic-tac-toe</string>
+    <string name="catalog_tool_tic_tac_toe_description">Play a two-player game of tic-tac-toe.</string>
+    <string name="catalog_tool_counter_name">Counter</string>
+    <string name="catalog_tool_counter_description">A simple counter to increment, decrement and reset.</string>
+    <string name="catalog_tool_scoreboard_name">Scoreboard</string>
+    <string name="catalog_tool_scoreboard_description">Manage scores for games and activities.</string>
+    <string name="catalog_tool_chess_scoreboard_name">Chess Scoreboard</string>
+    <string name="catalog_tool_chess_scoreboard_description">A specially designed scoreboard for chess matches.</string>
+    <string name="catalog_tool_color_picker_name">Color Picker</string>
+    <string name="catalog_tool_color_picker_description">Identify and select colors using HEX, RGB, or HSL values.</string>
+    <string name="catalog_tool_text_tools_name">Text Tools</string>
+    <string name="catalog_tool_text_tools_description">Word/character counts, case conversion, and palindrome checking.</string>
+    <string name="catalog_tool_timer_stopwatch_name">Timer / Stopwatch</string>
+    <string name="catalog_tool_timer_stopwatch_description">Count up with lap times or count down from a set duration.</string>
+    <string name="catalog_tool_password_generator_name">Password Generator</string>
+    <string name="catalog_tool_password_generator_description">Generate a random password with configurable length and character types.</string>
+    <string name="catalog_tool_hash_generator_name">Hash Generator</string>
+    <string name="catalog_tool_hash_generator_description">Generate an MD5, SHA-1, SHA-256, or SHA-512 hash of some text.</string>
+    <string name="catalog_tool_qr_generator_name">QR Code Generator</string>
+    <string name="catalog_tool_qr_generator_description">Turn text or a URL into a scannable QR code.</string>
+    <string name="catalog_tool_bubble_level_name">Bubble Level</string>
+    <string name="catalog_tool_bubble_level_description">Use the device\'s sensors as a spirit level.</string>
+    <string name="catalog_tool_compass_name">Compass</string>
+    <string name="catalog_tool_compass_description">Find magnetic north using the device\'s sensors.</string>
+    <string name="catalog_tool_flashlight_name">Flashlight</string>
+    <string name="catalog_tool_flashlight_description">Toggle the device\'s camera flash as a torch.</string>
+    <string name="catalog_tool_screen_ruler_name">Screen Ruler</string>
+    <string name="catalog_tool_screen_ruler_description">Measure small objects against the screen in cm or inches.</string>
+    <string name="catalog_category_calculators">Math &amp; Numbers</string>
+    <string name="catalog_category_money">Money</string>
+    <string name="catalog_category_time">Time &amp; Counting</string>
+    <string name="catalog_category_utilities">Text &amp; Digital</string>
+    <string name="catalog_category_games_and_random">Games &amp; Scores</string>
+    <string name="catalog_category_random">Random &amp; Decisions</string>
+    <string name="catalog_category_device">Measure &amp; Device</string>
+    <string name="catalog_help_average_instructions">Separate numbers with spaces, commas, or new lines. Review the summary statistics below.</string>
+    <string name="catalog_help_average_example">2, 4, 6 has an average of 4.</string>
+    <string name="catalog_help_average_limitation">Each entered value has equal weight; this is not a weighted average.</string>
+    <string name="catalog_help_loan_instructions">Enter the loan amount, annual rate, and term in years for an estimated monthly payment.</string>
+    <string name="catalog_help_loan_example" formatted="false">Try 100000 at 6% for 5 years.</string>
+    <string name="catalog_help_loan_limitation">Assumes a fixed rate and equal monthly payments. Fees and lender-specific rounding are excluded.</string>
+    <string name="catalog_help_counter_instructions">Use the plus and minus controls to track a count; reset starts again. A Counter home-screen widget shares this count. Find setup instructions in Settings → Home-screen widgets.</string>
+    <string name="catalog_help_counter_example">Count attendees as they arrive.</string>
+    <string name="catalog_help_counter_limitation">Check the count before resetting; a tap is not a sensor measurement.</string>
+    <string name="catalog_help_age_instructions">Choose the starting date and the date to compare it with.</string>
+    <string name="catalog_help_age_example">Compare 1 January 2000 with 1 January 2025: 25 years.</string>
+    <string name="catalog_help_age_limitation">Calendar months have different lengths; years and months are not fixed day counts.</string>
+    <string name="catalog_help_scoreboard_instructions">Name the players or teams, then adjust their scores during play.</string>
+    <string name="catalog_help_scoreboard_example">Track a friendly match between Team A and Team B.</string>
+    <string name="catalog_help_scoreboard_limitation">Scores are entered manually; the tool does not enforce sport-specific rules.</string>
+    <string name="catalog_help_random_instructions">Set the lower and upper bounds, then generate a number.</string>
+    <string name="catalog_help_random_example">Try a range from 1 to 10.</string>
+    <string name="catalog_help_random_limitation">Repeated outcomes are possible. Random results are not predictions.</string>
+    <string name="catalog_help_base_converter_instructions">Choose the source base and enter an integer using digits valid in that base.</string>
+    <string name="catalog_help_base_converter_example">Decimal 10 is binary 1010 and hexadecimal A.</string>
+    <string name="catalog_help_base_converter_limitation">This converter handles integers, not decimal fractions; binary only accepts 0 and 1.</string>
+    <string name="catalog_help_color_picker_instructions">Enter HEX, adjust RGB, or enter HSL and tap Apply HSL. Copy, Share and saved colors use the last applied color.</string>
+    <string name="catalog_help_color_picker_example">HEX #FF0000 is RGB 255, 0, 0.</string>
+    <string name="catalog_help_color_picker_limitation">Screen appearance depends on display settings. HSL inputs convert to rounded 8-bit RGB; this is not a measurement of a physical object.</string>
+    <string name="catalog_help_unit_converter_instructions">Choose a measurement category, source unit, and destination unit before entering a value.</string>
+    <string name="catalog_help_unit_converter_example">1 kilometre equals 1000 metres.</string>
+    <string name="catalog_help_unit_converter_limitation">Only units within the selected category are comparable; displayed values may be rounded.</string>
+    <string name="catalog_help_number_to_words_instructions">Enter a number and read its written form.</string>
+    <string name="catalog_help_number_to_words_example">42 becomes forty-two.</string>
+    <string name="catalog_help_number_to_words_limitation">Use the supported number range shown by the tool; this is not a language translator.</string>
+    <string name="catalog_help_number_to_roman_instructions">Enter a whole number to convert it to Roman numerals.</string>
+    <string name="catalog_help_number_to_roman_example">14 becomes XIV.</string>
+    <string name="catalog_help_number_to_roman_limitation">Standard Roman numerals do not represent zero or decimal fractions.</string>
+    <string name="catalog_help_geometry_instructions">Select a shape and enter the requested dimensions using one consistent unit.</string>
+    <string name="catalog_help_geometry_example">A rectangle of width 3 and height 4 has area 12 and perimeter 14.</string>
+    <string name="catalog_help_geometry_limitation">Area uses squared units; volume uses cubed units. Enter lengths, not angles, in dimension fields.</string>
+    <string name="catalog_help_percentage_instructions">Choose the calculation mode, then fill in the quantities named by its fields.</string>
+    <string name="catalog_help_percentage_example" formatted="false">20% of 150 is 30.</string>
+    <string name="catalog_help_percentage_limitation">Percentage change uses the original value as its base; a zero base cannot define that change.</string>
+    <string name="catalog_help_tambola_instructions">Draw numbers during a game. Capture a snapshot when you want to keep the current call order.</string>
+    <string name="catalog_help_tambola_example">After several calls, capture the board and inspect it in History.</string>
+    <string name="catalog_help_tambola_limitation">Restoring a snapshot replaces current progress after confirmation; it does not draw another number.</string>
+    <string name="catalog_help_flip_coin_instructions">Tap the flip control to generate a coin outcome.</string>
+    <string name="catalog_help_flip_coin_example">Use a flip to decide who starts a friendly game.</string>
+    <string name="catalog_help_flip_coin_limitation">A run of heads or tails is possible; previous flips do not determine the next result.</string>
+    <string name="catalog_help_spin_bottle_instructions">Place the phone where everyone can see it, then spin and wait for the result.</string>
+    <string name="catalog_help_spin_bottle_example">Use the final bottle direction to choose a turn.</string>
+    <string name="catalog_help_spin_bottle_limitation">The direction is virtual and random, not a compass bearing or physical measurement.</string>
+    <string name="catalog_help_rps_instructions">Choose rock, paper, or scissors to play a round against the app.</string>
+    <string name="catalog_help_rps_example">Rock beats scissors; scissors beat paper; paper beats rock.</string>
+    <string name="catalog_help_rps_limitation">Matching choices are a draw. Restoring saved inputs does not play a new round.</string>
+    <string name="catalog_help_dice_instructions">Select the available dice settings and roll to generate a result.</string>
+    <string name="catalog_help_dice_example">Roll a die to choose how many spaces to move in a board game.</string>
+    <string name="catalog_help_dice_limitation">Rolls can repeat. Virtual dice do not predict physical dice.</string>
+    <string name="catalog_help_chess_scoreboard_instructions">Use the player controls to manage each side during a chess match.</string>
+    <string name="catalog_help_chess_scoreboard_example">Set up both players before starting a friendly match.</string>
+    <string name="catalog_help_chess_scoreboard_limitation">This tool does not validate chess moves or determine checkmate.</string>
+    <string name="catalog_help_one_of_two_instructions">Enter two alternatives, then ask the tool to choose one.</string>
+    <string name="catalog_help_one_of_two_example">Tea or coffee? Enter one in each field.</string>
+    <string name="catalog_help_one_of_two_limitation">This is a random choice, not a comparison of the alternatives.</string>
+    <string name="catalog_help_ratios_instructions">Choose a ratio operation and enter the values requested by that mode.</string>
+    <string name="catalog_help_ratios_example">The ratio 6:9 simplifies to 2:3.</string>
+    <string name="catalog_help_ratios_limitation">The order matters: 2:3 and 3:2 describe different proportions.</string>
+    <string name="catalog_help_decimal_to_fraction_instructions">Enter a decimal to see a fractional representation.</string>
+    <string name="catalog_help_decimal_to_fraction_example">0.75 equals 3/4.</string>
+    <string name="catalog_help_decimal_to_fraction_limitation">A finite decimal such as 0.333 is not the same as an infinitely repeating third.</string>
+    <string name="catalog_help_text_tools_instructions">Paste or type text, then choose a case conversion or inspect the counts.</string>
+    <string name="catalog_help_text_tools_example">Try Hello world to inspect words and characters.</string>
+    <string name="catalog_help_text_tools_limitation">Whitespace and punctuation can affect counts; review transformed text before replacing an original.</string>
+    <string name="catalog_help_timer_stopwatch_instructions">Choose Timer for a countdown or Stopwatch for elapsed time; use the on-screen start and pause controls. A Timer / Stopwatch home-screen widget provides a snapshot and controls. Find setup instructions in Settings → Home-screen widgets.</string>
+    <string name="catalog_help_timer_stopwatch_example">Set a short countdown to check the behavior before using a longer one.</string>
+    <string name="catalog_help_timer_stopwatch_limitation">Background alerts depend on device permissions and power management. Do not rely on it for safety-critical timing.</string>
+    <string name="catalog_help_bmi_instructions">Choose units and enter height and weight to calculate body mass index.</string>
+    <string name="catalog_help_bmi_example">At 70 kg and 1.75 m, BMI is approximately 22.9.</string>
+    <string name="catalog_help_bmi_limitation">BMI is a screening estimate, not a diagnosis; standard adult categories may not apply to children or pregnancy.</string>
+    <string name="catalog_help_tip_instructions">Enter the bill, tip percentage, and number of people sharing it.</string>
+    <string name="catalog_help_tip_example" formatted="false">A bill of 100 with a 10% tip split between 2 people is 55 each.</string>
+    <string name="catalog_help_tip_limitation">Use one currency throughout. Rounded shares may need a small adjustment to match the total.</string>
+    <string name="catalog_help_password_generator_instructions">Choose a length and character groups, then generate a password.</string>
+    <string name="catalog_help_password_generator_example">Try a length of 20 with the character types accepted by your service.</string>
+    <string name="catalog_help_password_generator_limitation">Use a unique password for each account. Copying exposes it to the clipboard; store it in a trusted password manager.</string>
+    <string name="catalog_help_date_calculator_instructions">Choose a date, add or subtract, then select the amount and calendar unit.</string>
+    <string name="catalog_help_date_calculator_example">Adding 1 week to 1 January gives 8 January.</string>
+    <string name="catalog_help_date_calculator_limitation">Calendar months and years are not fixed numbers of days; month-end dates may adjust.</string>
+    <string name="catalog_help_discount_instructions">Enter the original price and each discount in the order it applies.</string>
+    <string name="catalog_help_discount_example" formatted="false">Two discounts of 10% on 100 leave 81, not 80.</string>
+    <string name="catalog_help_discount_limitation">Stacked discounts apply to the remaining amount. Taxes and extra charges are not automatically included.</string>
+    <string name="catalog_help_gst_instructions">Choose whether to add tax to a base amount or remove included tax.</string>
+    <string name="catalog_help_gst_example" formatted="false">Adding 18% to 100 gives 118; removing included 18% from 118 gives 100.</string>
+    <string name="catalog_help_gst_limitation">Enter the applicable rate yourself. The tool does not determine tax rules or eligibility.</string>
+    <string name="catalog_help_days_until_instructions">Choose an event date to see the calendar days until or since it.</string>
+    <string name="catalog_help_days_until_example">Pick tomorrow to see a one-day countdown.</string>
+    <string name="catalog_help_days_until_limitation">This compares calendar dates, not exact hours or time zones for an event.</string>
+    <string name="catalog_help_team_picker_instructions">Enter the names and choose whether to pick a name or divide them into teams.</string>
+    <string name="catalog_help_team_picker_example">Enter four names and choose two teams.</string>
+    <string name="catalog_help_team_picker_limitation">Review duplicate names and team sizes; random groups do not balance ability automatically.</string>
+    <string name="catalog_help_fuel_cost_instructions">Enter distance, fuel efficiency, and price using the selected units.</string>
+    <string name="catalog_help_fuel_cost_example">At 15 km/L, a 150 km trip needs about 10 litres.</string>
+    <string name="catalog_help_fuel_cost_limitation">An estimate only: traffic, terrain, vehicle load, tolls, and parking can change the actual cost.</string>
+    <string name="catalog_help_morse_binary_instructions">Choose Morse or binary and the translation direction, then enter text or encoded symbols.</string>
+    <string name="catalog_help_morse_binary_example">SOS in Morse is ... --- ...; A in binary is 01000001.</string>
+    <string name="catalog_help_morse_binary_limitation">Morse has a limited character set. Binary text uses UTF-8 bytes; keep byte groups complete when decoding.</string>
+    <string name="catalog_help_hash_generator_instructions">Choose an algorithm and enter the exact text whose digest you need.</string>
+    <string name="catalog_help_hash_generator_example">Compare hello with Hello: their digests differ.</string>
+    <string name="catalog_help_hash_generator_limitation">A hash is not encryption and cannot be decoded. MD5 and SHA-1 are unsuitable for security-sensitive verification.</string>
+    <string name="catalog_help_tic_tac_toe_instructions">Two players alternate placing X and O. Capture a snapshot to keep a board position.</string>
+    <string name="catalog_help_tic_tac_toe_example">Three matching symbols in a row, column, or diagonal win.</string>
+    <string name="catalog_help_tic_tac_toe_limitation">Restoring a position does not award a win or change lifetime totals; replacing a live board requires confirmation.</string>
+    <string name="catalog_help_qr_generator_instructions">Enter text or a complete URL to create a QR code, then check it with a scanner.</string>
+    <string name="catalog_help_qr_generator_example">Try https://example.com as a sample URL.</string>
+    <string name="catalog_help_qr_generator_limitation">Anyone who scans can read the encoded content. A QR code does not make a link trustworthy or keep text secret.</string>
+    <string name="catalog_help_bubble_level_instructions">Place the device on a stable surface and use the displayed tilt to check alignment.</string>
+    <string name="catalog_help_bubble_level_example">Compare the reading on a desk with the phone gently tilted.</string>
+    <string name="catalog_help_bubble_level_limitation">Accuracy depends on sensors and the device case. Do not use as a precision construction instrument.</string>
+    <string name="catalog_help_compass_instructions">Hold the device steady and keep it away from magnets and metal while reading the heading.</string>
+    <string name="catalog_help_compass_example">Turn slowly and watch the heading change.</string>
+    <string name="catalog_help_compass_limitation">Shows magnetic direction, not guaranteed true north. Missing sensors or interference can make readings unavailable or inaccurate.</string>
+    <string name="catalog_help_flashlight_instructions">Use the torch control to turn the camera flash on or off.</string>
+    <string name="catalog_help_flashlight_example">Turn it on briefly to illuminate a nearby object.</string>
+    <string name="catalog_help_flashlight_limitation">Requires compatible flash hardware and permissions. Avoid shining into eyes; extended use consumes battery and may warm the phone.</string>
+    <string name="catalog_help_screen_ruler_instructions">Align a small object with the ruler marks and read the selected units.</string>
+    <string name="catalog_help_screen_ruler_example">Check the displayed scale against a known physical ruler before measuring.</string>
+    <string name="catalog_help_screen_ruler_limitation">Screen density and calibration affect accuracy; do not rely on this for precision or safety-critical measurements.</string>
+    <string name="catalog_example_average">2, 4, 6 has an average of 4.</string>
+    <string name="catalog_example_age">Compare 1 January 2000 with 1 January 2025: 25 years.</string>
+    <string name="catalog_example_base_converter">Decimal 10 is binary 1010 and hexadecimal A.</string>
+    <string name="catalog_example_bmi">Metric example: 170 cm and 65 kg.</string>
+    <string name="catalog_example_color_picker">HEX #FF0000 is RGB 255, 0, 0.</string>
+    <string name="catalog_example_date_calculator">Add 14 days to 1 January 2025.</string>
+    <string name="catalog_example_decimal_to_fraction">0.75 equals 3/4.</string>
+    <string name="catalog_example_discount" formatted="false">Apply 20% then 10% off 100: final price 72.</string>
+    <string name="catalog_example_fuel_cost">Distance 120, efficiency 15 distance units per fuel unit, and price 2 per fuel unit: cost 16.</string>
+    <string name="catalog_example_gst" formatted="false">Add an illustrative 18% tax to 100: total 118. This is not tax advice.</string>
+    <string name="catalog_example_geometry">Rectangle width 3 and height 4: area 12, perimeter 14.</string>
+    <string name="catalog_example_loan" formatted="false">Loan amount 100000, annual rate 6%, term 5 years.</string>
+    <string name="catalog_example_morse_binary">Encode SOS as Morse code.</string>
+    <string name="catalog_example_number_to_roman">14 becomes XIV.</string>
+    <string name="catalog_example_number_to_words">42 becomes forty-two in the international system.</string>
+    <string name="catalog_example_percentage" formatted="false">20% of 150 is 30.</string>
+    <string name="catalog_example_ratios">Simplify 12:18 to 2:3.</string>
+    <string name="catalog_example_text_tools">Convert Hello GearBox to uppercase.</string>
+    <string name="catalog_example_tip" formatted="false">Bill 100, tip 15%, split between 2 people: 57.50 each.</string>
+    <string name="catalog_example_unit_converter">1 kilometer equals 1000 meters.</string>
+    <string name="catalog_example_hash_generator">Load Hello GearBox with SHA-256, then tap Generate.</string>
+    <string name="catalog_example_qr_generator">Load Hello GearBox, then tap Generate to make its QR code.</string>
+    <string name="catalog_example_days_until">An example event seven days from today (%1$s).</string>
+    <string name="catalog_capability_1">Uses orientation sensor; accuracy varies</string>
+    <string name="catalog_capability_2">Required orientation sensor unavailable on this device</string>
+    <string name="catalog_capability_3">Requires an orientation sensor; availability could not be checked</string>
+    <string name="catalog_capability_4">Uses camera flash; it may be unavailable while another app uses the camera</string>
+    <string name="catalog_capability_5">Camera flash unavailable on this device</string>
+    <string name="catalog_capability_6">Requires camera flash; availability could not be checked</string>
+    <string name="catalog_capability_7">Estimated scale; check against a physical ruler</string>
+    <string name="catalog_rps_rock">Rock</string>
+    <string name="catalog_rps_paper">Paper</string>
+    <string name="catalog_rps_scissors">Scissors</string>
+    <string name="catalog_rps_win">You win!</string>
+    <string name="catalog_rps_loss">CPU wins</string>
+    <string name="catalog_rps_draw">Draw</string>
+    <string name="catalog_timer_running">Timer running</string>
+    <string name="catalog_timer_finished">Timer finished</string>
+    <string name="catalog_timer_paused">Timer paused</string>
+    <string name="catalog_stopwatch_running">Stopwatch running</string>
+    <string name="catalog_stopwatch_paused">Stopwatch paused</string>
+    <string name="catalog_status_separator">" · "</string>
+    <string name="catalog_tambola_summary">Tambola: %1$d of 90 called\nCurrent: %2$d\nCalled in order: %3$s</string>
+    <string name="catalog_ttt_win">%1$s wins</string>
+    <string name="catalog_ttt_turn">%1$s to play</string>
+    <string name="catalog_ttt_summary">Tic-tac-toe: %1$s\n%2$s</string>
+    <string name="catalog_handoff_qr">Use this text as QR content</string>
+    <string name="catalog_handoff_hash">Hash this exact text with SHA-256</string>
+    <string name="catalog_handoff_text">Edit or transform this text</string>
+    <string name="catalog_handoff_morse">Translate this text to Morse</string>
+    <string name="catalog_handoff_number">Use the number %1$s</string>
+    <string name="catalog_handoff_base">Use %1$s in decimal</string>
+    <string name="catalog_handoff_roman">Convert %1$s to Roman numerals</string>
+    <string name="catalog_input_input">Input</string>
+    <string name="catalog_input_text">Text</string>
+    <string name="catalog_input_mode">Mode</string>
+    <string name="catalog_input_case">Letter case</string>
+    <string name="catalog_input_algorithm">Algorithm</string>
+    <string name="catalog_input_option_a">Option 1</string>
+    <string name="catalog_input_option_b">Option 2</string>
+    <string name="catalog_input_min">Minimum</string>
+    <string name="catalog_input_max">Maximum</string>
+    <string name="catalog_input_dice">Dice count</string>
+    <string name="catalog_input_coin">Coin</string>
+    <string name="catalog_input_spin">Spin</string>
+    <string name="catalog_input_player_move">Player move</string>
+    <string name="catalog_input_count">Count</string>
+    <string name="catalog_input_hex">HEX color</string>
+    <string name="catalog_input_earlier_date">Earlier date</string>
+    <string name="catalog_input_later_date">Later date</string>
+    <string name="catalog_input_base_date">Starting date</string>
+    <string name="catalog_input_target_date">Target date</string>
+    <string name="catalog_input_label">Label</string>
+    <string name="catalog_input_amount_input">Amount</string>
+    <string name="catalog_input_unit">Unit</string>
+    <string name="catalog_input_direction">Direction</string>
+    <string name="catalog_input_principal">Loan amount</string>
+    <string name="catalog_input_rate">Rate</string>
+    <string name="catalog_input_time">Term in years</string>
+    <string name="catalog_input_amount">Amount</string>
+    <string name="catalog_input_inclusive">Tax included</string>
+    <string name="catalog_input_price">Price</string>
+    <string name="catalog_input_discounts">Discounts</string>
+    <string name="catalog_input_distance">Distance</string>
+    <string name="catalog_input_mileage">Fuel efficiency</string>
+    <string name="catalog_input_bill">Bill</string>
+    <string name="catalog_input_tip_percent">Tip percentage</string>
+    <string name="catalog_input_split_count">People splitting</string>
+    <string name="catalog_input_part_a">First ratio part</string>
+    <string name="catalog_input_part_b">Second ratio part</string>
+    <string name="catalog_input_field1">Value 1</string>
+    <string name="catalog_input_field2">Value 2</string>
+    <string name="catalog_input_field3">Value 3</string>
+    <string name="catalog_input_shape">Shape</string>
+    <string name="catalog_input_from_base">Input base</string>
+    <string name="catalog_input_system">Number system</string>
+    <string name="catalog_input_category">Category</string>
+    <string name="catalog_input_from_unit">From unit</string>
+    <string name="catalog_input_to_unit">To unit</string>
+    <string name="catalog_input_unit_system">Measurement system</string>
+    <string name="catalog_input_height_cm">Height (cm)</string>
+    <string name="catalog_input_weight_kg">Weight (kg)</string>
+    <string name="catalog_input_height_ft">Height (ft)</string>
+    <string name="catalog_input_height_in">Height (in)</string>
+    <string name="catalog_input_weight_lbs">Weight (lb)</string>
+    <string name="catalog_input_teams">Teams</string>
+    <string name="catalog_input_names">Names</string>
+    <string name="catalog_input_participants">Participants</string>
+    <string name="catalog_input_team_count">Team count</string>
+    <string name="catalog_input_calls">Called numbers</string>
+    <string name="catalog_input_board">Board</string>
+    <string name="catalog_input_minutes">Minutes</string>
+    <string name="catalog_input_seconds">Seconds</string>
+    <string name="catalog_input_score_a">Team A score</string>
+    <string name="catalog_input_score_b">Team B score</string>
+    <string name="catalog_input_name_a">Team A name</string>
+    <string name="catalog_input_name_b">Team B name</string>
+    <string name="catalog_input_left_name">Left player</string>
+    <string name="catalog_input_right_name">Right player</string>
+    <string name="catalog_input_left_score">Left score</string>
+    <string name="catalog_input_right_score">Right score</string>
+    <string name="catalog_input_timer_duration_millis">Timer duration (ms)</string>
+    <string name="catalog_input_timer_remaining_millis">Timer remaining (ms)</string>
+    <string name="catalog_input_stopwatch_elapsed_millis">Stopwatch elapsed (ms)</string>
+    <string name="catalog_input_sensor">Sensor</string>
+    <string name="catalog_input_heading">Heading</string>
+    <string name="catalog_input_pitch">Pitch</string>
+    <string name="catalog_input_roll">Roll</string>
+    <string name="catalog_input_torch">Torch</string>
+    <string name="catalog_input_value">Value</string>
+    <string name="catalog_example_event">Example event</string>
+    <string-array name="catalog_keywords_loan">
+        <item>loan</item>
+        <item>emi</item>
+        <item>installment</item>
+        <item>interest</item>
+        <item>repayment</item>
+    </string-array>
+    <string-array name="catalog_keywords_bmi">
+        <item>weight</item>
+        <item>health</item>
+        <item>body mass index</item>
+    </string-array>
+    <string-array name="catalog_keywords_tip">
+        <item>gratuity</item>
+        <item>bill split</item>
+        <item>split the bill</item>
+    </string-array>
+    <string-array name="catalog_keywords_discount">
+        <item>sale</item>
+        <item>off</item>
+        <item>savings</item>
+    </string-array>
+    <string-array name="catalog_keywords_gst">
+        <item>vat</item>
+        <item>sales tax</item>
+        <item>gst</item>
+    </string-array>
+    <string-array name="catalog_keywords_days_until">
+        <item>countdown</item>
+        <item>event</item>
+        <item>how many days</item>
+    </string-array>
+    <string-array name="catalog_keywords_fuel_cost">
+        <item>mileage</item>
+        <item>petrol</item>
+        <item>gas</item>
+        <item>trip cost</item>
+    </string-array>
+    <string-array name="catalog_keywords_base_converter">
+        <item>binary</item>
+        <item>hex</item>
+        <item>octal</item>
+    </string-array>
+    <string-array name="catalog_keywords_unit_converter">
+        <item>temperature</item>
+        <item>celsius</item>
+        <item>fahrenheit</item>
+    </string-array>
+    <string-array name="catalog_keywords_morse_binary">
+        <item>dots</item>
+        <item>dashes</item>
+        <item>encode</item>
+        <item>decode</item>
+    </string-array>
+    <string-array name="catalog_keywords_tambola">
+        <item>housie</item>
+        <item>bingo</item>
+    </string-array>
+    <string-array name="catalog_keywords_dice">
+        <item>random</item>
+        <item>dice</item>
+    </string-array>
+    <string-array name="catalog_keywords_team_picker">
+        <item>names</item>
+        <item>groups</item>
+        <item>draw</item>
+        <item>pick someone</item>
+        <item>choose teams</item>
+    </string-array>
+    <string-array name="catalog_keywords_tic_tac_toe">
+        <item>noughts and crosses</item>
+        <item>xo</item>
+    </string-array>
+    <string-array name="catalog_keywords_password_generator">
+        <item>pin</item>
+        <item>passcode</item>
+        <item>security</item>
+    </string-array>
+    <string-array name="catalog_keywords_hash_generator">
+        <item>md5</item>
+        <item>sha</item>
+        <item>checksum</item>
+        <item>digest</item>
+    </string-array>
+    <string-array name="catalog_keywords_qr_generator">
+        <item>barcode</item>
+        <item>scan</item>
+    </string-array>
+    <string-array name="catalog_keywords_bubble_level">
+        <item>spirit level</item>
+        <item>tilt</item>
+        <item>check if straight</item>
+    </string-array>
+    <string-array name="catalog_keywords_compass">
+        <item>heading</item>
+        <item>direction</item>
+        <item>north</item>
+    </string-array>
+    <string-array name="catalog_keywords_flashlight">
+        <item>torch</item>
+        <item>light</item>
+    </string-array>
+    <string-array name="catalog_keywords_screen_ruler">
+        <item>measure</item>
+        <item>length</item>
+    </string-array>
+</resources>

@@ -1,5 +1,7 @@
 package com.jaguar.gearbox.ui.tools
 
+import androidx.compose.ui.res.stringResource
+import com.jaguar.gearbox.R
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -35,7 +37,6 @@ import com.jaguar.gearbox.ui.components.rememberToolHistory
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
-import com.jaguar.gearbox.logic.daysUntilSummary
 import com.jaguar.gearbox.ui.components.rememberCurrentLocalDate
 
 
@@ -62,10 +63,10 @@ fun DaysUntilScreen(onNavigateBack: () -> Unit) {
                             Instant.ofEpochMilli(millis).atZone(ZoneOffset.UTC).toLocalDate()
                     }
                     showPicker = false
-                }) { Text("OK") }
+                }) { Text(stringResource(R.string.calc_ok)) }
             },
             dismissButton = {
-                TextButton(onClick = { showPicker = false }) { Text("Cancel") }
+                TextButton(onClick = { showPicker = false }) { Text(stringResource(R.string.calc_cancel)) }
             },
         ) {
             DatePicker(state = state)
@@ -75,7 +76,7 @@ fun DaysUntilScreen(onNavigateBack: () -> Unit) {
     val history = rememberToolHistory(
         route = Tools.ROUTE_DAYS_UNTIL,
         inputs = mapOf("label" to label, "targetDate" to (targetDate?.toString() ?: "")),
-        output = targetDate?.let { daysUntilSummary(today, it, label) },
+        output = targetDate?.let { localizedDaysUntilSummary(context, today, it, label) },
         onRestore = { saved ->
             label = saved["label"] ?: ""
             targetDate = saved["targetDate"]?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
@@ -83,13 +84,13 @@ fun DaysUntilScreen(onNavigateBack: () -> Unit) {
     )
 
     ToolScaffold(
-        title = "Days Until",
+        title = context.getString(R.string.calc_days_until),
         icon = Tools.byRoute(Tools.ROUTE_DAYS_UNTIL)!!.icon,
         onNavigateBack = onNavigateBack,
         history = history,
     ) {
         AdaptiveToolLayout(input = {
-            Text("Count calendar days to a date, or days since it passed.",
+            Text(stringResource(R.string.calc_count_calendar_days_to_a_date_or_days_since_it_passed),
                 style = MaterialTheme.typography.bodyMedium)
             Spacer(Modifier.height(12.dp))
             OutlinedTextField(
@@ -97,33 +98,33 @@ fun DaysUntilScreen(onNavigateBack: () -> Unit) {
                 onValueChange = {
                     label = it
                 },
-                label = { Text("Event name (optional)") },
-                placeholder = { Text("e.g. Diwali") },
+                label = { Text(stringResource(R.string.calc_event_name_optional)) },
+                placeholder = { Text(stringResource(R.string.calc_e_g_diwali)) },
                 modifier = Modifier.fillMaxWidth(),
             )
             Spacer(Modifier.height(12.dp))
             OutlinedButton(onClick = { showPicker = true }, modifier = Modifier.fillMaxWidth()) {
                 Icon(Icons.Filled.DateRange, contentDescription = null)
-                Text("  Target date: ${targetDate?.let { formatDate(it) } ?: "Choose date"}")
+                Text(context.getString(R.string.calc_target_date_1_s, targetDate?.let { formatDate(it) } ?: context.getString(R.string.calc_choose_date)))
             }
         }, result = {
             val target = targetDate
             if (target != null) {
-                val summary = daysUntilSummary(today, target, label)
+                val summary = localizedDaysUntilSummary(context, today, target, label)
 
                 Spacer(Modifier.height(20.dp))
                 ResultCard(
                     text = summary,
                     textStyle = MaterialTheme.typography.headlineMedium,
-                    onCopy = { context.copyToClipboard("Days Until", daysUntilSummary(LocalDate.now(), target, label)) },
-                    onShare = { context.shareText(daysUntilSummary(LocalDate.now(), target, label)) },
+                    onCopy = { context.copyToClipboard(context.getString(R.string.calc_days_until), localizedDaysUntilSummary(context, LocalDate.now(), target, label)) },
+                    onShare = { context.shareText(localizedDaysUntilSummary(context, LocalDate.now(), target, label)) },
                 )
                 Spacer(Modifier.height(8.dp))
-                Text("From ${formatDate(today)} to ${formatDate(target)}",
+                Text(context.getString(R.string.calc_from_1_s_to_2_s, formatDate(today), formatDate(target)),
                     style = MaterialTheme.typography.bodyMedium)
             } else {
                 Spacer(Modifier.height(20.dp))
-                Text("Choose a target date to see your countdown. An event name is optional.",
+                Text(stringResource(R.string.calc_choose_a_target_date_to_see_your_countdown_an_event_nam),
                     style = MaterialTheme.typography.bodyMedium)
             }
             ToolActions(onClear = { label = ""; targetDate = null; showPicker = false },
@@ -134,3 +135,13 @@ fun DaysUntilScreen(onNavigateBack: () -> Unit) {
 
 private fun formatDate(date: LocalDate): String =
     date.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM))
+
+internal fun localizedDaysUntilSummary(context: android.content.Context, today: LocalDate, target: LocalDate, label: String): String {
+    val days = java.time.temporal.ChronoUnit.DAYS.between(today, target)
+    val event = label.ifBlank { context.getString(R.string.calc_default_event) }
+    if (days == 0L) return context.getString(R.string.calc_event_today, event)
+    val count = kotlin.math.abs(days)
+    return context.resources.getQuantityString(
+        if (days > 0) R.plurals.calc_days_until else R.plurals.calc_days_since,
+        count.coerceAtMost(Int.MAX_VALUE.toLong()).toInt(), count, event)
+}

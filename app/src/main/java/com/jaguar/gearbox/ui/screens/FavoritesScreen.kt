@@ -1,5 +1,9 @@
 package com.jaguar.gearbox.ui.screens
 
+import com.jaguar.gearbox.data.localizedLabel
+import com.jaguar.gearbox.data.localizedDescription
+import com.jaguar.gearbox.data.localizedName
+import com.jaguar.gearbox.R
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
@@ -42,6 +46,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun FavoritesScreen(tools: List<Tool>, favorites: FavoritesStore, onOpenTool: (Tool) -> Unit,
     onOpenPreset: ((String, Map<String, String>) -> Unit)? = null) {
+    val context = androidx.compose.ui.platform.LocalContext.current
     val toolsByRoute = remember(tools) { tools.associateBy { it.route } }
     val favTools = favorites.favorites.mapNotNull { toolsByRoute[it] }
     var showPresets by rememberSaveable { mutableStateOf(false) }
@@ -122,20 +127,20 @@ fun FavoritesScreen(tools: List<Tool>, favorites: FavoritesStore, onOpenTool: (T
         ) {
             item(key = "favorites_header") {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text("Your toolbox", style = MaterialTheme.typography.headlineMedium)
-                    Text("Your everyday tools, one tap away.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(context.getString(R.string.screen_your_toolbox), style = MaterialTheme.typography.headlineMedium)
+                    Text(context.getString(R.string.screen_your_everyday_tools_one_tap_away), color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         FilledTonalButton(onClick = { finishDrag(); choosing = true }, modifier = Modifier.focusRequester(chooseFocus)) {
-                            Icon(Icons.Default.Add, null); Spacer(Modifier.width(8.dp)); Text("Choose tools")
+                            Icon(Icons.Default.Add, null); Spacer(Modifier.width(8.dp)); Text(context.getString(R.string.screen_choose_tools))
                         }
                         if (favTools.isNotEmpty()) TextButton(onClick = { finishDrag(); editing = !editing }) {
-                            Text(if (editing) "Done" else "Edit")
+                            Text(if (editing) context.getString(R.string.screen_done) else context.getString(R.string.screen_edit))
                         }
                     }
                     if (onOpenPreset != null && !editing) OutlinedButton(onClick = { finishDrag(); showPresets = true }) {
-                        Icon(Icons.Default.Bookmarks, null); Spacer(Modifier.width(8.dp)); Text("Saved presets")
+                        Icon(Icons.Default.Bookmarks, null); Spacer(Modifier.width(8.dp)); Text(context.getString(R.string.screen_saved_presets))
                     }
-                    if (editing) Text("Drag a handle or use the arrows to reorder. Remove a tool with the minus button.",
+                    if (editing) Text(context.getString(R.string.screen_drag_a_handle_or_use_the_arrows_to_reorder_remove_a_tool_with_the),
                         style = MaterialTheme.typography.bodySmall)
                 }
             }
@@ -143,8 +148,8 @@ fun FavoritesScreen(tools: List<Tool>, favorites: FavoritesStore, onOpenTool: (T
                 OutlinedCard(Modifier.fillMaxWidth()) {
                     Column(Modifier.padding(24.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Icon(Icons.Default.StarOutline, null, Modifier.size(32.dp))
-                        Text("Make this space yours", style = MaterialTheme.typography.titleLarge)
-                        Text("Choose the tools you reach for most. Their order is always yours to decide.")
+                        Text(context.getString(R.string.screen_make_this_space_yours), style = MaterialTheme.typography.titleLarge)
+                        Text(context.getString(R.string.screen_choose_the_tools_you_reach_for_most_their_order_is_always_yours_t))
                     }
                 }
             }
@@ -157,8 +162,8 @@ fun FavoritesScreen(tools: List<Tool>, favorites: FavoritesStore, onOpenTool: (T
                     favorites.move(favorites.favorites.indexOf(tool.route), favorites.favorites.indexOf(target.route))
                     return true
                 }
-                val moveUp = "Move ${tool.name} up"
-                val moveDown = "Move ${tool.name} down"
+                val moveUp = context.getString(R.string.screen_move_1_s_up, tool.localizedName(context))
+                val moveDown = context.getString(R.string.screen_move_1_s_down, tool.localizedName(context))
                 Card(
                     modifier = Modifier.fillMaxWidth().heightIn(min = 72.dp)
                         .graphicsLayer {
@@ -168,7 +173,7 @@ fun FavoritesScreen(tools: List<Tool>, favorites: FavoritesStore, onOpenTool: (T
                         .zIndex(if (isDragged) 1f else 0f)
                         .then(if (!editing) Modifier.focusRequester(focusRequester).clickable { onOpenTool(tool) } else Modifier)
                         .semantics {
-                            stateDescription = "${index + 1} of ${favTools.size}"
+                            stateDescription = context.getString(R.string.screen_1_s_of_2_s, index + 1, favTools.size)
                             if (editing) customActions = buildList {
                                 if (index > 0) add(CustomAccessibilityAction(moveUp) { moveBy(-1) })
                                 if (index < favTools.lastIndex) add(CustomAccessibilityAction(moveDown) { moveBy(1) })
@@ -181,9 +186,9 @@ fun FavoritesScreen(tools: List<Tool>, favorites: FavoritesStore, onOpenTool: (T
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(tool.icon, null, Modifier.size(28.dp), tint = MaterialTheme.colorScheme.primary)
                             Column(Modifier.weight(1f).padding(horizontal = 12.dp)) {
-                                Text(tool.name, style = MaterialTheme.typography.titleMedium,
+                                Text(tool.localizedName(context), style = MaterialTheme.typography.titleMedium,
                                     maxLines = 2, overflow = TextOverflow.Ellipsis)
-                                Text(tool.category.label, style = MaterialTheme.typography.labelMedium,
+                                Text(tool.category.localizedLabel(context), style = MaterialTheme.typography.labelMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
                             if (editing) IconButton(modifier = Modifier.focusRequester(focusRequester), onClick = {
@@ -192,18 +197,18 @@ fun FavoritesScreen(tools: List<Tool>, favorites: FavoritesStore, onOpenTool: (T
                                 favorites.toggle(tool.route)
                                 scope.launch {
                                     snackbar.currentSnackbarData?.dismiss()
-                                    if (snackbar.showSnackbar("${tool.name} removed", "Undo", duration = SnackbarDuration.Short) == SnackbarResult.ActionPerformed) {
+                                    if (snackbar.showSnackbar(context.getString(R.string.screen_1_s_removed, tool.localizedName(context)), context.getString(R.string.screen_undo), duration = SnackbarDuration.Short) == SnackbarResult.ActionPerformed) {
                                         favorites.restore(tool.route, position)
                                         returnToRoute = tool.route
                                     }
                                 }
-                            }) { Icon(Icons.Default.RemoveCircleOutline, "Remove ${tool.name}") }
+                            }) { Icon(Icons.Default.RemoveCircleOutline, context.getString(R.string.screen_remove_1_s, tool.localizedName(context))) }
                         }
                         if (editing) Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End,
                             verticalAlignment = Alignment.CenterVertically) {
                             IconButton(onClick = { moveBy(-1) }, enabled = index > 0) { Icon(Icons.Default.ArrowUpward, moveUp) }
                             IconButton(onClick = { moveBy(1) }, enabled = index < favTools.lastIndex) { Icon(Icons.Default.ArrowDownward, moveDown) }
-                            Icon(Icons.Default.DragHandle, "Drag to reorder ${tool.name}",
+                            Icon(Icons.Default.DragHandle, context.getString(R.string.screen_drag_to_reorder_1_s, tool.localizedName(context)),
                                 modifier = Modifier.size(48.dp).pointerInput(tool.route) {
                                     detectDragGesturesAfterLongPress(
                                         onDragStart = {
@@ -235,22 +240,23 @@ fun FavoritesScreen(tools: List<Tool>, favorites: FavoritesStore, onOpenTool: (T
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ChooseFavoriteTools(tools: List<Tool>, favorites: FavoritesStore, onDismiss: () -> Unit) {
+    val context = androidx.compose.ui.platform.LocalContext.current
     var query by rememberSaveable { mutableStateOf("") }
     var selected by rememberSaveable(stateSaver = listSaver<Set<String>, String>(
         save = { it.toList() }, restore = { it.toSet() },
     )) { mutableStateOf(emptySet()) }
     val matches = tools.filter { tool ->
-        query.isBlank() || tool.name.contains(query, true) || tool.description.contains(query, true) ||
+        query.isBlank() || tool.localizedName(context).contains(query, true) || tool.localizedDescription(context).contains(query, true) ||
             tool.keywords.any { it.contains(query, true) }
     }
     ModalBottomSheet(onDismissRequest = onDismiss) {
         Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp).navigationBarsPadding(),
             verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text("Choose tools", style = MaterialTheme.typography.headlineSmall)
+            Text(context.getString(R.string.screen_choose_tools), style = MaterialTheme.typography.headlineSmall)
             OutlinedTextField(query, { query = it }, Modifier.fillMaxWidth(), singleLine = true,
-                label = { Text("Search tools") }, leadingIcon = { Icon(Icons.Default.Search, null) })
+                label = { Text(context.getString(R.string.screen_search_tools)) }, leadingIcon = { Icon(Icons.Default.Search, null) })
             LazyColumn(Modifier.fillMaxWidth().weight(1f, fill = false).heightIn(max = 420.dp)) {
-                if (matches.isEmpty()) item { Text("No matching tools", Modifier.padding(16.dp)) }
+                if (matches.isEmpty()) item { Text(context.getString(R.string.screen_no_matching_tools), Modifier.padding(16.dp)) }
                 items(matches, key = { it.route }) { tool ->
                     val existing = favorites.isFavorite(tool.route)
                     val checked = existing || tool.route in selected
@@ -260,18 +266,18 @@ private fun ChooseFavoriteTools(tools: List<Tool>, favorites: FavoritesStore, on
                         Checkbox(checked, onCheckedChange = null, enabled = !existing)
                         Icon(tool.icon, null, Modifier.padding(horizontal = 8.dp).size(24.dp))
                         Column(Modifier.weight(1f)) {
-                            Text(tool.name)
-                            Text(if (existing) "Already in Favorites" else tool.category.label,
+                            Text(tool.localizedName(context))
+                            Text(if (existing) context.getString(R.string.screen_already_in_favorites) else tool.category.localizedLabel(context),
                                 style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     }
                 }
             }
             Row(Modifier.fillMaxWidth().padding(bottom = 12.dp), horizontalArrangement = Arrangement.End) {
-                TextButton(onClick = onDismiss) { Text("Cancel") }
+                TextButton(onClick = onDismiss) { Text(context.getString(R.string.screen_cancel)) }
                 Button(enabled = selected.isNotEmpty(), onClick = {
                     favorites.addAll(tools.filter { it.route in selected }.map { it.route }); onDismiss()
-                }) { Text("Add ${selected.size}") }
+                }) { Text(context.getString(R.string.screen_add_1_s, selected.size)) }
             }
         }
     }
@@ -289,19 +295,19 @@ private fun FavoritePresetsDialog(onDismiss: () -> Unit, onOpen: (String, Map<St
         presets = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) { store.presets() }
         loaded = true
     }
-    AlertDialog(onDismissRequest = onDismiss, title = { Text("Saved presets") }, text = {
+    AlertDialog(onDismissRequest = onDismiss, title = { Text(context.getString(R.string.screen_saved_presets)) }, text = {
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Text("Open a saved setup without pressing Generate or Start. Live calculations may update. Create presets from a tool’s More menu; manage or delete them in Workbench.")
-            if (!loaded) Text("Loading presets…")
-            else if (presets.isEmpty()) Text("No saved presets yet.")
+            Text(context.getString(R.string.screen_open_a_saved_setup_without_pressing_generate_or_start_live_calcul))
+            if (!loaded) Text(context.getString(R.string.screen_loading_presets))
+            else if (presets.isEmpty()) Text(context.getString(R.string.screen_no_saved_presets_yet))
             LazyColumn(Modifier.heightIn(max = 400.dp)) {
                 items(presets, key = { it.id }) { preset ->
                     val tool = com.jaguar.gearbox.data.Tools.byRoute(preset.route)
                     ListItem(headlineContent = { Text(preset.name) },
-                        supportingContent = { Text(tool?.name ?: "Tool unavailable") },
+                        supportingContent = { Text(tool?.localizedName(context) ?: context.getString(R.string.screen_tool_unavailable)) },
                         modifier = Modifier.clickable(enabled = tool != null) { onOpen(preset.route, preset.inputs) })
                 }
             }
         }
-    }, confirmButton = { TextButton(onClick = onDismiss) { Text("Close presets") } })
+    }, confirmButton = { TextButton(onClick = onDismiss) { Text(context.getString(R.string.screen_close_presets)) } })
 }

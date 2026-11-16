@@ -1,5 +1,7 @@
 package com.jaguar.gearbox.ui.screens
 
+import com.jaguar.gearbox.data.localizedInputLabel
+import com.jaguar.gearbox.R
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -24,9 +26,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 private val privateInputTools = listOf(
-    Tools.ROUTE_TEXT_TOOLS to "Text Tools",
-    Tools.ROUTE_QR_GENERATOR to "QR Generator",
-    Tools.ROUTE_HASH_GENERATOR to "Hash Generator",
+    Tools.ROUTE_TEXT_TOOLS to R.string.screen_tool_text,
+    Tools.ROUTE_QR_GENERATOR to R.string.screen_tool_qr,
+    Tools.ROUTE_HASH_GENERATOR to R.string.screen_tool_hash,
 )
 
 /** Local retention choices are explicit and separate from recent-tool navigation. */
@@ -66,89 +68,90 @@ internal fun ToolMemorySettingsSection() {
                 if (withContext(Dispatchers.IO) { store.saveSettings(next) }) {
                     settings = withContext(Dispatchers.IO) { store.settings() }; feedback = null
                     refreshCounts()
-                } else feedback = "Could not save preferences. Please try again."
+                } else feedback = context.getString(R.string.screen_could_not_save_preferences_please_try_again)
             } finally { busy = false }
         }
     }
 
-    Text("Local data", style = MaterialTheme.typography.labelLarge,
+    Text(context.getString(R.string.screen_local_data), style = MaterialTheme.typography.labelLarge,
         color = MaterialTheme.colorScheme.primary,
         modifier = Modifier.padding(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 4.dp))
     ListItem(
-        headlineContent = { Text("Tool memory & history") },
+        headlineContent = { Text(context.getString(R.string.screen_tool_memory_history)) },
         supportingContent = { Text(if (settings.historyEnabled)
-            "History on · Up to ${settings.historyLimit} entries per tool"
-            else "History off · Choose what your tools remember") },
+            context.getString(R.string.screen_history_on_up_to_1_s_entries_per_tool, settings.historyLimit)
+            else context.getString(R.string.screen_history_off_choose_what_your_tools_remember)) },
         modifier = Modifier.clickable(enabled = !busy) { limitText = settings.historyLimit.toString(); open = true },
     )
     if (open) {
         AlertDialog(
             onDismissRequest = { if (!busy) open = false },
-            title = { Text("Tool memory & history") },
+            title = { Text(context.getString(R.string.screen_tool_memory_history)) },
             text = {
                 Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text("New history and remembered modes/results stay in app-private storage on this device, outside cloud backup. This is not an encrypted vault. Password-generator secrets are never saved in history.",
+                    Text(context.getString(R.string.screen_new_history_and_remembered_modes_results_stay_in_app_private_stor),
                         style = MaterialTheme.typography.bodyMedium)
-                    MemoryToggle("Remember tool modes", "Reuse supported tools’ last selected options.",
+                    MemoryToggle(context.getString(R.string.screen_remember_tool_modes), context.getString(R.string.screen_reuse_supported_tools_last_selected_options),
                         settings.rememberModes, !busy) { save(settings.copy(rememberModes = it)) }
-                    MemoryToggle("Remember last result", "Recalculate supported tools from saved inputs; random tools restore their last outcome. QR and Hash still require Generate. Separate from history.",
+                    MemoryToggle(context.getString(R.string.screen_remember_last_result), context.getString(R.string.screen_recalculate_supported_tools_from_saved_inputs_random_tools_restor),
                         settings.rememberResults, !busy) { save(settings.copy(rememberResults = it)) }
                     HorizontalDivider()
-                    MemoryToggle("Remember game sessions and participants",
-                        "Resume Tambola, RPS/Tic-tac-toe tallies, team participants and scoreboards. Turning this off stops future automatic loading and saving, without interrupting the current screen.",
+                    MemoryToggle(context.getString(R.string.screen_remember_game_sessions_and_participants),
+                        context.getString(R.string.screen_resume_tambola_rps_tic_tac_toe_tallies_team_participants_and_scor),
                         settings.rememberGameSessions, !busy) { save(settings.copy(rememberGameSessions = it)) }
-                    Text("Existing saved games are kept when this is off. Re-enabling can resume the old saved game, even after resetting a temporary session. Clear saved game sessions below to remove it. Older game storage may be included in Android backup.",
+                    Text(context.getString(R.string.screen_existing_saved_games_are_kept_when_this_is_off_re_enabling_can_re),
                         style = MaterialTheme.typography.bodySmall)
-                    TextButton(enabled = !busy, onClick = { clearTarget = "game sessions" }) { Text("Clear saved game sessions") }
+                    TextButton(enabled = !busy, onClick = { clearTarget = "game sessions" }) { Text(context.getString(R.string.screen_clear_saved_game_sessions)) }
                     HorizontalDivider()
-                    MemoryToggle("Keep tool history", "Save completed inputs and results in supported tools. Turning this off pauses collection; it does not delete existing history.",
+                    MemoryToggle(context.getString(R.string.screen_keep_tool_history), context.getString(R.string.screen_save_completed_inputs_and_results_in_supported_tools_turning_this),
                         settings.historyEnabled, !busy) { save(settings.copy(historyEnabled = it)) }
                     HorizontalDivider()
-                    Text("Text, QR and Hash privacy", style = MaterialTheme.typography.titleSmall)
-                    Text("These tools can contain secrets or personal information. Automatic saving is off for each by default. Each choice below also requires its global history or last-result switch above to be on.",
+                    Text(context.getString(R.string.screen_text_qr_and_hash_privacy), style = MaterialTheme.typography.titleSmall)
+                    Text(context.getString(R.string.screen_these_tools_can_contain_secrets_or_personal_information_automatic),
                         style = MaterialTheme.typography.bodySmall)
-                    Text("Turning these choices off retains existing records without loading them automatically. Review or explicitly clear them below. Android task drafts can still survive screen recreation; these switches do not disable task drafts. Manually saved Workbench items and presets are separate and remain until you delete them there.",
+                    Text(context.getString(R.string.screen_turning_these_choices_off_retains_existing_records_without_loadin),
                         style = MaterialTheme.typography.bodySmall)
-                    privateInputTools.forEach { (route, name) ->
+                    privateInputTools.forEach { (route, nameRes) ->
+                        val name = context.getString(nameRes)
                         val policy = settings.automaticMemoryFor(route)
                         val counts = savedCounts[route] ?: (0 to 0)
                         Text(name, style = MaterialTheme.typography.titleSmall)
-                        MemoryToggle("$name: automatic history", "Allow completed inputs and outputs to be saved when Keep tool history is on.",
+                        MemoryToggle(context.getString(R.string.screen_1_s_automatic_history, name), context.getString(R.string.screen_allow_completed_inputs_and_outputs_to_be_saved_when_keep_tool_his),
                             policy.historyEnabled, !busy) { value ->
                             save(settings.copy(automaticMemory = settings.automaticMemory +
                                 (route to policy.copy(historyEnabled = value))))
                         }
-                        MemoryToggle("$name: remember last result", "Allow inputs and output to be retained for later use when Remember last result is on. QR and Hash require Generate.",
+                        MemoryToggle(context.getString(R.string.screen_1_s_remember_last_result, name), context.getString(R.string.screen_allow_inputs_and_output_to_be_retained_for_later_use_when_remembe),
                             policy.rememberResults, !busy) { value ->
                             save(settings.copy(automaticMemory = settings.automaticMemory +
                                 (route to policy.copy(rememberResults = value))))
                         }
-                        Text("${counts.first} history entries · ${counts.second} remembered result", style = MaterialTheme.typography.bodySmall)
+                        Text(context.getString(R.string.screen_memory_counts, context.resources.getQuantityString(R.plurals.screen_history_count, counts.first, counts.first), context.resources.getQuantityString(R.plurals.screen_result_count, counts.second, counts.second)), style = MaterialTheme.typography.bodySmall)
                         TextButton(enabled = !busy, onClick = {
                             busy = true
                             scope.launch {
                                 try {
                                     reviewEntries = withContext(Dispatchers.IO) {
                                         buildList {
-                                            store.rememberedResult(route)?.let { add("Remembered result" to it) }
-                                            store.history(route).forEachIndexed { index, entry -> add("History ${index + 1}" to entry) }
+                                            store.rememberedResult(route)?.let { add(context.getString(R.string.screen_remembered_result) to it) }
+                                            store.history(route).forEachIndexed { index, entry -> add(context.getString(R.string.screen_history_1_s, index + 1) to entry) }
                                         }
                                     }
                                     reviewTitle = name
                                 } finally { busy = false }
                             }
-                        }) { Text("Review $name saved data") }
+                        }) { Text(context.getString(R.string.screen_review_1_s_saved_data, name)) }
                         TextButton(enabled = !busy && counts.first > 0,
-                            onClick = { clearTarget = "$route|history" }) { Text("Clear $name history") }
+                            onClick = { clearTarget = "$route|history" }) { Text(context.getString(R.string.screen_clear_1_s_history, name)) }
                         TextButton(enabled = !busy && counts.second > 0,
-                            onClick = { clearTarget = "$route|result" }) { Text("Clear $name remembered result") }
+                            onClick = { clearTarget = "$route|result" }) { Text(context.getString(R.string.screen_clear_1_s_remembered_result, name)) }
                     }
                     HorizontalDivider()
                     OutlinedTextField(
                         value = limitText,
                         onValueChange = { if (it.length <= 3 && it.all(Char::isDigit)) limitText = it },
-                        label = { Text("Entries per tool") },
-                        supportingText = { Text("Choose 1–100. Lowering the limit removes the oldest entries.") },
+                        label = { Text(context.getString(R.string.screen_entries_per_tool)) },
+                        supportingText = { Text(context.getString(R.string.screen_choose_1_100_lowering_the_limit_removes_the_oldest_entries)) },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
@@ -156,52 +159,58 @@ internal fun ToolMemorySettingsSection() {
                     val limit = limitText.toIntOrNull()
                     TextButton(enabled = !busy && limit != null && limit in 1..100 && limit != settings.historyLimit,
                         onClick = { limit?.let { save(settings.copy(historyLimit = it)) } }) {
-                        Text("Apply history limit")
+                        Text(context.getString(R.string.screen_apply_history_limit))
                     }
-                    TextButton(enabled = !busy, onClick = { clearTarget = "history" }) { Text("Clear all tool history") }
-                    TextButton(enabled = !busy, onClick = { clearTarget = "modes" }) { Text("Clear remembered modes") }
-                    TextButton(enabled = !busy, onClick = { clearTarget = "results" }) { Text("Clear remembered results") }
-                    Text("Turning off mode or result memory stops using it without deleting it. Use Clear to remove it.",
+                    TextButton(enabled = !busy, onClick = { clearTarget = "history" }) { Text(context.getString(R.string.screen_clear_all_tool_history)) }
+                    TextButton(enabled = !busy, onClick = { clearTarget = "modes" }) { Text(context.getString(R.string.screen_clear_remembered_modes)) }
+                    TextButton(enabled = !busy, onClick = { clearTarget = "results" }) { Text(context.getString(R.string.screen_clear_remembered_results)) }
+                    Text(context.getString(R.string.screen_turning_off_mode_or_result_memory_stops_using_it_without_deleting),
                         style = MaterialTheme.typography.bodySmall)
                     feedback?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
-                    Text("These choices do not reset active timers, scores or saved favorites.",
+                    Text(context.getString(R.string.screen_these_choices_do_not_reset_active_timers_scores_or_saved_favorite),
                         style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             },
-            confirmButton = { TextButton(enabled = !busy, onClick = { open = false }) { Text("Done") } },
+            confirmButton = { TextButton(enabled = !busy, onClick = { open = false }) { Text(context.getString(R.string.screen_done)) } },
         )
     }
     reviewTitle?.let { name ->
         AlertDialog(
             onDismissRequest = { reviewTitle = null; reviewEntries = emptyList() },
-            title = { Text("$name saved data") },
+            title = { Text(context.getString(R.string.screen_1_s_saved_data, name)) },
             text = {
                 Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    if (reviewEntries.isEmpty()) Text("No automatic history or remembered result is stored for this tool.")
+                    if (reviewEntries.isEmpty()) Text(context.getString(R.string.screen_no_automatic_history_or_remembered_result_is_stored_for_this_tool))
                     reviewEntries.forEach { (label, entry) ->
                         Text(label, style = MaterialTheme.typography.titleSmall)
-                        Text(entry.inputs.entries.joinToString("\n") { (key, value) -> "$key: $value" })
+                        Text(entry.inputs.entries.joinToString("\n") { (key, value) -> "${localizedInputLabel(context, key)}: $value" })
                         Text(entry.output)
                         HorizontalDivider()
                     }
                 }
             },
-            confirmButton = { TextButton(onClick = { reviewTitle = null; reviewEntries = emptyList() }) { Text("Close review") } },
+            confirmButton = { TextButton(onClick = { reviewTitle = null; reviewEntries = emptyList() }) { Text(context.getString(R.string.screen_close_review)) } },
         )
     }
     clearTarget?.let { target ->
         val route = target.substringBefore('|').takeIf { candidate -> privateInputTools.any { it.first == candidate } }
-        val name = privateInputTools.firstOrNull { it.first == route }?.second
+        val name = privateInputTools.firstOrNull { it.first == route }?.second?.let { context.getString(it) }
         val kind = target.substringAfter('|')
-        val targetLabel = if (route != null) "$name ${if (kind == "history") "history" else "remembered result"}" else "remembered $target"
+        val targetName = context.getString(when (target) {
+            "game sessions" -> R.string.screen_game_sessions
+            "modes" -> R.string.screen_modes
+            "results" -> R.string.screen_results
+            else -> R.string.screen_history
+        })
+        val targetLabel = if (route != null) context.getString(if (kind == "history") R.string.screen_named_history else R.string.screen_named_result, name) else context.getString(R.string.screen_remembered_target, targetName)
         AlertDialog(
             onDismissRequest = { clearTarget = null },
-            title = { Text("Clear $targetLabel?") },
+            title = { Text(context.getString(R.string.screen_clear_1_s, targetLabel)) },
             text = { Text(if (route != null)
-                "Remove only $targetLabel from this device? This cannot be undone. Manual Workbench items, presets, modes and current Android task drafts are unchanged. An open tool may save again if automatic saving remains enabled."
+                context.getString(R.string.screen_remove_only_1_s_from_this_device_this_cannot_be_undone_manual_wor, targetLabel)
                 else if (target == "game sessions")
-                "Remove saved Tambola numbers, RPS tallies, team participants and both scoreboards, including dormant data while remembering is off? This cannot be undone. Current open sessions, counters, timers, favorites, palettes and tool history are unchanged. An open session can save again if remembering remains on."
-                else "This removes saved $target from every supported tool on this device. It cannot be undone. Favorites and active tool sessions are unchanged.") },
+                context.getString(R.string.screen_remove_saved_tambola_numbers_rps_tallies_team_participants_and_bo)
+                else context.getString(R.string.screen_this_removes_saved_1_s_from_every_supported_tool_on_this_device_i, targetName)) },
             confirmButton = { TextButton(enabled = !busy, onClick = {
                 busy = true
                 clearTarget = null
@@ -218,11 +227,11 @@ internal fun ToolMemorySettingsSection() {
                             }
                         }
                         refreshCounts()
-                        feedback = if (success) "$targetLabel cleared." else "Could not clear $targetLabel. Please try again."
+                        feedback = if (success) context.getString(R.string.screen_1_s_cleared, targetLabel) else context.getString(R.string.screen_could_not_clear_1_s_please_try_again, targetLabel)
                     } finally { busy = false }
                 }
-            }) { Text("Clear") } },
-            dismissButton = { TextButton(enabled = !busy, onClick = { clearTarget = null }) { Text("Cancel") } },
+            }) { Text(context.getString(R.string.screen_clear)) } },
+            dismissButton = { TextButton(enabled = !busy, onClick = { clearTarget = null }) { Text(context.getString(R.string.screen_cancel)) } },
         )
     }
 }

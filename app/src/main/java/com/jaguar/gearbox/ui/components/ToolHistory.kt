@@ -55,14 +55,19 @@ fun rememberToolHistory(
     val imported = LocalToolImport.current
     val consumeImport = LocalConsumeToolImport.current
     var initialized by rememberSaveable(route) { mutableStateOf(false) }
-    LaunchedEffect(route) {
-        if (initialized) return@LaunchedEffect
+    // A new explicit import wins even when Navigation restored an already initialized draft.
+    // The import ID also cancels an older asynchronous preference load before it can overwrite it.
+    LaunchedEffect(route, imported?.id) {
         if (imported?.route == route) {
-            if (imported.modeOnly) restoreMode(imported.inputs) else restore(imported.inputs)
+            if (com.jaguar.gearbox.data.ToolMemoryPolicy.permitsRoute(route) &&
+                com.jaguar.gearbox.data.ToolMemoryPolicy.validInputs(imported.inputs)) {
+                if (imported.modeOnly) restoreMode(imported.inputs) else restore(imported.inputs)
+            }
             consumeImport()
             initialized = true
             return@LaunchedEffect
         }
+        if (initialized) return@LaunchedEffect
         val saved = withContext(Dispatchers.IO) { store.loadMode(route) to if (restoreLastResult) store.loadResult(route) else null }
         if (latestInputs == initialInputs) {
             if (saved.first.isNotEmpty()) restoreMode(saved.first)
@@ -229,9 +234,12 @@ fun ToolHistoryDialog(binding: ToolHistoryBinding, onDismiss: () -> Unit) {
 
 private fun historyText(entry: ToolHistoryEntry) = entry.inputs.filterKeys { !it.startsWith("_") }.entries.joinToString("\n") { "${it.key}: ${it.value}" } + "\n\n" + entry.output
 
-data class ToolImport(val route: String, val inputs: Map<String, String>, val modeOnly: Boolean = false)
+data class ToolImport(val route: String, val inputs: Map<String, String>, val modeOnly: Boolean = false,
+    val id: String = java.util.UUID.randomUUID().toString())
 val LocalToolImport = staticCompositionLocalOf<ToolImport?> { null }
 val LocalConsumeToolImport = staticCompositionLocalOf<() -> Unit> { {} }
+
+val LocalToolPresetOpener = staticCompositionLocalOf<((Map<String, String>) -> Unit)?> { null }
 
 val LocalToolHandoff = staticCompositionLocalOf<((String, Map<String, String>) -> Unit)?> { null }
 

@@ -1,5 +1,8 @@
 package com.jaguar.gearbox.ui.tools
 
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.saveable.rememberSaveable
+import com.jaguar.gearbox.ui.components.ToolFocusView
 import com.jaguar.gearbox.data.ToolMemoryStore
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.runtime.remember
@@ -62,11 +65,26 @@ fun CompassScreen(
         onRestore = {}, allowRestore = false, restoreLastResult = false, recordingDelayMillis = 0L,
     )
 
+    var focusView by rememberSaveable { mutableStateOf(false) }
+    if (focusView) ToolFocusView("Compass", onExit = { focusView = false }) {
+        OrientationStatusMessage(sensorState.status)
+        if (sensorState.status == OrientationStatus.READY) {
+            if (snapshot != null) {
+                val heading = azimuthDegrees(snapshot.azimuthRad)
+                Text("${compassPoint(heading)} ${"%.1f".format(heading)}°", style = MaterialTheme.typography.displayLarge)
+                Text("Magnetic heading, not true north. Nearby metal and magnets can affect accuracy.")
+            }
+        } else {
+            Text("A reliable reading is not available. No measurement is shown.")
+        }
+    }
+
     ToolScaffold(
         title = stringResource(R.string.compass_title),
         icon = Tools.byRoute(Tools.ROUTE_COMPASS)!!.icon,
         onNavigateBack = onNavigateBack,
         history = history,
+        options = { TextButton(onClick = { focusView = true }) { Text("Focus view") } },
     ) {
         OrientationStatusMessage(sensorState.status)
         if (snapshot == null) return@ToolScaffold

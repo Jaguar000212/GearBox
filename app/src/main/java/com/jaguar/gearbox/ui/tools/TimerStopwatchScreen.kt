@@ -1,5 +1,6 @@
 package com.jaguar.gearbox.ui.tools
 
+import com.jaguar.gearbox.ui.components.ToolFocusView
 import android.Manifest
 import android.content.Intent
 import android.net.Uri
@@ -228,23 +229,34 @@ fun TimerStopwatchScreen(onNavigateBack: () -> Unit, requestStopwatchReset: Bool
     }
 
 
+    fun toggleTimerFromView() {
+        val requestedMinutes = draftMinutes
+        val requestedSeconds = draftSeconds
+        if (!state.timerRunning && state.timerRemainingMillis == 0L &&
+            timerDurationMillis(requestedMinutes, requestedSeconds) == null) {
+            error = "Enter 0–999 minutes and 0–59 seconds, with a total above zero."
+        } else change { toggleCountdown(it.copy(minutesInput = requestedMinutes, secondsInput = requestedSeconds)) }
+    }
     if (showFocus) {
-        Dialog(onDismissRequest = { showFocus = false }, properties = DialogProperties(usePlatformDefaultWidth = false)) {
-            Surface(Modifier.fillMaxSize()) {
-                Column(Modifier.fillMaxSize().padding(24.dp), verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(selectedMode.label, style = MaterialTheme.typography.titleLarge)
-                    Spacer(Modifier.height(24.dp))
-                    val displayMillis = if (selectedMode == ClockMode.TIMER) state.timerRemainingMillis else state.stopwatchElapsedMillis
-                    Text(formatDuration(displayMillis), style = MaterialTheme.typography.displayLarge,
-                        fontFamily = FontFamily.Monospace, textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth().clearAndSetSemantics {
-                            val seconds = displayMillis / 1000
-                            contentDescription = "${seconds / 3600} hours, ${(seconds % 3600) / 60} minutes, ${seconds % 60} seconds"
-                        })
-                    Spacer(Modifier.height(24.dp))
-                    TextButton(onClick = { showFocus = false }) { Text("Exit focus view") }
-                }
+        ToolFocusView(selectedMode.label, onExit = { showFocus = false }) {
+            val isTimer = selectedMode == ClockMode.TIMER
+            val elapsed = if (isTimer) state.timerRemainingMillis else state.stopwatchElapsedMillis
+            val running = if (isTimer) state.timerRunning else state.stopwatchRunning
+            ClockFace(elapsed, when {
+                isTimer && state.timerFinished -> "Finished"
+                running -> "Running"
+                elapsed > 0L -> "Paused / Ready"
+                else -> "Ready"
+            })
+            Button(onClick = {
+                if (isTimer) toggleTimerFromView()
+                else change { it.copy(stopwatchRunning = !it.stopwatchRunning) }
+            }, modifier = Modifier.fillMaxWidth()) {
+                Text(if (running) "Pause" else if (elapsed > 0L) "Resume" else "Start")
+            }
+            error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+            if (isTimer && (!notificationsAllowed || !exactAllowed || TimerAlerts.schedulingFailed)) {
+                Text("Alerts need attention. Exit focus view and open Clock options.", color = MaterialTheme.colorScheme.error)
             }
         }
     }
@@ -323,14 +335,7 @@ fun TimerStopwatchScreen(onNavigateBack: () -> Unit, requestStopwatchReset: Bool
                         draftSeconds = value
                         change(updateWidgets = false) { it.copy(secondsInput = value) }
                     },
-                    onStartPause = {
-                        val requestedMinutes = draftMinutes
-                        val requestedSeconds = draftSeconds
-                        if (!state.timerRunning && state.timerRemainingMillis == 0L &&
-                            timerDurationMillis(requestedMinutes, requestedSeconds) == null) {
-                            error = "Enter 0–999 minutes and 0–59 seconds, with a total above zero."
-                        } else change { toggleCountdown(it.copy(minutesInput = requestedMinutes, secondsInput = requestedSeconds)) }
-                    },
+                    onStartPause = { toggleTimerFromView() },
                     onReset = { change { resetCountdown(it) } },
                 )
             }

@@ -83,11 +83,34 @@ This guide grows with each implementation phase. Automated CI builds app/test AP
 - At 2× text scale and 240dp content width, Copy and Share stack without losing their labels. Clear remains secondary and independently enabled.
 - TalkBack follows input controls before the result pane. Check all action labels and dismissal paths.
 
+## Phase 4: workflow and accessibility
+
+### Drafts and explicit reuse
+- Enter non-sensitive input in tool A, switch to B, then switch to A: return to A's existing draft rather than a fresh duplicate. Back should return through a sensible stack without circular duplicates.
+- Explicit History/Workbench/preset imports must take precedence over a retained draft and be applied exactly once.
+- Password values must not survive switching away or saved-instance recreation; customization options may remain. Passwords must never enter history or handoffs.
+- Presets affect configuration only; compatible result handoffs populate documented inputs only. Canceling any chooser leaves the source and destination unchanged.
+
+### Favorites and Home
+- Drag a favorite to an edge and hold the pointer still: scrolling continues until the edge/end or release. Verify order and visible item stay aligned.
+- Rotate with Choose tools open: uncommitted selections persist; Cancel still discards them.
+- With keyboard/TalkBack, return from chooser/Undo to an appropriate control. Accessible move actions and launcher shortcut ordering remain correct.
+- Optional active-clock shortcut shows only meaningful running/paused clock state. Hiding it does not stop clocks. Opening it does not start/reset a clock.
+- Device capability hints describe unavailable hardware, not false live accuracy. The tool remains accessible for explanation/retry; missing hardware must not crash Home.
+
+### Motion and focus
+- Reduce motion changes Coin/Bottle presentation without changing result generation or automatic recording. System animation scale must still be honored when the app preference is off.
+- Full-screen focus views have obvious Exit and system Back dismissal. Closing them must preserve count, game scores, running/paused timers and sensor subscription lifecycle.
+- Counter and clock essential controls must remain reachable at 2× font size, in landscape and with TalkBack. Repeated taps must not duplicate clock actions.
+- Sensor focus must retain accuracy/unavailable warnings; a large number is not a claim of calibrated precision.
+
 ## Results log
 
 | Phase | Automated result | Owner device result |
 | --- | --- | --- |
 | 1 | CI145 passed for `dcce25a213f65b76c80fa9a68d98fa44a35bf41c`; APK/checksums verified | Initial visual feedback: clean. Full checklist not yet run. |
-| 2 | Pending current phase CI | Deferred for combined testing |
+| 2 | CI43904137433 passed for `d3f0c574db2dd058527b8518792fbec8aca320aa` (builds, JVM tests, lint; instrumentation compilation only) | Deferred for combined testing |
 
-Phase 3 automated checks are pending; no device checks have been claimed.
+Phase 3 CI43904474797 passed at `0e9c73e99b492cbeb51dad8eaa11359acbbb4610`; no device checks have been claimed. Phase 4 CI is pending.
+
+Additional details: [focus views](PHASE4_FOCUS_TESTING.md), [switching/presets/handoffs](PHASE4_SWITCHING_TESTING.md).

@@ -1,5 +1,6 @@
 package com.jaguar.gearbox.ui.tools
 
+import com.jaguar.gearbox.ui.components.ToolFocusView
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.Box
@@ -102,8 +103,7 @@ fun CounterScreen(onNavigateBack: () -> Unit) {
     }, restoreLastResult = false, recordingDelayMillis = 0L, modeInputs = mapOf("step" to step.toString()), onRestoreMode = { saved ->
         step = saved["step"]?.toIntOrNull()?.takeIf { it in STEP_OPTIONS } ?: 1
     })
-    if (focusView) AlertDialog(onDismissRequest = { focusView = false }, title = { Text("Counter") },
-        text = {
+    if (focusView) ToolFocusView("Counter", onExit = { focusView = false }) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(count.toString(), style = MaterialTheme.typography.displayLarge,
                     modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()))
@@ -113,7 +113,7 @@ fun CounterScreen(onNavigateBack: () -> Unit) {
                 }
                 if (limitReached) Text("Counter limit reached", color = MaterialTheme.colorScheme.error)
             }
-        }, confirmButton = { TextButton(onClick = { focusView = false }) { Text("Exit focus view") } })
+        }
     var confirmReset by rememberSaveable { mutableStateOf(false) }
     if (confirmReset) {
         AlertDialog(

@@ -163,13 +163,14 @@ fun GearBoxApp(
     onLaunchScreenChange: (LaunchScreen) -> Unit = {},
     pendingRoute: String? = null,
     onPendingRouteConsumed: () -> Unit = {},
+    favoritesStore: FavoritesStore? = null,
 ) {
     // Keep the graph stable while editing preferences and across recreation.
     // A fresh app session picks up the newly saved preference.
     val sessionStartRoute = rememberSaveable { launchScreen.route }
     val navController = rememberNavController()
     val context = LocalContext.current
-    val favorites = remember { FavoritesStore(context) }
+    val favorites = remember(context, favoritesStore) { favoritesStore ?: FavoritesStore(context) }
     val recentTools = remember { RecentToolsStore(context) }
     val recentEvents = remember(recentTools) {
         com.jaguar.gearbox.data.RecentToolEventQueue { route, generation ->
@@ -193,11 +194,25 @@ fun GearBoxApp(
         userNavigation()
         navController.popBackStack()
     }
-    val openTool: (Tool) -> Unit = { tool ->
+    fun navigateToTool(tool: Tool, switching: Boolean = false) {
         userNavigation()
+        val sourceRoute = navController.currentDestination?.route
+        if (switching && sourceRoute == tool.route) return
         recentEvents.enqueue(tool.route, recentTools.generation())
-        navController.navigate(tool.route)
+        val targetCanRestore = tool.route != Tools.ROUTE_PASSWORD_GENERATOR
+        if (!targetCanRestore) navController.clearBackStack(tool.route)
+        navController.navigate(tool.route) {
+            launchSingleTop = true
+            restoreState = targetCanRestore
+            if (switching && sourceRoute != null && Tools.byRoute(sourceRoute) != null) {
+                popUpTo(sourceRoute) {
+                    inclusive = true
+                    saveState = sourceRoute != Tools.ROUTE_PASSWORD_GENERATOR
+                }
+            }
+        }
     }
+    val openTool: (Tool) -> Unit = { navigateToTool(it) }
 
     // Deep-links straight into a tool when GearBox is launched from one of its own app shortcuts.
     LaunchedEffect(pendingRoute) {
@@ -294,15 +309,26 @@ fun GearBoxApp(
                         androidx.compose.runtime.CompositionLocalProvider(
                             com.jaguar.gearbox.ui.tools.LocalClockNavigationTarget provides clockNavigationTarget,
                             com.jaguar.gearbox.ui.components.LocalToolHandoff provides { route: String, inputs: Map<String, String> ->
-                                Tools.byRoute(route)?.let { selected ->
+                                Tools.byRoute(route)?.takeIf {
+                                    com.jaguar.gearbox.data.ToolMemoryPolicy.permitsRoute(route) && com.jaguar.gearbox.data.ToolMemoryPolicy.validInputs(inputs)
+                                }?.let { selected ->
                                     toolImport = com.jaguar.gearbox.ui.components.ToolImport(route, inputs)
                                     openTool(selected)
                                 }
                             },
                             com.jaguar.gearbox.ui.components.LocalToolImport provides toolImport,
                             com.jaguar.gearbox.ui.components.LocalConsumeToolImport provides { toolImport = null },
+                            com.jaguar.gearbox.ui.components.LocalWorkbenchOpener provides {
+                                userNavigation(); navController.navigate("workbench") { launchSingleTop = true }
+                            },
+                            com.jaguar.gearbox.ui.components.LocalToolPresetOpener provides { inputs: Map<String, String> ->
+                                userNavigation()
+                                if (com.jaguar.gearbox.data.ToolMemoryPolicy.permitsRoute(tool.route) && com.jaguar.gearbox.data.ToolMemoryPolicy.validInputs(inputs)) {
+                                    toolImport = com.jaguar.gearbox.ui.components.ToolImport(tool.route, inputs, modeOnly = true)
+                                }
+                            },
                             com.jaguar.gearbox.ui.components.LocalToolOpener provides { selected: Tool ->
-                                if (selected.route != tool.route) openTool(selected)
+                                if (selected.route != tool.route) navigateToTool(selected, switching = true)
                             },
                         ) { tool.content { navigateBack() } }
                     }

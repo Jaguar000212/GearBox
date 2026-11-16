@@ -40,6 +40,7 @@ fun WorkbenchScreen(
     var loaded by remember { mutableStateOf(false) }
     var busy by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
+    var handoffTarget by remember { mutableStateOf<SavedToolItem?>(null) }
     var deleteTarget by remember { mutableStateOf<SavedToolItem?>(null) }
     var deletePreset by remember { mutableStateOf(false) }
     val items = if (presetsSelected) presets else results
@@ -124,6 +125,9 @@ fun WorkbenchScreen(
                                 onClick = { onOpen(item.route, item.inputs, presetsSelected) }) {
                                 Text(if (presetsSelected) "Use preset" else "Restore inputs")
                             }
+                            if (!presetsSelected && com.jaguar.gearbox.data.compatibleToolHandoffs(item.route, item.inputs, item.output).isNotEmpty()) {
+                                TextButton(enabled = !busy, onClick = { handoffTarget = item }) { Text("Use in…") }
+                            }
                             TextButton(enabled = !busy, onClick = {
                                 deletePreset = presetsSelected
                                 deleteTarget = item
@@ -132,6 +136,15 @@ fun WorkbenchScreen(
                     }
                 }
             }
+        }
+    }
+    handoffTarget?.let { item ->
+        CompositionLocalProvider(com.jaguar.gearbox.ui.components.LocalToolHandoff provides { route: String, inputs: Map<String, String> ->
+            onOpen(route, inputs, false)
+        }) {
+            com.jaguar.gearbox.ui.components.ToolHandoffDialog(
+                com.jaguar.gearbox.ui.components.ToolHistoryBinding(item.route, {}, item.inputs, item.output),
+            ) { handoffTarget = null }
         }
     }
     deleteTarget?.let { target ->

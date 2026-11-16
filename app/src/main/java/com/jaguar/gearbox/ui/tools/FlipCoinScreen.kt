@@ -19,6 +19,7 @@ import androidx.compose.ui.semantics.*
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.jaguar.gearbox.data.Tools
+import com.jaguar.gearbox.data.UiPreferencesStore
 import com.jaguar.gearbox.ui.components.ToolActions
 import com.jaguar.gearbox.ui.components.ToolScaffold
 import com.jaguar.gearbox.ui.components.rememberToolHistory
@@ -28,6 +29,8 @@ import kotlin.random.Random
 @Composable
 fun FlipCoinScreen(onNavigateBack: () -> Unit) {
     val context = LocalContext.current
+    val uiPreferencesStore = remember(context) { UiPreferencesStore(context) }
+    val uiPreferences by uiPreferencesStore.preferences.collectAsState()
     var runId by rememberSaveable { mutableStateOf("") }
     var result by rememberSaveable { mutableStateOf<Boolean?>(null) }
     // Transient animation state is not restored: recreation must never leave controls locked.
@@ -83,7 +86,7 @@ fun FlipCoinScreen(onNavigateBack: () -> Unit) {
                             rotation.snapTo(0f)
                             // Animatable honors the system animation duration scale, including zero.
                             // Whole turns avoid mirrored text and reset each flip to avoid float drift.
-                            rotation.animateTo(720f, tween(500))
+                            if (!uiPreferences.reduceMotion) rotation.animateTo(720f, tween(500))
                             runId = java.util.UUID.randomUUID().toString()
                             result = outcome
                         } finally {

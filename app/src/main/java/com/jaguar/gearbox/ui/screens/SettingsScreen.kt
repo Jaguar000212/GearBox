@@ -95,6 +95,7 @@ fun SettingsScreen(
         )
         HorizontalDivider()
         HomePreferencesSection(recents)
+        ActiveClockPreference()
         HorizontalDivider()
         SectionHeader("Appearance")
         ListItem(
@@ -123,6 +124,7 @@ fun SettingsScreen(
         )
         HorizontalDivider()
         SectionHeader("Feedback")
+        MotionPreferencesSection()
         ListItem(
             headlineContent = { Text("Haptic feedback") },
             supportingContent = { Text("Vibrate on button presses and long actions.") },

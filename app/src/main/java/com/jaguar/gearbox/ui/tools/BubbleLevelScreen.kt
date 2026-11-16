@@ -1,5 +1,8 @@
 package com.jaguar.gearbox.ui.tools
 
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.saveable.rememberSaveable
+import com.jaguar.gearbox.ui.components.ToolFocusView
 import com.jaguar.gearbox.data.ToolMemoryStore
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.runtime.remember
@@ -58,11 +61,29 @@ fun BubbleLevelScreen(
         onRestore = {}, allowRestore = false, restoreLastResult = false, recordingDelayMillis = 0L,
     )
 
+    var focusView by rememberSaveable { mutableStateOf(false) }
+    if (focusView) ToolFocusView("Bubble level", onExit = { focusView = false }) {
+        OrientationStatusMessage(sensorState.status)
+        if (sensorState.status == OrientationStatus.READY) {
+            if (snapshot != null) {
+                val pitch = Math.toDegrees(snapshot.pitchRad.toDouble())
+                val roll = Math.toDegrees(snapshot.rollRad.toDouble())
+                Text("Pitch ${"%.1f".format(pitch)}°", style = MaterialTheme.typography.displayMedium)
+                Text("Roll ${"%.1f".format(roll)}°", style = MaterialTheme.typography.displayMedium)
+                Text(if (abs(pitch) < LEVEL_TOLERANCE_DEGREES && abs(roll) < LEVEL_TOLERANCE_DEGREES) "Within 1° level tolerance" else "Tilted")
+                Text("Device sensor estimate. Check against a physical level for precision work.")
+            }
+        } else {
+            Text("A reliable reading is not available. No measurement is shown.")
+        }
+    }
+
     ToolScaffold(
         title = stringResource(R.string.bubble_level_title),
         icon = Tools.byRoute(Tools.ROUTE_BUBBLE_LEVEL)!!.icon,
         onNavigateBack = onNavigateBack,
         history = history,
+        options = { TextButton(onClick = { focusView = true }) { Text("Focus view") } },
     ) {
         OrientationStatusMessage(sensorState.status)
         if (snapshot == null) return@ToolScaffold

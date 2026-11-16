@@ -1,5 +1,6 @@
 package com.jaguar.gearbox.ui.tools
 
+import com.jaguar.gearbox.ui.components.ToolFocusView
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -241,12 +242,13 @@ fun ScoreboardScreen(onNavigateBack: () -> Unit) {
             }) { Text("Replace scoreboard") } },
             dismissButton = { TextButton(onClick = { pendingRestore = null }) { Text("Cancel") } })
     }
-    if (focusView) AlertDialog(onDismissRequest = { focusView = false }, title = { Text("Scoreboard") },
-        text = { Column(Modifier.heightIn(max = 460.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+    if (focusView) ToolFocusView("Scoreboard", onExit = { focusView = false }) {
+        Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
             players.forEach { player ->
                 Text(player.name, style = MaterialTheme.typography.titleLarge)
                 Text(player.score.toString(), style = MaterialTheme.typography.displayMedium)
             }
-        } }, confirmButton = { TextButton(onClick = { focusView = false }) { Text("Exit focus view") } })
+        }
+    }
 
 }

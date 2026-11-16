@@ -1,5 +1,6 @@
 package com.jaguar.gearbox.ui.tools
 
+import com.jaguar.gearbox.ui.components.ToolFocusView
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -273,14 +274,15 @@ fun ChessScoreboardScreen(onNavigateBack: () -> Unit) {
             }) { Text("Replace match") } },
             dismissButton = { TextButton(onClick = { pendingRestore = null }) { Text("Cancel") } })
     }
-    if (focusView) AlertDialog(onDismissRequest = { focusView = false }, title = { Text("Chess scoreboard") },
-        text = { Column(Modifier.heightIn(max = 460.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+    if (focusView) ToolFocusView("Chess scoreboard", onExit = { focusView = false }) {
+        Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
             Text(whiteName.ifBlank { "White" }, style = MaterialTheme.typography.titleLarge)
             Text(whiteScore.toString(), style = MaterialTheme.typography.displayMedium)
             Text(blackName.ifBlank { "Black" }, style = MaterialTheme.typography.titleLarge)
             Text(blackScore.toString(), style = MaterialTheme.typography.displayMedium)
             Text("Games: $gamesPlayed")
-        } }, confirmButton = { TextButton(onClick = { focusView = false }) { Text("Exit focus view") } })
+        }
+    }
 
 }
 

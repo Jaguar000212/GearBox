@@ -22,6 +22,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -57,8 +58,8 @@ fun PasswordGeneratorScreen(onNavigateBack: () -> Unit) {
     var useLower by rememberSaveable { mutableStateOf(true) }
     var useNumbers by rememberSaveable { mutableStateOf(true) }
     var useSymbols by rememberSaveable { mutableStateOf(false) }
-    var password by rememberSaveable { mutableStateOf("") }
-    var generatedCharsetSize by rememberSaveable { mutableIntStateOf(0) }
+    var password by remember { mutableStateOf("") }
+    var generatedCharsetSize by remember { mutableIntStateOf(0) }
 
     var customize by rememberSaveable { mutableStateOf(false) }
 

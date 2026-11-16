@@ -1,0 +1,10 @@
+# Phase 4 switching, presets and result handoffs
+
+- Switch tool uses Navigation's saved destination state for non-password tools. Test A → B → C → A → B with different drafts: each should return unchanged. Back discards the current destination and returns to its original parent, rather than visiting every switch. Retained drafts are task/navigation state, not automatic history or a new disk cache. Android may restore task state after activity recreation. Automatic history/mode/result retention settings remain independent.
+- Generated passwords are transient `remember` state, not saved-instance state. Switching away and returning, or recreating the Activity, must clear generated output and strength. Password options may survive recreation; password destinations are never saved by quick switch.
+- Apply a preset to an already initialized tool: only its declared configuration changes. Restore a Workbench result into a previously switched-away destination: explicit imported inputs win over the old draft and asynchronous remembered values. Reapply identical imports: each explicit action applies once.
+- Overflow → Presets provides route-specific named configuration presets and explicit save. Open Workbench manages existing items. Automatic retention being off must not block these explicit saves.
+- Overflow → Use result in… appears only for compatible bounded outputs. Text goes unchanged to QR, Hash, Text Tools or Morse. Numeric handoffs use typed numeric inputs, not display strings stripped of units/currency. Numeric Base Converter source radix is honored, and Roman targets require 1–3999. Destination and operation are explicitly chosen; nothing reads clipboard or starts games/timers.
+- Workbench saved results expose the same compatible handoffs; presets remain configuration-only.
+
+Automated regressions were authored for handoff mapping/bounds/privacy, repeated switch restoration/Back, initialized import precedence and transient password restoration. Instrumentation/device execution remains required; no device run is claimed.

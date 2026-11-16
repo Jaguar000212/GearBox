@@ -20,6 +20,8 @@ import androidx.compose.ui.semantics.*
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.jaguar.gearbox.data.Tools
+import com.jaguar.gearbox.data.UiPreferencesStore
+import androidx.compose.ui.platform.LocalContext
 import com.jaguar.gearbox.ui.components.ToolScaffold
 import com.jaguar.gearbox.ui.components.rememberToolHistory
 import kotlinx.coroutines.launch
@@ -27,6 +29,9 @@ import kotlin.random.Random
 
 @Composable
 fun SpinBottleScreen(onNavigateBack: () -> Unit) {
+    val context = LocalContext.current
+    val uiPreferencesStore = remember(context) { UiPreferencesStore(context) }
+    val uiPreferences by uiPreferencesStore.preferences.collectAsState()
     var runId by rememberSaveable { mutableStateOf("") }
     var finalAngle by rememberSaveable { mutableStateOf(-1) }
     val rotation = remember { Animatable(finalAngle.coerceAtLeast(0).toFloat()) }
@@ -93,7 +98,7 @@ fun SpinBottleScreen(onNavigateBack: () -> Unit) {
                         try {
                             rotation.snapTo(current)
                             // Animatable honors the system animation-duration scale, including zero.
-                            rotation.animateTo(target, animationSpec = tween(durationMillis = 2500))
+                            if (!uiPreferences.reduceMotion) rotation.animateTo(target, animationSpec = tween(durationMillis = 2500))
                             rotation.snapTo(nextAngle.toFloat())
                             runId = java.util.UUID.randomUUID().toString()
                             finalAngle = nextAngle

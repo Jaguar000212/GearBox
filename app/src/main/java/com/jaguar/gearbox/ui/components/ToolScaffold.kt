@@ -62,10 +62,16 @@ fun ToolScaffold(
     var showSwitcher by remember { mutableStateOf(false) }
     var showHelp by remember { mutableStateOf(false) }
     var showMore by remember { mutableStateOf(false) }
+    var showPresets by remember { mutableStateOf(false) }
+    var showHandoff by remember { mutableStateOf(false) }
     // Icons identify catalog tools even when screen titles are localized or shortened.
     val helpRoute = history?.route ?: Tools.all.firstOrNull { it.icon == icon }?.route
     val help = ToolHelpCatalog.forRoute(helpRoute)
     val openTool = LocalToolOpener.current
+    val presetOpener = LocalToolPresetOpener.current
+    val handoff = LocalToolHandoff.current
+    val hasPresets = history != null && history.configuration.isNotEmpty() && presetOpener != null
+    val hasHandoffs = history != null && handoff != null && com.jaguar.gearbox.data.compatibleToolHandoffs(history.route, history.inputs, history.output).isNotEmpty()
     Scaffold(
         topBar = {
             TopAppBar(
@@ -77,11 +83,17 @@ fun ToolScaffold(
                 },
                 actions = {
                     if (history != null) IconButton(onClick = { showHistory = true }) { Icon(Icons.Filled.History, "History") }
-                    if (help != null || openTool != null) Box {
+                    if (help != null || openTool != null || hasPresets || hasHandoffs) Box {
                         IconButton(onClick = { showMore = true }) {
                             Icon(Icons.Filled.MoreVert, "More tool actions")
                         }
                         DropdownMenu(expanded = showMore, onDismissRequest = { showMore = false }) {
+                            if (hasPresets) DropdownMenuItem(text = { Text("Presets") }, onClick = {
+                                showMore = false; showPresets = true
+                            })
+                            if (hasHandoffs) DropdownMenuItem(text = { Text("Use result in…") }, onClick = {
+                                showMore = false; showHandoff = true
+                            })
                             if (help != null) DropdownMenuItem(text = { Text("Help & examples") }, onClick = {
                                 showMore = false
                                 showHelp = true
@@ -118,6 +130,8 @@ fun ToolScaffold(
             }
         }
     }
+    if (showPresets && history != null) ToolPresetsDialog(history) { showPresets = false }
+    if (showHandoff && history != null) ToolHandoffDialog(history) { showHandoff = false }
     if (showHelp && help != null) ToolHelpDialog(title, help) { showHelp = false }
     if (showHistory && history != null) ToolHistoryDialog(history) { showHistory = false }
     if (showSwitcher && openTool != null) ToolSwitcher(onOpen = {
@@ -136,6 +150,7 @@ private fun ToolSwitcher(onOpen: (Tool) -> Unit, onDismiss: () -> Unit) {
     }
     AlertDialog(onDismissRequest = onDismiss, title = { Text("Switch tool") }, text = {
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Text("Switching keeps non-password drafts in this navigation session. Back leaves the current tool.", style = MaterialTheme.typography.bodySmall)
             OutlinedTextField(value = query, onValueChange = { query = it }, label = { Text("Find a tool") }, singleLine = true)
             LazyColumn(Modifier.heightIn(max = 400.dp)) {
                 items(matches, key = { it.route }) { tool ->

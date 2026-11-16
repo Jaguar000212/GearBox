@@ -1,6 +1,6 @@
 # Toolbox refresh: staged implementation
 
-Phase 1 (PR #56) and launch-screen PR #55 were merged after exact-head CI/review checks. Phase 2 builds on that same verified main tree. No release or tag has been created.
+PRs #55–58 were merged after exact-head CI/review checks. Phase 4 builds on the verified Phase 3 tree. No release or tag has been created.
 
 ## Implemented foundation
 
@@ -34,16 +34,28 @@ History is opt-in. Turning a setting off pauses its use without deleting stored 
 - Adaptive input/result panes for Percentage, Tip, Unit Converter and Text Tools, with stacked phone/large-text fallback and shared scrolling.
 - Selectable result-card output and wrapping/stacking Copy/Share actions for narrow screens and large text.
 
-## Still to complete in later reviewable phases
+## Phase 4: workflow and accessibility
 
-- Apply additional adaptive layouts where tool complexity benefits from them, based on device feedback.
-- Broader compatible handoffs and preset entry points, optional active-clock Home shortcut.
-- Switch-back draft reuse, Favorites edge-hold autoscroll and picker restoration, fuller focus views and explicit reduced-motion control.
-- Capability hints before opening sensor tools; actual availability remains checked inside each tool.
-- Device-level layout, TalkBack, font scaling, restore/cancel/navigation and migration QA.
+- Quick switch saves/restores non-password navigation drafts without a new persistent draft cache; explicit imports take precedence. Generated passwords are transient, not saved-instance data.
+- Contextual named presets and compatible result handoffs are explicit, bounded and destination-specific; no automatic clipboard access or hardware/clock actions.
+- Favorites edge-hold autoscroll, saveable chooser selections, focus return and Home unfavorite Undo.
+- Local reduced-motion preference and optional Home clock shortcut. Home clock observation never starts/resets/selects a clock; hardware capability hints remain informational.
+- Full-screen focus for Counter, Clock, Scoreboards, Compass and Level. Counter/clock reuse existing actions; scoreboards intentionally remain read-only in focus.
+
+## Deliberate limits and remaining owner validation
+
+- Device-level layout, TalkBack focus, gesture behavior, font scaling, restore/cancel/navigation and migration checks are deferred to the owner, not represented as automated passes.
+- Adaptive split panes apply where implemented (Percentage, Tip, Units and Text); other tools retain readable scrolling layouts. Broader adaptation can follow observed device needs.
+- Bubble Level and Compass retain the existing rotation-vector hardware requirement. Capability hints do not add support for previously unsupported sensors or certify measurement accuracy.
+- System animation scale remains honored; the new preference additionally skips decorative coin/bottle animation.
+- History excludes Password Generator; device snapshots are read-only; clock restore imports configuration only; game restoration requires validation and confirmation.
+- Navigation drafts may survive Android task restoration, while automatic disk mode/result/history retention remains independently controlled. See [switching details](PHASE4_SWITCHING_TESTING.md).
+- Legacy game/session preferences retain existing Android backup behavior. New history, recents, presets/results and presentation settings use no-backup storage.
 
 ## Verification
 
 Local whitespace and Python packaging tests passed. Local Gradle execution was blocked downloading Gradle 8.10.2 by network restrictions. CI run 144 passed on commit `1309ed4cc1cd7f52d576ef049ea2d30fde60f210`: debug/release app builds, instrumentation APK compilation, JVM unit tests, debug/release lint, and version/packaging guardrails. Instrumentation tests were compiled, not executed on a device.
+
+Phase 2 CI43904137433 passed at `d3f0c574db2dd058527b8518792fbec8aca320aa`; Phase 3 CI43904474797 passed at `0e9c73e99b492cbeb51dad8eaa11359acbbb4610`. Phase 4 exact-head verification is recorded in [PR #59 checks](https://github.com/Jaguar000212/GearBox/pull/59/checks).
 
 CI now uploads debug app and instrumentation APKs plus checksums for hands-on testing (seven-day retention). These are development artifacts, not a signed release. The debug app uses `com.jaguar.gearbox.beta`; an existing installation with a different signing key may reject an update. Do not uninstall or clear existing data to bypass that error. Use a separate test device/profile or report the conflict.

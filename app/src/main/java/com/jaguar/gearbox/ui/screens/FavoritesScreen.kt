@@ -15,6 +15,12 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.runtime.saveable.listSaver
+import com.jaguar.gearbox.logic.favoriteEdgeScrollVelocity
+import com.jaguar.gearbox.logic.favoriteDragTranslation
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
@@ -43,8 +49,61 @@ fun FavoritesScreen(tools: List<Tool>, favorites: FavoritesStore, onOpenTool: (T
     val scope = rememberCoroutineScope()
     val listState = rememberLazyListState()
     var draggedRoute by remember { mutableStateOf<String?>(null) }
-    var dragOffset by remember { mutableFloatStateOf(0f) }
-    fun finishDrag() { draggedRoute = null; dragOffset = 0f }
+    var dragCenter by remember { mutableFloatStateOf(0f) }
+    val density = LocalDensity.current
+    val edgePx = with(density) { 64.dp.toPx() }
+    val maxSpeedPx = with(density) { 480.dp.toPx() }
+    val chooseFocus = remember { FocusRequester() }
+    val rowFocus = remember { mutableMapOf<String, FocusRequester>() }
+    var returnToChoose by remember { mutableStateOf(false) }
+    var returnToRoute by remember { mutableStateOf<String?>(null) }
+    fun finishDrag() { draggedRoute = null }
+
+    fun reorderAtPointer() {
+        val route = draggedRoute ?: return
+        val visible = listState.layoutInfo.visibleItemsInfo
+        val current = visible.firstOrNull { it.key == route } ?: return
+        val target = visible.firstOrNull {
+            it.key != route && it.key in favorites.favorites &&
+                dragCenter >= it.offset && dragCenter < it.offset + it.size &&
+                ((it.index > current.index && dragCenter > it.offset + it.size / 2f) ||
+                    (it.index < current.index && dragCenter < it.offset + it.size / 2f))
+        } ?: return
+        favorites.move(favorites.favorites.indexOf(route), favorites.favorites.indexOf(target.key as String))
+    }
+    LaunchedEffect(draggedRoute) {
+        if (draggedRoute == null) return@LaunchedEffect
+        var previous = withFrameNanos { it }
+        while (draggedRoute != null) {
+            val now = withFrameNanos { it }
+            val seconds = ((now - previous) / 1_000_000_000f).coerceIn(0f, 0.032f)
+            previous = now
+            reorderAtPointer()
+            val layout = listState.layoutInfo
+            val velocity = favoriteEdgeScrollVelocity(dragCenter, layout.viewportStartOffset.toFloat(),
+                layout.viewportEndOffset.toFloat(), edgePx, maxSpeedPx)
+            if (velocity != 0f) listState.scrollBy(velocity * seconds)
+            // Translation is derived from the new item offset, so consumed scroll cannot drift it.
+        }
+    }
+    LaunchedEffect(returnToChoose, choosing) {
+        if (returnToChoose && !choosing) {
+            listState.scrollToItem(0)
+            withFrameNanos { }
+            chooseFocus.requestFocus()
+            returnToChoose = false
+        }
+    }
+    LaunchedEffect(returnToRoute) {
+        val route = returnToRoute ?: return@LaunchedEffect
+        val index = favTools.indexOfFirst { it.route == route }
+        if (index >= 0) {
+            listState.scrollToItem(index + 1) // header is the first lazy item
+            withFrameNanos { }
+            rowFocus[route]?.requestFocus()
+        }
+        returnToRoute = null
+    }
 
     BackHandler(enabled = editing && !choosing) { finishDrag(); editing = false }
     Scaffold(contentWindowInsets = WindowInsets(0, 0, 0, 0), snackbarHost = { SnackbarHost(snackbar) }) { insets ->
@@ -59,7 +118,7 @@ fun FavoritesScreen(tools: List<Tool>, favorites: FavoritesStore, onOpenTool: (T
                     Text("Your toolbox", style = MaterialTheme.typography.headlineMedium)
                     Text("Your everyday tools, one tap away.", color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        FilledTonalButton(onClick = { choosing = true }) {
+                        FilledTonalButton(onClick = { finishDrag(); choosing = true }, modifier = Modifier.focusRequester(chooseFocus)) {
                             Icon(Icons.Default.Add, null); Spacer(Modifier.width(8.dp)); Text("Choose tools")
                         }
                         if (favTools.isNotEmpty()) TextButton(onClick = { finishDrag(); editing = !editing }) {
@@ -81,6 +140,7 @@ fun FavoritesScreen(tools: List<Tool>, favorites: FavoritesStore, onOpenTool: (T
             }
             itemsIndexed(favTools, key = { _, tool -> tool.route }) { index, tool ->
                 val isDragged = tool.route == draggedRoute
+                val focusRequester = rowFocus.getOrPut(tool.route) { FocusRequester() }
                 fun moveBy(delta: Int): Boolean {
                     val target = favTools.getOrNull(index + delta) ?: return false
                     finishDrag()
@@ -91,9 +151,12 @@ fun FavoritesScreen(tools: List<Tool>, favorites: FavoritesStore, onOpenTool: (T
                 val moveDown = "Move ${tool.name} down"
                 Card(
                     modifier = Modifier.fillMaxWidth().heightIn(min = 72.dp)
-                        .graphicsLayer { translationY = if (isDragged) dragOffset else 0f }
+                        .graphicsLayer {
+                            val slot = listState.layoutInfo.visibleItemsInfo.firstOrNull { it.key == tool.route }
+                            translationY = if (isDragged && slot != null) favoriteDragTranslation(dragCenter, slot.offset, slot.size) else 0f
+                        }
                         .zIndex(if (isDragged) 1f else 0f)
-                        .then(if (!editing) Modifier.clickable { onOpenTool(tool) } else Modifier)
+                        .then(if (!editing) Modifier.focusRequester(focusRequester).clickable { onOpenTool(tool) } else Modifier)
                         .semantics {
                             stateDescription = "${index + 1} of ${favTools.size}"
                             if (editing) customActions = buildList {
@@ -113,14 +176,16 @@ fun FavoritesScreen(tools: List<Tool>, favorites: FavoritesStore, onOpenTool: (T
                                 Text(tool.category.label, style = MaterialTheme.typography.labelMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
-                            if (editing) IconButton(onClick = {
+                            if (editing) IconButton(modifier = Modifier.focusRequester(focusRequester), onClick = {
                                 finishDrag()
                                 val position = favorites.favorites.indexOf(tool.route)
                                 favorites.toggle(tool.route)
                                 scope.launch {
                                     snackbar.currentSnackbarData?.dismiss()
-                                    if (snackbar.showSnackbar("${tool.name} removed", "Undo", duration = SnackbarDuration.Short) == SnackbarResult.ActionPerformed)
+                                    if (snackbar.showSnackbar("${tool.name} removed", "Undo", duration = SnackbarDuration.Short) == SnackbarResult.ActionPerformed) {
                                         favorites.restore(tool.route, position)
+                                        returnToRoute = tool.route
+                                    }
                                 }
                             }) { Icon(Icons.Default.RemoveCircleOutline, "Remove ${tool.name}") }
                         }
@@ -131,28 +196,20 @@ fun FavoritesScreen(tools: List<Tool>, favorites: FavoritesStore, onOpenTool: (T
                             Icon(Icons.Default.DragHandle, "Drag to reorder ${tool.name}",
                                 modifier = Modifier.size(48.dp).pointerInput(tool.route) {
                                     detectDragGesturesAfterLongPress(
-                                        onDragStart = { draggedRoute = tool.route; dragOffset = 0f },
+                                        onDragStart = {
+                                            listState.layoutInfo.visibleItemsInfo.firstOrNull { it.key == tool.route }?.let { slot ->
+                                                dragCenter = slot.offset + slot.size / 2f
+                                                draggedRoute = tool.route
+                                            }
+                                        },
                                         onDragEnd = { finishDrag() }, onDragCancel = { finishDrag() },
                                         onDrag = { change, delta ->
-                                            change.consume(); dragOffset += delta.y
-                                            val route = draggedRoute ?: return@detectDragGesturesAfterLongPress
-                                            val layout = listState.layoutInfo
-                                            val current = layout.visibleItemsInfo.firstOrNull { it.key == route }
-                                                ?: return@detectDragGesturesAfterLongPress
-                                            val center = current.offset + dragOffset + current.size / 2f
-                                            val edge = 64.dp.toPx()
-                                            val scroll = when {
-                                                center > layout.viewportEndOffset - edge -> 18f
-                                                center < layout.viewportStartOffset + edge -> -18f
-                                                else -> 0f
-                                            }
-                                            if (scroll != 0f) scope.launch { listState.scrollBy(scroll) }
-                                            val target = layout.visibleItemsInfo.firstOrNull {
-                                                it.key != route && it.key in favorites.favorites &&
-                                                    center >= it.offset && center < it.offset + it.size
-                                            } ?: return@detectDragGesturesAfterLongPress
-                                            favorites.move(favorites.favorites.indexOf(route), favorites.favorites.indexOf(target.key as String))
-                                            dragOffset -= target.offset - current.offset
+                                            change.consume()
+                                            val viewport = listState.layoutInfo
+                                            dragCenter = (dragCenter + delta.y).coerceIn(
+                                                viewport.viewportStartOffset.toFloat() + 1f,
+                                                viewport.viewportEndOffset.toFloat() - 1f)
+                                            reorderAtPointer()
                                         },
                                     )
                                 })
@@ -162,14 +219,16 @@ fun FavoritesScreen(tools: List<Tool>, favorites: FavoritesStore, onOpenTool: (T
             }
         }
     }
-    if (choosing) ChooseFavoriteTools(tools, favorites, onDismiss = { choosing = false })
+    if (choosing) ChooseFavoriteTools(tools, favorites, onDismiss = { choosing = false; returnToChoose = true })
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ChooseFavoriteTools(tools: List<Tool>, favorites: FavoritesStore, onDismiss: () -> Unit) {
     var query by rememberSaveable { mutableStateOf("") }
-    var selected by remember { mutableStateOf(setOf<String>()) }
+    var selected by rememberSaveable(stateSaver = listSaver<Set<String>, String>(
+        save = { it.toList() }, restore = { it.toSet() },
+    )) { mutableStateOf(emptySet()) }
     val matches = tools.filter { tool ->
         query.isBlank() || tool.name.contains(query, true) || tool.description.contains(query, true) ||
             tool.keywords.any { it.contains(query, true) }

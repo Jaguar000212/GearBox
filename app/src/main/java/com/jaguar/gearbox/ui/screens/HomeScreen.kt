@@ -22,6 +22,18 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.repeatOnLifecycle
+import com.jaguar.gearbox.logic.ClockState
+import com.jaguar.gearbox.logic.homeClockSummary
+import com.jaguar.gearbox.timer.ClockRepository
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -34,7 +46,7 @@ import com.jaguar.gearbox.logic.adaptiveToolColumnCount
 import com.jaguar.gearbox.ui.components.ToolCard
 
 /** Discovery stays separate from the user's curated Favorites. */
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun HomeScreen(
     tools: List<Tool>,
@@ -42,6 +54,13 @@ fun HomeScreen(
     recentTools: RecentToolsStore,
     onOpenTool: (Tool) -> Unit,
 ) {
+    val context = LocalContext.current
+    val uiPreferencesStore = remember(context) { UiPreferencesStore(context) }
+    val uiPreferences by uiPreferencesStore.preferences.collectAsState()
+    val capabilities = remember(context) { DeviceCapabilities.read(context) }
+    val clockState = rememberHomeClockState(uiPreferences.showActiveClockShortcut)
+    val clockSummary = clockState?.let(::homeClockSummary)
+    val clockTool = tools.firstOrNull { it.route == Tools.ROUTE_TIMER_STOPWATCH }
     var query by rememberSaveable { mutableStateOf("") }
     var selectedCategory by rememberSaveable { mutableStateOf<String?>(null) }
     var showCategories by rememberSaveable { mutableStateOf(false) }
@@ -53,10 +72,27 @@ fun HomeScreen(
                 tool.description.contains(search, true) || tool.category.label.contains(search, true) ||
                 tool.keywords.any { it.contains(search, true) })
     }
+    val snackbar = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+    var undoJob by remember { mutableStateOf<Job?>(null) }
+    val toggleFavorite: (Tool) -> Unit = { tool ->
+        // A later favorite action supersedes the pending undo, so it cannot revive stale intent.
+        undoJob?.cancel()
+        snackbar.currentSnackbarData?.dismiss()
+        val position = favorites.favorites.indexOf(tool.route)
+        favorites.toggle(tool.route)
+        if (position >= 0) undoJob = scope.launch {
+            if (snackbar.showSnackbar("${tool.name} removed from favorites", "Undo",
+                    duration = SnackbarDuration.Short) == SnackbarResult.ActionPerformed) {
+                favorites.restore(tool.route, position)
+            }
+        }
+    }
     val recentToolObjs = recentTools.recent.mapNotNull { route -> tools.firstOrNull { it.route == route } }
 
+    Scaffold(contentWindowInsets = WindowInsets(0, 0, 0, 0), snackbarHost = { SnackbarHost(snackbar) }) { insets ->
     LazyColumn(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize().padding(insets),
         contentPadding = PaddingValues(bottom = 24.dp),
     ) {
         item {
@@ -83,15 +119,20 @@ fun HomeScreen(
             )
         }
         item {
-            Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween) {
+            FlowRow(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 AssistChip(onClick = { showCategories = true },
                     label = { Text(activeCategory?.label ?: "All tools") },
                     trailingIcon = { Icon(Icons.Default.ExpandMore, null) })
                 Text(pluralStringResource(R.plurals.home_tool_count, filtered.size, filtered.size),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        }
+        if (uiPreferences.showActiveClockShortcut && clockSummary != null && clockTool != null) {
+            item(key = "active-clock") {
+                ActiveClockShortcut(clockSummary) { onOpenTool(clockTool) }
             }
         }
         if (recentTools.showRecentTools && search.isEmpty() && activeCategory == null && recentToolObjs.isNotEmpty()) {
@@ -116,7 +157,7 @@ fun HomeScreen(
         } else if (search.isNotEmpty()) {
             // Search is one flat list, never repeated category groups.
             items(filtered, key = { it.route }) { tool ->
-                DiscoveryToolRow(tool, favorites, onOpenTool, showCategory = true)
+                DiscoveryToolRow(tool, favorites, onOpenTool, showCategory = true, capabilityHint = capabilities.hint(tool.route), onToggleFavorite = { toggleFavorite(tool) })
             }
         } else {
             ToolCategory.entries.forEach { category ->
@@ -128,11 +169,12 @@ fun HomeScreen(
                                 .semantics { heading() })
                     }
                     items(members, key = { it.route }) { tool ->
-                        DiscoveryToolRow(tool, favorites, onOpenTool, showCategory = false)
+                        DiscoveryToolRow(tool, favorites, onOpenTool, showCategory = false, capabilityHint = capabilities.hint(tool.route), onToggleFavorite = { toggleFavorite(tool) })
                     }
                 }
             }
         }
+    }
     }
     if (showCategories) {
         ModalBottomSheet(onDismissRequest = { showCategories = false }) {
@@ -157,7 +199,9 @@ fun HomeScreen(
 }
 
 @Composable
-private fun DiscoveryToolRow(tool: Tool, favorites: FavoritesStore, onOpenTool: (Tool) -> Unit, showCategory: Boolean) {
+internal fun DiscoveryToolRow(tool: Tool, favorites: FavoritesStore, onOpenTool: (Tool) -> Unit, showCategory: Boolean, capabilityHint: String? = null,
+    onToggleFavorite: () -> Unit = { favorites.toggle(tool.route) },
+) {
     Surface(
         shape = RoundedCornerShape(18.dp),
         color = MaterialTheme.colorScheme.surfaceContainerLow,
@@ -175,8 +219,12 @@ private fun DiscoveryToolRow(tool: Tool, favorites: FavoritesStore, onOpenTool: 
                 Text(if (showCategory) tool.category.label else tool.description,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant)
+                capabilityHint?.let {
+                    Text(it, style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
             }
-            IconButton(onClick = { favorites.toggle(tool.route) }) {
+            IconButton(onClick = onToggleFavorite) {
                 val favorite = favorites.isFavorite(tool.route)
                 Icon(if (favorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                     if (favorite) "Remove ${tool.name} from favorites" else "Add ${tool.name} to favorites",
@@ -249,6 +297,38 @@ fun ToolGrid(
                     onToggleFavorite = { favorites.toggle(tool.route) },
                 )
             }
+        }
+    }
+}
+
+/** Poll only while Home is visible; snapshot() never schedules alarms or changes stored clocks. */
+@Composable
+private fun rememberHomeClockState(enabled: Boolean): ClockState? {
+    val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+    var state by remember { mutableStateOf<ClockState?>(null) }
+    LaunchedEffect(context, lifecycleOwner, enabled) {
+        state = null
+        if (enabled) lifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            while (true) {
+                state = withContext(Dispatchers.IO) { ClockRepository.snapshot(context) }
+                delay(1000)
+            }
+        }
+    }
+    return state
+}
+
+@Composable
+internal fun ActiveClockShortcut(summary: String, onOpen: () -> Unit) {
+    OutlinedCard(onClick = onOpen,
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text("Return to clocks", style = MaterialTheme.typography.titleSmall)
+            Text(summary, style = MaterialTheme.typography.bodyMedium)
+            Text("Open timer / stopwatch without changing its state",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }

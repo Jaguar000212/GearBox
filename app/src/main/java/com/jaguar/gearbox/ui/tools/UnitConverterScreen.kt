@@ -1,5 +1,7 @@
 package com.jaguar.gearbox.ui.tools
 
+import androidx.compose.ui.res.stringResource
+import com.jaguar.gearbox.R
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
@@ -46,11 +48,11 @@ import com.jaguar.gearbox.ui.components.ToolScaffold
 import com.jaguar.gearbox.ui.components.CompactChoiceSelector
 import com.jaguar.gearbox.ui.components.rememberToolHistory
 
-private enum class UnitCategory(val label: String) {
-    LENGTH("Length"),
-    WEIGHT("Weight"),
-    VOLUME("Volume"),
-    TEMPERATURE("Temperature"),
+private enum class UnitCategory(val label: Int) {
+    LENGTH(R.string.calc_length),
+    WEIGHT(R.string.calc_weight),
+    VOLUME(R.string.calc_volume),
+    TEMPERATURE(R.string.calc_temperature),
 }
 
 /**
@@ -137,7 +139,7 @@ fun UnitConverterScreen(onNavigateBack: () -> Unit) {
     val historyTo = units.firstOrNull { it.label == toUnit } ?: units.first()
     val historyConverted = historyValue?.let { historyTo.fromBase(historyFrom.toBase(it)) }?.takeIf { it.isFinite() }
     val historyEquation = if (historyValue != null && historyConverted != null)
-        "${formatNonzeroTrimmed(historyValue)} ${historyFrom.symbol} = ${formatNonzeroTrimmed(historyConverted)} ${historyTo.symbol}" else null
+        context.getString(R.string.calc_1_s_2_s_3_s_4_s_2, formatNonzeroTrimmed(historyValue), historyFrom.symbol, formatNonzeroTrimmed(historyConverted), historyTo.symbol) else null
 
     val history = rememberToolHistory(
         route = Tools.ROUTE_UNIT_CONVERTER,
@@ -162,14 +164,14 @@ fun UnitConverterScreen(onNavigateBack: () -> Unit) {
     )
 
     ToolScaffold(
-        title = "Unit Converter",
+        title = context.getString(R.string.calc_unit_converter),
         icon = Tools.byRoute(Tools.ROUTE_UNIT_CONVERTER)!!.icon,
         onNavigateBack = onNavigateBack,
         history = history,
     ) {
         CompactChoiceSelector(
-            label = "Category", selected = selectedCategory, choices = UnitCategory.entries,
-            choiceLabel = { it.label }, onSelect = { entry ->
+            label = context.getString(R.string.calc_category), selected = selectedCategory, choices = UnitCategory.entries,
+            choiceLabel = { context.getString(it.label) }, onSelect = { entry ->
                 if (category != entry.name) {
                     val nextUnits = unitsByCategory.getValue(entry)
                     fromUnit = nextUnits.first().label
@@ -184,7 +186,7 @@ fun UnitConverterScreen(onNavigateBack: () -> Unit) {
         val to = units.first { it.label == toUnit }
         val result = value?.let { to.fromBase(from.toBase(it)) }?.takeIf { it.isFinite() }
         val equation = if (value != null && result != null) {
-            "${formatNonzeroTrimmed(value)} ${from.symbol} = ${formatNonzeroTrimmed(result)} ${to.symbol}"
+            context.getString(R.string.calc_1_s_2_s_3_s_4_s_2, formatNonzeroTrimmed(value), from.symbol, formatNonzeroTrimmed(result), to.symbol)
         } else null
 
         Spacer(Modifier.height(20.dp))
@@ -194,9 +196,9 @@ fun UnitConverterScreen(onNavigateBack: () -> Unit) {
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
             ) {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Text("Convert from", style = MaterialTheme.typography.titleMedium)
+                    Text(stringResource(R.string.calc_convert_from), style = MaterialTheme.typography.titleMedium)
                     UnitDropdown(
-                        label = "From unit",
+                        label = context.getString(R.string.calc_from_unit),
                         units = units,
                         selected = fromUnit,
                         expanded = fromExpanded,
@@ -206,7 +208,7 @@ fun UnitConverterScreen(onNavigateBack: () -> Unit) {
                     OutlinedTextField(
                         value = input,
                         onValueChange = { input = it },
-                        label = { Text("Value") },
+                        label = { Text(stringResource(R.string.calc_value)) },
                         suffix = { Text(from.symbol) },
                         trailingIcon = {
                             // Decimal keyboards do not consistently expose a minus key.
@@ -215,7 +217,7 @@ fun UnitConverterScreen(onNavigateBack: () -> Unit) {
                                     input = if (input.startsWith("-")) input.removePrefix("-")
                                     else "-${input.removePrefix("+")}"
                                 },
-                                modifier = Modifier.semantics { contentDescription = "Change sign" },
+                                modifier = Modifier.semantics { contentDescription = context.getString(R.string.calc_change_sign_2) },
                             ) { Text("±") }
                         },
                         singleLine = true,
@@ -229,7 +231,7 @@ fun UnitConverterScreen(onNavigateBack: () -> Unit) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
                 TextButton(onClick = { val previous = fromUnit; fromUnit = toUnit; toUnit = previous }) {
                     Icon(Icons.Filled.SwapVert, contentDescription = null)
-                    Text(" Swap units")
+                    Text(stringResource(R.string.calc_swap_units))
                 }
             }
 
@@ -239,9 +241,9 @@ fun UnitConverterScreen(onNavigateBack: () -> Unit) {
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
             ) {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Text("Convert to", style = MaterialTheme.typography.titleMedium)
+                    Text(stringResource(R.string.calc_convert_to), style = MaterialTheme.typography.titleMedium)
                     UnitDropdown(
-                        label = "To unit",
+                        label = context.getString(R.string.calc_to_unit),
                         units = units,
                         selected = toUnit,
                         expanded = toExpanded,
@@ -255,9 +257,9 @@ fun UnitConverterScreen(onNavigateBack: () -> Unit) {
                         Text(equation, style = MaterialTheme.typography.bodyMedium)
                     } else {
                         Text(
-                            if (input.isBlank()) "Enter a value to see the conversion."
-                            else if (value == null) "Enter a valid finite number."
-                            else "This conversion is too large. Try a smaller value.",
+                            if (input.isBlank()) context.getString(R.string.calc_enter_a_value_to_see_the_conversion)
+                            else if (value == null) context.getString(R.string.calc_enter_a_valid_finite_number)
+                            else context.getString(R.string.calc_this_conversion_is_too_large_try_a_smaller_value),
                             style = MaterialTheme.typography.bodyLarge,
                         )
                     }
@@ -265,7 +267,7 @@ fun UnitConverterScreen(onNavigateBack: () -> Unit) {
             }
             Spacer(Modifier.height(12.dp))
             ToolActions(
-                onCopy = { equation?.let { context.copyToClipboard("Unit conversion", it) } },
+                onCopy = { equation?.let { context.copyToClipboard(context.getString(R.string.calc_unit_conversion), it) } },
                 onShare = { equation?.let { context.shareText(it) } },
                 resultEnabled = equation != null,
                 onClear = { input = ""; focusManager.clearFocus() },
@@ -286,13 +288,14 @@ private fun UnitDropdown(
     onSelect: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val context = LocalContext.current
     ExposedDropdownMenuBox(
         expanded = expanded,
         onExpandedChange = onExpandedChange,
         modifier = modifier,
     ) {
         OutlinedTextField(
-            value = units.first { it.label == selected }.let { "${it.label} (${it.symbol})" },
+            value = units.first { it.label == selected }.let { context.getString(R.string.calc_1_s_2_s_4, context.getString(unitLabelResource(it.label)), it.symbol) },
             onValueChange = {},
             readOnly = true,
             label = { Text(label) },
@@ -304,7 +307,7 @@ private fun UnitDropdown(
         DropdownMenu(expanded = expanded, onDismissRequest = { onExpandedChange(false) }) {
             units.forEach { unit ->
                 DropdownMenuItem(
-                    text = { Text("${unit.label} (${unit.symbol})") },
+                    text = { Text(context.getString(R.string.calc_1_s_2_s_4, context.getString(unitLabelResource(unit.label)), unit.symbol)) },
                     onClick = {
                         onSelect(unit.label)
                         onExpandedChange(false)
@@ -315,3 +318,32 @@ private fun UnitDropdown(
     }
 }
 
+
+// English labels remain stable storage IDs for existing modes/history.
+private fun unitLabelResource(id: String): Int = when (id) {
+    "Millimeters" -> R.string.calc_millimeters
+    "Centimeters" -> R.string.calc_centimeters
+    "Meters" -> R.string.calc_meters
+    "Kilometers" -> R.string.calc_kilometers
+    "Inches" -> R.string.calc_inches
+    "Feet" -> R.string.calc_feet
+    "Yards" -> R.string.calc_yards
+    "Miles" -> R.string.calc_miles
+    "Milligrams" -> R.string.calc_milligrams
+    "Grams" -> R.string.calc_grams
+    "Kilograms" -> R.string.calc_kilograms
+    "Ounces" -> R.string.calc_ounces
+    "Pounds" -> R.string.calc_pounds
+    "Tonnes" -> R.string.calc_tonnes
+    "Milliliters" -> R.string.calc_milliliters
+    "Liters" -> R.string.calc_liters
+    "Cubic meters" -> R.string.calc_cubic_meters
+    "Teaspoons" -> R.string.calc_teaspoons
+    "Tablespoons" -> R.string.calc_tablespoons
+    "Cups" -> R.string.calc_cups
+    "Gallons (US)" -> R.string.calc_gallons_us
+    "Celsius" -> R.string.calc_celsius
+    "Fahrenheit" -> R.string.calc_fahrenheit
+    "Kelvin" -> R.string.calc_kelvin
+    else -> error("Unknown unit ID")
+}

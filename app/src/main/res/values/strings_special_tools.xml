@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="special_edit_hsl_then_apply_preview_history_palette_copy_and_share_use_th" formatted="false">Edit HSL, then Apply. Preview, history, palette, Copy and Share use the last applied color.</string>
+    <string name="special_hue_0_360" formatted="false">Hue (0–360°)</string>
+    <string name="special_saturation_0_100" formatted="false">Saturation (0–100%)</string>
+    <string name="special_lightness_0_100" formatted="false">Lightness (0–100%)</string>
+    <string name="special_apply_hsl" formatted="false">Apply HSL</string>
+    <string name="special_enter_finite_numbers_hue_0_360_saturation_and_lightness_0_100_use" formatted="false">Enter finite numbers: hue 0–360, saturation and lightness 0–100. Use a dot for decimals. The applied color is unchanged.</string>
+    <string name="special_360_equals_0_colors_are_rounded_to_8_bit_rgb_displayed_hsl_is_rou" formatted="false">360° equals 0°. Colors are rounded to 8-bit RGB; displayed HSL is rounded to whole numbers. Hue is undefined for gray, black and white.</string>
+    <string name="special_equivalent_hsl_of_the_applied_color" formatted="false">Equivalent HSL of the applied color.</string>
+    <string name="special_device_orientation_sensor" formatted="false">Device orientation sensor</string>
+    <string name="special_magnetic_heading_not_true_north_nearby_metal_and_magnets_can_affe" formatted="false">Magnetic heading, not true north. Nearby metal and magnets can affect accuracy.</string>
+    <string name="special_a_reliable_reading_is_not_available_no_measurement_is_shown" formatted="false">A reliable reading is not available. No measurement is shown.</string>
+    <string name="special_focus_view" formatted="false">Focus view</string>
+    <string name="special_n" formatted="false">N</string>
+    <string name="special_e" formatted="false">E</string>
+    <string name="special_s" formatted="false">S</string>
+    <string name="special_w" formatted="false">W</string>
+    <string name="special_capture_reading" formatted="false">Capture reading</string>
+    <string name="special_bubble_level" formatted="false">Bubble level</string>
+    <string name="special_within_1_level_tolerance" formatted="false">Within 1° level tolerance</string>
+    <string name="special_tilted" formatted="false">Tilted</string>
+    <string name="special_device_sensor_estimate_check_against_a_physical_level_for_precisi" formatted="false">Device sensor estimate. Check against a physical level for precision work.</string>
+    <string name="special_android_torch_status" formatted="false">Android torch status</string>
+    <string name="special_capture_torch_status" formatted="false">Capture torch status</string>
+    <string name="special_capture_scale_settings" formatted="false">Capture scale settings</string>
+    <string name="special_algorithm" formatted="false">Algorithm</string>
+    <string name="special_inputs_restored_generate_a_fresh_result_when_you_are_ready" formatted="false">Inputs restored. Generate a fresh result when you are ready.</string>
+    <string name="special_generate_hash" formatted="false">Generate hash</string>
+    <string name="special_text_morse" formatted="false">Text → Morse</string>
+    <string name="special_morse_text" formatted="false">Morse → Text</string>
+    <string name="special_morse_dots_dashes_between_words" formatted="false">Morse (dots/dashes, / between words)</string>
+    <string name="special_text_binary" formatted="false">Text → Binary</string>
+    <string name="special_binary_text" formatted="false">Binary → Text</string>
+    <string name="special_utf_8_binary_bytes" formatted="false">UTF-8 binary bytes</string>
+    <string name="special_some_characters_are_not_supported_by_morse_and_are_omitted_from_t" formatted="false">Some characters are not supported by Morse and are omitted from the result.</string>
+    <string name="special_some_morse_tokens_are_unknown_and_are_omitted_separate_letters_wi" formatted="false">Some Morse tokens are unknown and are omitted. Separate letters with spaces and words with a space, /, and a space.</string>
+    <string name="special_example_sos_becomes_morse_output_uses_uppercase_letters" formatted="false">Example: SOS becomes ... --- ... . Morse output uses uppercase letters.</string>
+    <string name="special_separate_letters_with_spaces_and_words_with_example" formatted="false">Separate letters with spaces and words with \' / \'. Example: .... .. / - .... . .-. .</string>
+    <string name="special_text_is_encoded_as_utf_8_bytes_each_byte_has_eight_bits_letters_a" formatted="false">Text is encoded as UTF-8 bytes. Each byte has eight bits; letters and emoji may use multiple bytes.</string>
+    <string name="special_enter_whitespace_separated_utf_8_bytes_for_example_01001000_01101" formatted="false">Enter whitespace-separated UTF-8 bytes, for example 01001000 01101001 for Hi.</string>
+    <string name="special_morse_binary_translator" formatted="false">Morse / Binary Translator</string>
+    <string name="special_direction" formatted="false">Direction</string>
+    <string name="special_changing_direction_clears_the_input" formatted="false">Changing direction clears the input.</string>
+    <string name="special_translation" formatted="false">Translation</string>
+    <string name="special_partial_translation" formatted="false">Partial translation</string>
+    <string name="special_enter_valid_utf_8_binary_bytes_each_token_must_contain_1_8_zeros_" formatted="false">Enter valid UTF-8 binary bytes. Each token must contain 1–8 zeros or ones, and the byte sequence must form valid UTF-8 text.</string>
+    <string name="special_no_supported_characters_could_be_translated" formatted="false">No supported characters could be translated.</string>
+    <string name="special_clear" formatted="false">" Clear"</string>
+    <string name="special_password_generator" formatted="false">Password Generator</string>
+    <string name="special_generate" formatted="false">"  Generate"</string>
+    <string name="special_select_at_least_one_character_type" formatted="false">Select at least one character type.</string>
+    <string name="special_an_estimate_not_a_security_guarantee" formatted="false">An estimate, not a security guarantee.</string>
+    <string name="special_password" formatted="false">Password</string>
+    <string name="special_copy" formatted="false">" Copy"</string>
+    <string name="special_clear_password" formatted="false">Clear password</string>
+    <string name="special_customize_password" formatted="false">Customize password</string>
+    <string name="special_shorter" formatted="false">Shorter</string>
+    <string name="special_longer" formatted="false">Longer</string>
+    <string name="special_uppercase_a_z" formatted="false">Uppercase (A-Z)</string>
+    <string name="special_lowercase_a_z" formatted="false">Lowercase (a-z)</string>
+    <string name="special_numbers_0_9" formatted="false">Numbers (0-9)</string>
+    <string name="special_symbols" formatted="false">Symbols (!@#...)</string>
+    <string name="special_qr_code_generator" formatted="false">QR Code Generator</string>
+    <string name="special_text_or_url" formatted="false">Text or URL</string>
+    <string name="special_e_g_https_example_com" formatted="false">e.g. https://example.com</string>
+    <string name="special_your_code_updates_as_you_type_text_and_links_are_both_supported" formatted="false">Your code updates as you type. Text and links are both supported.</string>
+    <string name="special_qr_preview" formatted="false">QR preview</string>
+    <string name="special_inputs_restored_generate_a_fresh_code_when_you_are_ready" formatted="false">Inputs restored. Generate a fresh code when you are ready.</string>
+    <string name="special_generate_qr_code" formatted="false">Generate QR code</string>
+    <string name="special_generating_qr_code" formatted="false">Generating QR code…</string>
+    <string name="special_qr_code_containing_your_entered_text" formatted="false">QR code containing your entered text</string>
+    <string name="special_ready_to_scan_or_share" formatted="false">Ready to scan or share</string>
+    <string name="special_your_qr_code_will_appear_here" formatted="false">Your QR code will appear here</string>
+    <string name="special_enter_text_or_a_link_above_to_get_started" formatted="false">Enter text or a link above to get started.</string>
+    <string name="special_couldn_t_generate_a_qr_code_try_shorter_text" formatted="false">Couldn\'t generate a QR code. Try shorter text.</string>
+    <string name="special_preparing_image" formatted="false">" Preparing image…"</string>
+    <string name="special_share_qr_image" formatted="false">" Share QR image"</string>
+    <string name="special_the_external_app_you_choose_will_receive_a_qr_image_encoding_the_" formatted="false">The external app you choose will receive a QR image encoding the exact content below. Anyone with the image can read that content. Cancel if it contains secrets or private information.</string>
+    <string name="special_content_encoded_in_the_qr_image" formatted="false">Content encoded in the QR image</string>
+    <string name="special_qr_content_changed_generate_the_updated_code_before_sharing" formatted="false">QR content changed. Generate the updated code before sharing.</string>
+    <string name="special_qr_code" formatted="false">QR code</string>
+    <string name="special_no_app_is_available_to_share_this_qr_code" formatted="false">No app is available to share this QR code.</string>
+    <string name="special_couldn_t_save_the_qr_image_check_available_storage_and_try_again" formatted="false">Couldn\'t save the QR image. Check available storage and try again.</string>
+    <string name="special_couldn_t_grant_access_to_the_qr_image_please_try_again" formatted="false">Couldn\'t grant access to the QR image. Please try again.</string>
+    <string name="special_couldn_t_prepare_the_qr_image_for_sharing" formatted="false">Couldn\'t prepare the QR image for sharing.</string>
+    <string name="special_text_tools" formatted="false">Text Tools</string>
+    <string name="special_type_or_paste_text_here" formatted="false">Type or paste text here</string>
+    <string name="special_words" formatted="false">Words</string>
+    <string name="special_utf_16_units" formatted="false">UTF-16 units</string>
+    <string name="special_no_spaces" formatted="false">No spaces</string>
+    <string name="special_palindrome" formatted="false">Palindrome ✓</string>
+    <string name="special_not_a_palindrome" formatted="false">Not a palindrome</string>
+    <string name="special_converted_text" formatted="false">Converted text</string>
+    <string name="special_palindrome_ignores_punctuation_and_case_counts_use_utf_16_units_c" formatted="false">Palindrome ignores punctuation and case. Counts use UTF-16 units; camelCase uses ASCII letters and digits.</string>
+    <string name="special_enter_text_to_see_its_converted_form_and_copy_or_share_the_result" formatted="false">Enter text to see its converted form and copy or share the result.</string>
+    <string name="special_compass_focus_heading">%1$s %2$s°</string>
+    <string name="special_compass_capture">Magnetic heading: %1$s %2$s°. Device sensor estimate, not true north; nearby magnetic fields can affect accuracy.</string>
+    <string name="special_pitch">Pitch %1$s°</string>
+    <string name="special_roll">Roll %1$s°</string>
+    <string name="special_password_strength">Estimated strength: %1$s</string>
+    <string name="special_qr_content">QR content: %1$s</string>
+    <string name="special_text_result">%1$s result</string>
+    <string name="special_bubble_capture">Pitch: %1$s°; roll: %2$s°. %3$s. Device sensor estimate; check against a physical level for precision work.</string>
+    <string name="special_torch_on">on</string>
+    <string name="special_torch_off">off</string>
+    <string name="special_torch_snapshot">Flashlight status: %1$s, reported by Android. This is a status snapshot, not a command to control the torch.</string>
+    <string name="special_millimeter_division">1 mm</string>
+    <string name="special_inch_division">1/16 inch</string>
+    <string name="special_ruler_snapshot">Estimated ruler scale: %1$s, %2$s subdivisions. Based on device-reported density. This captures the scale setup, not an object measurement. Verify against a physical ruler.</string>
+    <plurals name="special_password_length"><item quantity="one">%1$d character · Customize</item><item quantity="other">%1$d characters · Customize</item></plurals>
+    <plurals name="special_password_types"><item quantity="one">%1$d character type enabled</item><item quantity="other">%1$d character types enabled</item></plurals>
+    <string name="special_strength_unavailable">Unavailable</string>
+    <string name="special_strength_weak">Weak</string>
+    <string name="special_strength_medium">Medium</string>
+    <string name="special_strength_strong">Strong</string>
+    <string name="special_strength_very_strong">Very strong</string>
+    <string name="special_case_upper">UPPERCASE</string>
+    <string name="special_case_lower">lowercase</string>
+    <string name="special_case_title">Title Case</string>
+    <string name="special_case_camel">camelCase</string>
+    <string name="special_partial_output">Partial translation: %1$s\n%2$s</string>
+    <string name="special_ne">NE</string>
+    <string name="special_se">SE</string>
+    <string name="special_sw">SW</string>
+    <string name="special_nw">NW</string>
+    <string name="special_nne">NNE</string>
+    <string name="special_ene">ENE</string>
+    <string name="special_ese">ESE</string>
+    <string name="special_sse">SSE</string>
+    <string name="special_ssw">SSW</string>
+    <string name="special_wsw">WSW</string>
+    <string name="special_wnw">WNW</string>
+    <string name="special_nnw">NNW</string>
+</resources>

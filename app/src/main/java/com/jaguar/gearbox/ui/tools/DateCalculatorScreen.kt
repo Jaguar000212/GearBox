@@ -1,5 +1,7 @@
 package com.jaguar.gearbox.ui.tools
 
+import androidx.compose.ui.res.stringResource
+import com.jaguar.gearbox.R
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -48,16 +50,16 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
 
-private enum class DateUnit(val label: String) {
-    DAYS("Days"),
-    WEEKS("Weeks"),
-    MONTHS("Months"),
-    YEARS("Years"),
+private enum class DateUnit(val label: Int) {
+    DAYS(R.string.calc_days),
+    WEEKS(R.string.calc_weeks),
+    MONTHS(R.string.calc_months),
+    YEARS(R.string.calc_years),
 }
 
-private enum class DateDirection(val label: String) {
-    ADD("Add"),
-    SUBTRACT("Subtract"),
+private enum class DateDirection(val label: Int) {
+    ADD(R.string.calc_add),
+    SUBTRACT(R.string.calc_subtract),
 }
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
@@ -87,10 +89,10 @@ fun DateCalculatorScreen(onNavigateBack: () -> Unit) {
                         baseDate = Instant.ofEpochMilli(millis).atZone(ZoneOffset.UTC).toLocalDate()
                     }
                     showPicker = false
-                }) { Text("OK") }
+                }) { Text(stringResource(R.string.calc_ok)) }
             },
             dismissButton = {
-                TextButton(onClick = { showPicker = false }) { Text("Cancel") }
+                TextButton(onClick = { showPicker = false }) { Text(stringResource(R.string.calc_cancel)) }
             },
         ) {
             DatePicker(state = state)
@@ -114,7 +116,7 @@ fun DateCalculatorScreen(onNavigateBack: () -> Unit) {
     val history = rememberToolHistory(
         route = Tools.ROUTE_DATE_CALCULATOR,
         inputs = mapOf("baseDate" to baseDate.toString(), "amountInput" to amountInput, "unit" to unit, "direction" to direction),
-        output = result?.let { "Result date: ${formatDate(it)}" },
+        output = result?.let { context.getString(R.string.calc_result_date_1_s, formatDate(it)) },
         modeInputs = mapOf("unit" to unit, "direction" to direction),
         onRestoreMode = { saved ->
             unit = DateUnit.entries.firstOrNull { it.name == saved["unit"] }?.name ?: DateUnit.DAYS.name
@@ -129,17 +131,17 @@ fun DateCalculatorScreen(onNavigateBack: () -> Unit) {
     )
 
     ToolScaffold(
-        title = "Date Calculator",
+        title = context.getString(R.string.calc_date_calculator),
         icon = Tools.byRoute(Tools.ROUTE_DATE_CALCULATOR)!!.icon,
         onNavigateBack = onNavigateBack,
         history = history,
     ) {
         AdaptiveToolLayout(input = {
-            Text("Move forward or backward from a starting date.", style = MaterialTheme.typography.bodyMedium)
+            Text(stringResource(R.string.calc_move_forward_or_backward_from_a_starting_date), style = MaterialTheme.typography.bodyMedium)
             Spacer(Modifier.height(12.dp))
             OutlinedButton(onClick = { showPicker = true }, modifier = Modifier.fillMaxWidth()) {
                 Icon(Icons.Filled.DateRange, contentDescription = null)
-                Text("  Starting date: ${formatDate(baseDate)}")
+                Text(context.getString(R.string.calc_starting_date_1_s, formatDate(baseDate)))
             }
 
             Spacer(Modifier.height(16.dp))
@@ -150,13 +152,13 @@ fun DateCalculatorScreen(onNavigateBack: () -> Unit) {
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     DateDirection.entries.forEach { entry ->
                         FilterChip(selected = selectedDirection == entry,
-                            onClick = { direction = entry.name }, label = { Text(entry.label) })
+                            onClick = { direction = entry.name }, label = { Text(context.getString(entry.label)) })
                     }
                 }
                 OutlinedTextField(
                     value = amountInput,
                     onValueChange = { amountInput = it },
-                    label = { Text("Number of ${selectedUnit.label.lowercase()}") },
+                    label = { Text(context.getString(R.string.calc_number_of_1_s, context.getString(selectedUnit.label).lowercase())) },
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     modifier = Modifier.fillMaxWidth().onFocusChanged {
@@ -168,32 +170,32 @@ fun DateCalculatorScreen(onNavigateBack: () -> Unit) {
 
             Spacer(Modifier.height(12.dp))
             CompactChoiceSelector(
-                label = "Unit", selected = selectedUnit, choices = DateUnit.entries,
-                choiceLabel = { it.label }, onSelect = { unit = it.name },
+                label = context.getString(R.string.calc_unit), selected = selectedUnit, choices = DateUnit.entries,
+                choiceLabel = { context.getString(it.label) }, onSelect = { unit = it.name },
             )
         }, result = {
             if (result != null) {
                 Spacer(Modifier.height(20.dp))
-                Text("Resulting date", style = MaterialTheme.typography.labelLarge)
+                Text(stringResource(R.string.calc_resulting_date), style = MaterialTheme.typography.labelLarge)
                 Spacer(Modifier.height(8.dp))
-                val summary = "${formatDate(baseDate)} • ${selectedDirection.label} $amount ${selectedUnit.label.lowercase()}\n${formatDate(result)}"
+                val summary = context.getString(R.string.calc_1_s_2_s_3_s_4_s_n_5_s, formatDate(baseDate), context.getString(selectedDirection.label), amount, context.getString(selectedUnit.label).lowercase(), formatDate(result))
                 ResultCard(
                     text = formatDate(result),
                     textStyle = MaterialTheme.typography.headlineMedium,
-                    onCopy = { context.copyToClipboard("Date", summary) },
+                    onCopy = { context.copyToClipboard(context.getString(R.string.calc_date), summary) },
                     onShare = { context.shareText(summary) },
                 )
                 Spacer(Modifier.height(8.dp))
-                Text("${selectedDirection.label} $amount ${selectedUnit.label.lowercase()} from ${formatDate(baseDate)}",
+                Text(context.getString(R.string.calc_1_s_2_s_3_s_from_4_s, context.getString(selectedDirection.label), amount, context.getString(selectedUnit.label).lowercase(), formatDate(baseDate)),
                     style = MaterialTheme.typography.bodyMedium)
             } else if (amountTouched && !amountFocused && amountInput.isNotBlank()) {
                 Spacer(Modifier.height(12.dp))
                 Text(
-                    "Enter a valid amount that keeps the date in range.",
+                    context.getString(R.string.calc_enter_a_valid_amount_that_keeps_the_date_in_range),
                     color = MaterialTheme.colorScheme.error
                 )
             }
-            Text("Clear blanks the amount and resets the starting date to today. Unit and direction stay unchanged.",
+            Text(stringResource(R.string.calc_clear_blanks_the_amount_and_resets_the_starting_date_to),
                 style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             ToolActions(onClear = {
                 baseDate = LocalDate.now(); amountInput = ""; amountTouched = false; showPicker = false

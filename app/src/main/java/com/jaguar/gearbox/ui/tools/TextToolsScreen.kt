@@ -1,5 +1,6 @@
 package com.jaguar.gearbox.ui.tools
 
+import com.jaguar.gearbox.R
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -45,6 +46,12 @@ import com.jaguar.gearbox.ui.components.ToolActions
 @Composable
 fun TextToolsScreen(onNavigateBack: () -> Unit) {
     val context = LocalContext.current
+    fun caseLabel(value: TextCase): String = context.getString(when (value) {
+        TextCase.UPPER -> R.string.special_case_upper
+        TextCase.LOWER -> R.string.special_case_lower
+        TextCase.TITLE -> R.string.special_case_title
+        TextCase.CAMEL -> R.string.special_case_camel
+    })
     var input by rememberSaveable { mutableStateOf("") }
     var textCase by rememberSaveable { mutableStateOf(TextCase.TITLE.name) }
     val selectedCase = TextCase.valueOf(textCase)
@@ -66,7 +73,7 @@ fun TextToolsScreen(onNavigateBack: () -> Unit) {
         onRestoreMode = { values -> TextCase.entries.firstOrNull { it.name == values["case"] }?.let { textCase = it.name } },
     )
     ToolScaffold(
-        title = "Text Tools",
+        title = context.getString(R.string.special_text_tools),
         icon = Tools.byRoute(Tools.ROUTE_TEXT_TOOLS)!!.icon,
         onNavigateBack = onNavigateBack,
         history = history,
@@ -75,8 +82,8 @@ fun TextToolsScreen(onNavigateBack: () -> Unit) {
             OutlinedTextField(
                 value = input,
                 onValueChange = { input = it },
-                label = { Text("Text") },
-                placeholder = { Text("Type or paste text here") },
+                label = { Text(context.getString(R.string.hash_input)) },
+                placeholder = { Text(context.getString(R.string.special_type_or_paste_text_here)) },
                 minLines = 3,
                 maxLines = 8,
                 modifier = Modifier.fillMaxWidth(),
@@ -92,23 +99,23 @@ fun TextToolsScreen(onNavigateBack: () -> Unit) {
                         horizontalArrangement = Arrangement.spacedBy(24.dp),
                         verticalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
-                        StatColumn("Words", words.size.toString())
-                        StatColumn("UTF-16 units", input.length.toString())
-                        StatColumn("No spaces", input.count { !it.isWhitespace() }.toString())
+                        StatColumn(context.getString(R.string.special_words), words.size.toString())
+                        StatColumn(context.getString(R.string.special_utf_16_units), input.length.toString())
+                        StatColumn(context.getString(R.string.special_no_spaces), input.count { !it.isWhitespace() }.toString())
                     }
                 }
 
                 Spacer(Modifier.height(16.dp))
                 Text(
-                    text = if (isPalindrome) "Palindrome ✓" else "Not a palindrome",
+                    text = if (isPalindrome) context.getString(R.string.special_palindrome) else context.getString(R.string.special_not_a_palindrome),
                     style = MaterialTheme.typography.bodyMedium,
                     color = if (isPalindrome) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                 )
 
                 Spacer(Modifier.height(16.dp))
                 CompactChoiceSelector(
-                    label = "Convert to", selected = selectedCase, choices = TextCase.entries,
-                    choiceLabel = { it.label }, onSelect = { textCase = it.name },
+                    label = context.getString(R.string.calc_convert_to), selected = selectedCase, choices = TextCase.entries,
+                    choiceLabel = { caseLabel(it) }, onSelect = { textCase = it.name },
                 )
 
 
@@ -116,7 +123,7 @@ fun TextToolsScreen(onNavigateBack: () -> Unit) {
 
         }, result = {
             ToolActions(
-                onCopy = { context.copyToClipboard("Converted text", converted, sensitive = true) },
+                onCopy = { context.copyToClipboard(context.getString(R.string.special_converted_text), converted, sensitive = true) },
                 onShare = { shareReview = Triple(input, textCase, converted) },
                 onClear = { input = "" },
                 resultEnabled = input.isNotEmpty(),
@@ -124,12 +131,12 @@ fun TextToolsScreen(onNavigateBack: () -> Unit) {
             )
             if (input.isNotEmpty()) {
                 Spacer(Modifier.height(12.dp))
-                Text(selectedCase.label + " result", style = MaterialTheme.typography.titleMedium)
+                Text(context.getString(R.string.special_text_result, caseLabel(selectedCase)), style = MaterialTheme.typography.titleMedium)
                 ResultCard(text = converted, selectable = false)
-                Text("Palindrome ignores punctuation and case. Counts use UTF-16 units; camelCase uses ASCII letters and digits.",
+                Text(context.getString(R.string.special_palindrome_ignores_punctuation_and_case_counts_use_utf_16_units_c),
                     style = MaterialTheme.typography.bodySmall)
 
-            } else Text("Enter text to see its converted form and copy or share the result.",
+            } else Text(context.getString(R.string.special_enter_text_to_see_its_converted_form_and_copy_or_share_the_result),
                 style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         })
     }

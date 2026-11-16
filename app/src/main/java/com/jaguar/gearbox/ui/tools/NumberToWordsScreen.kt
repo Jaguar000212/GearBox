@@ -1,5 +1,7 @@
 package com.jaguar.gearbox.ui.tools
 
+import androidx.compose.ui.res.stringResource
+import com.jaguar.gearbox.R
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -35,9 +37,9 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.ui.focus.onFocusChanged
 
-private enum class NumberSystem(val label: String) {
-    INTERNATIONAL("International"),
-    INDIAN("Indian (Lakh/Crore)"),
+private enum class NumberSystem(val label: Int) {
+    INTERNATIONAL(R.string.calc_international),
+    INDIAN(R.string.calc_indian_lakh_crore),
 }
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -57,7 +59,7 @@ fun NumberToWordsScreen(onNavigateBack: () -> Unit) {
         selectedSystem == NumberSystem.INDIAN -> numberToWordsIndian(parsed)
         else -> numberToWords(parsed)
     }
-    val error = if (input.isNotBlank() && parsed == null && !focused && touched) "Enter a signed 64-bit whole number, without commas or decimals." else ""
+    val error = if (input.isNotBlank() && parsed == null && !focused && touched) context.getString(R.string.calc_enter_a_signed_64_bit_whole_number_without_commas_or_de) else ""
 
     val history = com.jaguar.gearbox.ui.components.rememberToolHistory(
         Tools.ROUTE_NUMBER_TO_WORDS, mapOf("input" to input, "system" to numberSystem), words,
@@ -69,7 +71,7 @@ fun NumberToWordsScreen(onNavigateBack: () -> Unit) {
         onRestoreMode = { values -> NumberSystem.entries.firstOrNull { it.name == values["system"] }?.let { numberSystem = it.name } },
     )
     ToolScaffold(
-        title = "Number to Words",
+        title = context.getString(R.string.calc_number_to_words),
         icon = Tools.byRoute(Tools.ROUTE_NUMBER_TO_WORDS)!!.icon,
         onNavigateBack = onNavigateBack,
         history = history,
@@ -82,7 +84,7 @@ fun NumberToWordsScreen(onNavigateBack: () -> Unit) {
                 FilterChip(
                     selected = entry == selectedSystem,
                     onClick = { numberSystem = entry.name },
-                    label = { Text(entry.label) },
+                    label = { Text(context.getString(entry.label)) },
                 )
             }
         }
@@ -91,11 +93,11 @@ fun NumberToWordsScreen(onNavigateBack: () -> Unit) {
         OutlinedTextField(
             value = input,
             onValueChange = { input = it },
-            label = { Text("Whole number") },
-            placeholder = { Text("e.g. 123456") },
+            label = { Text(stringResource(R.string.calc_whole_number)) },
+            placeholder = { Text(stringResource(R.string.calc_e_g_123456)) },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             isError = error.isNotEmpty(),
-            supportingText = { Text(error.ifEmpty { if (selectedSystem == NumberSystem.INDIAN) "Example: 100000 is one lakh." else "Example: 100000 is one hundred thousand." }) },
+            supportingText = { Text(error.ifEmpty { if (selectedSystem == NumberSystem.INDIAN) context.getString(R.string.calc_example_100000_is_one_lakh) else context.getString(R.string.calc_example_100000_is_one_hundred_thousand) }) },
             modifier = Modifier.fillMaxWidth().onFocusChanged {
                 if (focused && !it.isFocused) touched = true
                 focused = it.isFocused
@@ -105,27 +107,27 @@ fun NumberToWordsScreen(onNavigateBack: () -> Unit) {
             val normalized = input.trim()
             input = if (normalized.startsWith("-")) normalized.drop(1) else "-" + normalized.removePrefix("+")
         }) {
-            Text("Change sign (±)")
+            Text(stringResource(R.string.calc_change_sign))
         }
 
         if (words != null) {
             Spacer(Modifier.height(16.dp))
-            Text("${selectedSystem.label} wording", style = MaterialTheme.typography.titleMedium)
+            Text(context.getString(R.string.calc_1_s_wording, context.getString(selectedSystem.label)), style = MaterialTheme.typography.titleMedium)
             Spacer(Modifier.height(8.dp))
             ResultCard(
                 text = words,
                 textStyle = MaterialTheme.typography.headlineSmall,
-                onCopy = { context.copyToClipboard("Number in words", words) },
+                onCopy = { context.copyToClipboard(context.getString(R.string.calc_number_in_words), words) },
                 onShare = { context.shareText(words) },
             )
         } else if (input.isBlank()) {
             Spacer(Modifier.height(16.dp))
-            Text("Enter a whole number to write it in English.")
+            Text(stringResource(R.string.calc_enter_a_whole_number_to_write_it_in_english))
         }
         Spacer(Modifier.height(12.dp))
         OutlinedButton(onClick = { input = ""; touched = false }, enabled = input.isNotEmpty(), modifier = Modifier.fillMaxWidth()) {
             Icon(Icons.Filled.Clear, contentDescription = null)
-            Text(" Clear")
+            Text(stringResource(R.string.calc_clear))
         }
     }
 }

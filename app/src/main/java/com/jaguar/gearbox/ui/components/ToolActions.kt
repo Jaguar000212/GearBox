@@ -22,6 +22,7 @@ fun ToolActions(
     resultEnabled: Boolean = true,
     clearEnabled: Boolean = true,
 ) {
+    val context = androidx.compose.ui.platform.LocalContext.current
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         if (onCopy != null || onShare != null) {
             FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -31,14 +32,14 @@ fun ToolActions(
                     OutlinedButton(onClick = onCopy, enabled = resultEnabled, modifier = Modifier.weight(1f).widthIn(min = 128.dp)) {
                         Icon(Icons.Default.ContentCopy, contentDescription = null)
                         Spacer(Modifier.width(8.dp))
-                        Text("Copy")
+                        Text(context.getString(com.jaguar.gearbox.R.string.shared_copy))
                     }
                 }
                 if (onShare != null) {
                     OutlinedButton(onClick = onShare, enabled = resultEnabled, modifier = Modifier.weight(1f).widthIn(min = 128.dp)) {
                         Icon(Icons.Default.Share, contentDescription = null)
                         Spacer(Modifier.width(8.dp))
-                        Text("Share")
+                        Text(context.getString(com.jaguar.gearbox.R.string.shared_share))
                     }
                 }
             }
@@ -47,7 +48,7 @@ fun ToolActions(
             TextButton(onClick = onClear, enabled = clearEnabled, modifier = Modifier.fillMaxWidth()) {
                 Icon(Icons.Default.Clear, contentDescription = null)
                 Spacer(Modifier.width(8.dp))
-                Text("Clear")
+                Text(context.getString(com.jaguar.gearbox.R.string.shared_clear))
             }
         }
     }

@@ -1,5 +1,7 @@
 package com.jaguar.gearbox.ui.tools
 
+import androidx.compose.ui.res.stringResource
+import com.jaguar.gearbox.R
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -48,7 +50,7 @@ fun TipCalculatorScreen(onNavigateBack: () -> Unit) {
     val calculatedTotal = if (billAmount != null && calculatedTip != null) billAmount + calculatedTip else null
 
     val historyOutput = if (billAmount != null && calculatedTip != null && calculatedTotal != null && calculatedTip.isFinite() && calculatedTotal.isFinite()) {
-        "Tip amount: ${formatCurrency(calculatedTip)}\nTotal: ${formatCurrency(calculatedTotal)}\nPer person: ${formatCurrency(calculatedTotal / splitCount)}"
+        context.getString(R.string.calc_tip_amount_1_s_ntotal_2_s_nper_person_3_s, formatCurrency(calculatedTip), formatCurrency(calculatedTotal), formatCurrency(calculatedTotal / splitCount))
     } else null
 
     val history = rememberToolHistory(
@@ -68,31 +70,31 @@ fun TipCalculatorScreen(onNavigateBack: () -> Unit) {
     )
 
     ToolScaffold(
-        title = "Tip Calculator",
+        title = context.getString(R.string.calc_tip_calculator),
         icon = Tools.byRoute(Tools.ROUTE_TIP)!!.icon,
         onNavigateBack = onNavigateBack,
         history = history,
     ) {
         AdaptiveToolLayout(input = {
-            Text("Split the bill", style = MaterialTheme.typography.titleMedium)
-            Text("Amounts use the same currency as your bill.", style = MaterialTheme.typography.bodyMedium,
+            Text(stringResource(R.string.calc_split_the_bill), style = MaterialTheme.typography.titleMedium)
+            Text(stringResource(R.string.calc_amounts_use_the_same_currency_as_your_bill), style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(Modifier.height(12.dp))
-            DecimalField(value = bill, onValueChange = { bill = it }, label = "Bill amount", placeholder = "e.g. 45.00",
-                errorText = if (bill.isNotBlank() && billAmount == null) "Enter a non-negative bill amount." else null)
+            DecimalField(value = bill, onValueChange = { bill = it }, label = context.getString(R.string.calc_bill_amount), placeholder = context.getString(R.string.calc_e_g_45_00),
+                errorText = if (bill.isNotBlank() && billAmount == null) context.getString(R.string.calc_enter_a_non_negative_bill_amount) else null)
             Spacer(Modifier.height(12.dp))
-            DecimalField(value = tipPercent, onValueChange = { tipPercent = it }, label = "Tip (%)",
-                errorText = if (tipPercent.isNotBlank() && tip == null) "Enter a non-negative tip percentage." else null)
+            DecimalField(value = tipPercent, onValueChange = { tipPercent = it }, label = context.getString(R.string.calc_tip_2),
+                errorText = if (tipPercent.isNotBlank() && tip == null) context.getString(R.string.calc_enter_a_non_negative_tip_percentage) else null)
 
             Spacer(Modifier.height(16.dp))
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                Text("Split between", style = MaterialTheme.typography.titleMedium)
+                Text(stringResource(R.string.calc_split_between), style = MaterialTheme.typography.titleMedium)
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     FilledTonalIconButton(onClick = { splitCount-- }, enabled = splitCount > 1) {
-                        Icon(Icons.Filled.Remove, contentDescription = "Fewer people")
+                        Icon(Icons.Filled.Remove, contentDescription = context.getString(R.string.calc_fewer_people))
                     }
                     Text(
                         text = splitCount.toString(),
@@ -100,7 +102,7 @@ fun TipCalculatorScreen(onNavigateBack: () -> Unit) {
                         modifier = Modifier.padding(horizontal = 12.dp),
                     )
                     FilledTonalIconButton(onClick = { splitCount++ }, enabled = splitCount < 100) {
-                        Icon(Icons.Filled.Add, contentDescription = "More people")
+                        Icon(Icons.Filled.Add, contentDescription = context.getString(R.string.calc_more_people))
                     }
                 }
             }
@@ -110,7 +112,7 @@ fun TipCalculatorScreen(onNavigateBack: () -> Unit) {
                 enabled = bill.isNotEmpty() || tipPercent != "15" || splitCount != 1) {
                 Icon(Icons.Filled.Clear, contentDescription = null)
                 Spacer(Modifier.width(8.dp))
-                Text("Clear")
+                Text(stringResource(R.string.calc_clear_2))
             }
         }, result = {
             if (billAmount != null && calculatedTip != null && calculatedTotal != null &&
@@ -119,22 +121,22 @@ fun TipCalculatorScreen(onNavigateBack: () -> Unit) {
                 val tipAmount = calculatedTip
                 val total = calculatedTotal
                 val perPerson = total / splitCount
-                val shareText = "Bill: ${formatCurrency(billAmount)}\n" +
-                        "Tip amount: ${formatCurrency(tipAmount)}\n" +
-                        "Total: ${formatCurrency(total)}\n" +
-                        "Per person (split $splitCount ways): ${formatCurrency(perPerson)}"
+                val shareText = context.getString(R.string.calc_bill_1_s_n, formatCurrency(billAmount)) +
+                        context.getString(R.string.calc_tip_amount_1_s_n, formatCurrency(tipAmount)) +
+                        context.getString(R.string.calc_total_1_s_n, formatCurrency(total)) +
+                        context.getString(R.string.calc_per_person_split_1_s_ways_2_s, splitCount, formatCurrency(perPerson))
 
-                Text("Per person", style = MaterialTheme.typography.labelLarge)
+                Text(stringResource(R.string.calc_per_person), style = MaterialTheme.typography.labelLarge)
                 Text(formatCurrency(perPerson), style = MaterialTheme.typography.headlineLarge, color = MaterialTheme.colorScheme.primary)
                 Spacer(Modifier.height(12.dp))
                 ResultCard(
-                    text = "Tip: ${formatCurrency(tipAmount)}\nTotal bill with tip: ${formatCurrency(total)}\nSplit between $splitCount people",
-                    onCopy = { context.copyToClipboard("Tip", shareText) },
+                    text = context.getString(R.string.calc_tip_1_s_ntotal_bill_with_tip_2_s_nsplit_between_3_s_peo, formatCurrency(tipAmount), formatCurrency(total), splitCount),
+                    onCopy = { context.copyToClipboard(context.getString(R.string.calc_tip), shareText) },
                     onShare = { context.shareText(shareText) },
                 )
             } else if (billAmount != null && tip != null) {
                 Spacer(Modifier.height(12.dp))
-                Text("Values exceed the supported numeric range.", color = MaterialTheme.colorScheme.error)
+                Text(stringResource(R.string.calc_values_exceed_the_supported_numeric_range), color = MaterialTheme.colorScheme.error)
             }
 
         })

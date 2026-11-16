@@ -40,7 +40,7 @@
         <receiver
             android:name=".widget.CounterWidgetReceiver"
             android:exported="false"
-            android:label="Counter">
+            android:label="@string/system_counter">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
@@ -52,7 +52,7 @@
         <receiver
             android:name=".widget.TimerWidgetReceiver"
             android:exported="false"
-            android:label="Timer / Stopwatch">
+            android:label="@string/system_timer_widget_label">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>

@@ -56,16 +56,16 @@ object StopwatchStatusNotification {
         val seconds = elapsed / 1000
         val builder = NotificationCompat.Builder(context, TimerStatusNotification.CHANNEL)
             .setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
-            .setContentTitle(if (state.stopwatchRunning) "Stopwatch running" else "Stopwatch paused")
-            .setContentText(if (state.stopwatchRunning) "Elapsed time" else String.format(Locale.getDefault(), "%d:%02d:%02d elapsed", seconds / 3600, seconds / 60 % 60, seconds % 60))
+            .setContentTitle(if (state.stopwatchRunning) context.getString(com.jaguar.gearbox.R.string.system_stopwatch_running) else context.getString(com.jaguar.gearbox.R.string.system_stopwatch_paused))
+            .setContentText(if (state.stopwatchRunning) context.getString(com.jaguar.gearbox.R.string.system_elapsed_time) else context.getString(com.jaguar.gearbox.R.string.system_stopwatch_elapsed, seconds / 3600, seconds / 60 % 60, seconds % 60))
             .setCategory(NotificationCompat.CATEGORY_PROGRESS).setPriority(NotificationCompat.PRIORITY_LOW)
             .setOnlyAlertOnce(true).setOngoing(state.stopwatchRunning)
             .setContentIntent(open(context, false))
             .setDeleteIntent(action(context, state.stopwatchNotificationRevision, TimerNotificationAction.DISMISS))
-            .addAction(0, if (state.stopwatchRunning) "Pause" else "Resume",
+            .addAction(0, if (state.stopwatchRunning) context.getString(com.jaguar.gearbox.R.string.system_pause) else context.getString(com.jaguar.gearbox.R.string.system_resume),
                 action(context, state.stopwatchNotificationRevision, if (state.stopwatchRunning) TimerNotificationAction.PAUSE else TimerNotificationAction.RESUME))
             // Reset opens an in-app confirmation rather than silently discarding elapsed time/laps.
-            .addAction(0, "Reset…", open(context, true))
+            .addAction(0, context.getString(com.jaguar.gearbox.R.string.system_reset_ellipsis), open(context, true))
         if (state.stopwatchRunning) {
             builder.setWhen(System.currentTimeMillis() - elapsed).setUsesChronometer(true).setShowWhen(true)
             if (Build.VERSION.SDK_INT >= 36) builder.addExtras(Bundle().apply { putBoolean("android.requestPromotedOngoing", true) })

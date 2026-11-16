@@ -1,5 +1,7 @@
 package com.jaguar.gearbox.ui.tools
 
+import androidx.compose.ui.res.stringResource
+import com.jaguar.gearbox.R
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Arrangement
@@ -36,15 +38,15 @@ import com.jaguar.gearbox.ui.components.CompactChoiceSelector
 import com.jaguar.gearbox.ui.components.rememberToolHistory
 
 private enum class PercentMode(
-    val label: String, val hint1: String, val hint2: String,
-    val example: String, val operation: PercentageOperation,
+    val label: Int, val hint1: Int, val hint2: Int,
+    val example: Int, val operation: PercentageOperation,
 ) {
-    OF_VALUE("Percentage of a value", "Percentage", "Value",
-        "Example: 15% of 240 = 36", PercentageOperation.OF_VALUE),
-    WHAT_PERCENT("What percentage?", "Part", "Total",
-        "Example: 30 out of 150 = 20%", PercentageOperation.WHAT_PERCENT),
-    CHANGE("Percentage change", "Original value", "New value",
-        "Example: 80 to 100 = 25% increase", PercentageOperation.CHANGE),
+    OF_VALUE(R.string.calc_percentage_of_a_value, R.string.calc_percentage, R.string.calc_value,
+        R.string.calc_example_15_of_240_36, PercentageOperation.OF_VALUE),
+    WHAT_PERCENT(R.string.calc_what_percentage, R.string.calc_part, R.string.calc_total,
+        R.string.calc_example_30_out_of_150_20, PercentageOperation.WHAT_PERCENT),
+    CHANGE(R.string.calc_percentage_change, R.string.calc_original_value, R.string.calc_new_value,
+        R.string.calc_example_80_to_100_25_increase, PercentageOperation.CHANGE),
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -65,7 +67,7 @@ fun PercentageCalculatorScreen(onNavigateBack: () -> Unit) {
     val history = rememberToolHistory(
         route = Tools.ROUTE_PERCENTAGE,
         inputs = mapOf("mode" to mode, "field1" to field1, "field2" to field2),
-        output = historyResult?.let { "${selectedMode.label}: ${formatTrimmed(it, decimals = 4)}${if (selectedMode == PercentMode.OF_VALUE) "" else "%"}" },
+        output = historyResult?.let { context.getString(R.string.calc_1_s_2_s_3_s, context.getString(selectedMode.label), formatTrimmed(it, decimals = 4), if (selectedMode == PercentMode.OF_VALUE) "" else "%") },
         modeInputs = mapOf("mode" to mode),
         onRestoreMode = { saved ->
             mode = PercentMode.entries.firstOrNull { it.name == saved["mode"] }?.name ?: PercentMode.OF_VALUE.name
@@ -78,7 +80,7 @@ fun PercentageCalculatorScreen(onNavigateBack: () -> Unit) {
     )
 
     ToolScaffold(
-        title = "Percentage Calculator",
+        title = context.getString(R.string.calc_percentage_calculator),
         icon = Tools.byRoute(Tools.ROUTE_PERCENTAGE)!!.icon,
         onNavigateBack = onNavigateBack,
         history = history,
@@ -88,15 +90,15 @@ fun PercentageCalculatorScreen(onNavigateBack: () -> Unit) {
         val result = if (x != null && y != null) calculatePercentage(selectedMode.operation, x, y) else null
         AdaptiveToolLayout(input = {
             CompactChoiceSelector(
-                label = "Calculation", selected = selectedMode, choices = PercentMode.entries,
-                choiceLabel = { it.label }, onSelect = { entry ->
+                label = context.getString(R.string.calc_calculation), selected = selectedMode, choices = PercentMode.entries,
+                choiceLabel = { context.getString(it.label) }, onSelect = { entry ->
                     if (mode != entry.name) { field1 = ""; field2 = "" }
                     mode = entry.name
                 },
             )
 
             Spacer(Modifier.height(12.dp))
-            Text(selectedMode.example, style = MaterialTheme.typography.bodyMedium,
+            Text(context.getString(selectedMode.example), style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(Modifier.height(20.dp))
 
@@ -105,17 +107,17 @@ fun PercentageCalculatorScreen(onNavigateBack: () -> Unit) {
                 DecimalField(
                     value = field1,
                     onValueChange = { field1 = it },
-                    label = selectedMode.hint1,
+                    label = context.getString(selectedMode.hint1),
                     errorText = if (selectedMode == PercentMode.CHANGE && x == 0.0)
-                        "Original value must not be zero." else null,
+                        context.getString(R.string.calc_original_value_must_not_be_zero) else null,
                 )
                 Spacer(Modifier.height(12.dp))
                 DecimalField(
                     value = field2,
                     onValueChange = { field2 = it },
-                    label = selectedMode.hint2,
+                    label = context.getString(selectedMode.hint2),
                     errorText = if (selectedMode == PercentMode.WHAT_PERCENT && y == 0.0)
-                        "Total must not be zero." else null,
+                        context.getString(R.string.calc_total_must_not_be_zero) else null,
                 )
             }
 
@@ -124,18 +126,18 @@ fun PercentageCalculatorScreen(onNavigateBack: () -> Unit) {
                 fun fmt(value: Double) = formatTrimmed(value, decimals = 4)
                 val answer = when (selectedMode) {
                     PercentMode.OF_VALUE -> fmt(result)
-                    PercentMode.WHAT_PERCENT -> "${fmt(result)}%"
-                    PercentMode.CHANGE -> "${fmt(kotlin.math.abs(result))}%"
+                    PercentMode.WHAT_PERCENT -> context.getString(R.string.calc_1_s, fmt(result))
+                    PercentMode.CHANGE -> context.getString(R.string.calc_1_s, fmt(kotlin.math.abs(result)))
                 }
                 // Retain the existing signed-base percentage-change semantics.
                 val detail = when (selectedMode) {
-                    PercentMode.OF_VALUE -> "${fmt(x)}% of ${fmt(y)} = $answer"
-                    PercentMode.WHAT_PERCENT -> "${fmt(x)} out of ${fmt(y)} = $answer"
-                    PercentMode.CHANGE -> "${fmt(x)} → ${fmt(y)}: $answer ${if (result >= 0) "increase" else "decrease"}"
+                    PercentMode.OF_VALUE -> context.getString(R.string.calc_1_s_of_2_s_3_s, fmt(x), fmt(y), answer)
+                    PercentMode.WHAT_PERCENT -> context.getString(R.string.calc_1_s_out_of_2_s_3_s, fmt(x), fmt(y), answer)
+                    PercentMode.CHANGE -> context.getString(R.string.calc_1_s_2_s_3_s_4_s, fmt(x), fmt(y), answer, if (result >= 0) context.getString(R.string.calc_increase) else context.getString(R.string.calc_decrease))
                 }
                 Card(Modifier.fillMaxWidth()) {
                     Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text("Result", style = MaterialTheme.typography.labelLarge)
+                        Text(stringResource(R.string.calc_result_2), style = MaterialTheme.typography.labelLarge)
                         Text(answer, style = MaterialTheme.typography.headlineLarge,
                             color = MaterialTheme.colorScheme.primary)
                         Text(detail, style = MaterialTheme.typography.bodyLarge)
@@ -143,7 +145,7 @@ fun PercentageCalculatorScreen(onNavigateBack: () -> Unit) {
                 }
                 Spacer(Modifier.height(12.dp))
                 ToolActions(
-                    onCopy = { context.copyToClipboard("Percentage", detail) },
+                    onCopy = { context.copyToClipboard(context.getString(R.string.calc_percentage), detail) },
                     onShare = { context.shareText(detail) },
                 )
             } else {
@@ -151,8 +153,8 @@ fun PercentageCalculatorScreen(onNavigateBack: () -> Unit) {
                     if (x != null && y != null &&
                         !(selectedMode == PercentMode.CHANGE && x == 0.0) &&
                         !(selectedMode == PercentMode.WHAT_PERCENT && y == 0.0))
-                        "These values produce a result outside the supported range. Try smaller values."
-                    else "Enter both values to see your result.",
+                        context.getString(R.string.calc_these_values_produce_a_result_outside_the_supported_ran)
+                    else context.getString(R.string.calc_enter_both_values_to_see_your_result),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )

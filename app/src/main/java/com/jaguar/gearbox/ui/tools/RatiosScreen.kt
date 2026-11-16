@@ -1,5 +1,7 @@
 package com.jaguar.gearbox.ui.tools
 
+import androidx.compose.ui.res.stringResource
+import com.jaguar.gearbox.R
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -35,35 +37,35 @@ fun RatiosScreen(onNavigateBack: () -> Unit) {
         },
     )
 
-    ToolScaffold(title = "Ratios", icon = Tools.byRoute(Tools.ROUTE_RATIOS)!!.icon,
+    ToolScaffold(title = context.getString(R.string.calc_ratios), icon = Tools.byRoute(Tools.ROUTE_RATIOS)!!.icon,
         onNavigateBack = onNavigateBack, history = history) {
         AdaptiveToolLayout(input = {
-            Text("Simplify a ratio", style = MaterialTheme.typography.titleLarge)
-            Text("Keep the values in order. For example, 12 : 18 simplifies to 2 : 3.",
+            Text(stringResource(R.string.calc_simplify_a_ratio), style = MaterialTheme.typography.titleLarge)
+            Text(stringResource(R.string.calc_keep_the_values_in_order_for_example_12_18_simplifies_t),
                 style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(Modifier.height(16.dp))
-            DecimalField(value = partA, onValueChange = { partA = it }, label = "First value", placeholder = "e.g. 12")
+            DecimalField(value = partA, onValueChange = { partA = it }, label = context.getString(R.string.calc_first_value), placeholder = context.getString(R.string.calc_e_g_12))
             Spacer(Modifier.height(12.dp))
-            DecimalField(value = partB, onValueChange = { partB = it }, label = "Second value", placeholder = "e.g. 18")
+            DecimalField(value = partB, onValueChange = { partB = it }, label = context.getString(R.string.calc_second_value), placeholder = context.getString(R.string.calc_e_g_18))
             Spacer(Modifier.height(20.dp))
         }, result = {
             if (result != null) {
-                Text("Simplified ratio", style = MaterialTheme.typography.titleMedium)
+                Text(stringResource(R.string.calc_simplified_ratio), style = MaterialTheme.typography.titleMedium)
                 Spacer(Modifier.height(8.dp))
-                val summary = "${partA.trim()} : ${partB.trim()} = $result"
+                val summary = context.getString(R.string.calc_1_s_2_s_3_s_2, partA.trim(), partB.trim(), result)
                 ResultCard(text = result, textStyle = MaterialTheme.typography.headlineLarge,
-                    onCopy = { context.copyToClipboard("Ratio", summary) },
+                    onCopy = { context.copyToClipboard(context.getString(R.string.calc_ratio), summary) },
                     onShare = { context.shareText(summary) })
                 Spacer(Modifier.height(8.dp))
                 Text(summary, style = MaterialTheme.typography.bodyMedium)
             } else {
                 val guidance = when {
                     (partA.isNotBlank() && a == null) || (partB.isNotBlank() && b == null) ->
-                        "Enter valid, finite numbers in both fields."
+                        context.getString(R.string.calc_enter_valid_finite_numbers_in_both_fields)
                     partA.isBlank() || partB.isBlank() ->
-                        "Enter both values to see the simplified ratio."
+                        context.getString(R.string.calc_enter_both_values_to_see_the_simplified_ratio)
                     else ->
-                        "These values cannot be simplified. Check that the ratio is defined and within the supported range."
+                        context.getString(R.string.calc_these_values_cannot_be_simplified_check_that_the_ratio)
                 }
                 Text(guidance, style = MaterialTheme.typography.bodyMedium)
             }

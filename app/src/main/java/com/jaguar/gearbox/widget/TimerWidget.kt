@@ -65,7 +65,7 @@ class TimerWidget : GlanceAppWidget() {
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
-                    text = if (isStopwatch) "Stopwatch" else "Timer",
+                    text = if (isStopwatch) context.getString(com.jaguar.gearbox.R.string.system_stopwatch) else context.getString(com.jaguar.gearbox.R.string.system_timer),
                     style = TextStyle(
                         fontWeight = FontWeight.Medium,
                         color = ColorProvider(Color(0xFF6B5F10)),
@@ -82,7 +82,7 @@ class TimerWidget : GlanceAppWidget() {
                 Spacer(modifier = GlanceModifier.width(4.dp))
                 Row(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
-                        text = if (running) "Pause" else if (canStart) "Start" else "Open app",
+                        text = if (running) context.getString(com.jaguar.gearbox.R.string.system_pause) else if (canStart) context.getString(com.jaguar.gearbox.R.string.system_start) else context.getString(com.jaguar.gearbox.R.string.system_open_app),
                         style = TextStyle(
                             fontWeight = FontWeight.Bold,
                             color = ColorProvider(Color(0xFF6B5F10)),
@@ -95,7 +95,7 @@ class TimerWidget : GlanceAppWidget() {
                     )
                     Spacer(modifier = GlanceModifier.width(16.dp))
                     Text(
-                        text = "Reset",
+                        text = context.getString(com.jaguar.gearbox.R.string.system_reset),
                         style = TextStyle(
                             fontWeight = FontWeight.Bold,
                             color = ColorProvider(Color(0xFF6B5F10)),

@@ -1,5 +1,7 @@
 package com.jaguar.gearbox.ui.components
 
+import com.jaguar.gearbox.data.localized
+import com.jaguar.gearbox.data.localizedInputLabel
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -32,16 +34,16 @@ fun ToolPresetsDialog(binding: ToolHistoryBinding, onDismiss: () -> Unit) {
         presets = withContext(Dispatchers.IO) { store.presets().filter { it.route == binding.route } }
         loaded = true
     }
-    AlertDialog(onDismissRequest = { if (!busy) onDismiss() }, title = { Text("Presets") },
+    AlertDialog(onDismissRequest = { if (!busy) onDismiss() }, title = { Text(context.getString(com.jaguar.gearbox.R.string.shared_presets)) },
         text = {
             Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text("Reuse a named setup without changing unrelated inputs. Presets are explicitly saved on this device.")
+                Text(context.getString(com.jaguar.gearbox.R.string.shared_reuse_a_named_setup_without_changing_unrelated_inputs_presets_are_expl))
                 if (!loaded || busy) LinearProgressIndicator(Modifier.fillMaxWidth())
-                if (loaded && presets.isEmpty()) Text("No presets for this tool yet.")
+                if (loaded && presets.isEmpty()) Text(context.getString(com.jaguar.gearbox.R.string.shared_no_presets_for_this_tool_yet))
                 LazyColumn(Modifier.heightIn(max = 240.dp)) {
                     items(presets, key = { it.id }) { preset ->
                         ListItem(headlineContent = { Text(preset.name) },
-                            supportingContent = { Text(preset.inputs.entries.joinToString(" · ") { "${it.key}: ${it.value}" }) },
+                            supportingContent = { Text(preset.inputs.entries.joinToString(" · ") { context.getString(com.jaguar.gearbox.R.string.shared_label_value, localizedInputLabel(context, it.key), it.value) }) },
                             modifier = Modifier.clickable(enabled = apply != null && !busy) {
                                 onDismiss(); apply?.invoke(preset.inputs)
                             })
@@ -49,7 +51,7 @@ fun ToolPresetsDialog(binding: ToolHistoryBinding, onDismiss: () -> Unit) {
                 }
                 if (binding.configuration.isNotEmpty()) {
                     OutlinedTextField(value = name, onValueChange = { name = it.take(80) },
-                        label = { Text("Name this setup") }, enabled = !busy, singleLine = true)
+                        label = { Text(context.getString(com.jaguar.gearbox.R.string.shared_name_this_setup)) }, enabled = !busy, singleLine = true)
                     TextButton(enabled = name.isNotBlank() && !busy, onClick = {
                         if (!busy) {
                             busy = true
@@ -59,29 +61,30 @@ fun ToolPresetsDialog(binding: ToolHistoryBinding, onDismiss: () -> Unit) {
                                 val saved = withContext(Dispatchers.IO) { store.savePreset(label, binding.route, configuration) }
                                 if (saved) {
                                     presets = withContext(Dispatchers.IO) { store.presets().filter { it.route == binding.route } }
-                                    name = ""; feedback = "Preset saved."
-                                } else feedback = "Could not save. Check the 100-preset limit and input size."
+                                    name = ""; feedback = context.getString(com.jaguar.gearbox.R.string.shared_preset_saved)
+                                } else feedback = context.getString(com.jaguar.gearbox.R.string.shared_could_not_save_check_the_100_preset_limit_and_input_size)
                                 busy = false
                             }
                         }
-                    }) { Text("Save current setup") }
+                    }) { Text(context.getString(com.jaguar.gearbox.R.string.shared_save_current_setup)) }
                 }
                 feedback?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
             }
         },
-        confirmButton = { TextButton(enabled = !busy, onClick = onDismiss) { Text("Close") } },
-        dismissButton = { if (workbench != null) TextButton(enabled = !busy, onClick = { onDismiss(); workbench() }) { Text("Open Workbench") } },
+        confirmButton = { TextButton(enabled = !busy, onClick = onDismiss) { Text(context.getString(com.jaguar.gearbox.R.string.shared_close)) } },
+        dismissButton = { if (workbench != null) TextButton(enabled = !busy, onClick = { onDismiss(); workbench() }) { Text(context.getString(com.jaguar.gearbox.R.string.shared_open_workbench)) } },
     )
 }
 
 @Composable
 fun ToolHandoffDialog(binding: ToolHistoryBinding, onDismiss: () -> Unit) {
     val handoff = LocalToolHandoff.current
-    val choices = compatibleToolHandoffs(binding.route, binding.inputs, binding.output)
-    AlertDialog(onDismissRequest = onDismiss, title = { Text("Use result in…") },
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val choices = compatibleToolHandoffs(binding.route, binding.inputs, binding.output).map { it.localized(context) }
+    AlertDialog(onDismissRequest = onDismiss, title = { Text(context.getString(com.jaguar.gearbox.R.string.shared_use_result_in)) },
         text = {
             Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("Choose a destination. This passes the current result or its explicitly labeled number only; it never reads your clipboard or starts a timer or game.")
+                Text(context.getString(com.jaguar.gearbox.R.string.shared_choose_a_destination_this_passes_the_current_result_or_its_explicitly))
                 Text(binding.output.orEmpty().take(200), style = MaterialTheme.typography.bodySmall, maxLines = 4,
                     overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
                 LazyColumn(Modifier.heightIn(max = 420.dp)) {
@@ -91,10 +94,10 @@ fun ToolHandoffDialog(binding: ToolHistoryBinding, onDismiss: () -> Unit) {
                                 onDismiss(); handoff?.invoke(choice.route, choice.inputs)
                             })
                     }
-                    if (choices.isEmpty()) item { Text("No compatible result is available yet.") }
+                    if (choices.isEmpty()) item { Text(context.getString(com.jaguar.gearbox.R.string.shared_no_compatible_result_is_available_yet)) }
                 }
             }
-        }, confirmButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
+        }, confirmButton = { TextButton(onClick = onDismiss) { Text(context.getString(com.jaguar.gearbox.R.string.shared_cancel)) } },
     )
 }
 

@@ -9,7 +9,7 @@ fun compatibleToolHandoffs(source: String, inputs: Map<String, String>, output: 
     val actions = mutableListOf<ToolHandoff>()
     val text = when (source) {
         "tool/text_tools", "tool/hash_generator", "tool/number_to_words" -> output
-        "tool/morse_binary" -> output.takeUnless { it.startsWith("Partial translation:") }
+        "tool/morse_binary" -> output.takeUnless { inputs["_partial"] == "true" || it.startsWith("Partial translation:") }
         "tool/qr_generator" -> inputs["text"]
         else -> null
     }

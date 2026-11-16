@@ -1,5 +1,6 @@
 package com.jaguar.gearbox.ui.tools
 
+import com.jaguar.gearbox.R
 import android.content.Intent
 import android.content.ClipData
 import android.content.ActivityNotFoundException
@@ -82,7 +83,7 @@ fun QrGeneratorScreen(onNavigateBack: () -> Unit) {
     val generating = !restoredInput && input.isNotEmpty() && renderedInput != input
 
     val history = rememberToolHistory(Tools.ROUTE_QR_GENERATOR,
-        inputs = mapOf("text" to input), output = if (bitmap != null) "QR content: $input" else null,
+        inputs = mapOf("text" to input), output = if (bitmap != null) context.getString(R.string.special_qr_content, input) else null,
         resultRequiresExplicitAction = true,
         onRestore = { values ->
             input = values["text"].orEmpty(); restoredInput = true
@@ -90,7 +91,7 @@ fun QrGeneratorScreen(onNavigateBack: () -> Unit) {
         })
 
     ToolScaffold(
-        title = "QR Code Generator",
+        title = context.getString(R.string.special_qr_code_generator),
         icon = Tools.byRoute(Tools.ROUTE_QR_GENERATOR)!!.icon,
         onNavigateBack = onNavigateBack,
         history = history,
@@ -98,43 +99,43 @@ fun QrGeneratorScreen(onNavigateBack: () -> Unit) {
         OutlinedTextField(
             value = input,
             onValueChange = { input = it; shareError = null; restoredInput = false },
-            label = { Text("Text or URL") },
-            placeholder = { Text("e.g. https://example.com") },
+            label = { Text(context.getString(R.string.special_text_or_url)) },
+            placeholder = { Text(context.getString(R.string.special_e_g_https_example_com)) },
             readOnly = sharing,
             maxLines = 6,
-            supportingText = { Text("Your code updates as you type. Text and links are both supported.") },
+            supportingText = { Text(context.getString(R.string.special_your_code_updates_as_you_type_text_and_links_are_both_supported)) },
             modifier = Modifier.fillMaxWidth(),
         )
 
-        TextButton(onClick = { input = ""; shareError = null; restoredInput = false }, enabled = input.isNotEmpty() && !sharing) { Text("Clear") }
+        TextButton(onClick = { input = ""; shareError = null; restoredInput = false }, enabled = input.isNotEmpty() && !sharing) { Text(context.getString(R.string.screen_clear)) }
         Spacer(Modifier.height(20.dp))
         Card(Modifier.fillMaxWidth()) {
             Column(Modifier.fillMaxWidth().padding(20.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                Text("QR preview", style = MaterialTheme.typography.titleMedium)
+                Text(context.getString(R.string.special_qr_preview), style = MaterialTheme.typography.titleMedium)
                 Spacer(Modifier.height(16.dp))
                 when {
                     restoredInput && input.isNotEmpty() -> {
-                        Text("Inputs restored. Generate a fresh code when you are ready.")
-                        Button(onClick = { restoredInput = false }) { Text("Generate QR code") }
+                        Text(context.getString(R.string.special_inputs_restored_generate_a_fresh_code_when_you_are_ready))
+                        Button(onClick = { restoredInput = false }) { Text(context.getString(R.string.special_generate_qr_code)) }
                     }
-                    generating -> Text("Generating QR code…")
+                    generating -> Text(context.getString(R.string.special_generating_qr_code))
                     bitmap != null -> {
                         Image(
                             bitmap = bitmap.asImageBitmap(),
-                            contentDescription = "QR code containing your entered text",
+                            contentDescription = context.getString(R.string.special_qr_code_containing_your_entered_text),
                             modifier = Modifier.widthIn(max = 280.dp).fillMaxWidth().aspectRatio(1f),
                         )
                         Spacer(Modifier.height(12.dp))
-                        Text("Ready to scan or share", style = MaterialTheme.typography.bodyMedium)
+                        Text(context.getString(R.string.special_ready_to_scan_or_share), style = MaterialTheme.typography.bodyMedium)
                     }
                     input.isEmpty() -> {
                         Icon(Tools.byRoute(Tools.ROUTE_QR_GENERATOR)!!.icon, contentDescription = null, modifier = Modifier.size(48.dp))
                         Spacer(Modifier.height(12.dp))
-                        Text("Your QR code will appear here", style = MaterialTheme.typography.titleMedium)
+                        Text(context.getString(R.string.special_your_qr_code_will_appear_here), style = MaterialTheme.typography.titleMedium)
                         Spacer(Modifier.height(8.dp))
-                        Text("Enter text or a link above to get started.")
+                        Text(context.getString(R.string.special_enter_text_or_a_link_above_to_get_started))
                     }
-                    else -> Text("Couldn't generate a QR code. Try shorter text.", color = MaterialTheme.colorScheme.error)
+                    else -> Text(context.getString(R.string.special_couldn_t_generate_a_qr_code_try_shorter_text), color = MaterialTheme.colorScheme.error)
                 }
             }
         }
@@ -150,7 +151,7 @@ fun QrGeneratorScreen(onNavigateBack: () -> Unit) {
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 Icon(Icons.Filled.Share, contentDescription = null)
-                Text(if (sharing) " Preparing image…" else " Share QR image")
+                Text(if (sharing) context.getString(R.string.special_preparing_image) else context.getString(R.string.special_share_qr_image))
             }
         }
         shareError?.let {
@@ -164,8 +165,8 @@ fun QrGeneratorScreen(onNavigateBack: () -> Unit) {
             LaunchedEffect(snapshot) { shareReview = null }
         } else SensitiveTextShareDialog(
             text = snapshot.first,
-            disclosure = "The external app you choose will receive a QR image encoding the exact content below. Anyone with the image can read that content. Cancel if it contains secrets or private information.",
-            previewLabel = "Content encoded in the QR image",
+            disclosure = context.getString(R.string.special_the_external_app_you_choose_will_receive_a_qr_image_encoding_the_),
+            previewLabel = context.getString(R.string.special_content_encoded_in_the_qr_image),
             onDismiss = { shareReview = null },
             onConfirm = {
                 shareReview = null
@@ -209,22 +210,22 @@ private suspend fun shareQrBitmap(context: android.content.Context, bitmap: Bitm
                 FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
             })
         }
-        if (!isCurrent()) return "QR content changed. Generate the updated code before sharing."
+        if (!isCurrent()) return context.getString(R.string.special_qr_content_changed_generate_the_updated_code_before_sharing)
         val intent = Intent(Intent.ACTION_SEND).apply {
             type = "image/png"
             putExtra(Intent.EXTRA_STREAM, uri)
-            clipData = ClipData.newUri(context.contentResolver, "QR code", uri)
+            clipData = ClipData.newUri(context.contentResolver, context.getString(R.string.special_qr_code), uri)
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
         context.startActivity(Intent.createChooser(intent, null))
         null
     } catch (_: ActivityNotFoundException) {
-        "No app is available to share this QR code."
+        context.getString(R.string.special_no_app_is_available_to_share_this_qr_code)
     } catch (_: IOException) {
-        "Couldn't save the QR image. Check available storage and try again."
+        context.getString(R.string.special_couldn_t_save_the_qr_image_check_available_storage_and_try_again)
     } catch (_: SecurityException) {
-        "Couldn't grant access to the QR image. Please try again."
+        context.getString(R.string.special_couldn_t_grant_access_to_the_qr_image_please_try_again)
     } catch (_: IllegalArgumentException) {
-        "Couldn't prepare the QR image for sharing."
+        context.getString(R.string.special_couldn_t_prepare_the_qr_image_for_sharing)
     }
 }

@@ -1,5 +1,7 @@
 package com.jaguar.gearbox.ui.tools
 
+import com.jaguar.gearbox.R
+
 import com.jaguar.gearbox.ui.components.ToolFocusView
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
@@ -93,7 +95,7 @@ fun CounterScreen(onNavigateBack: () -> Unit) {
     var stepMenu by remember { mutableStateOf(false) }
     var focusView by rememberSaveable { mutableStateOf(false) }
     val history = rememberToolHistory(Tools.ROUTE_COUNTER,
-        mapOf("count" to count.toString(), "step" to step.toString()), "Count: $count", onRestore = { saved ->
+        mapOf("count" to count.toString(), "step" to step.toString()), context.getString(R.string.game_count_1_s, count), onRestore = { saved ->
         saved["count"]?.toIntOrNull()?.let { restored ->
             store.restore(restored)
             count = store.count; limitReached = store.limitReached
@@ -103,34 +105,34 @@ fun CounterScreen(onNavigateBack: () -> Unit) {
     }, restoreLastResult = false, recordingDelayMillis = 0L, modeInputs = mapOf("step" to step.toString()), onRestoreMode = { saved ->
         step = saved["step"]?.toIntOrNull()?.takeIf { it in STEP_OPTIONS } ?: 1
     })
-    if (focusView) ToolFocusView("Counter", onExit = { focusView = false }) {
+    if (focusView) ToolFocusView(context.getString(R.string.game_counter), onExit = { focusView = false }) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(count.toString(), style = MaterialTheme.typography.displayLarge,
                     modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()))
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    FilledTonalButton(onClick = { update(-step) }) { Text("− $step") }
-                    Button(onClick = { update(step) }) { Text("+ $step") }
+                    FilledTonalButton(onClick = { update(-step) }) { Text(context.getString(R.string.game_1_s, step)) }
+                    Button(onClick = { update(step) }) { Text(context.getString(R.string.game_1_s_3, step)) }
                 }
-                if (limitReached) Text("Counter limit reached", color = MaterialTheme.colorScheme.error)
+                if (limitReached) Text(context.getString(R.string.game_counter_limit_reached), color = MaterialTheme.colorScheme.error)
             }
         }
     var confirmReset by rememberSaveable { mutableStateOf(false) }
     if (confirmReset) {
         AlertDialog(
             onDismissRequest = { confirmReset = false },
-            title = { Text("Reset count?") },
-            text = { Text("The current count ($count) will be set to zero.") },
+            title = { Text(context.getString(R.string.game_reset_count)) },
+            text = { Text(context.getString(R.string.game_the_current_count_1_s_will_be_set_to_zero, count)) },
             confirmButton = {
-                TextButton(onClick = { confirmReset = false; update() }) { Text("Reset count") }
+                TextButton(onClick = { confirmReset = false; update() }) { Text(context.getString(R.string.game_reset_count_7)) }
             },
             dismissButton = {
-                TextButton(onClick = { confirmReset = false }) { Text("Keep counting") }
+                TextButton(onClick = { confirmReset = false }) { Text(context.getString(R.string.game_keep_counting)) }
             },
         )
     }
 
     ToolScaffold(
-        title = "Counter",
+        title = context.getString(R.string.game_counter),
         icon = Tools.byRoute(Tools.ROUTE_COUNTER)!!.icon,
         onNavigateBack = onNavigateBack,
         history = history,
@@ -145,7 +147,7 @@ fun CounterScreen(onNavigateBack: () -> Unit) {
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 28.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Text("Count", style = MaterialTheme.typography.labelLarge,
+                Text(context.getString(R.string.game_count), style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Text(
                     text = count.toString(),
@@ -157,25 +159,25 @@ fun CounterScreen(onNavigateBack: () -> Unit) {
             }
         }
         if (limitReached) {
-            Text("Counter limit reached. The count has not changed.", color = MaterialTheme.colorScheme.error,
+            Text(context.getString(R.string.game_counter_limit_reached_the_count_has_not_changed), color = MaterialTheme.colorScheme.error,
                 modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite })
         }
         Spacer(Modifier.height(12.dp))
         ToolActions(
-            onCopy = { context.copyToClipboard("Count", store.count.toString()) },
-            onShare = { context.shareText("Count: ${store.count}") },
+            onCopy = { context.copyToClipboard(context.getString(R.string.game_count), store.count.toString()) },
+            onShare = { context.shareText(context.getString(R.string.game_count_1_s, store.count)) },
         )
         Spacer(Modifier.height(24.dp))
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Box {
-                TextButton(onClick = { stepMenu = true }) { Text("Step: $step ▾") }
+                TextButton(onClick = { stepMenu = true }) { Text(context.getString(R.string.game_step_1_s, step)) }
                 DropdownMenu(expanded = stepMenu, onDismissRequest = { stepMenu = false }) {
                     STEP_OPTIONS.forEach { option ->
                         DropdownMenuItem(text = { Text(option.toString()) }, onClick = { step = option; stepMenu = false })
                     }
                 }
             }
-            TextButton(onClick = { focusView = true }) { Text("Focus view") }
+            TextButton(onClick = { focusView = true }) { Text(context.getString(R.string.game_focus_view)) }
         }
         Spacer(Modifier.height(20.dp))
         Row(
@@ -184,14 +186,14 @@ fun CounterScreen(onNavigateBack: () -> Unit) {
             verticalAlignment = Alignment.CenterVertically,
         ) {
             FilledTonalButton(onClick = { update(-step) },
-                modifier = Modifier.weight(1f).heightIn(min = 64.dp).semantics { contentDescription = "Decrease by $step" }) {
+                modifier = Modifier.weight(1f).heightIn(min = 64.dp).semantics { contentDescription = context.getString(R.string.game_decrease_by_1_s, step) }) {
                 Icon(Icons.Filled.Remove, contentDescription = null)
-                Text(" $step", style = MaterialTheme.typography.titleLarge)
+                Text(context.getString(R.string.game_1_s_14, step), style = MaterialTheme.typography.titleLarge)
             }
             Button(onClick = { update(step) },
-                modifier = Modifier.weight(1f).heightIn(min = 64.dp).semantics { contentDescription = "Increase by $step" }) {
+                modifier = Modifier.weight(1f).heightIn(min = 64.dp).semantics { contentDescription = context.getString(R.string.game_increase_by_1_s, step) }) {
                 Icon(Icons.Filled.Add, contentDescription = null)
-                Text(" $step", style = MaterialTheme.typography.titleLarge)
+                Text(context.getString(R.string.game_1_s_14, step), style = MaterialTheme.typography.titleLarge)
             }
         }
         Spacer(Modifier.height(12.dp))
@@ -200,7 +202,7 @@ fun CounterScreen(onNavigateBack: () -> Unit) {
             modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
         ) {
             Icon(Icons.Filled.Refresh, contentDescription = null)
-            Text("  Reset")
+            Text(context.getString(R.string.game_reset))
         }
     }
 }

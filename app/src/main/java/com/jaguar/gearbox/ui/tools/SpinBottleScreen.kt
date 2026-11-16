@@ -1,5 +1,7 @@
 package com.jaguar.gearbox.ui.tools
 
+import com.jaguar.gearbox.R
+
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
@@ -41,9 +43,9 @@ fun SpinBottleScreen(onNavigateBack: () -> Unit) {
     var spinStartAngle by remember { mutableStateOf(0f) }
     var animationAligned by remember { mutableStateOf(false) }
     val status = when {
-        spinning -> "Spinning…"
-        finalAngle < 0 -> "Ready to spin"
-        else -> "Bottle points $finalAngle° clockwise from the top"
+        spinning -> context.getString(R.string.game_spinning)
+        finalAngle < 0 -> context.getString(R.string.game_ready_to_spin)
+        else -> context.getString(R.string.game_bottle_points_1_s_clockwise_from_the_top, finalAngle)
     }
 
     val history = rememberToolHistory(
@@ -60,12 +62,12 @@ fun SpinBottleScreen(onNavigateBack: () -> Unit) {
     )
 
     ToolScaffold(
-        title = "Spin the Bottle",
+        title = context.getString(R.string.game_spin_the_bottle),
         icon = Tools.byRoute(Tools.ROUTE_SPIN_BOTTLE)!!.icon,
         onNavigateBack = onNavigateBack,
         history = history,
     ) {
-        Text("Place your phone flat between players. The neck of the bottle points to the selected player.",
+        Text(context.getString(R.string.game_place_your_phone_flat_between_players_the_neck_of_the_bott),
             style = MaterialTheme.typography.bodyLarge)
         Spacer(Modifier.height(20.dp))
         Card(Modifier.fillMaxWidth()) {
@@ -89,7 +91,7 @@ fun SpinBottleScreen(onNavigateBack: () -> Unit) {
                     })
                 }
                 Spacer(Modifier.height(12.dp))
-                Text("The narrow, capped end is the pointer.", style = MaterialTheme.typography.bodySmall,
+                Text(context.getString(R.string.game_the_narrow_capped_end_is_the_pointer), style = MaterialTheme.typography.bodySmall,
                     textAlign = TextAlign.Center)
             }
         }
@@ -129,7 +131,7 @@ fun SpinBottleScreen(onNavigateBack: () -> Unit) {
         ) {
             Icon(Icons.Filled.PlayArrow, contentDescription = null)
             Spacer(Modifier.width(8.dp))
-            Text(if (spinning) "Spinning…" else if (finalAngle < 0) "Spin" else "Spin again")
+            Text(if (spinning) context.getString(R.string.game_spinning) else if (finalAngle < 0) context.getString(R.string.game_spin) else context.getString(R.string.game_spin_again))
         }
     }
 }

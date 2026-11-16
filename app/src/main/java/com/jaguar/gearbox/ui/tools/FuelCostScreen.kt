@@ -1,5 +1,7 @@
 package com.jaguar.gearbox.ui.tools
 
+import androidx.compose.ui.res.stringResource
+import com.jaguar.gearbox.R
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -44,7 +46,7 @@ fun FuelCostScreen(onNavigateBack: () -> Unit) {
     val history = rememberToolHistory(
         route = Tools.ROUTE_FUEL_COST,
         inputs = mapOf("distance" to distance, "mileage" to mileage, "price" to price),
-        output = historyResult?.let { "Fuel needed: ${formatTrimmed(it.fuelNeeded, 2)}\nTotal cost: ${formatTrimmed(it.totalCost, 2)}" },
+        output = historyResult?.let { context.getString(R.string.calc_fuel_needed_1_s_ntotal_cost_2_s, formatTrimmed(it.fuelNeeded, 2), formatTrimmed(it.totalCost, 2)) },
         onRestore = { saved ->
             distance = saved["distance"] ?: ""
             mileage = saved["mileage"] ?: ""
@@ -53,58 +55,58 @@ fun FuelCostScreen(onNavigateBack: () -> Unit) {
     )
 
     ToolScaffold(
-        title = "Fuel Cost Calculator",
+        title = context.getString(R.string.calc_fuel_cost_calculator),
         icon = Tools.byRoute(Tools.ROUTE_FUEL_COST)!!.icon,
         onNavigateBack = onNavigateBack,
         history = history,
     ) {
         AdaptiveToolLayout(input = {
-            Text("Plan your trip cost", style = MaterialTheme.typography.titleMedium)
-            Text("Keep units consistent: km with km/L and price/L, or miles with miles/gallon and price/gallon. No unit conversion is performed.",
+            Text(stringResource(R.string.calc_plan_your_trip_cost), style = MaterialTheme.typography.titleMedium)
+            Text(stringResource(R.string.calc_keep_units_consistent_km_with_km_l_and_price_l_or_miles),
                 style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(Modifier.height(16.dp))
             DecimalField(
                 value = distance,
                 onValueChange = { distance = it },
-                label = "Trip distance (km/mi)",
-                placeholder = "e.g. 300",
-                errorText = if (distance.isNotBlank() && distanceValue == null) "Enter a non-negative distance." else null,
+                label = context.getString(R.string.calc_trip_distance_km_mi),
+                placeholder = context.getString(R.string.calc_e_g_300),
+                errorText = if (distance.isNotBlank() && distanceValue == null) context.getString(R.string.calc_enter_a_non_negative_distance) else null,
             )
             Spacer(Modifier.height(12.dp))
             DecimalField(
                 value = mileage,
                 onValueChange = { mileage = it },
-                label = "Mileage (distance per unit fuel)",
-                placeholder = "e.g. 15",
-                errorText = if (mileage.isNotBlank() && mileageValue == null) "Mileage must be greater than zero." else null,
+                label = context.getString(R.string.calc_mileage_distance_per_unit_fuel),
+                placeholder = context.getString(R.string.calc_e_g_15),
+                errorText = if (mileage.isNotBlank() && mileageValue == null) context.getString(R.string.calc_mileage_must_be_greater_than_zero) else null,
             )
             Spacer(Modifier.height(12.dp))
             DecimalField(
                 value = price,
                 onValueChange = { price = it },
-                label = "Fuel price per unit",
-                placeholder = "e.g. 100",
-                errorText = if (price.isNotBlank() && priceValue == null) "Enter a non-negative fuel price." else null,
+                label = context.getString(R.string.calc_fuel_price_per_unit),
+                placeholder = context.getString(R.string.calc_e_g_100),
+                errorText = if (price.isNotBlank() && priceValue == null) context.getString(R.string.calc_enter_a_non_negative_fuel_price) else null,
             )
         }, result = {
             if (distanceValue != null && mileageValue != null && priceValue != null) {
                 val result = calculateFuelCost(distanceValue, mileageValue, priceValue)
                 if (result != null) {
-                    val summary = "Fuel needed: ${formatTrimmed(result.fuelNeeded, 2)}\n" +
-                            "Total cost: ${formatTrimmed(result.totalCost, 2)}"
+                    val summary = context.getString(R.string.calc_fuel_needed_1_s_n, formatTrimmed(result.fuelNeeded, 2)) +
+                            context.getString(R.string.calc_total_cost_1_s, formatTrimmed(result.totalCost, 2))
 
                     Spacer(Modifier.height(20.dp))
-                    Text("Estimated trip cost", style = MaterialTheme.typography.labelLarge)
+                    Text(stringResource(R.string.calc_estimated_trip_cost), style = MaterialTheme.typography.labelLarge)
                     Text(formatTrimmed(result.totalCost, 2), style = MaterialTheme.typography.headlineLarge, color = MaterialTheme.colorScheme.primary)
                     Spacer(Modifier.height(12.dp))
                     ResultCard(
-                        text = "Fuel needed: ${formatTrimmed(result.fuelNeeded, 2)} units\nCost uses the currency of your fuel price.",
-                        onCopy = { context.copyToClipboard("Fuel cost", summary) },
+                        text = context.getString(R.string.calc_fuel_needed_1_s_units_ncost_uses_the_currency_of_your_f, formatTrimmed(result.fuelNeeded, 2)),
+                        onCopy = { context.copyToClipboard(context.getString(R.string.calc_fuel_cost), summary) },
                         onShare = { context.shareText(summary) },
                     )
                 } else {
                     Spacer(Modifier.height(12.dp))
-                    Text("Values exceed the supported numeric range.", color = MaterialTheme.colorScheme.error)
+                    Text(stringResource(R.string.calc_values_exceed_the_supported_numeric_range), color = MaterialTheme.colorScheme.error)
                 }
             }
             Spacer(Modifier.height(16.dp))

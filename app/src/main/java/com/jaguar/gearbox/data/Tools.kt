@@ -134,6 +134,8 @@ object Tools {
     const val ROUTE_FLASHLIGHT = "tool/flashlight"
     const val ROUTE_SCREEN_RULER = "tool/screen_ruler"
 
+    fun localized(context: android.content.Context): List<Tool> = all.map { it.localized(context) }
+
     val all: List<Tool> = listOf(
         Tool(
             name = "Average Calculator",

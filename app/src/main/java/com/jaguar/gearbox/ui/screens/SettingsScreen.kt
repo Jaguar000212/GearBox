@@ -82,9 +82,9 @@ fun SettingsScreen(
             .fillMaxSize()
             .verticalScroll(rememberScrollState()),
     ) {
-        Text("Make it yours", style = MaterialTheme.typography.headlineSmall,
+        Text(context.getString(R.string.screen_make_it_yours), style = MaterialTheme.typography.headlineSmall,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp))
-        Text("Your toolbox, your preferences. History, presets and workbench saves stay on this device.",
+        Text(context.getString(R.string.screen_your_toolbox_your_preferences_history_presets_and_workbench_saves),
             style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(horizontal = 16.dp))
         SectionHeader(stringResource(R.string.launch_section))
@@ -98,17 +98,17 @@ fun SettingsScreen(
         ActiveClockPreference()
         WidgetDiscoveryPreference()
         HorizontalDivider()
-        SectionHeader("Appearance")
+        SectionHeader(context.getString(R.string.screen_appearance))
         ListItem(
-            headlineContent = { Text("Theme") },
-            supportingContent = { Text(themeMode.label) },
+            headlineContent = { Text(context.getString(R.string.screen_theme)) },
+            supportingContent = { Text(context.getString(themeMode.labelResource())) },
             leadingContent = { Icon(Icons.Filled.Palette, contentDescription = null) },
             modifier = Modifier.clickable { showThemeChoice = true },
         )
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             ListItem(
-                headlineContent = { Text("Dynamic colour") },
-                supportingContent = { Text("Theme follows your wallpaper colours.") },
+                headlineContent = { Text(context.getString(R.string.screen_dynamic_colour)) },
+                supportingContent = { Text(context.getString(R.string.screen_theme_follows_your_wallpaper_colours)) },
                 leadingContent = { Icon(Icons.Filled.ColorLens, contentDescription = null) },
                 trailingContent = {
                     Switch(checked = dynamicColorEnabled, onCheckedChange = onDynamicColorChange)
@@ -117,18 +117,18 @@ fun SettingsScreen(
         }
 
         HorizontalDivider()
-        SectionHeader("Clocks")
+        SectionHeader(context.getString(R.string.screen_clocks))
         ListItem(
-            headlineContent = { Text("Clock options") },
-            supportingContent = { Text("Notifications, Live Updates and completion alerts") },
+            headlineContent = { Text(context.getString(R.string.screen_clock_options)) },
+            supportingContent = { Text(context.getString(R.string.screen_notifications_live_updates_and_completion_alerts)) },
             modifier = Modifier.clickable { showClockOptions = true },
         )
         HorizontalDivider()
-        SectionHeader("Feedback")
+        SectionHeader(context.getString(R.string.screen_feedback))
         MotionPreferencesSection()
         ListItem(
-            headlineContent = { Text("Haptic feedback") },
-            supportingContent = { Text("Vibrate on button presses and long actions.") },
+            headlineContent = { Text(context.getString(R.string.screen_haptic_feedback)) },
+            supportingContent = { Text(context.getString(R.string.screen_vibrate_on_button_presses_and_long_actions)) },
             leadingContent = { Icon(Icons.Filled.Vibration, contentDescription = null) },
             trailingContent = {
                 Switch(checked = hapticsEnabled, onCheckedChange = onHapticsChange)
@@ -138,10 +138,10 @@ fun SettingsScreen(
         HorizontalDivider()
         ToolMemorySettingsSection()
         HorizontalDivider()
-        SectionHeader("About")
+        SectionHeader(context.getString(R.string.screen_about))
         ListItem(
-            headlineContent = { Text("GearBox") },
-            supportingContent = { Text("Version $versionName") },
+            headlineContent = { Text(context.getString(R.string.screen_brand_name)) },
+            supportingContent = { Text(context.getString(R.string.screen_version_1_s, versionName)) },
             leadingContent = { Icon(Icons.Filled.Info, contentDescription = null) },
         )
         GitHubCredit(username = GITHUB_USERNAME, profileUrl = GITHUB_PROFILE_URL)
@@ -150,7 +150,7 @@ fun SettingsScreen(
     if (showThemeChoice) {
         AlertDialog(
             onDismissRequest = { showThemeChoice = false },
-            title = { Text("Theme") },
+            title = { Text(context.getString(R.string.screen_theme)) },
             text = {
                 Column(Modifier.selectableGroup()) {
                     ThemeMode.entries.forEach { mode ->
@@ -159,12 +159,12 @@ fun SettingsScreen(
                             onClick = { onThemeModeChange(mode); showThemeChoice = false },
                         ).padding(vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
                             RadioButton(selected = themeMode == mode, onClick = null)
-                            Text(mode.label, Modifier.padding(start = 12.dp))
+                            Text(context.getString(mode.labelResource()), Modifier.padding(start = 12.dp))
                         }
                     }
                 }
             },
-            confirmButton = { TextButton(onClick = { showThemeChoice = false }) { Text("Close") } },
+            confirmButton = { TextButton(onClick = { showThemeChoice = false }) { Text(context.getString(R.string.screen_close)) } },
         )
     }
     if (showLaunchChoice) {
@@ -228,13 +228,13 @@ private fun GitHubCredit(username: String, profileUrl: String) {
         ) {
             Icon(
                 painter = painterResource(R.drawable.ic_github),
-                contentDescription = "GearBox on GitHub",
+                contentDescription = context.getString(R.string.screen_gearbox_on_github),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(14.dp),
             )
         }
         Text(
-            text = "Made with ❤️ by",
+            text = context.getString(R.string.screen_made_with_by),
             style = MaterialTheme.typography.bodyMedium,
             modifier = Modifier.padding(top = 8.dp),
         )
@@ -255,24 +255,32 @@ private fun launchLabel(screen: LaunchScreen): String = stringResource(
 /** Discovery only: the launcher owns adding and placing widgets. */
 @Composable
 internal fun WidgetDiscoveryPreference() {
+    val context = androidx.compose.ui.platform.LocalContext.current
     var open by rememberSaveable { mutableStateOf(false) }
     ListItem(
-        headlineContent = { Text("Home-screen widgets") },
-        supportingContent = { Text("Find Counter and Timer / Stopwatch on your launcher") },
+        headlineContent = { Text(context.getString(R.string.screen_home_screen_widgets)) },
+        supportingContent = { Text(context.getString(R.string.screen_find_counter_and_timer_stopwatch_on_your_launcher)) },
         modifier = Modifier.clickable { open = true },
     )
     if (open) AlertDialog(
         onDismissRequest = { open = false },
-        title = { Text("Home-screen widgets") },
+        title = { Text(context.getString(R.string.screen_home_screen_widgets)) },
         text = {
             Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text("Counter: view and change the same count used in the app.")
-                Text("Timer / Stopwatch: view the selected clock and use its controls. The widget is a snapshot, not a continuously ticking display; open the app for a live reading.")
-                Text("To add one, long-press an empty area of your Android home screen, choose Widgets, then find GearBox. Select a widget and place it on your home screen. Menu names and widget support vary by launcher.")
-                Text("If you installed GearBox Preview alongside GearBox, look for the separate GearBox Preview widget group. Preview widgets use only Preview data, not your regular app’s counters or clocks.")
-                Text("This guide does not add a widget or change any running clock. Widget controls affect the matching app’s shared counter or clock.")
+                Text(context.getString(R.string.screen_counter_view_and_change_the_same_count_used_in_the_app))
+                Text(context.getString(R.string.screen_timer_stopwatch_view_the_selected_clock_and_use_its_controls_the))
+                Text(context.getString(R.string.screen_to_add_one_long_press_an_empty_area_of_your_android_home_screen_c))
+                Text(context.getString(R.string.screen_if_you_installed_gearbox_preview_alongside_gearbox_look_for_the_s))
+                Text(context.getString(R.string.screen_this_guide_does_not_add_a_widget_or_change_any_running_clock_widg))
             }
         },
-        confirmButton = { TextButton(onClick = { open = false }) { Text("Got it") } },
+        confirmButton = { TextButton(onClick = { open = false }) { Text(context.getString(R.string.screen_got_it)) } },
     )
+}
+
+
+private fun ThemeMode.labelResource(): Int = when (this) {
+    ThemeMode.SYSTEM -> R.string.screen_theme_system
+    ThemeMode.LIGHT -> R.string.screen_theme_light
+    ThemeMode.DARK -> R.string.screen_theme_dark
 }

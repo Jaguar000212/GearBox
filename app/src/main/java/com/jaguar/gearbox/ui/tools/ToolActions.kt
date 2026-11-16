@@ -22,7 +22,7 @@ fun Context.copyToClipboard(label: String, text: String, sensitive: Boolean = fa
         }
     }
     clipboard.setPrimaryClip(clip)
-    Toast.makeText(this, "Copied to clipboard", Toast.LENGTH_SHORT).show()
+    Toast.makeText(this, getString(com.jaguar.gearbox.R.string.system_copied_to_clipboard), Toast.LENGTH_SHORT).show()
 }
 
 /** Opens the system share sheet with [text]. */

@@ -34,9 +34,9 @@ fun updateDynamicShortcuts(context: Context, favoriteRoutes: List<String>) {
                 .putExtra(EXTRA_SHORTCUT_ROUTE, tool.route)
 
             ShortcutInfoCompat.Builder(context, tool.route)
-                .setShortLabel(tool.name)
-                .setLongLabel(tool.name)
-                .setIcon(monogramIcon(tool.name))
+                .setShortLabel(tool.localizedName(context))
+                .setLongLabel(tool.localizedName(context))
+                .setIcon(monogramIcon(tool.localizedName(context)))
                 .setIntent(intent)
                 .setRank(index)
                 .build()

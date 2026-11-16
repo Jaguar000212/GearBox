@@ -1,5 +1,7 @@
 package com.jaguar.gearbox.ui.tools
 
+import androidx.compose.ui.res.stringResource
+import com.jaguar.gearbox.R
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -59,10 +61,10 @@ fun AgeCalculatorScreen(onNavigateBack: () -> Unit) {
                         if (pickerTarget == 1) laterDate = picked else earlierDate = picked
                     }
                     pickerTarget = 0
-                }) { Text("OK") }
+                }) { Text(stringResource(R.string.calc_ok)) }
             },
             dismissButton = {
-                TextButton(onClick = { pickerTarget = 0 }) { Text("Cancel") }
+                TextButton(onClick = { pickerTarget = 0 }) { Text(stringResource(R.string.calc_cancel)) }
             },
         ) {
             DatePicker(state = state)
@@ -75,12 +77,12 @@ fun AgeCalculatorScreen(onNavigateBack: () -> Unit) {
     val later = laterDate
     val earlier = earlierDate
     val result = if (later != null && earlier != null && !later.isBefore(earlier)) {
-        "Age: ${formatAge(earlier, later)}"
+        context.getString(R.string.calc_age_1_s, formatAge(context, earlier, later))
     } else {
         null
     }
     val error = if (later != null && earlier != null && later.isBefore(earlier)) {
-        "Later date must not be before earlier date."
+        context.getString(R.string.calc_later_date_must_not_be_before_earlier_date)
     } else {
         null
     }
@@ -97,25 +99,25 @@ fun AgeCalculatorScreen(onNavigateBack: () -> Unit) {
     )
 
     ToolScaffold(
-        title = "Age Calculator",
+        title = context.getString(R.string.calc_age_calculator),
         icon = Tools.byRoute(Tools.ROUTE_AGE)!!.icon,
         onNavigateBack = onNavigateBack,
         history = history,
     ) {
         AdaptiveToolLayout(input = {
             Text(
-                "Choose an earlier date and a later date to compare.",
+                context.getString(R.string.calc_choose_an_earlier_date_and_a_later_date_to_compare),
                 style = MaterialTheme.typography.bodyMedium,
             )
             Spacer(Modifier.height(12.dp))
             OutlinedButton(onClick = { pickerTarget = 2 }, modifier = Modifier.fillMaxWidth()) {
                 Icon(Icons.Filled.DateRange, contentDescription = null)
-                Text("  Earlier date: ${earlierDate?.let { formatDate(it) } ?: "Choose date"}")
+                Text(context.getString(R.string.calc_earlier_date_1_s, earlierDate?.let { formatDate(it) } ?: context.getString(R.string.calc_choose_date)))
             }
             Spacer(Modifier.height(8.dp))
             OutlinedButton(onClick = { pickerTarget = 1 }, modifier = Modifier.fillMaxWidth()) {
                 Icon(Icons.Filled.DateRange, contentDescription = null)
-                Text("  Later date: ${laterDate?.let { formatDate(it) } ?: "Choose date"}")
+                Text(context.getString(R.string.calc_later_date_1_s, laterDate?.let { formatDate(it) } ?: context.getString(R.string.calc_choose_date)))
             }
         }, result = {
             if (result != null) {
@@ -123,18 +125,18 @@ fun AgeCalculatorScreen(onNavigateBack: () -> Unit) {
                 ResultCard(
                     text = result,
                     textStyle = MaterialTheme.typography.headlineSmall,
-                    onCopy = { context.copyToClipboard("Age", result) },
+                    onCopy = { context.copyToClipboard(context.getString(R.string.calc_age), result) },
                     onShare = { context.shareText(result) },
                 )
                 Spacer(Modifier.height(8.dp))
-                Text("Calendar years, months and days between ${formatDate(earlier!!)} and ${formatDate(later!!)}.",
+                Text(context.getString(R.string.calc_calendar_years_months_and_days_between_1_s_and_2_s, formatDate(earlier!!), formatDate(later!!)),
                     style = MaterialTheme.typography.bodyMedium)
             } else if (error != null) {
                 Spacer(Modifier.height(12.dp))
                 Text(error, color = MaterialTheme.colorScheme.error)
             } else {
                 Spacer(Modifier.height(20.dp))
-                Text("Your age difference will appear here once both dates are selected.",
+                Text(stringResource(R.string.calc_your_age_difference_will_appear_here_once_both_dates_ar),
                     style = MaterialTheme.typography.bodyMedium)
             }
             ToolActions(onClear = { earlierDate = null; laterDate = null; pickerTarget = 0 },
@@ -150,7 +152,7 @@ private fun formatDate(date: LocalDate): String =
  * Period.between does calendar-correct year/month/day math (respecting actual month lengths),
  * unlike a fixed 30-day borrow which is off by 1-2 days for most date pairs.
  */
-private fun formatAge(earlier: LocalDate, later: LocalDate): String {
+private fun formatAge(context: android.content.Context, earlier: LocalDate, later: LocalDate): String {
     val period = Period.between(earlier, later)
-    return "${period.years} years, ${period.months} months, ${period.days} days"
+    return context.getString(R.string.calc_1_s_years_2_s_months_3_s_days, period.years, period.months, period.days)
 }

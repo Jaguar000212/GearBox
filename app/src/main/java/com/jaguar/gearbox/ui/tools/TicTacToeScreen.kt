@@ -50,6 +50,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.jaguar.gearbox.data.ToolMemoryStore
 import com.jaguar.gearbox.data.SimplePrefsStore
+import com.jaguar.gearbox.data.localizedSummary
 import com.jaguar.gearbox.data.Tools
 import com.jaguar.gearbox.logic.isBoardFull
 import com.jaguar.gearbox.logic.winningLine
@@ -149,26 +150,26 @@ fun TicTacToeScreen(onNavigateBack: () -> Unit) {
     val history = rememberToolHistory(
         route = Tools.ROUTE_TIC_TAC_TOE,
         inputs = captured?.inputs()?.plus("_run" to captureId) ?: emptyMap(),
-        output = captured?.summary(),
+        output = captured?.localizedSummary(context),
         recordingDelayMillis = 0L,
         expectedHistoryGeneration = captureGeneration,
         restoreLastResult = false,
         onRestore = { saved ->
             val snapshot = parseTicTacToeSnapshot(saved)
-            if (snapshot == null) importError = "This snapshot is not a valid game position. The current round was not changed."
+            if (snapshot == null) importError = context.getString(R.string.game_this_snapshot_is_not_a_valid_game_position_the_current_rou)
             else if (board.any { it.isNotEmpty() }) pendingRestore = snapshot.inputs().getValue("board")
             else applySnapshot(snapshot)
         },
     )
     if (pendingRestore != null) AlertDialog(
         onDismissRequest = { pendingRestore = null },
-        title = { Text("Restore game snapshot?") },
-        text = { Text("This replaces the current board. Your lifetime tally will not change, and no move will be played automatically.") },
+        title = { Text(context.getString(R.string.game_restore_game_snapshot)) },
+        text = { Text(context.getString(R.string.game_this_replaces_the_current_board_your_lifetime_tally_will_n)) },
         confirmButton = { TextButton(onClick = {
             pendingRestore?.let { parseTicTacToeSnapshot(mapOf("board" to it)) }?.let { applySnapshot(it) }
             pendingRestore = null
-        }) { Text("Restore") } },
-        dismissButton = { TextButton(onClick = { pendingRestore = null }) { Text("Keep current round") } },
+        }) { Text(context.getString(R.string.game_restore)) } },
+        dismissButton = { TextButton(onClick = { pendingRestore = null }) { Text(context.getString(R.string.game_keep_current_round)) } },
     )
 
     ToolScaffold(
@@ -294,9 +295,9 @@ fun TicTacToeScreen(onNavigateBack: () -> Unit) {
             captureGeneration = memory.historyGeneration(Tools.ROUTE_TIC_TAC_TOE)
             capturedBoard = TicTacToeSnapshot(board).inputs().getValue("board")
             captureId = java.util.UUID.randomUUID().toString()
-        }, enabled = board.any { it.isNotEmpty() }, modifier = Modifier.fillMaxWidth()) { Text("Capture snapshot") }
-        Text(if (captured == null) "Capture this round for History. Recording follows your history setting."
-            else "Snapshot prepared. Open History to copy, share or Keep result; automatic recording follows Settings.",
+        }, enabled = board.any { it.isNotEmpty() }, modifier = Modifier.fillMaxWidth()) { Text(context.getString(R.string.game_capture_snapshot)) }
+        Text(if (captured == null) context.getString(R.string.game_capture_this_round_for_history_recording_follows_your_hist)
+            else context.getString(R.string.game_snapshot_prepared_open_history_to_copy_share_or_keep_resul),
             style = MaterialTheme.typography.bodySmall)
         Spacer(Modifier.height(12.dp))
         OutlinedButton(

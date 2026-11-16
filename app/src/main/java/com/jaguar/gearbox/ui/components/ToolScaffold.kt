@@ -43,6 +43,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.jaguar.gearbox.data.localizedLabel
+import com.jaguar.gearbox.data.localized
 import com.jaguar.gearbox.R
 
 /**
@@ -60,6 +62,7 @@ fun ToolScaffold(
     options: (@Composable () -> Unit)? = null,
     content: @Composable () -> Unit,
 ) {
+    val context = androidx.compose.ui.platform.LocalContext.current
     var showHistory by remember { mutableStateOf(false) }
     var showSwitcher by remember { mutableStateOf(false) }
     var showHelp by remember { mutableStateOf(false) }
@@ -68,7 +71,7 @@ fun ToolScaffold(
     var showHandoff by remember { mutableStateOf(false) }
     // Icons identify catalog tools even when screen titles are localized or shortened.
     val helpRoute = history?.route ?: Tools.all.firstOrNull { it.icon == icon }?.route
-    val help = ToolHelpCatalog.forRoute(helpRoute)
+    val help = ToolHelpCatalog.localizedForRoute(context, helpRoute)
     val openTool = LocalToolOpener.current
     val presetOpener = LocalToolPresetOpener.current
     val handoff = LocalToolHandoff.current
@@ -84,23 +87,23 @@ fun ToolScaffold(
                     }
                 },
                 actions = {
-                    if (history != null) IconButton(onClick = { showHistory = true }) { Icon(Icons.Filled.History, "History") }
+                    if (history != null) IconButton(onClick = { showHistory = true }) { Icon(Icons.Filled.History, context.getString(com.jaguar.gearbox.R.string.shared_history)) }
                     if (help != null || openTool != null || hasPresets || hasHandoffs) Box {
                         IconButton(onClick = { showMore = true }) {
-                            Icon(Icons.Filled.MoreVert, "More tool actions")
+                            Icon(Icons.Filled.MoreVert, context.getString(com.jaguar.gearbox.R.string.shared_more_tool_actions))
                         }
                         DropdownMenu(expanded = showMore, onDismissRequest = { showMore = false }) {
-                            if (hasPresets) DropdownMenuItem(text = { Text("Presets") }, onClick = {
+                            if (hasPresets) DropdownMenuItem(text = { Text(context.getString(com.jaguar.gearbox.R.string.shared_presets)) }, onClick = {
                                 showMore = false; showPresets = true
                             })
-                            if (hasHandoffs) DropdownMenuItem(text = { Text("Use result in…") }, onClick = {
+                            if (hasHandoffs) DropdownMenuItem(text = { Text(context.getString(com.jaguar.gearbox.R.string.shared_use_result_in)) }, onClick = {
                                 showMore = false; showHandoff = true
                             })
-                            if (help != null) DropdownMenuItem(text = { Text("Help & examples") }, onClick = {
+                            if (help != null) DropdownMenuItem(text = { Text(context.getString(com.jaguar.gearbox.R.string.shared_help_examples)) }, onClick = {
                                 showMore = false
                                 showHelp = true
                             })
-                            if (openTool != null) DropdownMenuItem(text = { Text("Switch tool") }, onClick = {
+                            if (openTool != null) DropdownMenuItem(text = { Text(context.getString(com.jaguar.gearbox.R.string.shared_switch_tool)) }, onClick = {
                                 showMore = false
                                 showSwitcher = true
                             }, leadingIcon = { Icon(Icons.Filled.Search, null) })
@@ -137,7 +140,7 @@ fun ToolScaffold(
     if (showHelp && help != null) ToolHelpDialog(
         title = title,
         help = help,
-        example = if (handoff != null) ToolExampleCatalog.forRoute(helpRoute) else null,
+        example = if (handoff != null) ToolExampleCatalog.localizedForRoute(context, helpRoute) else null,
         onLoadExample = { example ->
             helpRoute?.let { handoff?.invoke(it, example.inputs) }
             showHelp = false
@@ -159,31 +162,31 @@ internal fun ToolSwitcher(onOpen: (Tool) -> Unit, onDismiss: () -> Unit) {
     val context = androidx.compose.ui.platform.LocalContext.current
     val recents = remember(context) { com.jaguar.gearbox.data.RecentToolsStore(context) }
     val recent = if (query.isBlank() && recents.showRecentTools)
-        recents.recent.mapNotNull(Tools::byRoute) else emptyList()
-    val matches = Tools.all.filter { tool ->
-        query.isBlank() || (listOf(tool.name, tool.description, tool.category.label) + tool.keywords).any { it.contains(query.trim(), true) }
+        recents.recent.mapNotNull(Tools::byRoute).map { it.localized(context) } else emptyList()
+    val matches = Tools.localized(context).filter { tool ->
+        query.isBlank() || (listOf(tool.name, tool.description, tool.category.localizedLabel(context)) + tool.keywords).any { it.contains(query.trim(), true) }
     }
-    AlertDialog(onDismissRequest = onDismiss, title = { Text("Switch tool") }, text = {
+    AlertDialog(onDismissRequest = onDismiss, title = { Text(context.getString(com.jaguar.gearbox.R.string.shared_switch_tool)) }, text = {
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Text("Switching keeps non-password drafts in this navigation session. Back leaves the current tool.", style = MaterialTheme.typography.bodySmall)
-            OutlinedTextField(value = query, onValueChange = { query = it }, label = { Text("Find a tool") }, singleLine = true)
+            Text(context.getString(com.jaguar.gearbox.R.string.shared_switching_keeps_non_password_drafts_in_this_navigation_session_back_le), style = MaterialTheme.typography.bodySmall)
+            OutlinedTextField(value = query, onValueChange = { query = it }, label = { Text(context.getString(com.jaguar.gearbox.R.string.shared_find_a_tool)) }, singleLine = true)
             LazyColumn(Modifier.heightIn(max = 400.dp)) {
                 if (recent.isNotEmpty()) {
-                    item { Text("Recent tools", style = MaterialTheme.typography.titleSmall) }
+                    item { Text(context.getString(com.jaguar.gearbox.R.string.shared_recent_tools), style = MaterialTheme.typography.titleSmall) }
                     items(recent, key = { "recent:${it.route}" }) { tool ->
-                        ListItem(headlineContent = { Text(tool.name) }, supportingContent = { Text(tool.category.label) },
+                        ListItem(headlineContent = { Text(tool.name) }, supportingContent = { Text(tool.category.localizedLabel(context)) },
                             leadingContent = { Icon(tool.icon, null) }, modifier = Modifier.clickable { onOpen(tool) })
                     }
-                    item { Text("All other tools", style = MaterialTheme.typography.titleSmall) }
+                    item { Text(context.getString(com.jaguar.gearbox.R.string.shared_all_other_tools), style = MaterialTheme.typography.titleSmall) }
                 }
                 items(matches.filterNot { candidate -> recent.any { it.route == candidate.route } }, key = { it.route }) { tool ->
-                    ListItem(headlineContent = { Text(tool.name) }, supportingContent = { Text(tool.category.label) },
+                    ListItem(headlineContent = { Text(tool.name) }, supportingContent = { Text(tool.category.localizedLabel(context)) },
                         leadingContent = { Icon(tool.icon, null) }, modifier = Modifier.clickable { onOpen(tool) })
                 }
-                if (matches.isEmpty()) item { Text("No tools match. Try another name or task.") }
+                if (matches.isEmpty()) item { Text(context.getString(com.jaguar.gearbox.R.string.shared_no_tools_match_try_another_name_or_task)) }
             }
         }
-    }, confirmButton = { TextButton(onClick = onDismiss) { Text("Close") } })
+    }, confirmButton = { TextButton(onClick = onDismiss) { Text(context.getString(com.jaguar.gearbox.R.string.shared_close)) } })
 }
 
 /** Scrolling prose stays usable with large fonts and on short landscape screens. */
@@ -195,33 +198,34 @@ private fun ToolHelpDialog(
     onLoadExample: (ToolExample) -> Unit,
     onDismiss: () -> Unit,
 ) {
+    val context = androidx.compose.ui.platform.LocalContext.current
     var confirmReplacement by remember { mutableStateOf(false) }
     if (confirmReplacement && example != null) {
         AlertDialog(
             onDismissRequest = { confirmReplacement = false },
-            title = { Text("Replace current inputs?") },
-            text = { Text("This replaces the current tool inputs with the example. Calculations may update automatically; QR and hash still need Generate. This action does not save a copy of your current inputs.", modifier = Modifier.verticalScroll(rememberScrollState())) },
+            title = { Text(context.getString(com.jaguar.gearbox.R.string.shared_replace_current_inputs)) },
+            text = { Text(context.getString(com.jaguar.gearbox.R.string.shared_this_replaces_the_current_tool_inputs_with_the_example_calculations_ma), modifier = Modifier.verticalScroll(rememberScrollState())) },
             confirmButton = { TextButton(onClick = {
                 confirmReplacement = false
                 onLoadExample(example)
-            }) { Text("Replace inputs") } },
-            dismissButton = { TextButton(onClick = { confirmReplacement = false }) { Text("Cancel") } },
+            }) { Text(context.getString(com.jaguar.gearbox.R.string.shared_replace_inputs)) } },
+            dismissButton = { TextButton(onClick = { confirmReplacement = false }) { Text(context.getString(com.jaguar.gearbox.R.string.shared_cancel)) } },
         )
         return
     }
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Help: $title") },
+        title = { Text(context.getString(com.jaguar.gearbox.R.string.shared_help_title, title)) },
         text = {
             Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                HelpSection("How to use", help.instructions)
-                HelpSection("Example", example?.description ?: help.example)
-                Text(if (example == null) "Examples are reference only; your inputs stay unchanged." else "Use example loads these inputs only after you confirm.", style = MaterialTheme.typography.bodySmall)
-                HelpSection("Keep in mind", help.limitation)
+                HelpSection(context.getString(com.jaguar.gearbox.R.string.shared_how_to_use), help.instructions)
+                HelpSection(context.getString(com.jaguar.gearbox.R.string.shared_example), example?.description ?: help.example)
+                Text(if (example == null) context.getString(com.jaguar.gearbox.R.string.shared_examples_are_reference_only_your_inputs_stay_unchanged) else context.getString(com.jaguar.gearbox.R.string.shared_use_example_loads_these_inputs_only_after_you_confirm), style = MaterialTheme.typography.bodySmall)
+                HelpSection(context.getString(com.jaguar.gearbox.R.string.shared_keep_in_mind), help.limitation)
             }
         },
-        confirmButton = { TextButton(onClick = onDismiss) { Text("Close") } },
-        dismissButton = { if (example != null) TextButton(onClick = { confirmReplacement = true }) { Text("Use example") } },
+        confirmButton = { TextButton(onClick = onDismiss) { Text(context.getString(com.jaguar.gearbox.R.string.shared_close)) } },
+        dismissButton = { if (example != null) TextButton(onClick = { confirmReplacement = true }) { Text(context.getString(com.jaguar.gearbox.R.string.shared_use_example)) } },
     )
 }
 

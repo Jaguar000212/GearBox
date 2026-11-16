@@ -1,5 +1,6 @@
 package com.jaguar.gearbox.ui.components
 
+import com.jaguar.gearbox.data.localizedInputLabel
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -172,77 +173,77 @@ fun ToolHistoryDialog(binding: ToolHistoryBinding, onDismiss: () -> Unit) {
     }
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Tool history") },
+        title = { Text(context.getString(com.jaguar.gearbox.R.string.shared_tool_history)) },
         text = {
             Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
                 Row {
-                    TextButton(enabled = binding.configuration.isNotEmpty(), onClick = { saving = "preset"; name = "" }) { Text("Save setup") }
-                    if (!binding.output.isNullOrBlank()) TextButton(onClick = { saving = "result"; name = "" }) { Text("Keep result") }
+                    TextButton(enabled = binding.configuration.isNotEmpty(), onClick = { saving = "preset"; name = "" }) { Text(context.getString(com.jaguar.gearbox.R.string.shared_save_setup)) }
+                    if (!binding.output.isNullOrBlank()) TextButton(onClick = { saving = "result"; name = "" }) { Text(context.getString(com.jaguar.gearbox.R.string.shared_keep_result)) }
                 }
                 if (binding.route == com.jaguar.gearbox.data.Tools.ROUTE_TEXT_TOOLS && !binding.output.isNullOrBlank() && handoff != null) {
                     Row {
-                        TextButton(onClick = { onDismiss(); handoff(com.jaguar.gearbox.data.Tools.ROUTE_QR_GENERATOR, mapOf("text" to binding.output.orEmpty())) }) { Text("Use in QR") }
-                        TextButton(onClick = { onDismiss(); handoff(com.jaguar.gearbox.data.Tools.ROUTE_HASH_GENERATOR, mapOf("text" to binding.output.orEmpty())) }) { Text("Use in Hash") }
+                        TextButton(onClick = { onDismiss(); handoff(com.jaguar.gearbox.data.Tools.ROUTE_QR_GENERATOR, mapOf("text" to binding.output.orEmpty())) }) { Text(context.getString(com.jaguar.gearbox.R.string.shared_use_in_qr)) }
+                        TextButton(onClick = { onDismiss(); handoff(com.jaguar.gearbox.data.Tools.ROUTE_HASH_GENERATOR, mapOf("text" to binding.output.orEmpty())) }) { Text(context.getString(com.jaguar.gearbox.R.string.shared_use_in_hash)) }
                     }
                 }
-                if (!enabled) Text("Automatic history is off for this tool. Review global and per-tool controls in Settings → Tool memory. Existing entries stay until you delete them.")
-                Text("Large entries are not recorded: each field and result is limited to 4,096 characters, with 8,192 total per entry.", style = MaterialTheme.typography.bodySmall)
+                if (!enabled) Text(context.getString(com.jaguar.gearbox.R.string.shared_automatic_history_is_off_for_this_tool_review_global_and_per_tool_cont))
+                Text(context.getString(com.jaguar.gearbox.R.string.shared_large_entries_are_not_recorded_each_field_and_result_is_limited_to_4_0), style = MaterialTheme.typography.bodySmall)
                 if (!loaded) LinearProgressIndicator(Modifier.fillMaxWidth())
-                else if (records.isEmpty()) Text("No saved runs yet. Valid results are recorded after you pause editing when history is enabled.")
+                else if (records.isEmpty()) Text(context.getString(com.jaguar.gearbox.R.string.shared_no_saved_runs_yet_valid_results_are_recorded_after_you_pause_editing_w))
                 LazyColumn(Modifier.heightIn(max = 420.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     items(records, key = { it.id }) { entry ->
                         OutlinedCard(Modifier.fillMaxWidth()) {
                             Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                                 Text(DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(Date(entry.timestampMillis)), style = MaterialTheme.typography.labelSmall)
-                                Text(entry.inputs.filterKeys { !it.startsWith("_") }.entries.joinToString("\n") { "${it.key}: ${it.value}" }, style = MaterialTheme.typography.bodySmall)
+                                Text(entry.inputs.filterKeys { !it.startsWith("_") }.entries.joinToString("\n") { context.getString(com.jaguar.gearbox.R.string.shared_label_value, localizedInputLabel(context, it.key), it.value) }, style = MaterialTheme.typography.bodySmall)
                                 Text(entry.output, style = MaterialTheme.typography.bodyLarge)
                                 Row {
-                                    TextButton(onClick = { context.copyToClipboard("Tool history", historyText(entry), sensitive = ToolMemoryPolicy.isSensitiveTextRoute(binding.route)) }) { Text("Copy") }
-                                    TextButton(onClick = { if (ToolMemoryPolicy.isSensitiveTextRoute(binding.route)) sharePreview = historyText(entry) else context.shareText(historyText(entry)) }) { Text("Share") }
-                                    if (binding.allowRestore) TextButton(onClick = { binding.restore(entry.inputs); onDismiss() }) { Text("Restore") }
+                                    TextButton(onClick = { context.copyToClipboard(context.getString(com.jaguar.gearbox.R.string.shared_tool_history), historyText(context, entry), sensitive = ToolMemoryPolicy.isSensitiveTextRoute(binding.route)) }) { Text(context.getString(com.jaguar.gearbox.R.string.shared_copy)) }
+                                    TextButton(onClick = { if (ToolMemoryPolicy.isSensitiveTextRoute(binding.route)) sharePreview = historyText(context, entry) else context.shareText(historyText(context, entry)) }) { Text(context.getString(com.jaguar.gearbox.R.string.shared_share)) }
+                                    if (binding.allowRestore) TextButton(onClick = { binding.restore(entry.inputs); onDismiss() }) { Text(context.getString(com.jaguar.gearbox.R.string.shared_restore)) }
                                 }
                                 TextButton(onClick = { scope.launch {
                                     val success = withContext(Dispatchers.IO) { store.remove(binding.route, entry.id) }
-                                    if (success) records = records.filterNot { it.id == entry.id } else error = "Could not delete this entry. Try again."
-                                } }) { Text("Delete") }
+                                    if (success) records = records.filterNot { it.id == entry.id } else error = context.getString(com.jaguar.gearbox.R.string.shared_could_not_delete_this_entry_try_again)
+                                } }) { Text(context.getString(com.jaguar.gearbox.R.string.shared_delete)) }
                             }
                         }
                     }
                 }
             }
         },
-        confirmButton = { TextButton(onClick = onDismiss) { Text("Close") } },
-        dismissButton = { if (records.isNotEmpty()) TextButton(onClick = { confirmClear = true }) { Text("Clear history") } },
+        confirmButton = { TextButton(onClick = onDismiss) { Text(context.getString(com.jaguar.gearbox.R.string.shared_close)) } },
+        dismissButton = { if (records.isNotEmpty()) TextButton(onClick = { confirmClear = true }) { Text(context.getString(com.jaguar.gearbox.R.string.shared_clear_history)) } },
     )
     sharePreview?.let { text ->
         SensitiveTextShareDialog(text, onConfirm = {
             sharePreview = null
-            runCatching { context.shareText(text) }.onFailure { error = "No sharing app is available. You can copy this entry instead." }
+            runCatching { context.shareText(text) }.onFailure { error = context.getString(com.jaguar.gearbox.R.string.shared_no_sharing_app_is_available_you_can_copy_this_entry_instead) }
         }, onDismiss = { sharePreview = null })
     }
     if (confirmClear) AlertDialog(
-        onDismissRequest = { confirmClear = false }, title = { Text("Clear this tool’s history?") },
-        text = { Text("This removes saved inputs and results from this device. It cannot be undone.") },
+        onDismissRequest = { confirmClear = false }, title = { Text(context.getString(com.jaguar.gearbox.R.string.shared_clear_this_tool_s_history)) },
+        text = { Text(context.getString(com.jaguar.gearbox.R.string.shared_this_removes_saved_inputs_and_results_from_this_device_it_cannot_be_un)) },
         confirmButton = { TextButton(onClick = { scope.launch {
             val success = withContext(Dispatchers.IO) { store.clearHistory(binding.route) }
-            if (success) records = emptyList() else error = "Could not clear history. Try again."
+            if (success) records = emptyList() else error = context.getString(com.jaguar.gearbox.R.string.shared_could_not_clear_history_try_again)
             confirmClear = false
-        } }) { Text("Clear") } },
-        dismissButton = { TextButton(onClick = { confirmClear = false }) { Text("Cancel") } },
+        } }) { Text(context.getString(com.jaguar.gearbox.R.string.shared_clear)) } },
+        dismissButton = { TextButton(onClick = { confirmClear = false }) { Text(context.getString(com.jaguar.gearbox.R.string.shared_cancel)) } },
     )
     if (saving != null) AlertDialog(onDismissRequest = { if (!busy) saving = null },
-        title = { Text(if (saving == "preset") "Save setup" else "Keep result") },
+        title = { Text(if (saving == "preset") context.getString(com.jaguar.gearbox.R.string.shared_save_setup) else context.getString(com.jaguar.gearbox.R.string.shared_keep_result)) },
         text = { Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text("Saved only on this device in your Workbench. Review inputs before saving private information.")
+            Text(context.getString(com.jaguar.gearbox.R.string.shared_saved_only_on_this_device_in_your_workbench_review_inputs_before_savin))
             if (ToolMemoryPolicy.isSensitiveTextRoute(binding.route)) {
-                Text("Text, QR and Hash may contain passwords, tokens or private information. This manual save persists even when automatic history and result retention are off. Local storage is not an encrypted vault. Remove secrets before saving.")
-                Text("Save preview", style = MaterialTheme.typography.titleSmall)
+                Text(context.getString(com.jaguar.gearbox.R.string.shared_text_qr_and_hash_may_contain_passwords_tokens_or_private_information_t))
+                Text(context.getString(com.jaguar.gearbox.R.string.shared_save_preview), style = MaterialTheme.typography.titleSmall)
                 val previewInputs = if (saving == "preset") binding.configuration else binding.inputs
-                Text(previewInputs.filterKeys { !it.startsWith("_") }.entries.joinToString("\n") { "${it.key}: ${it.value}" })
+                Text(previewInputs.filterKeys { !it.startsWith("_") }.entries.joinToString("\n") { context.getString(com.jaguar.gearbox.R.string.shared_label_value, localizedInputLabel(context, it.key), it.value) })
                 if (saving != "preset" && !binding.output.isNullOrBlank()) Text(binding.output.orEmpty())
             }
-            OutlinedTextField(value = name, onValueChange = { name = it.take(80) }, label = { Text("Name") })
+            OutlinedTextField(value = name, onValueChange = { name = it.take(80) }, label = { Text(context.getString(com.jaguar.gearbox.R.string.shared_name)) })
         } },
         confirmButton = { TextButton(enabled = name.isNotBlank() && !busy, onClick = {
             if (!busy) {
@@ -255,18 +256,18 @@ fun ToolHistoryDialog(binding: ToolHistoryBinding, onDismiss: () -> Unit) {
                         if (saveKind == "preset") store.savePreset(savedName, snapshot.route, snapshot.configuration)
                         else store.saveToWorkbench(savedName, snapshot.route, snapshot.inputs, snapshot.output.orEmpty())
                     }
-                    if (!success) error = "Could not save. Check the 100-item limit and input size."
+                    if (!success) error = context.getString(com.jaguar.gearbox.R.string.shared_could_not_save_check_the_100_item_limit_and_input_size)
                     saving = null
                     busy = false
                 }
             }
-        }) { Text("Save") } },
-        dismissButton = { TextButton(enabled = !busy, onClick = { saving = null }) { Text("Cancel") } },
+        }) { Text(context.getString(com.jaguar.gearbox.R.string.shared_save)) } },
+        dismissButton = { TextButton(enabled = !busy, onClick = { saving = null }) { Text(context.getString(com.jaguar.gearbox.R.string.shared_cancel)) } },
     )
 
 }
 
-private fun historyText(entry: ToolHistoryEntry) = entry.inputs.filterKeys { !it.startsWith("_") }.entries.joinToString("\n") { "${it.key}: ${it.value}" } + "\n\n" + entry.output
+private fun historyText(context: android.content.Context, entry: ToolHistoryEntry) = entry.inputs.filterKeys { !it.startsWith("_") }.entries.joinToString("\n") { context.getString(com.jaguar.gearbox.R.string.shared_label_value, localizedInputLabel(context, it.key), it.value) } + "\n\n" + entry.output
 
 data class ToolImport(val route: String, val inputs: Map<String, String>, val modeOnly: Boolean = false,
     val id: String = java.util.UUID.randomUUID().toString())

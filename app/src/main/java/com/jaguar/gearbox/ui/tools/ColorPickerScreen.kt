@@ -250,10 +250,10 @@ fun ColorPickerScreen(onNavigateBack: () -> Unit) {
         Spacer(Modifier.height(16.dp))
         }
         if (view == "HSL") {
-            Text("Edit HSL, then Apply. Preview, history, palette, Copy and Share use the last applied color.", style = MaterialTheme.typography.bodySmall)
-            HslField("Hue (0–360°)", "colorHueInput", hueInput, hslError) { hueInput = it; hslError = false }
-            HslField("Saturation (0–100%)", "colorSaturationInput", saturationInput, hslError) { saturationInput = it; hslError = false }
-            HslField("Lightness (0–100%)", "colorLightnessInput", lightnessInput, hslError) { lightnessInput = it; hslError = false }
+            Text(context.getString(R.string.special_edit_hsl_then_apply_preview_history_palette_copy_and_share_use_th), style = MaterialTheme.typography.bodySmall)
+            HslField(context.getString(R.string.special_hue_0_360), "colorHueInput", hueInput, hslError) { hueInput = it; hslError = false }
+            HslField(context.getString(R.string.special_saturation_0_100), "colorSaturationInput", saturationInput, hslError) { saturationInput = it; hslError = false }
+            HslField(context.getString(R.string.special_lightness_0_100), "colorLightnessInput", lightnessInput, hslError) { lightnessInput = it; hslError = false }
             OutlinedButton(onClick = {
                 val parsed = hueInput.trim().toDoubleOrNull()?.let { h ->
                     saturationInput.trim().toDoubleOrNull()?.let { s ->
@@ -266,10 +266,10 @@ fun ColorPickerScreen(onNavigateBack: () -> Unit) {
                     updateDraft()
                     hslError = false
                 }
-            }) { Text("Apply HSL") }
-            if (hslError) Text("Enter finite numbers: hue 0–360, saturation and lightness 0–100. Use a dot for decimals. The applied color is unchanged.",
+            }) { Text(context.getString(R.string.special_apply_hsl)) }
+            if (hslError) Text(context.getString(R.string.special_enter_finite_numbers_hue_0_360_saturation_and_lightness_0_100_use),
                 color = MaterialTheme.colorScheme.error, modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite })
-            Text("360° equals 0°. Colors are rounded to 8-bit RGB; displayed HSL is rounded to whole numbers. Hue is undefined for gray, black and white.", style = MaterialTheme.typography.bodySmall)
+            Text(context.getString(R.string.special_360_equals_0_colors_are_rounded_to_8_bit_rgb_displayed_hsl_is_rou), style = MaterialTheme.typography.bodySmall)
             Spacer(Modifier.height(16.dp))
         }
         Card(modifier = Modifier.fillMaxWidth()) {
@@ -282,7 +282,7 @@ fun ColorPickerScreen(onNavigateBack: () -> Unit) {
                     "RGB" -> ColorValue(stringResource(R.string.color_rgb), rgbText)
                     "HSL" -> {
                         ColorValue(stringResource(R.string.color_hsl), hslText)
-                        Text("Equivalent HSL of the applied color.", style = MaterialTheme.typography.bodySmall)
+                        Text(context.getString(R.string.special_equivalent_hsl_of_the_applied_color), style = MaterialTheme.typography.bodySmall)
                     }
                     else -> ColorValue(stringResource(R.string.color_hex), hex)
                 }

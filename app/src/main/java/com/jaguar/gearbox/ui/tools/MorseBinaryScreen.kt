@@ -1,5 +1,6 @@
 package com.jaguar.gearbox.ui.tools
 
+import com.jaguar.gearbox.R
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material.icons.Icons
@@ -34,11 +35,11 @@ import com.jaguar.gearbox.ui.components.ToolScaffold
 import com.jaguar.gearbox.ui.components.CompactChoiceSelector
 import com.jaguar.gearbox.ui.components.rememberToolHistory
 
-private enum class TranslateMode(val label: String, val inputHint: String) {
-    TEXT_TO_MORSE("Text → Morse", "Text"),
-    MORSE_TO_TEXT("Morse → Text", "Morse (dots/dashes, / between words)"),
-    TEXT_TO_BINARY("Text → Binary", "Text"),
-    BINARY_TO_TEXT("Binary → Text", "UTF-8 binary bytes"),
+private enum class TranslateMode(val labelRes: Int, val inputHintRes: Int) {
+    TEXT_TO_MORSE(R.string.special_text_morse, R.string.hash_input),
+    MORSE_TO_TEXT(R.string.special_morse_text, R.string.special_morse_dots_dashes_between_words),
+    TEXT_TO_BINARY(R.string.special_text_binary, R.string.hash_input),
+    BINARY_TO_TEXT(R.string.special_binary_text, R.string.special_utf_8_binary_bytes),
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -59,23 +60,23 @@ fun MorseBinaryScreen(onNavigateBack: () -> Unit) {
 
     val warning = when {
         selectedMode == TranslateMode.TEXT_TO_MORSE && hasUnsupportedMorseText(input) ->
-            "Some characters are not supported by Morse and are omitted from the result."
+            context.getString(R.string.special_some_characters_are_not_supported_by_morse_and_are_omitted_from_t)
         selectedMode == TranslateMode.MORSE_TO_TEXT && hasUnknownMorseTokens(input) ->
-            "Some Morse tokens are unknown and are omitted. Separate letters with spaces and words with a space, /, and a space."
+            context.getString(R.string.special_some_morse_tokens_are_unknown_and_are_omitted_separate_letters_wi)
         else -> null
     }
     val guidance = when (selectedMode) {
-        TranslateMode.TEXT_TO_MORSE -> "Example: SOS becomes ... --- ... . Morse output uses uppercase letters."
-        TranslateMode.MORSE_TO_TEXT -> "Separate letters with spaces and words with ' / '. Example: .... .. / - .... . .-. ."
-        TranslateMode.TEXT_TO_BINARY -> "Text is encoded as UTF-8 bytes. Each byte has eight bits; letters and emoji may use multiple bytes."
-        TranslateMode.BINARY_TO_TEXT -> "Enter whitespace-separated UTF-8 bytes, for example 01001000 01101001 for Hi."
+        TranslateMode.TEXT_TO_MORSE -> context.getString(R.string.special_example_sos_becomes_morse_output_uses_uppercase_letters)
+        TranslateMode.MORSE_TO_TEXT -> context.getString(R.string.special_separate_letters_with_spaces_and_words_with_example)
+        TranslateMode.TEXT_TO_BINARY -> context.getString(R.string.special_text_is_encoded_as_utf_8_bytes_each_byte_has_eight_bits_letters_a)
+        TranslateMode.BINARY_TO_TEXT -> context.getString(R.string.special_enter_whitespace_separated_utf_8_bytes_for_example_01001000_01101)
     }
     val codeOutput = selectedMode == TranslateMode.TEXT_TO_MORSE || selectedMode == TranslateMode.TEXT_TO_BINARY
 
     val history = rememberToolHistory(
         route = Tools.ROUTE_MORSE_BINARY,
-        inputs = mapOf("mode" to mode, "input" to input),
-        output = output?.let { if (warning == null) it else "Partial translation: $it\n$warning" },
+        inputs = mapOf("mode" to mode, "input" to input, "_partial" to (warning != null).toString()),
+        output = output?.let { if (warning == null) it else context.getString(R.string.special_partial_output, it, warning) },
         modeInputs = mapOf("mode" to mode),
         onRestoreMode = { saved ->
             mode = TranslateMode.entries.firstOrNull { it.name == saved["mode"] }?.name ?: TranslateMode.TEXT_TO_MORSE.name
@@ -87,24 +88,24 @@ fun MorseBinaryScreen(onNavigateBack: () -> Unit) {
     )
 
     ToolScaffold(
-        title = "Morse / Binary Translator",
+        title = context.getString(R.string.special_morse_binary_translator),
         icon = Tools.byRoute(Tools.ROUTE_MORSE_BINARY)!!.icon,
         onNavigateBack = onNavigateBack,
         history = history,
     ) {
         CompactChoiceSelector(
-            label = "Direction", selected = selectedMode, choices = TranslateMode.entries,
-            choiceLabel = { it.label }, onSelect = { if (mode != it.name) input = ""; mode = it.name },
+            label = context.getString(R.string.special_direction), selected = selectedMode, choices = TranslateMode.entries,
+            choiceLabel = { context.getString(it.labelRes) }, onSelect = { if (mode != it.name) input = ""; mode = it.name },
         )
 
         Spacer(Modifier.height(12.dp))
         Text(guidance, style = MaterialTheme.typography.bodyMedium)
-        Text("Changing direction clears the input.", style = MaterialTheme.typography.bodySmall)
+        Text(context.getString(R.string.special_changing_direction_clears_the_input), style = MaterialTheme.typography.bodySmall)
         Spacer(Modifier.height(16.dp))
         OutlinedTextField(
             value = input,
             onValueChange = { input = it },
-            label = { Text(selectedMode.inputHint) },
+            label = { Text(context.getString(selectedMode.inputHintRes)) },
             minLines = 3,
             textStyle = MaterialTheme.typography.bodyLarge.copy(
                 fontFamily = if (selectedMode == TranslateMode.MORSE_TO_TEXT || selectedMode == TranslateMode.BINARY_TO_TEXT) FontFamily.Monospace else FontFamily.Default,
@@ -119,26 +120,26 @@ fun MorseBinaryScreen(onNavigateBack: () -> Unit) {
         }
         if (output != null) {
             Spacer(Modifier.height(20.dp))
-            Text(if (warning == null) "Translation" else "Partial translation", style = MaterialTheme.typography.titleMedium)
+            Text(if (warning == null) context.getString(R.string.special_translation) else context.getString(R.string.special_partial_translation), style = MaterialTheme.typography.titleMedium)
             Spacer(Modifier.height(8.dp))
             ResultCard(
                 text = output,
                 textStyle = MaterialTheme.typography.bodyLarge.copy(fontFamily = if (codeOutput) FontFamily.Monospace else FontFamily.Default),
-                onCopy = { context.copyToClipboard("Translation", output) },
+                onCopy = { context.copyToClipboard(context.getString(R.string.special_translation), output) },
                 onShare = { context.shareText(output) },
             )
         } else if (input.isNotBlank()) {
             Spacer(Modifier.height(12.dp))
             Text(
-                if (selectedMode == TranslateMode.BINARY_TO_TEXT) "Enter valid UTF-8 binary bytes. Each token must contain 1–8 zeros or ones, and the byte sequence must form valid UTF-8 text."
-                else "No supported characters could be translated.",
+                if (selectedMode == TranslateMode.BINARY_TO_TEXT) context.getString(R.string.special_enter_valid_utf_8_binary_bytes_each_token_must_contain_1_8_zeros_)
+                else context.getString(R.string.special_no_supported_characters_could_be_translated),
                 color = MaterialTheme.colorScheme.error,
             )
         }
         Spacer(Modifier.height(12.dp))
         OutlinedButton(onClick = { input = "" }, enabled = input.isNotEmpty(), modifier = Modifier.fillMaxWidth()) {
             Icon(Icons.Default.Clear, contentDescription = null)
-            Text(" Clear")
+            Text(context.getString(R.string.special_clear))
         }
     }
 }

@@ -1,5 +1,8 @@
 package com.jaguar.gearbox.ui.screens
 
+import com.jaguar.gearbox.data.localizedLabel
+import com.jaguar.gearbox.data.localizedDescription
+import com.jaguar.gearbox.data.localizedName
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.layout.*
@@ -27,7 +30,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
 import com.jaguar.gearbox.logic.ClockState
-import com.jaguar.gearbox.logic.homeClockSummary
+import com.jaguar.gearbox.data.localizedHomeClockSummary
 import com.jaguar.gearbox.timer.ClockRepository
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -59,7 +62,7 @@ fun HomeScreen(
     val uiPreferences by uiPreferencesStore.preferences.collectAsState()
     val capabilities = remember(context) { DeviceCapabilities.read(context) }
     val clockState = rememberHomeClockState(uiPreferences.showActiveClockShortcut)
-    val clockSummary = clockState?.let(::homeClockSummary)
+    val clockSummary = clockState?.let { localizedHomeClockSummary(context, it) }
     val clockTool = tools.firstOrNull { it.route == Tools.ROUTE_TIMER_STOPWATCH }
     var query by rememberSaveable { mutableStateOf("") }
     var selectedCategory by rememberSaveable { mutableStateOf<String?>(null) }
@@ -68,8 +71,8 @@ fun HomeScreen(
     val search = query.trim()
     val filtered = tools.filter { tool ->
         (activeCategory == null || tool.category == activeCategory) &&
-            (search.isEmpty() || tool.name.contains(search, true) ||
-                tool.description.contains(search, true) || tool.category.label.contains(search, true) ||
+            (search.isEmpty() || tool.localizedName(context).contains(search, true) ||
+                tool.localizedDescription(context).contains(search, true) || tool.category.localizedLabel(context).contains(search, true) ||
                 tool.keywords.any { it.contains(search, true) })
     }
     val snackbar = remember { SnackbarHostState() }
@@ -82,7 +85,7 @@ fun HomeScreen(
         val position = favorites.favorites.indexOf(tool.route)
         favorites.toggle(tool.route)
         if (position >= 0) undoJob = scope.launch {
-            if (snackbar.showSnackbar("${tool.name} removed from favorites", "Undo",
+            if (snackbar.showSnackbar(context.getString(R.string.screen_1_s_removed_from_favorites, tool.localizedName(context)), context.getString(R.string.screen_undo),
                     duration = SnackbarDuration.Short) == SnackbarResult.ActionPerformed) {
                 favorites.restore(tool.route, position)
             }
@@ -97,8 +100,8 @@ fun HomeScreen(
     ) {
         item {
             Column(Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
-                Text("Your everyday toolbox", style = MaterialTheme.typography.headlineSmall)
-                Text("Find a tool. Make something easier.",
+                Text(context.getString(R.string.screen_your_everyday_toolbox), style = MaterialTheme.typography.headlineSmall)
+                Text(context.getString(R.string.screen_find_a_tool_make_something_easier),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
@@ -123,7 +126,7 @@ fun HomeScreen(
                 verticalArrangement = Arrangement.spacedBy(4.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 AssistChip(onClick = { showCategories = true },
-                    label = { Text(activeCategory?.label ?: "All tools") },
+                    label = { Text(activeCategory?.localizedLabel(context) ?: context.getString(R.string.screen_all_tools)) },
                     trailingIcon = { Icon(Icons.Default.ExpandMore, null) })
                 Text(pluralStringResource(R.plurals.home_tool_count, filtered.size, filtered.size),
                     style = MaterialTheme.typography.labelMedium,
@@ -147,7 +150,7 @@ fun HomeScreen(
                     Text(stringResource(R.string.layout_no_tools_found), style = MaterialTheme.typography.titleMedium)
                     Text(stringResource(R.string.home_empty_hint), style = MaterialTheme.typography.bodyMedium)
                     if (activeCategory != null) TextButton(onClick = { selectedCategory = null }) {
-                        Text("Search all tools")
+                        Text(context.getString(R.string.screen_search_all_tools))
                     }
                     TextButton(onClick = { query = ""; selectedCategory = null }) {
                         Text(stringResource(R.string.home_reset_filters))
@@ -157,19 +160,19 @@ fun HomeScreen(
         } else if (search.isNotEmpty()) {
             // Search is one flat list, never repeated category groups.
             items(filtered, key = { it.route }) { tool ->
-                DiscoveryToolRow(tool, favorites, onOpenTool, showCategory = true, capabilityHint = capabilities.hint(tool.route), onToggleFavorite = { toggleFavorite(tool) })
+                DiscoveryToolRow(tool, favorites, onOpenTool, showCategory = true, capabilityHint = capabilities.localizedHint(context, tool.route), onToggleFavorite = { toggleFavorite(tool) })
             }
         } else {
             ToolCategory.entries.forEach { category ->
                 val members = filtered.filter { it.category == category }
                 if (members.isNotEmpty()) {
                     item(key = "category-${category.name}") {
-                        Text(category.label, style = MaterialTheme.typography.titleMedium,
+                        Text(category.localizedLabel(context), style = MaterialTheme.typography.titleMedium,
                             modifier = Modifier.padding(start = 16.dp, top = 20.dp, bottom = 8.dp)
                                 .semantics { heading() })
                     }
                     items(members, key = { it.route }) { tool ->
-                        DiscoveryToolRow(tool, favorites, onOpenTool, showCategory = false, capabilityHint = capabilities.hint(tool.route), onToggleFavorite = { toggleFavorite(tool) })
+                        DiscoveryToolRow(tool, favorites, onOpenTool, showCategory = false, capabilityHint = capabilities.localizedHint(context, tool.route), onToggleFavorite = { toggleFavorite(tool) })
                     }
                 }
             }
@@ -178,18 +181,18 @@ fun HomeScreen(
     }
     if (showCategories) {
         ModalBottomSheet(onDismissRequest = { showCategories = false }) {
-            Text("Browse categories", style = MaterialTheme.typography.titleLarge,
+            Text(context.getString(R.string.screen_browse_categories), style = MaterialTheme.typography.titleLarge,
                 modifier = Modifier.padding(16.dp))
             LazyColumn(contentPadding = PaddingValues(bottom = 24.dp)) {
                 item {
-                    ListItem(headlineContent = { Text("All tools") },
-                        supportingContent = { Text("${tools.size} tools") },
+                    ListItem(headlineContent = { Text(context.getString(R.string.screen_all_tools)) },
+                        supportingContent = { Text(context.resources.getQuantityString(R.plurals.screen_tool_count, tools.size, tools.size)) },
                         trailingContent = { RadioButton(activeCategory == null, onClick = null) },
                         modifier = Modifier.selectable(selected = activeCategory == null, role = Role.RadioButton) { selectedCategory = null; showCategories = false })
                 }
                 items(ToolCategory.entries, key = { it.name }) { category ->
-                    ListItem(headlineContent = { Text(category.label) },
-                        supportingContent = { Text("${tools.count { it.category == category }} tools") },
+                    ListItem(headlineContent = { Text(category.localizedLabel(context)) },
+                        supportingContent = { Text(context.resources.getQuantityString(R.plurals.screen_tool_count, tools.count { it.category == category }, tools.count { it.category == category })) },
                         trailingContent = { RadioButton(activeCategory == category, onClick = null) },
                         modifier = Modifier.selectable(selected = activeCategory == category, role = Role.RadioButton) { selectedCategory = category.name; showCategories = false })
                 }
@@ -202,6 +205,7 @@ fun HomeScreen(
 internal fun DiscoveryToolRow(tool: Tool, favorites: FavoritesStore, onOpenTool: (Tool) -> Unit, showCategory: Boolean, capabilityHint: String? = null,
     onToggleFavorite: () -> Unit = { favorites.toggle(tool.route) },
 ) {
+    val context = androidx.compose.ui.platform.LocalContext.current
     Surface(
         shape = RoundedCornerShape(18.dp),
         color = MaterialTheme.colorScheme.surfaceContainerLow,
@@ -215,8 +219,8 @@ internal fun DiscoveryToolRow(tool: Tool, favorites: FavoritesStore, onOpenTool:
                     tint = MaterialTheme.colorScheme.onSecondaryContainer)
             }
             Column(Modifier.weight(1f)) {
-                Text(tool.name, style = MaterialTheme.typography.titleSmall)
-                Text(if (showCategory) tool.category.label else tool.description,
+                Text(tool.localizedName(context), style = MaterialTheme.typography.titleSmall)
+                Text(if (showCategory) tool.category.localizedLabel(context) else tool.localizedDescription(context),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant)
                 capabilityHint?.let {
@@ -227,7 +231,7 @@ internal fun DiscoveryToolRow(tool: Tool, favorites: FavoritesStore, onOpenTool:
             IconButton(onClick = onToggleFavorite) {
                 val favorite = favorites.isFavorite(tool.route)
                 Icon(if (favorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                    if (favorite) "Remove ${tool.name} from favorites" else "Add ${tool.name} to favorites",
+                    if (favorite) context.getString(R.string.screen_remove_1_s_from_favorites, tool.localizedName(context)) else context.getString(R.string.screen_add_1_s_to_favorites, tool.localizedName(context)),
                     tint = if (favorite) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
@@ -237,6 +241,7 @@ internal fun DiscoveryToolRow(tool: Tool, favorites: FavoritesStore, onOpenTool:
 /** Quick-access row for the last few opened tools, shown beneath discovery controls when no filters are active. */
 @Composable
 private fun RecentToolsRow(tools: List<Tool>, onOpenTool: (Tool) -> Unit) {
+    val context = LocalContext.current
     Column {
         Text(
             text = stringResource(R.string.layout_recent_tools),
@@ -251,7 +256,7 @@ private fun RecentToolsRow(tools: List<Tool>, onOpenTool: (Tool) -> Unit) {
             items(tools, key = { it.route }) { tool ->
                 AssistChip(
                     onClick = { onOpenTool(tool) },
-                    label = { Text(tool.name) },
+                    label = { Text(tool.localizedName(context)) },
                     leadingIcon = {
                         Icon(
                             imageVector = tool.icon,
@@ -321,12 +326,13 @@ private fun rememberHomeClockState(enabled: Boolean): ClockState? {
 
 @Composable
 internal fun ActiveClockShortcut(summary: String, onOpen: () -> Unit) {
+    val context = androidx.compose.ui.platform.LocalContext.current
     OutlinedCard(onClick = onOpen,
         modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text("Return to clocks", style = MaterialTheme.typography.titleSmall)
+            Text(context.getString(R.string.screen_return_to_clocks), style = MaterialTheme.typography.titleSmall)
             Text(summary, style = MaterialTheme.typography.bodyMedium)
-            Text("Open timer / stopwatch without changing its state",
+            Text(context.getString(R.string.screen_open_timer_stopwatch_without_changing_its_state),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant)
         }

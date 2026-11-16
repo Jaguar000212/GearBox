@@ -102,13 +102,13 @@ fun ScreenRulerScreen(onNavigateBack: () -> Unit) {
             style = MaterialTheme.typography.labelLarge)
         Spacer(Modifier.height(16.dp))
         DeviceSnapshotActions(
-            captureLabel = "Capture scale settings",
+            captureLabel = context.getString(R.string.special_capture_scale_settings),
             enabled = true,
             capturedOutput = capturedOutput,
             onCapture = {
                 capturedUnit = if (useMetric) "cm" else "in"
                 captureGeneration = historyStore.historyGeneration(Tools.ROUTE_SCREEN_RULER)
-                capturedOutput = "Estimated ruler scale: $capturedUnit, ${if (useMetric) "1 mm" else "1/16 inch"} subdivisions. Based on device-reported density. This captures the scale setup, not an object measurement. Verify against a physical ruler."
+                capturedOutput = context.getString(R.string.special_ruler_snapshot, capturedUnit, context.getString(if (useMetric) R.string.special_millimeter_division else R.string.special_inch_division))
                 captureId = UUID.randomUUID().toString()
             },
             onClear = { captureGeneration = null; capturedOutput = ""; capturedUnit = ""; captureId = "" },

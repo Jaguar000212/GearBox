@@ -36,6 +36,9 @@ object ToolExampleCatalog {
 
     val routes: Set<String> = fixed.keys + Tools.ROUTE_DAYS_UNTIL
 
+    fun localizedForRoute(context: android.content.Context, route: String?, today: LocalDate = LocalDate.now()): ToolExample? =
+        localizedToolExample(context, route, today)
+
     fun forRoute(route: String?, today: LocalDate = LocalDate.now()): ToolExample? =
         if (route == Tools.ROUTE_DAYS_UNTIL) example(
             "An example event seven days from today (${today.plusDays(7)}).",

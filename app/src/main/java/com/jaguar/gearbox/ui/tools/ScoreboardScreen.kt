@@ -1,5 +1,7 @@
 package com.jaguar.gearbox.ui.tools
 
+import com.jaguar.gearbox.R
+
 import com.jaguar.gearbox.ui.components.ToolFocusView
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -71,14 +73,14 @@ fun ScoreboardScreen(onNavigateBack: () -> Unit) {
     val snapshotSummary = players.mapIndexed { i, p -> "${i + 1}. ${p.name}: ${p.score}" }.joinToString("\n")
     val restoreBinding = rememberToolHistory(Tools.ROUTE_SCOREBOARD, snapshot.orEmpty(), null,
         onRestore = { values ->
-            if (store.isReadOnly || ScoreSnapshots.readScoreboard(values) == null) historyNotice = "This snapshot cannot be restored safely."
+            if (store.isReadOnly || ScoreSnapshots.readScoreboard(values) == null) historyNotice = context.getString(R.string.game_this_snapshot_cannot_be_restored_safely)
             else pendingRestore = values.toMap()
         }, restoreLastResult = false)
     val history = ToolHistoryBinding(Tools.ROUTE_SCOREBOARD, restoreBinding.restore, snapshot.orEmpty(),
         snapshotSummary.takeIf { snapshot != null && players.isNotEmpty() })
 
     ToolScaffold(
-        title = "Scoreboard",
+        title = context.getString(R.string.game_scoreboard),
         icon = Tools.byRoute(Tools.ROUTE_SCOREBOARD)!!.icon,
         onNavigateBack = onNavigateBack,
         history = history,
@@ -92,14 +94,14 @@ fun ScoreboardScreen(onNavigateBack: () -> Unit) {
                 savingSnapshot = true
                 snapshotScope.launch {
                     historyNotice = withContext(Dispatchers.IO) {
-                        if (!memory.settings().historyEnabled) "Enable history in Settings → Tool memory to save snapshots."
-                        else if (memory.record(Tools.ROUTE_SCOREBOARD, captured, output, expectedGeneration = generation)) "Snapshot saved."
-                        else "Snapshot could not be saved. The data may exceed the history size limit."
+                        if (!memory.settings().historyEnabled) context.getString(R.string.game_enable_history_in_settings_tool_memory_to_save_snapshots)
+                        else if (memory.record(Tools.ROUTE_SCOREBOARD, captured, output, expectedGeneration = generation)) context.getString(R.string.game_snapshot_saved)
+                        else context.getString(R.string.game_snapshot_could_not_be_saved_the_data_may_exceed_the_histor)
                     }
                     savingSnapshot = false
                 }
-            }) { Text(if (savingSnapshot) "Saving…" else "Save snapshot") }
-            TextButton(onClick = { focusView = true }) { Text("Focus view") }
+            }) { Text(if (savingSnapshot) context.getString(R.string.game_saving) else context.getString(R.string.game_save_snapshot)) }
+            TextButton(onClick = { focusView = true }) { Text(context.getString(R.string.game_focus_view)) }
         }
         historyNotice?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
         Row(
@@ -110,7 +112,7 @@ fun ScoreboardScreen(onNavigateBack: () -> Unit) {
             OutlinedTextField(
                 value = newName,
                 onValueChange = { newName = it },
-                label = { Text("Player / team name") },
+                label = { Text(context.getString(R.string.game_player_team_name)) },
                 singleLine = true,
                 modifier = Modifier.weight(1f),
             )
@@ -124,21 +126,21 @@ fun ScoreboardScreen(onNavigateBack: () -> Unit) {
                     }
                 },
             ) {
-                Icon(Icons.Filled.PersonAdd, contentDescription = "Add player")
+                Icon(Icons.Filled.PersonAdd, contentDescription = context.getString(R.string.game_add_player))
             }
         }
 
         if (store.hasUnreadableSavedData) {
             Text(
-                if (store.isReadOnly) "Saved data could not be read. Editing is disabled to protect it."
-                else "Older recovery data is retained separately. Removing players, resetting scores or clearing this scoreboard will not erase that recovery data.",
+                if (store.isReadOnly) context.getString(R.string.game_saved_data_could_not_be_read_editing_is_disabled_to_protec)
+                else context.getString(R.string.game_older_recovery_data_is_retained_separately_removing_player),
                 color = MaterialTheme.colorScheme.error,
             )
         }
         if (players.isEmpty()) {
             Spacer(Modifier.height(24.dp))
             Text(
-                text = "Add a player or team to start keeping score.",
+                text = context.getString(R.string.game_add_a_player_or_team_to_start_keeping_score),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -161,17 +163,17 @@ fun ScoreboardScreen(onNavigateBack: () -> Unit) {
                         )
                     }
                     IconButton(enabled = !store.isReadOnly, onClick = {
-                        limitMessage = if (store.adjustScore(index, -1)) null else "Score limit reached."
+                        limitMessage = if (store.adjustScore(index, -1)) null else context.getString(R.string.game_score_limit_reached)
                     }) {
-                        Icon(Icons.Filled.Remove, contentDescription = "Decrease score for ${player.name}")
+                        Icon(Icons.Filled.Remove, contentDescription = context.getString(R.string.game_decrease_score_for_1_s, player.name))
                     }
                     IconButton(enabled = !store.isReadOnly, onClick = {
-                        limitMessage = if (store.adjustScore(index, 1)) null else "Score limit reached."
+                        limitMessage = if (store.adjustScore(index, 1)) null else context.getString(R.string.game_score_limit_reached)
                     }) {
-                        Icon(Icons.Filled.Add, contentDescription = "Increase score for ${player.name}")
+                        Icon(Icons.Filled.Add, contentDescription = context.getString(R.string.game_increase_score_for_1_s, player.name))
                     }
                     IconButton(enabled = !store.isReadOnly, onClick = { pendingRemoval = index; pendingAction = "Remove player" }) {
-                        Icon(Icons.Filled.Delete, contentDescription = "Remove ${player.name}")
+                        Icon(Icons.Filled.Delete, contentDescription = context.getString(R.string.game_remove_1_s, player.name))
                     }
                 }
             }
@@ -182,7 +184,7 @@ fun ScoreboardScreen(onNavigateBack: () -> Unit) {
             val summary = players.mapIndexed { i, p -> "${i + 1}. ${p.name}: ${p.score}" }.joinToString("\n")
             Spacer(Modifier.height(12.dp))
             ToolActions(
-                onCopy = { context.copyToClipboard("Score summary", summary) },
+                onCopy = { context.copyToClipboard(context.getString(R.string.game_score_summary), summary) },
                 onShare = {
                     context.shareText(summary)
                 },
@@ -198,7 +200,7 @@ fun ScoreboardScreen(onNavigateBack: () -> Unit) {
                     modifier = Modifier.weight(1f),
                 ) {
                     Icon(Icons.Filled.Refresh, contentDescription = null)
-                    Text(" Reset scores")
+                    Text(context.getString(R.string.game_reset_scores))
                 }
                 OutlinedButton(
                     enabled = !store.isReadOnly,
@@ -206,7 +208,7 @@ fun ScoreboardScreen(onNavigateBack: () -> Unit) {
                     modifier = Modifier.weight(1f),
                 ) {
                     Icon(Icons.Filled.Delete, contentDescription = null)
-                    Text(" Clear all")
+                    Text(context.getString(R.string.game_clear_all))
                 }
             }
         }
@@ -214,11 +216,11 @@ fun ScoreboardScreen(onNavigateBack: () -> Unit) {
     pendingAction?.let { action ->
         AlertDialog(
             onDismissRequest = { pendingAction = null; pendingRemoval = null },
-            title = { Text("$action?") },
+            title = { Text(context.getString(when (action) { "Remove player" -> R.string.game_remove_player_question; "Reset scores" -> R.string.game_reset_scores_question; else -> R.string.game_clear_all_question })) },
             text = { Text(when (action) {
-                "Remove player" -> "Remove this player and their score?"
-                "Reset scores" -> "Set every score to zero? Player names will be kept."
-                else -> if (store.hasRetainedLegacyData) "Remove every current player and score? Older recovery data will remain stored." else "Remove every player and score?"
+                "Remove player" -> context.getString(R.string.game_remove_this_player_and_their_score)
+                "Reset scores" -> context.getString(R.string.game_set_every_score_to_zero_player_names_will_be_kept)
+                else -> if (store.hasRetainedLegacyData) context.getString(R.string.game_remove_every_current_player_and_score_older_recovery_data) else context.getString(R.string.game_remove_every_player_and_score)
             }) },
             confirmButton = { TextButton(onClick = {
                 when (action) {
@@ -229,20 +231,20 @@ fun ScoreboardScreen(onNavigateBack: () -> Unit) {
                 pendingAction = null
                 pendingRemoval = null
                 limitMessage = null
-            }) { Text("Confirm") } },
-            dismissButton = { TextButton(onClick = { pendingAction = null; pendingRemoval = null }) { Text("Cancel") } },
+            }) { Text(context.getString(R.string.game_confirm)) } },
+            dismissButton = { TextButton(onClick = { pendingAction = null; pendingRemoval = null }) { Text(context.getString(R.string.game_cancel)) } },
         )
     }
     pendingRestore?.let { values ->
-        AlertDialog(onDismissRequest = { pendingRestore = null }, title = { Text("Replace current scoreboard?") },
-            text = { Text("This replaces all current player names and scores with the selected snapshot. Older recovery data is kept. Save a snapshot of the current game first if you need it.") },
+        AlertDialog(onDismissRequest = { pendingRestore = null }, title = { Text(context.getString(R.string.game_replace_current_scoreboard)) },
+            text = { Text(context.getString(R.string.game_this_replaces_all_current_player_names_and_scores_with_the)) },
             confirmButton = { TextButton(onClick = {
-                historyNotice = if (store.restoreSnapshot(values)) "Scoreboard restored." else "Could not restore. Current scores were not replaced."
+                historyNotice = if (store.restoreSnapshot(values)) context.getString(R.string.game_scoreboard_restored) else context.getString(R.string.game_could_not_restore_current_scores_were_not_replaced)
                 pendingRestore = null
-            }) { Text("Replace scoreboard") } },
-            dismissButton = { TextButton(onClick = { pendingRestore = null }) { Text("Cancel") } })
+            }) { Text(context.getString(R.string.game_replace_scoreboard)) } },
+            dismissButton = { TextButton(onClick = { pendingRestore = null }) { Text(context.getString(R.string.game_cancel)) } })
     }
-    if (focusView) ToolFocusView("Scoreboard", onExit = { focusView = false }) {
+    if (focusView) ToolFocusView(context.getString(R.string.game_scoreboard), onExit = { focusView = false }) {
         Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
             players.forEach { player ->
                 Text(player.name, style = MaterialTheme.typography.titleLarge)

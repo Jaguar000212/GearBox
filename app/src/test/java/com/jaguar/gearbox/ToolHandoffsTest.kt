@@ -24,6 +24,10 @@ class ToolHandoffsTest {
         }
         assertTrue(compatibleToolHandoffs("tool/base_converter", mapOf("input" to "99", "fromBase" to "BINARY"), "invalid").isEmpty())
     }
+    @Test fun partialMetadataBlocksHandoffRegardlessOfTranslatedDisplay() {
+        assertTrue(compatibleToolHandoffs("tool/morse_binary", mapOf("_partial" to "true"), "Traduction partielle: ...").isEmpty())
+        assertFalse(compatibleToolHandoffs("tool/morse_binary", mapOf("_partial" to "false"), "SOS").isEmpty())
+    }
     @Test fun secretsOversizeAndIncompleteTranslationsHaveNoHandoff() {
         assertTrue(compatibleToolHandoffs("tool/password_generator", emptyMap(), "secret").isEmpty())
         assertTrue(compatibleToolHandoffs("tool/text_tools", mapOf("text" to "x".repeat(9000)), "x").isEmpty())

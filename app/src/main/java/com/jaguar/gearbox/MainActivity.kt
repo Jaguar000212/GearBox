@@ -142,12 +142,12 @@ private const val ROUTE_HOME = "home"
 private const val ROUTE_FAVORITES = "favorites"
 private const val ROUTE_SETTINGS = "settings"
 
-private data class TabItem(val title: String, val route: String, val icon: ImageVector)
+private data class TabItem(val title: Int, val route: String, val icon: ImageVector)
 
 private val tabs = listOf(
-    TabItem("Home", ROUTE_HOME, Icons.Filled.Home),
-    TabItem("Favorites", ROUTE_FAVORITES, Icons.Filled.Star),
-    TabItem("Settings", ROUTE_SETTINGS, Icons.Filled.Settings),
+    TabItem(R.string.screen_tab_home, ROUTE_HOME, Icons.Filled.Home),
+    TabItem(R.string.screen_tab_favorites, ROUTE_FAVORITES, Icons.Filled.Star),
+    TabItem(R.string.screen_tab_settings, ROUTE_SETTINGS, Icons.Filled.Settings),
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -247,7 +247,7 @@ fun GearBoxApp(
             if (isTopLevel) {
                 TopAppBar(title = { Text(stringForRoute(currentRoute)) }, actions = {
                     androidx.compose.material3.TextButton(onClick = { userNavigation(); navController.navigate("workbench") { launchSingleTop = true } }) {
-                        Text("Workbench")
+                        Text(androidx.compose.ui.res.stringResource(R.string.screen_workbench))
                     }
                 })
             }
@@ -342,11 +342,12 @@ fun GearBoxApp(
     }
 }
 
-private fun stringForRoute(route: String?): String = when (route) {
-    ROUTE_FAVORITES -> "Favorites"
-    ROUTE_SETTINGS -> "Settings"
-    else -> "GearBox"
-}
+@Composable
+private fun stringForRoute(route: String?): String = androidx.compose.ui.res.stringResource(when (route) {
+    ROUTE_FAVORITES -> R.string.screen_tab_favorites
+    ROUTE_SETTINGS -> R.string.screen_tab_settings
+    else -> R.string.screen_brand_name
+})
 
 @Composable
 private fun BottomNavigationBar(navController: NavController, currentRoute: String?, onUserNavigation: () -> Unit) {
@@ -364,8 +365,8 @@ private fun BottomNavigationBar(navController: NavController, currentRoute: Stri
                         }
                     }
                 },
-                label = { Text(tab.title) },
-                icon = { Icon(tab.icon, contentDescription = tab.title) },
+                label = { Text(androidx.compose.ui.res.stringResource(tab.title)) },
+                icon = { Icon(tab.icon, contentDescription = androidx.compose.ui.res.stringResource(tab.title)) },
             )
         }
     }

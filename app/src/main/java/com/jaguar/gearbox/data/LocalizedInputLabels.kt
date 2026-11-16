@@ -1,0 +1,86 @@
+package com.jaguar.gearbox.data
+
+import android.content.Context
+import com.jaguar.gearbox.R
+
+/** Stored field keys are schema identifiers. Translate only their presentation. */
+fun localizedInputLabel(context: Context, key: String): String = when (key) {
+    "input" -> R.string.catalog_input_input
+    "text" -> R.string.catalog_input_text
+    "mode" -> R.string.catalog_input_mode
+    "case" -> R.string.catalog_input_case
+    "algorithm" -> R.string.catalog_input_algorithm
+    "optionA" -> R.string.catalog_input_option_a
+    "optionB" -> R.string.catalog_input_option_b
+    "min" -> R.string.catalog_input_min
+    "max" -> R.string.catalog_input_max
+    "dice" -> R.string.catalog_input_dice
+    "coin" -> R.string.catalog_input_coin
+    "spin" -> R.string.catalog_input_spin
+    "playerMove" -> R.string.catalog_input_player_move
+    "count" -> R.string.catalog_input_count
+    "hex" -> R.string.catalog_input_hex
+    "earlierDate" -> R.string.catalog_input_earlier_date
+    "laterDate" -> R.string.catalog_input_later_date
+    "baseDate" -> R.string.catalog_input_base_date
+    "targetDate" -> R.string.catalog_input_target_date
+    "label" -> R.string.catalog_input_label
+    "amountInput" -> R.string.catalog_input_amount_input
+    "unit" -> R.string.catalog_input_unit
+    "direction" -> R.string.catalog_input_direction
+    "principal" -> R.string.catalog_input_principal
+    "rate" -> R.string.catalog_input_rate
+    "time" -> R.string.catalog_input_time
+    "amount" -> R.string.catalog_input_amount
+    "inclusive" -> R.string.catalog_input_inclusive
+    "price" -> R.string.catalog_input_price
+    "discounts" -> R.string.catalog_input_discounts
+    "distance" -> R.string.catalog_input_distance
+    "mileage" -> R.string.catalog_input_mileage
+    "bill" -> R.string.catalog_input_bill
+    "tipPercent" -> R.string.catalog_input_tip_percent
+    "splitCount" -> R.string.catalog_input_split_count
+    "partA" -> R.string.catalog_input_part_a
+    "partB" -> R.string.catalog_input_part_b
+    "field1" -> R.string.catalog_input_field1
+    "field2" -> R.string.catalog_input_field2
+    "field3" -> R.string.catalog_input_field3
+    "shape" -> R.string.catalog_input_shape
+    "fromBase" -> R.string.catalog_input_from_base
+    "system" -> R.string.catalog_input_system
+    "category" -> R.string.catalog_input_category
+    "fromUnit" -> R.string.catalog_input_from_unit
+    "toUnit" -> R.string.catalog_input_to_unit
+    "unitSystem" -> R.string.catalog_input_unit_system
+    "heightCm" -> R.string.catalog_input_height_cm
+    "weightKg" -> R.string.catalog_input_weight_kg
+    "heightFt" -> R.string.catalog_input_height_ft
+    "heightIn" -> R.string.catalog_input_height_in
+    "weightLbs" -> R.string.catalog_input_weight_lbs
+    "teams" -> R.string.catalog_input_teams
+    "names" -> R.string.catalog_input_names
+    "participants" -> R.string.catalog_input_participants
+    "teamCount" -> R.string.catalog_input_team_count
+    "calls" -> R.string.catalog_input_calls
+    "board" -> R.string.catalog_input_board
+    "minutes" -> R.string.catalog_input_minutes
+    "seconds" -> R.string.catalog_input_seconds
+    "scoreA" -> R.string.catalog_input_score_a
+    "scoreB" -> R.string.catalog_input_score_b
+    "nameA" -> R.string.catalog_input_name_a
+    "nameB" -> R.string.catalog_input_name_b
+    "leftName" -> R.string.catalog_input_left_name
+    "rightName" -> R.string.catalog_input_right_name
+    "leftScore" -> R.string.catalog_input_left_score
+    "rightScore" -> R.string.catalog_input_right_score
+    "timerDurationMillis" -> R.string.catalog_input_timer_duration_millis
+    "timerRemainingMillis" -> R.string.catalog_input_timer_remaining_millis
+    "stopwatchElapsedMillis" -> R.string.catalog_input_stopwatch_elapsed_millis
+    "sensor" -> R.string.catalog_input_sensor
+    "heading" -> R.string.catalog_input_heading
+    "pitch" -> R.string.catalog_input_pitch
+    "roll" -> R.string.catalog_input_roll
+    "torch" -> R.string.catalog_input_torch
+    "value" -> R.string.catalog_input_value
+    else -> null
+}?.let(context::getString) ?: key

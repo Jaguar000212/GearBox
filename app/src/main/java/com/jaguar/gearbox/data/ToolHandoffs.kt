@@ -1,7 +1,13 @@
 package com.jaguar.gearbox.data
 
+import com.jaguar.gearbox.logic.decimalToFraction
+import java.math.BigDecimal
+
 /** Explicit, typed handoffs only. Never infer a number by stripping labels, currencies or units. */
-data class ToolHandoff(val label: String, val route: String, val inputs: Map<String, String>, val detail: String)
+enum class HandoffMeaning { VALUE, RATIO_QUOTIENT }
+
+data class ToolHandoff(val label: String, val route: String, val inputs: Map<String, String>, val detail: String,
+    val meaning: HandoffMeaning = HandoffMeaning.VALUE)
 
 fun compatibleToolHandoffs(source: String, inputs: Map<String, String>, output: String?): List<ToolHandoff> {
     if (!ToolMemoryPolicy.permitsRoute(source) || output.isNullOrBlank() ||
@@ -25,6 +31,11 @@ fun compatibleToolHandoffs(source: String, inputs: Map<String, String>, output: 
             if (radix == 0) null else inputs["input"]?.trim()?.toLongOrNull(radix)
         }
         "tool/number_to_words", "tool/number_to_roman" -> inputs["input"]?.trim()?.toLongOrNull()
+        "tool/decimal_to_fraction" -> runCatching {
+            val raw = inputs["input"]?.trim() ?: return@runCatching null
+            // Require a supported source and an exact whole decimal, never round to a Long.
+            if (decimalToFraction(raw.toDouble()) == null) null else BigDecimal(raw).longValueExact()
+        }.getOrNull()
         "tool/counter" -> inputs["count"]?.toIntOrNull()?.toLong()
         else -> null
     }
@@ -32,8 +43,21 @@ fun compatibleToolHandoffs(source: String, inputs: Map<String, String>, output: 
         val value = it.toString()
         actions += ToolHandoff("Number to Words", "tool/number_to_words", mapOf("input" to value), "Use the number $value")
         actions += ToolHandoff("Base Converter", "tool/base_converter", mapOf("input" to value, "fromBase" to "DECIMAL"), "Use $value in decimal")
-        actions += ToolHandoff("Decimal to Fraction", "tool/decimal_to_fraction", mapOf("input" to value), "Use the number $value")
+        if (decimalToFraction(it.toDouble()) != null)
+            actions += ToolHandoff("Decimal to Fraction", "tool/decimal_to_fraction", mapOf("input" to value), "Use the number $value")
         if (it in 1L..3999L) actions += ToolHandoff("Number to Roman", "tool/number_to_roman", mapOf("input" to value), "Convert $value to Roman numerals")
+    }
+    if (source == "tool/ratios") {
+        val a = inputs["partA"]?.trim()?.toDoubleOrNull()
+        val b = inputs["partB"]?.trim()?.toDoubleOrNull()
+        if (a != null && b != null && a.isFinite() && b.isFinite() && b != 0.0) {
+            val quotient = a / b
+            if (quotient.isFinite() && decimalToFraction(quotient) != null) {
+                val value = quotient.toString()
+                actions += ToolHandoff("Decimal to Fraction", "tool/decimal_to_fraction", mapOf("input" to value),
+                    "Use the ratio quotient $value as a decimal; finite precision applies", HandoffMeaning.RATIO_QUOTIENT)
+            }
+        }
     }
     return actions.filter { it.route != source && ToolMemoryPolicy.validInputs(it.inputs) }
 }

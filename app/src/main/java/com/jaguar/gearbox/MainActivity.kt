@@ -1,6 +1,9 @@
 package com.jaguar.gearbox
 
 import android.content.Intent
+import com.jaguar.gearbox.sharing.IncomingTextInbox
+import com.jaguar.gearbox.sharing.IncomingTextShare
+import com.jaguar.gearbox.sharing.parseIncomingTextShare
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -61,12 +64,28 @@ private const val KEY_HAPTICS = "settings.haptics"
 
 class MainActivity : ComponentActivity() {
     private var pendingRoute by mutableStateOf<String?>(null)
+    private val incomingShares = IncomingTextInbox()
+
+    private fun receiveShare(source: Intent): Boolean {
+        val parsed = parseIncomingTextShare(source) ?: return false
+        incomingShares.replace(parsed)
+        pendingRoute = null // An external share cannot smuggle a shortcut or clock action.
+        // Drop all external extras/ClipData from the Activity intent before state can be saved.
+        setIntent(Intent(this, MainActivity::class.java).setAction(Intent.ACTION_MAIN))
+        return true
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        pendingRoute = if (savedInstanceState == null) intent?.getStringExtra(EXTRA_SHORTCUT_ROUTE)
-            else savedInstanceState.getString("navigation.pending_route")
+        if (savedInstanceState == null) {
+            if (!receiveShare(intent)) pendingRoute = intent?.getStringExtra(EXTRA_SHORTCUT_ROUTE)
+        } else {
+            pendingRoute = savedInstanceState.getString("navigation.pending_route")
+            // Preview text is intentionally discarded on recreation, never restored or replayed.
+            if (intent.action == Intent.ACTION_SEND || intent.action == Intent.ACTION_SEND_MULTIPLE)
+                setIntent(Intent(this, MainActivity::class.java).setAction(Intent.ACTION_MAIN))
+        }
         setContent {
             val context = LocalContext.current
             val prefs = remember { SimplePrefsStore(context) }
@@ -116,6 +135,11 @@ class MainActivity : ComponentActivity() {
                                 launchScreenStore.save(it)
                                 launchScreen = it
                             },
+                            incomingShare = incomingShares.pending,
+                            onIncomingShareConsumed = { id ->
+                                // Claim at the Activity state boundary, not a stale Compose snapshot.
+                                incomingShares.claim(id)
+                            },
                             pendingRoute = pendingRoute,
                             onPendingRouteConsumed = {
                                 pendingRoute = null
@@ -136,7 +160,10 @@ class MainActivity : ComponentActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
-        pendingRoute = intent.getStringExtra(EXTRA_SHORTCUT_ROUTE)
+        if (!receiveShare(intent)) {
+            incomingShares.replace(null)
+            pendingRoute = intent.getStringExtra(EXTRA_SHORTCUT_ROUTE)
+        }
     }
 }
 
@@ -166,6 +193,8 @@ fun GearBoxApp(
     pendingRoute: String? = null,
     onPendingRouteConsumed: () -> Unit = {},
     favoritesStore: FavoritesStore? = null,
+    incomingShare: IncomingTextShare? = null,
+    onIncomingShareConsumed: (String) -> Boolean = { false },
 ) {
     // Keep the graph stable while editing preferences and across recreation.
     // A fresh app session picks up the newly saved preference.
@@ -215,6 +244,18 @@ fun GearBoxApp(
         }
     }
     val openTool: (Tool) -> Unit = { navigateToTool(it) }
+    incomingShare?.let { share ->
+        androidx.compose.runtime.key(share.id) {
+            com.jaguar.gearbox.sharing.IncomingTextShareDialog(share,
+                onDismiss = { onIncomingShareConsumed(share.id) },
+                onImport = { route, inputs ->
+                    Tools.byRoute(route)?.takeIf { onIncomingShareConsumed(share.id) }?.let { tool ->
+                        toolImport = com.jaguar.gearbox.ui.components.ToolImport(route, inputs, suppressInitialRetention = true)
+                        navigateToTool(tool, switching = true)
+                    }
+                })
+        }
+    }
     var pendingOperation by remember { mutableStateOf<Pair<Tool, ToolSearchOperation>?>(null) }
     val openOperation: (Tool, ToolSearchOperation) -> Unit = { selected, operation ->
         // Only the catalog's canonical operation may supply a mode map. No user input is imported.
@@ -223,6 +264,9 @@ fun GearBoxApp(
         }
     }
     LaunchedEffect(currentRoute) { pendingOperation = null }
+    LaunchedEffect(incomingShare?.id) {
+        if (incomingShare != null) { userNavigation(); pendingOperation = null }
+    }
 
 
     // Deep-links straight into a tool when GearBox is launched from one of its own app shortcuts.

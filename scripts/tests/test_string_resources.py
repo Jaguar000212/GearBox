@@ -7,7 +7,7 @@ import xml.etree.ElementTree as ET
 ROOT = Path(__file__).resolve().parents[2]
 NEW = ('strings_app_screens.xml', 'strings_calculators.xml', 'strings_catalog.xml',
        'strings_games_clock.xml', 'strings_special_tools.xml', 'strings_shared_components.xml',
-       'strings_system_surfaces.xml', 'strings_search.xml', 'strings_operation_navigation.xml', 'strings_working.xml', 'strings_text_groups.xml', 'strings_unit_defaults.xml', 'strings_workbench_organization.xml')
+       'strings_system_surfaces.xml', 'strings_search.xml', 'strings_operation_navigation.xml', 'strings_working.xml', 'strings_text_groups.xml', 'strings_unit_defaults.xml', 'strings_workbench_organization.xml', 'strings_incoming_share.xml', 'strings_safe_handoffs.xml')
 
 class StringResourceTest(unittest.TestCase):
     def resources(self):

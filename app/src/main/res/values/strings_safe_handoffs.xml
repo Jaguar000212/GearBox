@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="handoff_ratio_quotient">Use the ratio quotient %1$s as a decimal; finite precision applies</string>
+</resources>

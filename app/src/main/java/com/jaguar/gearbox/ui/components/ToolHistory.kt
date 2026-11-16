@@ -57,6 +57,7 @@ fun rememberToolHistory(
     val restore by rememberUpdatedState(onRestore)
     val restoreMode by rememberUpdatedState(onRestoreMode)
     val restoreLast by rememberUpdatedState(onRestoreLastResult)
+    var importedInputsFingerprint by rememberSaveable(route) { mutableStateOf<String?>(null) }
     var hydratedInputsFingerprint by rememberSaveable(route) { mutableStateOf<String?>(null) }
     var hydratedModeFingerprint by rememberSaveable(route) { mutableStateOf<String?>(null) }
     val latestInputs by rememberUpdatedState(inputs)
@@ -70,6 +71,12 @@ fun rememberToolHistory(
         if (imported?.route == route) {
             if (com.jaguar.gearbox.data.ToolMemoryPolicy.permitsRoute(route) &&
                 com.jaguar.gearbox.data.ToolMemoryPolicy.validInputs(imported.inputs)) {
+                importedInputsFingerprint = if (imported.suppressInitialRetention)
+                    historyObservationFingerprint(route, com.jaguar.gearbox.data.retentionInputValues(inputs + imported.inputs), null) else null
+                if (imported.suppressInitialRetention) {
+                    hydratedModeFingerprint = historyObservationFingerprint(route,
+                        modeInputs.mapValues { (key, value) -> imported.inputs[key] ?: value }, null)
+                }
                 if (imported.modeOnly) restoreMode(imported.inputs) else restore(imported.inputs)
             }
             consumeImport()
@@ -98,7 +105,8 @@ fun rememberToolHistory(
     var observedModeGeneration by rememberSaveable(route) { mutableStateOf(0L) }
     var modeObservationProcessed by rememberSaveable(route) { mutableStateOf(false) }
     val modeFingerprint = remember(route, modeInputs) { historyObservationFingerprint(route, modeInputs, null) }
-    LaunchedEffect(route, modeFingerprint, initialized) {
+    LaunchedEffect(route, modeFingerprint, initialized, imported?.id) {
+        if (imported?.route == route) return@LaunchedEffect
         if (!initialized) return@LaunchedEffect
         if (hydratedModeFingerprint == modeFingerprint) return@LaunchedEffect
         hydratedModeFingerprint = null
@@ -122,7 +130,14 @@ fun rememberToolHistory(
     var observationProcessed by rememberSaveable(route) { mutableStateOf(false) }
     val fingerprint = remember(route, inputs, output) { historyObservationFingerprint(route, inputs, output) }
     // Live calculators are recorded after a pause, never for each keystroke or invalid result.
-    LaunchedEffect(route, fingerprint, initialized) {
+    LaunchedEffect(route, fingerprint, initialized, imported?.id) {
+        // Cancel any old debounce immediately, before restore updates the screen's inputs.
+        if (imported?.route == route) return@LaunchedEffect
+        val currentInputsFingerprint = historyObservationFingerprint(route,
+            com.jaguar.gearbox.data.retentionInputValues(inputs), null)
+        if (com.jaguar.gearbox.data.suppressImportedObservation(importedInputsFingerprint,
+                currentInputsFingerprint, resultRequiresExplicitAction, !output.isNullOrBlank())) return@LaunchedEffect
+        importedInputsFingerprint = null
         // Async results may temporarily disappear during recreation. Loading/invalid
         // output must not erase the processed observation and replay it on completion.
         if (!initialized || output.isNullOrBlank()) return@LaunchedEffect
@@ -270,7 +285,8 @@ fun ToolHistoryDialog(binding: ToolHistoryBinding, onDismiss: () -> Unit) {
 private fun historyText(context: android.content.Context, entry: ToolHistoryEntry) = entry.inputs.filterKeys { !it.startsWith("_") }.entries.joinToString("\n") { context.getString(com.jaguar.gearbox.R.string.shared_label_value, localizedInputLabel(context, it.key), it.value) } + "\n\n" + entry.output
 
 data class ToolImport(val route: String, val inputs: Map<String, String>, val modeOnly: Boolean = false,
-    val id: String = java.util.UUID.randomUUID().toString())
+    val id: String = java.util.UUID.randomUUID().toString(),
+    val suppressInitialRetention: Boolean = false)
 val LocalToolImport = staticCompositionLocalOf<ToolImport?> { null }
 val LocalConsumeToolImport = staticCompositionLocalOf<() -> Unit> { {} }
 

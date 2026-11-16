@@ -1,6 +1,6 @@
 # Toolbox refresh: staged implementation
 
-PRs #55–58 were merged after exact-head CI/review checks. Phase 4 builds on the verified Phase 3 tree. No release or tag has been created.
+PRs #55–58 were merged after exact-head CI/review checks. Phase 4 builds on the verified Phase 3 tree. No release or tag has been created. Final build compatibility is tracked in [PR #60](https://github.com/Jaguar000212/GearBox/pull/60), with exact-head CI checks before delivery.
 
 ## Implemented foundation
 
@@ -58,4 +58,4 @@ Local whitespace and Python packaging tests passed. Local Gradle execution was b
 
 Phase 2 CI43904137433 passed at `d3f0c574db2dd058527b8518792fbec8aca320aa`; Phase 3 CI43904474797 passed at `0e9c73e99b492cbeb51dad8eaa11359acbbb4610`. Phase 4 exact-head verification is recorded in [PR #59 checks](https://github.com/Jaguar000212/GearBox/pull/59/checks).
 
-CI now uploads debug app and instrumentation APKs plus checksums for hands-on testing (seven-day retention). These are development artifacts, not a signed release. The debug app uses `com.jaguar.gearbox.beta`; an existing installation with a different signing key may reject an update. Do not uninstall or clear existing data to bypass that error. Use a separate test device/profile or report the conflict.
+CI now uploads debug app and instrumentation APKs plus checksums for hands-on testing (seven-day retention). These are development artifacts, not a signed release. Ordinary debug uses `com.jaguar.gearbox.beta`; an existing installation with a different signing key may reject an update. CI also provides an opt-in isolated `com.jaguar.gearbox.preview` build for side-by-side testing; see [preview setup and limits](preview-testing.md). Do not uninstall or clear existing data to bypass that error. Use a separate test device/profile or report the conflict.

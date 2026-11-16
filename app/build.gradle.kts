@@ -12,6 +12,12 @@ plugins {
 // a keystore.
 val releaseKeystorePath: String? = System.getenv("KEYSTORE_PATH")
 
+// Opt-in side-by-side test identity; never changes release or ordinary debug installs.
+val isolatedPreview = providers.gradleProperty("isolatedPreview").orNull?.let {
+    require(it == "true" || it == "false") { "isolatedPreview must be true or false" }
+    it == "true"
+} ?: false
+
 // Only tag refs determine CI release identity. A branch named v... is not a release.
 // Manual signed-candidate builds may supply an explicit validated release tag.
 fun resolveVersionTag(): String {
@@ -45,6 +51,7 @@ android {
         versionName = resolvedVersionName
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        manifestPlaceholders["appDisplayName"] = "@string/app_name"
     }
 
     signingConfigs {
@@ -71,7 +78,8 @@ android {
             )
         }
         getByName("debug") {
-            applicationIdSuffix = ".beta"
+            applicationIdSuffix = if (isolatedPreview) ".preview" else ".beta"
+            if (isolatedPreview) manifestPlaceholders["appDisplayName"] = "GearBox Preview"
             versionNameSuffix = "-b"
         }
     }

@@ -7,7 +7,7 @@ This guide grows with each implementation phase. Automated CI builds app/test AP
 For same-phone side-by-side testing, prefer the [isolated GearBox Preview build](preview-testing.md). It does not replace the earlier beta app; fresh preview data does not test upgrade migration.
 
 - Use the debug APK from the successful CI run for the commit being tested. The artifact also includes the instrumentation APK and SHA-256 checksums.
-- The app is a development build (`com.jaguar.gearbox.beta`), not a public release.
+- Regular debug uses `com.jaguar.gearbox.beta`; isolated preview uses `com.jaguar.gearbox.preview` and the GearBox Preview label. Neither is a public release.
 - If an existing installation rejects an update because of signing or version differences, **do not uninstall it or clear its data**. Use another test device/profile or report the error.
 - Record phone model, Android version, build/commit, font/display scaling and steps when reporting an issue. Avoid sharing private inputs in screenshots.
 

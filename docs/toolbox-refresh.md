@@ -29,4 +29,6 @@ History is opt-in. Turning a setting off pauses its use without deleting stored 
 
 ## Verification
 
-Source/whitespace checks were run. Local Gradle execution was attempted with the documented aggregate build/test/lint tasks but failed downloading Gradle 8.10.2 because the execution environment could not reach the network. This is not a compilation pass. CI and user device testing remain required. Instrumentation tests are added, not claimed run.
+Local whitespace and Python packaging tests passed. Local Gradle execution was blocked downloading Gradle 8.10.2 by network restrictions. CI run 144 passed on commit `1309ed4cc1cd7f52d576ef049ea2d30fde60f210`: debug/release app builds, instrumentation APK compilation, JVM unit tests, debug/release lint, and version/packaging guardrails. Instrumentation tests were compiled, not executed on a device.
+
+CI now uploads debug app and instrumentation APKs plus checksums for hands-on testing (seven-day retention). These are development artifacts, not a signed release. The debug app uses `com.jaguar.gearbox.beta`; an existing installation with a different signing key may reject an update. Do not uninstall or clear existing data to bypass that error. Use a separate test device/profile or report the conflict.

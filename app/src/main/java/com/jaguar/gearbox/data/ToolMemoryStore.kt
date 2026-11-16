@@ -28,11 +28,25 @@ class ToolMemoryStore private constructor(private val directory: File) {
 
     fun saveSettings(settings: ToolMemorySettings): Boolean = synchronized(lock) {
         val value = settings.normalized()
-        val previousLimit = readSettings().historyLimit
+        val previous = readSettings()
+        val previousLimit = previous.historyLimit
+        val perTool = JSONObject()
+        value.automaticMemory.forEach { (route, choice) -> perTool.put(route, JSONObject()
+            .put("historyEnabled", choice.historyEnabled).put("rememberResults", choice.rememberResults)) }
         val saved = write("settings.json", JSONObject().put("version", 1)
             .put("historyEnabled", value.historyEnabled).put("historyLimit", value.historyLimit)
             .put("rememberModes", value.rememberModes).put("rememberResults", value.rememberResults)
-            .put("rememberGameSessions", value.rememberGameSessions))
+            .put("rememberGameSessions", value.rememberGameSessions).put("automaticMemory", perTool))
+        if (saved) {
+            // Pausing then re-enabling cannot revive a write queued before consent was withdrawn.
+            if (previous.historyEnabled && !value.historyEnabled) bumpAllGenerations("history")
+            if (previous.rememberResults && !value.rememberResults) bumpAllGenerations("result")
+            if (previous.rememberModes && !value.rememberModes) bumpAllGenerations("mode")
+            (previous.automaticMemory.keys + value.automaticMemory.keys + ToolMemoryPolicy.sensitiveTextRoutes).forEach { route ->
+                if (previous.automaticMemoryFor(route).historyEnabled && !value.automaticMemoryFor(route).historyEnabled) bumpGeneration(route, "history")
+                if (previous.automaticMemoryFor(route).rememberResults && !value.automaticMemoryFor(route).rememberResults) bumpGeneration(route, "result")
+            }
+        }
         var trimmed = true
         if (saved && value.historyLimit < previousLimit) {
             directory.listFiles()?.filter { it.name.endsWith(".history.json") }?.forEach { file ->
@@ -58,7 +72,7 @@ class ToolMemoryStore private constructor(private val directory: File) {
         expectedGeneration: Long? = null): Boolean = synchronized(lock) {
         if (expectedGeneration != null && expectedGeneration != historyGeneration(route)) return@synchronized false
         val settings = readSettings()
-        if (!settings.historyEnabled || !ToolMemoryPolicy.permitsRoute(route) ||
+        if (!settings.permitsHistory(route) || !ToolMemoryPolicy.permitsRoute(route) ||
             !ToolMemoryPolicy.validRecord(inputs, output)) return@synchronized false
         val name = fileName(route, "history")
         val old = readEntries(name)
@@ -98,34 +112,47 @@ class ToolMemoryStore private constructor(private val directory: File) {
     fun saveMode(route: String, values: Map<String, String>, expectedGeneration: Long? = null): Boolean = synchronized(lock) {
         if (expectedGeneration != null && expectedGeneration != modeGeneration(route)) return@synchronized false
         if (!readSettings().rememberModes || !ToolMemoryPolicy.permitsRoute(route) ||
-            !ToolMemoryPolicy.validInputs(values)) false
+            !ToolMemoryPolicy.validMode(route, values)) false
         else write(fileName(route, "mode"), JSONObject().put("version", 1).put("values", JSONObject(values)))
     }
 
     fun loadMode(route: String): Map<String, String> = synchronized(lock) {
         if (!readSettings().rememberModes || !ToolMemoryPolicy.permitsRoute(route)) emptyMap()
-        else parseInputs(read(fileName(route, "mode"))?.optJSONObject("values")) ?: emptyMap()
+        else parseInputs(read(fileName(route, "mode"))?.optJSONObject("values"))
+            ?.takeIf { ToolMemoryPolicy.validMode(route, it) } ?: emptyMap()
     }
 
     fun saveResult(route: String, inputs: Map<String, String>, output: String,
         expectedGeneration: Long? = null): Boolean = synchronized(lock) {
         if (expectedGeneration != null && expectedGeneration != resultGeneration(route)) return@synchronized false
-        if (!readSettings().rememberResults || !ToolMemoryPolicy.permitsRoute(route) ||
+        if (!readSettings().permitsResult(route) || !ToolMemoryPolicy.permitsRoute(route) ||
             !ToolMemoryPolicy.validRecord(inputs, output)) false
         else writeEntries(fileName(route, "result"), listOf(ToolHistoryEntry(
             UUID.randomUUID().toString(), System.currentTimeMillis(), inputs.toMap(), output)))
     }
 
     fun loadResult(route: String): ToolHistoryEntry? = synchronized(lock) {
-        if (!readSettings().rememberResults || !ToolMemoryPolicy.permitsRoute(route)) null
+        if (!readSettings().permitsResult(route) || !ToolMemoryPolicy.permitsRoute(route)) null
         else readEntries(fileName(route, "result")).firstOrNull()
     }
 
     fun clearRememberedModes(): Boolean = synchronized(lock) {
         clearSuffix(".mode.json").also { if (it) bumpAllGenerations("mode") }
     }
-    fun clearRememberedResults(): Boolean = synchronized(lock) {
-        clearSuffix(".result.json").also { if (it) bumpAllGenerations("result") }
+    /** Explicit inspection of retained data does not re-enable automatic hydration. */
+    fun rememberedResult(route: String): ToolHistoryEntry? = synchronized(lock) {
+        if (!ToolMemoryPolicy.permitsRoute(route)) null
+        else readEntries(fileName(route, "result")).firstOrNull()
+    }
+    fun hasRememberedResult(route: String): Boolean = rememberedResult(route) != null
+
+    fun clearRememberedResults(route: String? = null): Boolean = synchronized(lock) {
+        if (route != null && !ToolMemoryPolicy.permitsRoute(route)) return@synchronized false
+        val success = if (route == null) clearSuffix(".result.json") else delete(fileName(route, "result"))
+        if (success) {
+            if (route == null) bumpAllGenerations("result") else bumpGeneration(route, "result")
+        }
+        success
     }
 
     /** Explicit named configuration saves are independent of automatic remembering settings. */
@@ -185,9 +212,15 @@ class ToolMemoryStore private constructor(private val directory: File) {
 
     private fun readSettings(): ToolMemorySettings {
         val json = read("settings.json") ?: return ToolMemorySettings()
+        val perTool = json.optJSONObject("automaticMemory")
+        val overrides = perTool?.keys()?.asSequence()?.filter(ToolMemoryPolicy::permitsRoute)?.mapNotNull { route ->
+            val choice = perTool?.optJSONObject(route) ?: return@mapNotNull null
+            // Consent must be an explicit JSON true, not a coerced string/number.
+            route to ToolAutomaticMemory(choice.opt("historyEnabled") == true, choice.opt("rememberResults") == true)
+        }?.toMap().orEmpty()
         return ToolMemorySettings(json.optBoolean("historyEnabled", false), json.optInt("historyLimit", 20),
             json.optBoolean("rememberModes", false), json.optBoolean("rememberResults", false),
-            json.optBoolean("rememberGameSessions", true)).normalized()
+            json.optBoolean("rememberGameSessions", true), overrides).normalized()
     }
 
     private fun readEntries(name: String): List<ToolHistoryEntry> {

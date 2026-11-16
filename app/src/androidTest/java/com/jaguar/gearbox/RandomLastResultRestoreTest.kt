@@ -4,6 +4,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
+import com.jaguar.gearbox.data.ToolAutomaticMemory
 import com.jaguar.gearbox.data.ToolMemorySettings
 import com.jaguar.gearbox.data.ToolMemoryStore
 import com.jaguar.gearbox.data.Tools
@@ -20,7 +21,8 @@ class RandomLastResultRestoreTest {
     @After fun cleanup() { isolated.cleanup() }
     private fun seed(route: String, inputs: Map<String, String>) {
         val store = ToolMemoryStore(isolated)
-        store.saveSettings(ToolMemorySettings(rememberResults = true, historyEnabled = true))
+        store.saveSettings(ToolMemorySettings(rememberResults = true, historyEnabled = true,
+            automaticMemory = mapOf(route to ToolAutomaticMemory(true, true))))
         assertTrue(store.saveResult(route, inputs, "Deliberately not parsed display text"))
         assertTrue(store.clearHistory(route))
     }

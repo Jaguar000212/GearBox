@@ -1,7 +1,6 @@
 package com.jaguar.gearbox.ui.tools
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -15,6 +14,7 @@ import com.jaguar.gearbox.data.Tools
 import com.jaguar.gearbox.logic.TextHashAlgorithm
 import com.jaguar.gearbox.logic.textHashHex
 import com.jaguar.gearbox.ui.components.ResultCard
+import com.jaguar.gearbox.ui.components.SensitiveTextShareDialog
 import com.jaguar.gearbox.ui.components.ToolActions
 import com.jaguar.gearbox.ui.components.ToolScaffold
 import com.jaguar.gearbox.ui.components.CompactChoiceSelector
@@ -29,6 +29,7 @@ fun HashGeneratorScreen(onNavigateBack: () -> Unit) {
     var input by rememberSaveable { mutableStateOf("") }
     var algorithm by rememberSaveable { mutableStateOf(TextHashAlgorithm.SHA256.name) }
     val selectedAlgorithm = TextHashAlgorithm.entries.firstOrNull { it.name == algorithm } ?: TextHashAlgorithm.SHA256
+    var shareReview by remember { mutableStateOf<Triple<String, String, String>?>(null) }
     var restoredInput by rememberSaveable { mutableStateOf(false) }
     // A new state holder for each request hides the old result immediately, before effects run.
     var hash by remember(input, algorithm, restoredInput) { mutableStateOf<String?>(null) }
@@ -78,17 +79,25 @@ fun HashGeneratorScreen(onNavigateBack: () -> Unit) {
             Text(stringResource(R.string.hash_length, currentHash.length),
                 style = MaterialTheme.typography.bodySmall)
             Spacer(Modifier.height(8.dp))
-            SelectionContainer {
-                ResultCard(text = currentHash,
-                    textStyle = MaterialTheme.typography.bodyLarge.copy(fontFamily = FontFamily.Monospace))
-            }
+            ResultCard(text = currentHash, selectable = false,
+                textStyle = MaterialTheme.typography.bodyLarge.copy(fontFamily = FontFamily.Monospace))
         } else if (!restoredInput) {
             Text(stringResource(if (input.isEmpty()) R.string.hash_empty else R.string.hash_working))
         }
         Spacer(Modifier.height(12.dp))
         ToolActions(
-            onCopy = { hash?.let { context.copyToClipboard(selectedAlgorithm.label, it) } },
-            onShare = { hash?.let { context.shareText(it) } },
+            onCopy = { hash?.let { context.copyToClipboard(selectedAlgorithm.label, it, sensitive = true) } },
+            onShare = { hash?.let { shareReview = Triple(input, algorithm, it) } },
             onClear = { input = ""; restoredInput = false }, resultEnabled = hash != null, clearEnabled = input.isNotEmpty())
+    }
+    shareReview?.let { snapshot ->
+        if (snapshot.first != input || snapshot.second != algorithm || snapshot.third != hash || restoredInput) {
+            LaunchedEffect(snapshot) { shareReview = null }
+        } else SensitiveTextShareDialog(snapshot.third,
+            onConfirm = {
+                shareReview = null
+                if (snapshot.first == input && snapshot.second == algorithm && snapshot.third == hash && !restoredInput)
+                    context.shareText(snapshot.third)
+            }, onDismiss = { shareReview = null })
     }
 }

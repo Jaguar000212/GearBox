@@ -13,6 +13,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.jaguar.gearbox.data.SavedToolItem
+import com.jaguar.gearbox.ui.components.SensitiveTextShareDialog
+import com.jaguar.gearbox.data.ToolMemoryPolicy
 import com.jaguar.gearbox.data.ToolMemoryStore
 import com.jaguar.gearbox.data.Tools
 import com.jaguar.gearbox.ui.tools.copyToClipboard
@@ -40,6 +42,7 @@ fun WorkbenchScreen(
     var loaded by remember { mutableStateOf(false) }
     var busy by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
+    var sharePreview by remember { mutableStateOf<String?>(null) }
     var handoffTarget by remember { mutableStateOf<SavedToolItem?>(null) }
     var deleteTarget by remember { mutableStateOf<SavedToolItem?>(null) }
     var deletePreset by remember { mutableStateOf(false) }
@@ -72,7 +75,7 @@ fun WorkbenchScreen(
             item {
                 Column(Modifier.widthIn(max = 840.dp).fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text("Keep what matters", style = MaterialTheme.typography.headlineSmall)
-                    Text("Named results and reusable setups, saved only on this device. Nothing is added automatically.",
+                    Text("Named results and reusable setups, saved only on this device. Nothing is added automatically. Turning off automatic retention does not delete these explicit saves.",
                         color = MaterialTheme.colorScheme.onSurfaceVariant)
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         FilterChip(selected = !presetsSelected, onClick = { presetsSelected = false },
@@ -116,9 +119,10 @@ fun WorkbenchScreen(
                                 color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                         FlowRow(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                            TextButton(onClick = { context.copyToClipboard(item.name, savedItemText(item)) }) { Text("Copy") }
+                            TextButton(onClick = { context.copyToClipboard(item.name, savedItemText(item), sensitive = ToolMemoryPolicy.isSensitiveTextRoute(item.route)) }) { Text("Copy") }
                             TextButton(onClick = {
-                                runCatching { context.shareText(savedItemText(item)) }
+                                if (ToolMemoryPolicy.isSensitiveTextRoute(item.route)) sharePreview = savedItemText(item)
+                                else runCatching { context.shareText(savedItemText(item)) }
                                     .onFailure { error = "No sharing app is available. You can copy this item instead." }
                             }) { Text("Share") }
                             TextButton(enabled = tool != null && !busy && (presetsSelected || com.jaguar.gearbox.data.canRestoreToolSnapshot(item.route)),
@@ -137,6 +141,13 @@ fun WorkbenchScreen(
                 }
             }
         }
+    }
+    sharePreview?.let { text ->
+        SensitiveTextShareDialog(text, onConfirm = {
+            sharePreview = null
+            runCatching { context.shareText(text) }
+                .onFailure { error = "No sharing app is available. You can copy this item instead." }
+        }, onDismiss = { sharePreview = null })
     }
     handoffTarget?.let { item ->
         CompositionLocalProvider(com.jaguar.gearbox.ui.components.LocalToolHandoff provides { route: String, inputs: Map<String, String> ->

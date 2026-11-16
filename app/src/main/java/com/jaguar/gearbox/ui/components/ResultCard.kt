@@ -36,10 +36,13 @@ fun ResultCard(
     textAlign: TextAlign = TextAlign.Start,
     onCopy: (() -> Unit)? = null,
     onShare: (() -> Unit)? = null,
+    // Sensitive outputs use their explicit Copy action so its clipboard privacy hint is applied.
+    // Editable input fields still use the platform selection/clipboard behavior.
+    selectable: Boolean = true,
 ) {
     Column(modifier = modifier) {
         Card(modifier = Modifier.fillMaxWidth()) {
-            SelectionContainer {
+            val resultText: @Composable () -> Unit = {
             Text(
                 text = text,
                 style = textStyle,
@@ -49,6 +52,7 @@ fun ResultCard(
                     .padding(16.dp),
             )
             }
+            if (selectable) SelectionContainer { resultText() } else resultText()
         }
 
         if (onCopy != null || onShare != null) {

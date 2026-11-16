@@ -65,3 +65,9 @@ CI now uploads debug app and instrumentation APKs plus checksums for hands-on te
 Last-result support now restores validated typed outcomes for six random tools (Coin, Bottle, Dice, Random Number, One of Two and Rock Paper Scissors), including explicit History/Workbench reuse, without generating new outcomes or changing tallies. Legacy records without typed outcomes restore inputs only. QR/Hash continue to require Generate; live/destructive tool exclusions remain deliberate.
 
 Help includes confirmed, cancellable example-input imports for 23 deterministic tools rather than claiming every tool has an executable example. Loan Calculator catalog wording now matches its repayment functionality. See the corrective checklist in `testing-guide.md` for scope and remaining verification/privacy limitations.
+
+### Privacy follow-up
+
+Text, QR and Hash now require separate per-tool opt-ins for automatic history and last-result memory, in addition to global switches. Missing choices default OFF on fresh installs and upgrades. Storage enforces the policy, and disabling invalidates queued writes. This does not detect secrets in other tools or disable Android task-state drafts.
+
+Existing records are not silently deleted: Settings provides counts, read-only review and confirmed per-tool history/result clears. Manual Workbench saves remain deliberate and independent, with a preview and privacy warning. Explicit Copy actions for potentially private text request Android's sensitive clipboard treatment; Share requires review before opening an external chooser. App-private storage is not an encrypted vault; OS editable-input selection and legacy backup behavior remain separate.

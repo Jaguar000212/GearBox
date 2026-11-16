@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="workbench_private_notice">App-private local storage, not an encrypted vault. Keep secrets out of saved names and content.</string>
+    <string name="workbench_search">Find by saved name or tool</string>
+    <string name="workbench_cancel_selection">Cancel selection</string>
+    <string name="workbench_select_items">Select items</string>
+    <string name="workbench_select_visible">Select visible items</string>
+    <string name="workbench_delete_selected">Delete selected</string>
+    <string name="workbench_compare">Compare selected results</string>
+    <string name="workbench_compare_guidance">Select exactly two results from the same supported calculator or converter with matching modes and units. Text, QR, Hash, games and live readings cannot be compared.</string>
+    <string name="workbench_no_matches">No saved items match this filter.</string>
+    <string name="workbench_rename">Rename</string>
+    <string name="workbench_name">Saved name (1–80 characters)</string>
+    <string name="workbench_save_name">Save name</string>
+    <string name="workbench_rename_failed">Could not rename this item. It may have been removed. Please try again.</string>
+    <string name="workbench_delete_presets_notice">Delete only the listed presets from this device? This cannot be undone. Saved results, tool history and current inputs are unchanged.</string>
+    <string name="workbench_delete_results_notice">Delete only the listed saved results from this device? This cannot be undone. Presets, tool history and current inputs are unchanged.</string>
+    <string name="workbench_comparison_title">Compare saved results</string>
+    <string name="workbench_close_comparison">Close comparison</string>
+    <string name="workbench_snapshot_notice">These are saved snapshots with their original inputs and modes, not fresh calculations. Nothing is rerun, restored, copied or shared. Matching settings do not guarantee that underlying assumptions or currencies are the same.</string>
+    <string name="workbench_saved_inputs">Saved inputs and modes</string>
+    <string name="workbench_saved_output">Saved output</string>
+    <string name="workbench_manage_presets">Manage presets</string>
+    <plurals name="workbench_selected_count">
+        <item quantity="one">%1$d selected item</item>
+        <item quantity="other">%1$d selected items</item>
+    </plurals>
+    <plurals name="workbench_delete_count">
+        <item quantity="one">Delete %1$d selected item?</item>
+        <item quantity="other">Delete %1$d selected items?</item>
+    </plurals>
+    <string name="workbench_name_count">%1$d / 80 characters. Longer names cannot be saved.</string>
+</resources>

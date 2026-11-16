@@ -11,76 +11,87 @@ GearBox is the Kotlin + Jetpack Compose rewrite of the original Java
 
 ## Tools
 
-41 tools, grouped into five categories on the home screen. This inventory describes `main`;
-a published release may contain fewer tools.
+41 tools, grouped into seven task-oriented categories in this refresh branch. A published release may contain fewer tools or an earlier layout.
 
-#### Calculators (13)
+#### Math & Numbers (8)
 
 | Tool | Description |
 | --- | --- |
 | Average Calculator | Arithmetic, geometric and harmonic means plus sum, count, largest and smallest. |
-| Interest Calculator | Monthly installment, total repayable, total interest and interest percentage. |
-| Age Calculator | Age (years, months, days) between two dates. |
 | Geometry Calculator | Area/perimeter for circles, rectangles and triangles. |
 | Percentage Calculator | X% of Y, what % X is of Y, and percentage change. |
 | Ratios | Simplify a ratio to lowest whole-number terms. |
 | BMI Calculator | Body mass index and weight category, in metric (cm/kg) or imperial (ft+in/lbs). |
+| Number to Words | Numeric value → English words, in International or Indian (Lakh/Crore) numbering. |
+| Number to Roman | Numeric value → Roman numerals (1–3999). |
+| Decimal to Fraction Converter | Decimal → simplified fraction, with a mixed-number form and repeating-decimal recognition. |
+
+#### Money (5)
+
+| Tool | Description |
+| --- | --- |
+| Interest Calculator | Monthly installment, total repayable, total interest and interest percentage. |
 | Tip Calculator | Bill + tip % split across any number of people. |
-| Date Calculator | Add or subtract days/weeks/months/years from a date. |
 | Discount Calculator | Apply stacked percentage discounts to a price. |
 | GST / Tax Calculator | Add tax to an amount or extract included tax. |
-| Days Until | Count days until or since a selected date. |
 | Fuel Cost Calculator | Estimate fuel consumption and trip cost. |
 
-#### Converters (6)
+#### Time & Counting (5)
+
+| Tool | Description |
+| --- | --- |
+| Age Calculator | Age (years, months, days) between two dates. |
+| Date Calculator | Add or subtract days/weeks/months/years from a date. |
+| Days Until | Count days until or since a selected date. |
+| Counter | Increment/decrement/reset counter with a configurable step (+1/+5/+10) and haptic feedback; persists across restarts. |
+| Timer / Stopwatch | Stopwatch with laps or a countdown timer. OS-scheduled completion notification with explicit permission guidance; timing remains subject to Android restrictions. |
+
+#### Text & Digital (7)
 
 | Tool | Description |
 | --- | --- |
 | Base Converter | Convert between binary, octal, decimal and hexadecimal. |
-| Unit Converters | Length, weight, volume and temperature (°C/°F/K) conversions. |
-| Number to Words | Numeric value → English words, in International or Indian (Lakh/Crore) numbering. |
-| Number to Roman | Numeric value → Roman numerals (1–3999). |
-| Decimal to Fraction Converter | Decimal → simplified fraction, with a mixed-number form and repeating-decimal recognition. |
 | Morse / Binary Translator | Translate text to and from Morse code or binary. |
-
-#### Games & Randomizers (9)
-
-| Tool | Description |
-| --- | --- |
-| Random Number Generator | Random whole number within a min/max range, including negative bounds. |
-| Tambola Numbers | Call random, non-repeating numbers 1–90 for Tambola/Housie; game state persists across restarts. |
-| Flip Coin | Heads or tails. |
-| Spin the Bottle | Animated bottle spin to a random direction. |
-| Rock Paper Scissors | Play against the app; win/loss/draw tally persists across restarts. |
-| Dice Roll | Roll 1–6 dice at once, with total. |
-| 1 of 2 | Randomly choose between two user-entered options. |
-| Team / Name Picker | Pick a name or split a list into teams. |
-| Tic-tac-toe | Play a local two-player game. |
-
-#### Utilities (9)
-
-| Tool | Description |
-| --- | --- |
-| Counter | Increment/decrement/reset counter with a configurable step (+1/+5/+10) and haptic feedback; persists across restarts. |
-| Scoreboard | Track scores for any number of players/teams, persisted across app restarts. |
-| Chess Scoreboard | Win/draw/loss tracking with standard chess scoring (1 / ½ / 0) and an undo for the last result; persisted across restarts. |
 | Color Picker | Pick a color via RGB sliders or a HEX input; view HEX, RGB and HSL; save recent colors (persisted across restarts). |
 | Text Tools | Word/character counts, case conversion (upper/lower/title/camel), and palindrome checking. |
-| Timer / Stopwatch | Stopwatch with laps or a countdown timer. OS-scheduled completion notification with explicit permission guidance; timing remains subject to Android restrictions. |
 | Password Generator | Cryptographically random password (`SecureRandom`) guaranteeing at least one character from each enabled class, with a strength meter and a sensitive-marked clipboard copy. |
 | Hash Generator | Generate MD5, SHA-1, SHA-256 or SHA-512 hashes of text. |
 | QR Code Generator | Generate and share a QR image from text or a URL. |
 
-#### Device (4)
+#### Games & Scores (7)
 
 | Tool | Description |
 | --- | --- |
+| Tambola Numbers | Call random, non-repeating numbers 1–90 for Tambola/Housie; game state persists across restarts. |
+| Spin the Bottle | Animated bottle spin to a random direction. |
+| Rock Paper Scissors | Play against the app; win/loss/draw tally persists across restarts. |
+| Dice Roll | Roll 1–6 dice at once, with total. |
+| Tic-tac-toe | Play a local two-player game. |
+| Scoreboard | Track scores for any number of players/teams, persisted across app restarts. |
+| Chess Scoreboard | Win/draw/loss tracking with standard chess scoring (1 / ½ / 0) and an undo for the last result; persisted across restarts. |
+
+#### Random & Decisions (4)
+
+| Tool | Description |
+| --- | --- |
+| Random Number Generator | Random whole number within a min/max range, including negative bounds. |
+| Flip Coin | Heads or tails. |
+| 1 of 2 | Randomly choose between two user-entered options. |
+| Team / Name Picker | Pick a name or split a list into teams. |
+
+#### Measure & Device (5)
+
+| Tool | Description |
+| --- | --- |
+| Unit Converters | Length, weight, volume and temperature (°C/°F/K) conversions. |
 | Bubble Level | Use device sensors as a spirit level. |
 | Compass | Show magnetic heading using available sensors. |
 | Flashlight | Toggle the camera flash as a torch on supported devices. |
 | Screen Ruler | Measure against an on-screen cm/inch scale; accuracy depends on device calibration. |
 
 ## Features
+
+- **Local tool memory**: opt-in bounded history, remembered modes/results, and explicit presets/workbench saves. See [refresh scope and privacy details](docs/toolbox-refresh.md) for supported flows and remaining phases.
 
 - **Jetpack Compose** UI with Material 3 and dynamic colour (Android 12+).
 - **Navigation Compose** single-activity architecture. Each tool is a `Tool` entry that owns its

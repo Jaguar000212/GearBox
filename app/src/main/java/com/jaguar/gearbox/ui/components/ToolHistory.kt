@@ -1,6 +1,8 @@
 package com.jaguar.gearbox.ui.components
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
@@ -109,7 +111,7 @@ fun ToolHistoryDialog(binding: ToolHistoryBinding, onDismiss: () -> Unit) {
         onDismissRequest = onDismiss,
         title = { Text("Tool history") },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
                 Row {
                     TextButton(enabled = binding.configuration.isNotEmpty(), onClick = { saving = "preset"; name = "" }) { Text("Save setup") }
@@ -122,8 +124,8 @@ fun ToolHistoryDialog(binding: ToolHistoryBinding, onDismiss: () -> Unit) {
                     }
                 }
                 if (!enabled) Text("History is off. Enable it and choose a limit in Settings → Tool memory. Existing entries stay until you delete them.")
-                if (!loaded) LinearProgressIndicator(Modifier.fillMaxWidth())
                 Text("Large entries are not recorded: each field and result is limited to 4,096 characters, with 8,192 total per entry.", style = MaterialTheme.typography.bodySmall)
+                if (!loaded) LinearProgressIndicator(Modifier.fillMaxWidth())
                 else if (records.isEmpty()) Text("No saved runs yet. Valid results are recorded after you pause editing when history is enabled.")
                 LazyColumn(Modifier.heightIn(max = 420.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     items(records, key = { it.id }) { entry ->

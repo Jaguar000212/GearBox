@@ -13,6 +13,11 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.MoreVert
+import com.jaguar.gearbox.data.ToolHelp
+import com.jaguar.gearbox.data.ToolHelpCatalog
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -55,6 +60,11 @@ fun ToolScaffold(
 ) {
     var showHistory by remember { mutableStateOf(false) }
     var showSwitcher by remember { mutableStateOf(false) }
+    var showHelp by remember { mutableStateOf(false) }
+    var showMore by remember { mutableStateOf(false) }
+    // Icons identify catalog tools even when screen titles are localized or shortened.
+    val helpRoute = history?.route ?: Tools.all.firstOrNull { it.icon == icon }?.route
+    val help = ToolHelpCatalog.forRoute(helpRoute)
     val openTool = LocalToolOpener.current
     Scaffold(
         topBar = {
@@ -67,7 +77,21 @@ fun ToolScaffold(
                 },
                 actions = {
                     if (history != null) IconButton(onClick = { showHistory = true }) { Icon(Icons.Filled.History, "History") }
-                    if (openTool != null) IconButton(onClick = { showSwitcher = true }) { Icon(Icons.Filled.Search, "Switch tool") }
+                    if (help != null || openTool != null) Box {
+                        IconButton(onClick = { showMore = true }) {
+                            Icon(Icons.Filled.MoreVert, "More tool actions")
+                        }
+                        DropdownMenu(expanded = showMore, onDismissRequest = { showMore = false }) {
+                            if (help != null) DropdownMenuItem(text = { Text("Help & examples") }, onClick = {
+                                showMore = false
+                                showHelp = true
+                            })
+                            if (openTool != null) DropdownMenuItem(text = { Text("Switch tool") }, onClick = {
+                                showMore = false
+                                showSwitcher = true
+                            }, leadingIcon = { Icon(Icons.Filled.Search, null) })
+                        }
+                    }
                     options?.invoke()
                 },
                 colors = TopAppBarDefaults.topAppBarColors(),
@@ -94,6 +118,7 @@ fun ToolScaffold(
             }
         }
     }
+    if (showHelp && help != null) ToolHelpDialog(title, help) { showHelp = false }
     if (showHistory && history != null) ToolHistoryDialog(history) { showHistory = false }
     if (showSwitcher && openTool != null) ToolSwitcher(onOpen = {
         showSwitcher = false
@@ -121,4 +146,28 @@ private fun ToolSwitcher(onOpen: (Tool) -> Unit, onDismiss: () -> Unit) {
             }
         }
     }, confirmButton = { TextButton(onClick = onDismiss) { Text("Close") } })
+}
+
+/** Scrolling prose stays usable with large fonts and on short landscape screens. */
+@Composable
+private fun ToolHelpDialog(title: String, help: ToolHelp, onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Help: $title") },
+        text = {
+            Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                HelpSection("How to use", help.instructions)
+                HelpSection("Example", help.example)
+                Text("Examples are reference only; your inputs stay unchanged.", style = MaterialTheme.typography.bodySmall)
+                HelpSection("Keep in mind", help.limitation)
+            }
+        },
+        confirmButton = { TextButton(onClick = onDismiss) { Text("Close") } },
+    )
+}
+
+@Composable
+private fun HelpSection(label: String, body: String) {
+    Text(label, style = MaterialTheme.typography.titleSmall, modifier = Modifier.semantics { heading() })
+    Text(body, style = MaterialTheme.typography.bodyMedium)
 }

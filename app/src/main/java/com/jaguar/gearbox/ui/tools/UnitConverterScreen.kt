@@ -40,7 +40,9 @@ import androidx.compose.ui.unit.dp
 import com.jaguar.gearbox.data.Tools
 import com.jaguar.gearbox.logic.formatNonzeroTrimmed
 import com.jaguar.gearbox.ui.components.ToolActions
+import com.jaguar.gearbox.ui.components.AdaptiveToolLayout
 import com.jaguar.gearbox.ui.components.ToolScaffold
+import com.jaguar.gearbox.ui.components.CompactChoiceSelector
 import com.jaguar.gearbox.ui.components.rememberToolHistory
 
 private enum class UnitCategory(val label: String) {
@@ -119,7 +121,6 @@ private val unitsByCategory: Map<UnitCategory, List<MeasurementUnit>> = mapOf(
 fun UnitConverterScreen(onNavigateBack: () -> Unit) {
     val context = LocalContext.current
     var category by rememberSaveable { mutableStateOf(UnitCategory.LENGTH.name) }
-    var categoryExpanded by rememberSaveable { mutableStateOf(false) }
     val selectedCategory = UnitCategory.valueOf(category)
     val units = unitsByCategory.getValue(selectedCategory)
 
@@ -164,39 +165,17 @@ fun UnitConverterScreen(onNavigateBack: () -> Unit) {
         onNavigateBack = onNavigateBack,
         history = history,
     ) {
-        ExposedDropdownMenuBox(
-            expanded = categoryExpanded,
-            onExpandedChange = { categoryExpanded = it },
-        ) {
-            OutlinedTextField(
-                value = selectedCategory.label,
-                onValueChange = {},
-                readOnly = true,
-                label = { Text("Category") },
-                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = categoryExpanded) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .menuAnchor(),
-            )
-            DropdownMenu(
-                expanded = categoryExpanded,
-                onDismissRequest = { categoryExpanded = false }) {
-                UnitCategory.entries.forEach { entry ->
-                    DropdownMenuItem(
-                        text = { Text(entry.label) },
-                        onClick = {
-                            if (category != entry.name) {
-                                val nextUnits = unitsByCategory.getValue(entry)
-                                fromUnit = nextUnits.first().label
-                                toUnit = nextUnits.getOrElse(1) { nextUnits.first() }.label
-                            }
-                            category = entry.name
-                            categoryExpanded = false
-                        },
-                    )
+        CompactChoiceSelector(
+            label = "Category", selected = selectedCategory, choices = UnitCategory.entries,
+            choiceLabel = { it.label }, onSelect = { entry ->
+                if (category != entry.name) {
+                    val nextUnits = unitsByCategory.getValue(entry)
+                    fromUnit = nextUnits.first().label
+                    toUnit = nextUnits.getOrElse(1) { nextUnits.first() }.label
                 }
-            }
-        }
+                category = entry.name
+            },
+        )
 
         val value = input.trim().toDoubleOrNull()?.takeIf { it.isFinite() }
         val from = units.first { it.label == fromUnit }
@@ -207,85 +186,88 @@ fun UnitConverterScreen(onNavigateBack: () -> Unit) {
         } else null
 
         Spacer(Modifier.height(20.dp))
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
-        ) {
-            Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text("Convert from", style = MaterialTheme.typography.titleMedium)
-                UnitDropdown(
-                    label = "From unit",
-                    units = units,
-                    selected = fromUnit,
-                    expanded = fromExpanded,
-                    onExpandedChange = { fromExpanded = it },
-                    onSelect = { fromUnit = it },
-                )
-                OutlinedTextField(
-                    value = input,
-                    onValueChange = { input = it },
-                    label = { Text("Value") },
-                    suffix = { Text(from.symbol) },
-                    trailingIcon = {
-                        // Decimal keyboards do not consistently expose a minus key.
-                        TextButton(
-                            onClick = {
-                                input = if (input.startsWith("-")) input.removePrefix("-")
-                                else "-${input.removePrefix("+")}"
-                            },
-                            modifier = Modifier.semantics { contentDescription = "Change sign" },
-                        ) { Text("±") }
-                    },
-                    singleLine = true,
-                    textStyle = MaterialTheme.typography.headlineMedium,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                    modifier = Modifier.fillMaxWidth(),
-                )
-            }
-        }
-
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
-            TextButton(onClick = { val previous = fromUnit; fromUnit = toUnit; toUnit = previous }) {
-                Icon(Icons.Filled.SwapVert, contentDescription = null)
-                Text(" Swap units")
-            }
-        }
-
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
-        ) {
-            Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text("Convert to", style = MaterialTheme.typography.titleMedium)
-                UnitDropdown(
-                    label = "To unit",
-                    units = units,
-                    selected = toUnit,
-                    expanded = toExpanded,
-                    onExpandedChange = { toExpanded = it },
-                    onSelect = { toUnit = it },
-                )
-                if (result != null && equation != null) {
-                    // Separate the value from the unit so long values and large fonts can wrap.
-                    Text(formatNonzeroTrimmed(result), style = MaterialTheme.typography.displaySmall)
-                    Text(to.symbol, style = MaterialTheme.typography.titleMedium)
-                    Text(equation, style = MaterialTheme.typography.bodyMedium)
-                } else {
-                    Text(
-                        if (input.isBlank()) "Enter a value to see the conversion."
-                        else if (value == null) "Enter a valid finite number."
-                        else "This conversion is too large. Try a smaller value.",
-                        style = MaterialTheme.typography.bodyLarge,
+        AdaptiveToolLayout(input = {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+            ) {
+                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text("Convert from", style = MaterialTheme.typography.titleMedium)
+                    UnitDropdown(
+                        label = "From unit",
+                        units = units,
+                        selected = fromUnit,
+                        expanded = fromExpanded,
+                        onExpandedChange = { fromExpanded = it },
+                        onSelect = { fromUnit = it },
+                    )
+                    OutlinedTextField(
+                        value = input,
+                        onValueChange = { input = it },
+                        label = { Text("Value") },
+                        suffix = { Text(from.symbol) },
+                        trailingIcon = {
+                            // Decimal keyboards do not consistently expose a minus key.
+                            TextButton(
+                                onClick = {
+                                    input = if (input.startsWith("-")) input.removePrefix("-")
+                                    else "-${input.removePrefix("+")}"
+                                },
+                                modifier = Modifier.semantics { contentDescription = "Change sign" },
+                            ) { Text("±") }
+                        },
+                        singleLine = true,
+                        textStyle = MaterialTheme.typography.headlineMedium,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                        modifier = Modifier.fillMaxWidth(),
                     )
                 }
             }
-        }
-        Spacer(Modifier.height(12.dp))
-        ToolActions(
-            onCopy = { equation?.let { context.copyToClipboard("Unit conversion", it) } },
-            onShare = { equation?.let { context.shareText(it) } },
-            resultEnabled = equation != null,
-        )
+
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+                TextButton(onClick = { val previous = fromUnit; fromUnit = toUnit; toUnit = previous }) {
+                    Icon(Icons.Filled.SwapVert, contentDescription = null)
+                    Text(" Swap units")
+                }
+            }
+
+        }, result = {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
+            ) {
+                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text("Convert to", style = MaterialTheme.typography.titleMedium)
+                    UnitDropdown(
+                        label = "To unit",
+                        units = units,
+                        selected = toUnit,
+                        expanded = toExpanded,
+                        onExpandedChange = { toExpanded = it },
+                        onSelect = { toUnit = it },
+                    )
+                    if (result != null && equation != null) {
+                        // Separate the value from the unit so long values and large fonts can wrap.
+                        Text(formatNonzeroTrimmed(result), style = MaterialTheme.typography.displaySmall)
+                        Text(to.symbol, style = MaterialTheme.typography.titleMedium)
+                        Text(equation, style = MaterialTheme.typography.bodyMedium)
+                    } else {
+                        Text(
+                            if (input.isBlank()) "Enter a value to see the conversion."
+                            else if (value == null) "Enter a valid finite number."
+                            else "This conversion is too large. Try a smaller value.",
+                            style = MaterialTheme.typography.bodyLarge,
+                        )
+                    }
+                }
+            }
+            Spacer(Modifier.height(12.dp))
+            ToolActions(
+                onCopy = { equation?.let { context.copyToClipboard("Unit conversion", it) } },
+                onShare = { equation?.let { context.shareText(it) } },
+                resultEnabled = equation != null,
+            )
+        })
     }
 }
 

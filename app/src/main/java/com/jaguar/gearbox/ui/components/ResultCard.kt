@@ -1,5 +1,6 @@
 package com.jaguar.gearbox.ui.components
 
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -38,6 +39,7 @@ fun ResultCard(
 ) {
     Column(modifier = modifier) {
         Card(modifier = Modifier.fillMaxWidth()) {
+            SelectionContainer {
             Text(
                 text = text,
                 style = textStyle,
@@ -46,6 +48,7 @@ fun ResultCard(
                     .fillMaxWidth()
                     .padding(16.dp),
             )
+            }
         }
 
         if (onCopy != null || onShare != null) {

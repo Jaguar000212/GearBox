@@ -1,5 +1,13 @@
 package com.jaguar.gearbox
 
+import android.content.Context
+import android.content.ContextWrapper
+import android.content.SharedPreferences
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.platform.LocalContext
+import java.io.File
+import java.util.UUID
+import org.junit.After
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
@@ -20,48 +28,49 @@ import org.junit.Test
 
 class AccessibleToolsTest {
     @get:Rule val rule = createComposeRule()
+    private val base = InstrumentationRegistry.getInstrumentation().targetContext
+    private val prefix = "accessible_tools_${UUID.randomUUID()}_"
+    private val directory = File(base.cacheDir, prefix)
+    private val isolated = object : ContextWrapper(base) {
+        override fun getApplicationContext(): Context = this
+        override fun getNoBackupFilesDir(): File = directory.also { it.mkdirs() }
+        override fun getSharedPreferences(name: String, mode: Int): SharedPreferences =
+            base.getSharedPreferences(prefix + name, mode)
+    }
+    @After fun cleanup() {
+        directory.deleteRecursively()
+        base.deleteSharedPreferences(prefix + "gearbox_prefs")
+    }
 
     @Test fun allNineCellsHavePositionsAndWinningCellsAreDisabled() {
-        val prefs = InstrumentationRegistry.getInstrumentation().targetContext
-            .getSharedPreferences("gearbox_prefs", 0)
-        val originalWins = prefs.getInt("tic_tac_toe.x_wins", 0)
-        try {
-            rule.setContent { MaterialTheme { TicTacToeScreen {} } }
-            repeat(9) { index ->
-                rule.onNodeWithTag("tic_cell_$index").assertExists()
-            }
-            rule.onNodeWithTag("tic_cell_8").performScrollTo().assertIsDisplayed()
-            rule.onNodeWithContentDescription("Row 3, column 3").assertExists()
-            listOf(0, 3, 1, 4, 2).forEach { index ->
-                rule.onNodeWithTag("tic_cell_$index").performScrollTo().performClick()
-            }
-            rule.onNodeWithText("X wins!").assertExists()
-            rule.onNodeWithTag("tic_cell_0")
-                .assertIsNotEnabled()
-                .assert(SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, "X, winning cell"))
-            rule.onNodeWithTag("tic_cell_8").assertIsNotEnabled()
-        } finally {
-            prefs.edit().putInt("tic_tac_toe.x_wins", originalWins).commit()
+        rule.setContent {
+            CompositionLocalProvider(LocalContext provides isolated) { MaterialTheme { TicTacToeScreen {} } }
         }
+        repeat(9) { index ->
+            rule.onNodeWithTag("tic_cell_$index").assertExists()
+        }
+        rule.onNodeWithTag("tic_cell_8").performScrollTo().assertIsDisplayed()
+        rule.onNodeWithContentDescription("Row 3, column 3").assertExists()
+        listOf(0, 3, 1, 4, 2).forEach { index ->
+            rule.onNodeWithTag("tic_cell_$index").performScrollTo().performClick()
+        }
+        rule.onNodeWithText("X wins!").assertExists()
+        rule.onNodeWithTag("tic_cell_0")
+            .assertIsNotEnabled()
+            .assert(SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, "X, winning cell"))
+        rule.onNodeWithTag("tic_cell_8").assertIsNotEnabled()
     }
 
     @Test fun savedSwatchHasHexNameAndSlidersHaveChannelNames() {
-        val prefs = InstrumentationRegistry.getInstrumentation().targetContext
-            .getSharedPreferences("gearbox_prefs", 0)
-        val originalPalette = prefs.getString("color_picker.recent", null)
-        prefs.edit().remove("color_picker.recent").commit()
-        try {
-            rule.setContent { MaterialTheme { ColorPickerScreen {} } }
-            rule.onNodeWithContentDescription("Save color #6750A4").performClick()
-            rule.onNodeWithContentDescription("Saved color #6750A4").assertExists()
-            rule.onNodeWithContentDescription("Red").assertExists()
-            rule.onNodeWithContentDescription("Green").assertExists()
-            rule.onNodeWithContentDescription("Blue").assertExists()
-        } finally {
-            prefs.edit().apply {
-                if (originalPalette == null) remove("color_picker.recent")
-                else putString("color_picker.recent", originalPalette)
-            }.commit()
+        rule.setContent {
+            CompositionLocalProvider(LocalContext provides isolated) { MaterialTheme { ColorPickerScreen {} } }
         }
+        rule.onNodeWithContentDescription("Save color #6750A4").performScrollTo().performClick()
+        rule.onNodeWithContentDescription("Saved color #6750A4").assertExists()
+        rule.onNodeWithContentDescription("Red").assertDoesNotExist()
+        rule.onNodeWithText("RGB").performScrollTo().performClick()
+        rule.onNodeWithContentDescription("Red").assertExists()
+        rule.onNodeWithContentDescription("Green").assertExists()
+        rule.onNodeWithContentDescription("Blue").assertExists()
     }
 }

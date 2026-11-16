@@ -17,6 +17,7 @@ import com.jaguar.gearbox.logic.textHashHex
 import com.jaguar.gearbox.ui.components.ResultCard
 import com.jaguar.gearbox.ui.components.ToolActions
 import com.jaguar.gearbox.ui.components.ToolScaffold
+import com.jaguar.gearbox.ui.components.CompactChoiceSelector
 import com.jaguar.gearbox.ui.components.rememberToolHistory
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -58,12 +59,10 @@ fun HashGeneratorScreen(onNavigateBack: () -> Unit) {
             supportingText = { Text(stringResource(R.string.hash_exact_input)) },
             minLines = 3, maxLines = 8, modifier = Modifier.fillMaxWidth())
         Spacer(Modifier.height(12.dp))
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            TextHashAlgorithm.entries.forEach { entry ->
-                FilterChip(selected = selectedAlgorithm == entry, onClick = { algorithm = entry.name; restoredInput = false },
-                    label = { Text(entry.label) })
-            }
-        }
+        CompactChoiceSelector(
+            label = "Algorithm", selected = selectedAlgorithm, choices = TextHashAlgorithm.entries,
+            choiceLabel = { it.label }, onSelect = { algorithm = it.name; restoredInput = false },
+        )
         Text(stringResource(if (selectedAlgorithm.legacy) R.string.hash_legacy else R.string.hash_help),
             style = MaterialTheme.typography.bodySmall)
         Spacer(Modifier.height(20.dp))

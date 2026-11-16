@@ -71,9 +71,23 @@ This guide grows with each implementation phase. Automated CI builds app/test AP
 - Check upgrade preserves favorites and existing authoritative clock/counter/game data unless a deliberate clear action was confirmed.
 - Report untested checks as untested, not passed.
 
+## Phase 3: guidance, compact choices and adaptive layouts
+
+- Every tool: More tool actions → Help & examples shows a relevant example, usage steps and limitations. Closing help changes no inputs or results; examples are explanatory, not silently executed.
+- Top bar: History stays directly available; Help and Switch tool share the secondary menu. Check a narrow phone with long titles and large text.
+- Base, Geometry, Morse/Binary, Date Unit, Hash, Text case, Percentage and Unit category: current mode is visible in the compact selector. Open, cancel/Back, reopen and choose; only choosing a different mode should trigger the tool's existing reset behavior.
+- Date Add/Subtract remain directly visible. Two-choice tools should not require an extra menu.
+- Percentage, Tip, Unit Converter and Text Tools: use one column on a phone; wide layouts split inputs and results at 720dp usable content width. Font scale above 1.3 returns to a single column.
+- Rotate with partial inputs and an open selector; verify no input/result or selected mode changes. With the keyboard open, scroll to all fields and actions.
+- Test long text results: Copy/Share stay accessible, output remains selectable, and selection does not trigger unintended actions.
+- At 2× text scale and 240dp content width, Copy and Share stack without losing their labels. Clear remains secondary and independently enabled.
+- TalkBack follows input controls before the result pane. Check all action labels and dismissal paths.
+
 ## Results log
 
 | Phase | Automated result | Owner device result |
 | --- | --- | --- |
 | 1 | CI145 passed for `dcce25a213f65b76c80fa9a68d98fa44a35bf41c`; APK/checksums verified | Initial visual feedback: clean. Full checklist not yet run. |
 | 2 | Pending current phase CI | Deferred for combined testing |
+
+Phase 3 automated checks are pending; no device checks have been claimed.

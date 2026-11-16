@@ -56,10 +56,20 @@ fun TextToolsScreen(onNavigateBack: () -> Unit) {
     val isPalindrome =
         normalizedForPalindrome.isNotEmpty() && normalizedForPalindrome == normalizedForPalindrome.reversed()
 
+    val history = com.jaguar.gearbox.ui.components.rememberToolHistory(
+        Tools.ROUTE_TEXT_TOOLS, mapOf("text" to input, "case" to textCase), converted.takeIf { input.isNotBlank() },
+        onRestore = { values ->
+            input = values["text"].orEmpty()
+            TextCase.entries.firstOrNull { it.name == values["case"] }?.let { textCase = it.name }
+        },
+        modeInputs = mapOf("case" to textCase),
+        onRestoreMode = { values -> TextCase.entries.firstOrNull { it.name == values["case"] }?.let { textCase = it.name } },
+    )
     ToolScaffold(
         title = "Text Tools",
         icon = Tools.byRoute(Tools.ROUTE_TEXT_TOOLS)!!.icon,
         onNavigateBack = onNavigateBack,
+        history = history,
     ) {
         OutlinedTextField(
             value = input,

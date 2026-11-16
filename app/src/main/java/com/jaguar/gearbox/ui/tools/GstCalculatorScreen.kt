@@ -26,6 +26,7 @@ import com.jaguar.gearbox.logic.formatTrimmed
 import com.jaguar.gearbox.ui.components.DecimalField
 import com.jaguar.gearbox.ui.components.ResultCard
 import com.jaguar.gearbox.ui.components.ToolScaffold
+import com.jaguar.gearbox.ui.components.rememberToolHistory
 
 @Composable
 fun GstCalculatorScreen(onNavigateBack: () -> Unit) {
@@ -40,10 +41,27 @@ fun GstCalculatorScreen(onNavigateBack: () -> Unit) {
         calculateGst(amountValue, rateValue, inclusive)
     } else null
 
+
+    val history = rememberToolHistory(
+        route = Tools.ROUTE_GST,
+        inputs = mapOf("amount" to amount, "rate" to rate, "inclusive" to inclusive.toString()),
+        output = result?.let { "Base amount: ${formatTrimmed(it.baseAmount, 2)}\nTax amount: ${formatTrimmed(it.taxAmount, 2)}\nTotal: ${formatTrimmed(it.totalAmount, 2)}" },
+        modeInputs = mapOf("inclusive" to inclusive.toString()),
+        onRestoreMode = { saved ->
+            inclusive = saved["inclusive"]?.toBooleanStrictOrNull() ?: false
+        },
+        onRestore = { saved ->
+            amount = saved["amount"] ?: ""
+            rate = saved["rate"] ?: ""
+            inclusive = saved["inclusive"]?.toBooleanStrictOrNull() ?: false
+        },
+    )
+
     ToolScaffold(
         title = "GST / Tax Calculator",
         icon = Tools.byRoute(Tools.ROUTE_GST)!!.icon,
         onNavigateBack = onNavigateBack,
+        history = history,
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),

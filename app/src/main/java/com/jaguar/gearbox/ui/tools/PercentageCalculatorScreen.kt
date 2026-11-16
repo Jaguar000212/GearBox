@@ -34,6 +34,7 @@ import com.jaguar.gearbox.logic.PercentageOperation
 import com.jaguar.gearbox.logic.calculatePercentage
 import com.jaguar.gearbox.ui.components.ToolActions
 import com.jaguar.gearbox.ui.components.ToolScaffold
+import com.jaguar.gearbox.ui.components.rememberToolHistory
 
 private enum class PercentMode(
     val label: String, val hint1: String, val hint2: String,
@@ -55,13 +56,33 @@ fun PercentageCalculatorScreen(onNavigateBack: () -> Unit) {
     var modeExpanded by rememberSaveable { mutableStateOf(false) }
     val selectedMode = PercentMode.valueOf(mode)
 
-    var field1 by rememberSaveable(selectedMode) { mutableStateOf("") }
-    var field2 by rememberSaveable(selectedMode) { mutableStateOf("") }
+    var field1 by rememberSaveable { mutableStateOf("") }
+    var field2 by rememberSaveable { mutableStateOf("") }
+
+    val historyX = field1.trim().toDoubleOrNull()?.takeIf { it.isFinite() }
+    val historyY = field2.trim().toDoubleOrNull()?.takeIf { it.isFinite() }
+    val historyResult = if (historyX != null && historyY != null) calculatePercentage(selectedMode.operation, historyX, historyY) else null
+
+    val history = rememberToolHistory(
+        route = Tools.ROUTE_PERCENTAGE,
+        inputs = mapOf("mode" to mode, "field1" to field1, "field2" to field2),
+        output = historyResult?.let { "${selectedMode.label}: ${formatTrimmed(it, decimals = 4)}${if (selectedMode == PercentMode.OF_VALUE) "" else "%"}" },
+        modeInputs = mapOf("mode" to mode),
+        onRestoreMode = { saved ->
+            mode = PercentMode.entries.firstOrNull { it.name == saved["mode"] }?.name ?: PercentMode.OF_VALUE.name
+        },
+        onRestore = { saved ->
+            mode = PercentMode.entries.firstOrNull { it.name == saved["mode"] }?.name ?: PercentMode.OF_VALUE.name
+            field1 = saved["field1"] ?: ""
+            field2 = saved["field2"] ?: ""
+        },
+    )
 
     ToolScaffold(
         title = "Percentage Calculator",
         icon = Tools.byRoute(Tools.ROUTE_PERCENTAGE)!!.icon,
         onNavigateBack = onNavigateBack,
+        history = history,
     ) {
         ExposedDropdownMenuBox(
             expanded = modeExpanded,
@@ -82,6 +103,7 @@ fun PercentageCalculatorScreen(onNavigateBack: () -> Unit) {
                     DropdownMenuItem(
                         text = { Text(entry.label) },
                         onClick = {
+                            if (mode != entry.name) { field1 = ""; field2 = "" }
                             mode = entry.name
                             modeExpanded = false
                         },

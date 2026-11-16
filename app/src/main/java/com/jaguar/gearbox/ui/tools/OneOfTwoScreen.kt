@@ -18,6 +18,7 @@ import com.jaguar.gearbox.data.Tools
 import com.jaguar.gearbox.ui.components.ResultCard
 import com.jaguar.gearbox.ui.components.ToolActions
 import com.jaguar.gearbox.ui.components.ToolScaffold
+import com.jaguar.gearbox.ui.components.rememberToolHistory
 import kotlin.random.Random
 
 @Composable
@@ -30,6 +31,7 @@ internal fun OneOfTwoScreen(
     chooseIndex: () -> Int,
     onNavigateBack: () -> Unit,
 ) {
+    var runId by rememberSaveable { mutableStateOf("") }
     var optionA by rememberSaveable { mutableStateOf("") }
     var optionB by rememberSaveable { mutableStateOf("") }
     // Keep the selected slot, not just its label: identical labels are still two choices.
@@ -40,10 +42,23 @@ internal fun OneOfTwoScreen(
         "Option ${index + 1} selected\n${if (index == 0) optionA.trim() else optionB.trim()}"
     }
 
+    val history = rememberToolHistory(
+        route = Tools.ROUTE_ONE_OF_TWO,
+        inputs = mapOf("optionA" to optionA, "optionB" to optionB, "_run" to runId),
+        output = summary,
+        recordingDelayMillis = 0L,
+        onRestore = { saved ->
+            optionA = saved["optionA"] ?: ""
+            optionB = saved["optionB"] ?: ""
+            chosenIndex = null
+        },
+    )
+
     ToolScaffold(
         title = "1 of 2",
         icon = Tools.byRoute(Tools.ROUTE_ONE_OF_TWO)!!.icon,
         onNavigateBack = onNavigateBack,
+        history = history,
     ) {
         Text("Two choices. One decision.", style = MaterialTheme.typography.titleLarge)
         Text("Each option has an equal chance. Edit either option to start a new choice.",
@@ -71,7 +86,7 @@ internal fun OneOfTwoScreen(
         }
         Spacer(Modifier.height(20.dp))
         Button(
-            onClick = { focusManager.clearFocus(); chosenIndex = chooseIndex() },
+            onClick = { focusManager.clearFocus(); runId = java.util.UUID.randomUUID().toString(); chosenIndex = chooseIndex() },
             enabled = optionA.isNotBlank() && optionB.isNotBlank(),
             modifier = Modifier.fillMaxWidth(),
         ) {

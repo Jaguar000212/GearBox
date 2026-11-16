@@ -43,10 +43,15 @@ fun DecimalToFractionScreen(onNavigateBack: () -> Unit) {
         else -> ""
     }
 
+    val history = com.jaguar.gearbox.ui.components.rememberToolHistory(
+        Tools.ROUTE_DECIMAL_TO_FRACTION, mapOf("input" to input), fractionText,
+        onRestore = { values -> input = values["input"].orEmpty() },
+    )
     ToolScaffold(
         title = "Decimal to Fraction",
         icon = Tools.byRoute(Tools.ROUTE_DECIMAL_TO_FRACTION)!!.icon,
         onNavigateBack = onNavigateBack,
+        history = history,
     ) {
         OutlinedTextField(
             value = input,

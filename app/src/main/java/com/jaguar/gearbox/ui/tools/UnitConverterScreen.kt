@@ -41,6 +41,7 @@ import com.jaguar.gearbox.data.Tools
 import com.jaguar.gearbox.logic.formatNonzeroTrimmed
 import com.jaguar.gearbox.ui.components.ToolActions
 import com.jaguar.gearbox.ui.components.ToolScaffold
+import com.jaguar.gearbox.ui.components.rememberToolHistory
 
 private enum class UnitCategory(val label: String) {
     LENGTH("Length"),
@@ -122,16 +123,46 @@ fun UnitConverterScreen(onNavigateBack: () -> Unit) {
     val selectedCategory = UnitCategory.valueOf(category)
     val units = unitsByCategory.getValue(selectedCategory)
 
-    var fromUnit by rememberSaveable(selectedCategory) { mutableStateOf(units.first().label) }
-    var toUnit by rememberSaveable(selectedCategory) { mutableStateOf(units.getOrElse(1) { units.first() }.label) }
+    var fromUnit by rememberSaveable { mutableStateOf(units.first().label) }
+    var toUnit by rememberSaveable { mutableStateOf(units.getOrElse(1) { units.first() }.label) }
     var fromExpanded by rememberSaveable { mutableStateOf(false) }
     var toExpanded by rememberSaveable { mutableStateOf(false) }
     var input by rememberSaveable { mutableStateOf("1") }
+
+    val historyValue = input.trim().toDoubleOrNull()?.takeIf { it.isFinite() }
+    val historyFrom = units.firstOrNull { it.label == fromUnit } ?: units.first()
+    val historyTo = units.firstOrNull { it.label == toUnit } ?: units.first()
+    val historyConverted = historyValue?.let { historyTo.fromBase(historyFrom.toBase(it)) }?.takeIf { it.isFinite() }
+    val historyEquation = if (historyValue != null && historyConverted != null)
+        "${formatNonzeroTrimmed(historyValue)} ${historyFrom.symbol} = ${formatNonzeroTrimmed(historyConverted)} ${historyTo.symbol}" else null
+
+    val history = rememberToolHistory(
+        route = Tools.ROUTE_UNIT_CONVERTER,
+        inputs = mapOf("category" to category, "fromUnit" to fromUnit, "toUnit" to toUnit, "input" to input),
+        output = historyEquation,
+        modeInputs = mapOf("category" to category, "fromUnit" to fromUnit, "toUnit" to toUnit),
+        onRestoreMode = { saved ->
+            val restoredCategory = UnitCategory.entries.firstOrNull { it.name == saved["category"] } ?: UnitCategory.LENGTH
+            val restoredUnits = unitsByCategory.getValue(restoredCategory)
+            category = restoredCategory.name
+            fromUnit = restoredUnits.firstOrNull { it.label == saved["fromUnit"] }?.label ?: restoredUnits.first().label
+            toUnit = restoredUnits.firstOrNull { it.label == saved["toUnit"] }?.label ?: restoredUnits.getOrElse(1) { restoredUnits.first() }.label
+        },
+        onRestore = { saved ->
+            val restoredCategory = UnitCategory.entries.firstOrNull { it.name == saved["category"] } ?: UnitCategory.LENGTH
+            val restoredUnits = unitsByCategory.getValue(restoredCategory)
+            category = restoredCategory.name
+            fromUnit = restoredUnits.firstOrNull { it.label == saved["fromUnit"] }?.label ?: restoredUnits.first().label
+            toUnit = restoredUnits.firstOrNull { it.label == saved["toUnit"] }?.label ?: restoredUnits.getOrElse(1) { restoredUnits.first() }.label
+            input = saved["input"] ?: ""
+        },
+    )
 
     ToolScaffold(
         title = "Unit Converter",
         icon = Tools.byRoute(Tools.ROUTE_UNIT_CONVERTER)!!.icon,
         onNavigateBack = onNavigateBack,
+        history = history,
     ) {
         ExposedDropdownMenuBox(
             expanded = categoryExpanded,
@@ -154,6 +185,11 @@ fun UnitConverterScreen(onNavigateBack: () -> Unit) {
                     DropdownMenuItem(
                         text = { Text(entry.label) },
                         onClick = {
+                            if (category != entry.name) {
+                                val nextUnits = unitsByCategory.getValue(entry)
+                                fromUnit = nextUnits.first().label
+                                toUnit = nextUnits.getOrElse(1) { nextUnits.first() }.label
+                            }
                             category = entry.name
                             categoryExpanded = false
                         },

@@ -40,6 +40,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.jaguar.gearbox.data.Tools
 import com.jaguar.gearbox.ui.components.ToolScaffold
+import com.jaguar.gearbox.ui.components.rememberToolHistory
 import com.jaguar.gearbox.ui.components.LocalDateSaver
 import java.time.Instant
 import java.time.LocalDate
@@ -109,10 +110,29 @@ fun DateCalculatorScreen(onNavigateBack: () -> Unit) {
         null
     }
 
+
+    val history = rememberToolHistory(
+        route = Tools.ROUTE_DATE_CALCULATOR,
+        inputs = mapOf("baseDate" to baseDate.toString(), "amountInput" to amountInput, "unit" to unit, "direction" to direction),
+        output = result?.let { "Result date: ${formatDate(it)}" },
+        modeInputs = mapOf("unit" to unit, "direction" to direction),
+        onRestoreMode = { saved ->
+            unit = DateUnit.entries.firstOrNull { it.name == saved["unit"] }?.name ?: DateUnit.DAYS.name
+            direction = DateDirection.entries.firstOrNull { it.name == saved["direction"] }?.name ?: DateDirection.ADD.name
+        },
+        onRestore = { saved ->
+            saved["baseDate"]?.let { runCatching { LocalDate.parse(it) }.getOrNull() }?.let { baseDate = it }
+            amountInput = saved["amountInput"] ?: "1"
+            unit = DateUnit.entries.firstOrNull { it.name == saved["unit"] }?.name ?: DateUnit.DAYS.name
+            direction = DateDirection.entries.firstOrNull { it.name == saved["direction"] }?.name ?: DateDirection.ADD.name
+        },
+    )
+
     ToolScaffold(
         title = "Date Calculator",
         icon = Tools.byRoute(Tools.ROUTE_DATE_CALCULATOR)!!.icon,
         onNavigateBack = onNavigateBack,
+        history = history,
     ) {
         Text("Move forward or backward from a starting date.", style = MaterialTheme.typography.bodyMedium)
         Spacer(Modifier.height(12.dp))

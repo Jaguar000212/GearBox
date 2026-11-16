@@ -65,6 +65,8 @@ fun SettingsScreen(
     onLaunchScreenChange: (LaunchScreen) -> Unit = {},
 ) {
     var showLaunchChoice by rememberSaveable { mutableStateOf(false) }
+    var showThemeChoice by rememberSaveable { mutableStateOf(false) }
+    var showClockOptions by rememberSaveable { mutableStateOf(false) }
     val context = LocalContext.current
     val versionName = remember {
         runCatching {
@@ -77,6 +79,11 @@ fun SettingsScreen(
             .fillMaxSize()
             .verticalScroll(rememberScrollState()),
     ) {
+        Text("Make it yours", style = MaterialTheme.typography.headlineSmall,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp))
+        Text("Your toolbox, your preferences. Saved tool data stays on this device.",
+            style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(horizontal = 16.dp))
         SectionHeader(stringResource(R.string.launch_section))
         ListItem(
             headlineContent = { Text(stringResource(R.string.launch_screen_title)) },
@@ -89,21 +96,8 @@ fun SettingsScreen(
             headlineContent = { Text("Theme") },
             supportingContent = { Text(themeMode.label) },
             leadingContent = { Icon(Icons.Filled.Palette, contentDescription = null) },
+            modifier = Modifier.clickable { showThemeChoice = true },
         )
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 4.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            ThemeMode.entries.forEach { mode ->
-                FilterChip(
-                    selected = themeMode == mode,
-                    onClick = { onThemeModeChange(mode) },
-                    label = { Text(mode.label) },
-                )
-            }
-        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             ListItem(
                 headlineContent = { Text("Dynamic colour") },
@@ -116,6 +110,13 @@ fun SettingsScreen(
         }
 
         HorizontalDivider()
+        SectionHeader("Clocks")
+        ListItem(
+            headlineContent = { Text("Clock options") },
+            supportingContent = { Text("Notifications, Live Updates and completion alerts") },
+            modifier = Modifier.clickable { showClockOptions = true },
+        )
+        HorizontalDivider()
         SectionHeader("Feedback")
         ListItem(
             headlineContent = { Text("Haptic feedback") },
@@ -127,6 +128,8 @@ fun SettingsScreen(
         )
 
         HorizontalDivider()
+        ToolMemorySettingsSection()
+        HorizontalDivider()
         SectionHeader("About")
         ListItem(
             headlineContent = { Text("GearBox") },
@@ -134,6 +137,27 @@ fun SettingsScreen(
             leadingContent = { Icon(Icons.Filled.Info, contentDescription = null) },
         )
         GitHubCredit(username = GITHUB_USERNAME, profileUrl = GITHUB_PROFILE_URL)
+    }
+    if (showClockOptions) ClockOptionsDialog { showClockOptions = false }
+    if (showThemeChoice) {
+        AlertDialog(
+            onDismissRequest = { showThemeChoice = false },
+            title = { Text("Theme") },
+            text = {
+                Column(Modifier.selectableGroup()) {
+                    ThemeMode.entries.forEach { mode ->
+                        Row(Modifier.fillMaxWidth().selectable(
+                            selected = themeMode == mode, role = Role.RadioButton,
+                            onClick = { onThemeModeChange(mode); showThemeChoice = false },
+                        ).padding(vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
+                            RadioButton(selected = themeMode == mode, onClick = null)
+                            Text(mode.label, Modifier.padding(start = 12.dp))
+                        }
+                    }
+                }
+            },
+            confirmButton = { TextButton(onClick = { showThemeChoice = false }) { Text("Close") } },
+        )
     }
     if (showLaunchChoice) {
         AlertDialog(

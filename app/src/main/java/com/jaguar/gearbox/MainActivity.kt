@@ -171,6 +171,7 @@ fun GearBoxApp(
     val context = LocalContext.current
     val favorites = remember { FavoritesStore(context) }
     val recentTools = remember { RecentToolsStore(context) }
+    var toolImport by remember { mutableStateOf<com.jaguar.gearbox.ui.components.ToolImport?>(null) }
 
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = currentBackStackEntry?.destination?.route
@@ -200,7 +201,11 @@ fun GearBoxApp(
     Scaffold(
         topBar = {
             if (isTopLevel) {
-                TopAppBar(title = { Text(stringForRoute(currentRoute)) })
+                TopAppBar(title = { Text(stringForRoute(currentRoute)) }, actions = {
+                    androidx.compose.material3.TextButton(onClick = { navController.navigate("workbench") { launchSingleTop = true } }) {
+                        Text("Workbench")
+                    }
+                })
             }
         },
         bottomBar = {
@@ -212,6 +217,15 @@ fun GearBoxApp(
                 composable(com.jaguar.gearbox.timer.StopwatchStatusNotification.RESET_ROUTE) {
                     com.jaguar.gearbox.ui.tools.TimerStopwatchScreen(
                         onNavigateBack = { navController.popBackStack() }, requestStopwatchReset = true)
+                }
+                composable("workbench") {
+                    com.jaguar.gearbox.ui.screens.WorkbenchScreen(
+                        onNavigateBack = { navController.popBackStack() },
+                        onOpen = { route, inputs, isPreset -> Tools.byRoute(route)?.let { tool ->
+                            toolImport = com.jaguar.gearbox.ui.components.ToolImport(route, inputs, modeOnly = isPreset)
+                            openTool(tool)
+                        } },
+                    )
                 }
                 composable(ROUTE_HOME) {
                     HomeScreen(
@@ -244,7 +258,21 @@ fun GearBoxApp(
                 // Every tool destination registers itself here - adding a new tool only means
                 // adding one Tool(...) entry to Tools.all, not a new composable(...) line too.
                 Tools.all.forEach { tool ->
-                    composable(tool.route) { tool.content { navController.popBackStack() } }
+                    composable(tool.route) {
+                        androidx.compose.runtime.CompositionLocalProvider(
+                            com.jaguar.gearbox.ui.components.LocalToolHandoff provides { route: String, inputs: Map<String, String> ->
+                                Tools.byRoute(route)?.let { selected ->
+                                    toolImport = com.jaguar.gearbox.ui.components.ToolImport(route, inputs)
+                                    openTool(selected)
+                                }
+                            },
+                            com.jaguar.gearbox.ui.components.LocalToolImport provides toolImport,
+                            com.jaguar.gearbox.ui.components.LocalConsumeToolImport provides { toolImport = null },
+                            com.jaguar.gearbox.ui.components.LocalToolOpener provides { selected: Tool ->
+                                if (selected.route != tool.route) openTool(selected)
+                            },
+                        ) { tool.content { navController.popBackStack() } }
+                    }
                 }
             }
         }

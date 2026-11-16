@@ -25,9 +25,11 @@ data class Tool(
 
 /** Groups tools shown on the home screen so similar tools appear together. */
 enum class ToolCategory(val label: String) {
-    CALCULATORS("Calculators"),
-    CONVERTERS("Converters"),
-    GAMES_AND_RANDOM("Games & Randomizers"),
-    UTILITIES("Utilities"),
-    DEVICE("Device"),
+    CALCULATORS("Math & Numbers"),
+    MONEY("Money"),
+    TIME("Time & Counting"),
+    UTILITIES("Text & Digital"),
+    GAMES_AND_RANDOM("Games & Scores"),
+    RANDOM("Random & Decisions"),
+    DEVICE("Measure & Device"),
 }

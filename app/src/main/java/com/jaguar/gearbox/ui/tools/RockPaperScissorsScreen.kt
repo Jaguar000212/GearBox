@@ -38,6 +38,7 @@ import androidx.compose.ui.semantics.clearAndSetSemantics
 import com.jaguar.gearbox.data.SimplePrefsStore
 import com.jaguar.gearbox.data.Tools
 import com.jaguar.gearbox.ui.components.ToolScaffold
+import com.jaguar.gearbox.ui.components.rememberToolHistory
 
 private const val KEY_WINS = "rps.wins"
 private const val KEY_LOSSES = "rps.losses"
@@ -48,6 +49,7 @@ private const val KEY_DRAWS = "rps.draws"
 fun RockPaperScissorsScreen(onNavigateBack: () -> Unit) {
     val context = LocalContext.current
     val store = remember { SimplePrefsStore(context) }
+    var runId by rememberSaveable { mutableStateOf("") }
     var playerMove by rememberSaveable { mutableStateOf<String?>(null) }
     var computerMove by rememberSaveable { mutableStateOf<String?>(null) }
     var resultText by rememberSaveable { mutableStateOf("Choose your move") }
@@ -65,10 +67,26 @@ fun RockPaperScissorsScreen(onNavigateBack: () -> Unit) {
         }
     }
 
+    val history = rememberToolHistory(
+        route = Tools.ROUTE_RPS,
+        inputs = mapOf("playerMove" to (playerMove ?: ""), "_run" to runId),
+        output = if (playerMove != null && computerMove != null)
+            "You: $playerMove\nCPU: $computerMove\n$resultText" else null,
+        recordingDelayMillis = 0L,
+        onRestore = { saved ->
+            // Restore the choice only. Never roll the CPU or change the saved tally.
+            playerMove = RpsMove.entries.firstOrNull { it.name == saved["playerMove"] }?.name
+            computerMove = null
+            resultText = playerMove?.let { "Previous choice: ${RpsMove.valueOf(it).label}. Tap a move to play." }
+                ?: "Choose your move"
+        },
+    )
+
     ToolScaffold(
         title = "Rock Paper Scissors",
         icon = Tools.byRoute(Tools.ROUTE_RPS)!!.icon,
         onNavigateBack = onNavigateBack,
+        history = history,
     ) {
         Text("Pick a move. The CPU chooses randomly.", style = MaterialTheme.typography.bodyMedium)
         Spacer(Modifier.height(12.dp))
@@ -104,6 +122,7 @@ fun RockPaperScissorsScreen(onNavigateBack: () -> Unit) {
             RpsMove.entries.forEach { move ->
                 Button(
                     onClick = {
+                        runId = java.util.UUID.randomUUID().toString()
                         val computer = RpsMove.entries.random()
                         playerMove = move.name
                         computerMove = computer.name

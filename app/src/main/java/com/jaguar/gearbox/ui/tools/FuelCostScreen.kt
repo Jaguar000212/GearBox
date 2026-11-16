@@ -23,6 +23,7 @@ import com.jaguar.gearbox.logic.formatTrimmed
 import com.jaguar.gearbox.ui.components.DecimalField
 import com.jaguar.gearbox.ui.components.ResultCard
 import com.jaguar.gearbox.ui.components.ToolScaffold
+import com.jaguar.gearbox.ui.components.rememberToolHistory
 
 @Composable
 fun FuelCostScreen(onNavigateBack: () -> Unit) {
@@ -35,10 +36,25 @@ fun FuelCostScreen(onNavigateBack: () -> Unit) {
     val mileageValue = mileage.trim().toDoubleOrNull()?.takeIf { it.isFinite() && it > 0 }
     val priceValue = price.trim().toDoubleOrNull()?.takeIf { it.isFinite() && it >= 0 }
 
+    val historyResult = if (distanceValue != null && mileageValue != null && priceValue != null)
+        calculateFuelCost(distanceValue, mileageValue, priceValue) else null
+
+    val history = rememberToolHistory(
+        route = Tools.ROUTE_FUEL_COST,
+        inputs = mapOf("distance" to distance, "mileage" to mileage, "price" to price),
+        output = historyResult?.let { "Fuel needed: ${formatTrimmed(it.fuelNeeded, 2)}\nTotal cost: ${formatTrimmed(it.totalCost, 2)}" },
+        onRestore = { saved ->
+            distance = saved["distance"] ?: ""
+            mileage = saved["mileage"] ?: ""
+            price = saved["price"] ?: ""
+        },
+    )
+
     ToolScaffold(
         title = "Fuel Cost Calculator",
         icon = Tools.byRoute(Tools.ROUTE_FUEL_COST)!!.icon,
         onNavigateBack = onNavigateBack,
+        history = history,
     ) {
         Text("Plan your trip cost", style = MaterialTheme.typography.titleMedium)
         Text("Keep units consistent: km with km/L and price/L, or miles with miles/gallon and price/gallon. No unit conversion is performed.",

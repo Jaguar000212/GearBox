@@ -9,6 +9,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.AlertDialog
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
@@ -56,6 +60,8 @@ fun PasswordGeneratorScreen(onNavigateBack: () -> Unit) {
     var password by rememberSaveable { mutableStateOf("") }
     var generatedCharsetSize by rememberSaveable { mutableIntStateOf(0) }
 
+    var customize by rememberSaveable { mutableStateOf(false) }
+
     val enabledClasses = buildList {
         if (useUpper) add(UPPERCASE_CHARS)
         if (useLower) add(LOWERCASE_CHARS)
@@ -69,24 +75,10 @@ fun PasswordGeneratorScreen(onNavigateBack: () -> Unit) {
         icon = Tools.byRoute(Tools.ROUTE_PASSWORD_GENERATOR)!!.icon,
         onNavigateBack = onNavigateBack,
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-        ) {
-            Text("Length", style = MaterialTheme.typography.bodyMedium)
-            Text(length.toInt().toString(), style = MaterialTheme.typography.bodyMedium)
+        OutlinedButton(onClick = { customize = true }, modifier = Modifier.fillMaxWidth()) {
+            Text("$length characters · Customize")
         }
-        Slider(value = length.toFloat(), onValueChange = { length = it.roundToInt() }, valueRange = 4f..64f, steps = 59)
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            OutlinedButton(onClick = { if (length > 4) length-- }, enabled = length > 4) { Text("Shorter") }
-            OutlinedButton(onClick = { if (length < 64) length++ }, enabled = length < 64) { Text("Longer") }
-        }
-
-        ToggleRow("Uppercase (A-Z)", useUpper) { useUpper = it }
-        ToggleRow("Lowercase (a-z)", useLower) { useLower = it }
-        ToggleRow("Numbers (0-9)", useNumbers) { useNumbers = it }
-        ToggleRow("Symbols (!@#...)", useSymbols) { useSymbols = it }
-
+        Text(enabledClasses.size.toString() + " character types enabled", style = MaterialTheme.typography.bodySmall)
         Spacer(Modifier.height(12.dp))
         Button(
             onClick = {
@@ -139,6 +131,31 @@ fun PasswordGeneratorScreen(onNavigateBack: () -> Unit) {
             TextButton(onClick = { password = ""; generatedCharsetSize = 0 }, modifier = Modifier.fillMaxWidth()) { Text("Clear password") }
         }
     }
+    if (customize) AlertDialog(onDismissRequest = { customize = false },
+        title = { Text("Customize password") },
+        text = { Column(Modifier.verticalScroll(rememberScrollState())) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
+            Text("Length", style = MaterialTheme.typography.bodyMedium)
+            Text(length.toInt().toString(), style = MaterialTheme.typography.bodyMedium)
+        }
+        Slider(value = length.toFloat(), onValueChange = { length = it.roundToInt() }, valueRange = 4f..64f, steps = 59)
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            OutlinedButton(onClick = { if (length > 4) length-- }, enabled = length > 4) { Text("Shorter") }
+            OutlinedButton(onClick = { if (length < 64) length++ }, enabled = length < 64) { Text("Longer") }
+        }
+
+        ToggleRow("Uppercase (A-Z)", useUpper) { useUpper = it }
+        ToggleRow("Lowercase (a-z)", useLower) { useLower = it }
+        ToggleRow("Numbers (0-9)", useNumbers) { useNumbers = it }
+        ToggleRow("Symbols (!@#...)", useSymbols) { useSymbols = it }
+
+        } },
+        confirmButton = { TextButton(onClick = { customize = false }) { Text("Done") } },
+    )
+
 }
 
 @Composable

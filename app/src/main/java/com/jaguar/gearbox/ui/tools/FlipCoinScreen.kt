@@ -21,12 +21,14 @@ import androidx.compose.ui.unit.dp
 import com.jaguar.gearbox.data.Tools
 import com.jaguar.gearbox.ui.components.ToolActions
 import com.jaguar.gearbox.ui.components.ToolScaffold
+import com.jaguar.gearbox.ui.components.rememberToolHistory
 import kotlinx.coroutines.launch
 import kotlin.random.Random
 
 @Composable
 fun FlipCoinScreen(onNavigateBack: () -> Unit) {
     val context = LocalContext.current
+    var runId by rememberSaveable { mutableStateOf("") }
     var result by rememberSaveable { mutableStateOf<Boolean?>(null) }
     // Transient animation state is not restored: recreation must never leave controls locked.
     var flipping by remember { mutableStateOf(false) }
@@ -34,7 +36,18 @@ fun FlipCoinScreen(onNavigateBack: () -> Unit) {
     val scope = rememberCoroutineScope()
     val resultText = when (result) { true -> "Heads"; false -> "Tails"; null -> "Ready to flip" }
 
-    ToolScaffold("Flip Coin", Tools.byRoute(Tools.ROUTE_FLIP_COIN)!!.icon, onNavigateBack) {
+    val history = rememberToolHistory(
+        route = Tools.ROUTE_FLIP_COIN,
+        inputs = mapOf("coin" to "Fair coin", "_run" to runId),
+        output = resultText.takeIf { !flipping && result != null },
+        recordingDelayMillis = 0L,
+        onRestore = { _ ->
+            // A history import never flips the coin or interrupts an active flip.
+            if (!flipping) result = null
+        },
+    )
+
+    ToolScaffold("Flip Coin", Tools.byRoute(Tools.ROUTE_FLIP_COIN)!!.icon, onNavigateBack, history = history) {
         Text("Heads or tails?", style = MaterialTheme.typography.titleLarge)
         Text("One coin. Two equally likely outcomes.", style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -71,6 +84,7 @@ fun FlipCoinScreen(onNavigateBack: () -> Unit) {
                             // Animatable honors the system animation duration scale, including zero.
                             // Whole turns avoid mirrored text and reset each flip to avoid float drift.
                             rotation.animateTo(720f, tween(500))
+                            runId = java.util.UUID.randomUUID().toString()
                             result = outcome
                         } finally {
                             flipping = false

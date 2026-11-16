@@ -44,6 +44,7 @@ import androidx.core.content.FileProvider
 import com.jaguar.gearbox.data.Tools
 import com.jaguar.gearbox.logic.generateQrMatrix
 import com.jaguar.gearbox.ui.components.ToolScaffold
+import com.jaguar.gearbox.ui.components.rememberToolHistory
 import java.io.File
 import java.io.IOException
 import kotlinx.coroutines.Dispatchers
@@ -58,13 +59,14 @@ fun QrGeneratorScreen(onNavigateBack: () -> Unit) {
     var sharing by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
 
+    var restoredInput by rememberSaveable { mutableStateOf(false) }
     var renderedInput by remember { mutableStateOf<String?>(null) }
     var renderedBitmap by remember { mutableStateOf<Bitmap?>(null) }
-    LaunchedEffect(input) {
+    LaunchedEffect(input, restoredInput) {
         val requestedInput = input
         renderedInput = null
         renderedBitmap = null
-        if (requestedInput.isNotEmpty()) {
+        if (requestedInput.isNotEmpty() && !restoredInput) {
             delay(150)
             val result = withContext(Dispatchers.Default) {
                 generateQrMatrix(requestedInput)?.let { matrixToBitmap(it) }
@@ -75,16 +77,24 @@ fun QrGeneratorScreen(onNavigateBack: () -> Unit) {
     }
     // Never display or share an obsolete payload while the latest input is processing.
     val bitmap = renderedBitmap.takeIf { renderedInput == input }
-    val generating = input.isNotEmpty() && renderedInput != input
+    val generating = !restoredInput && input.isNotEmpty() && renderedInput != input
+
+    val history = rememberToolHistory(Tools.ROUTE_QR_GENERATOR,
+        inputs = mapOf("text" to input), output = if (bitmap != null) "QR content: $input" else null,
+        onRestore = { values ->
+            input = values["text"].orEmpty(); restoredInput = true
+            renderedInput = null; renderedBitmap = null; shareError = null
+        })
 
     ToolScaffold(
         title = "QR Code Generator",
         icon = Tools.byRoute(Tools.ROUTE_QR_GENERATOR)!!.icon,
         onNavigateBack = onNavigateBack,
+        history = history,
     ) {
         OutlinedTextField(
             value = input,
-            onValueChange = { input = it; shareError = null },
+            onValueChange = { input = it; shareError = null; restoredInput = false },
             label = { Text("Text or URL") },
             placeholder = { Text("e.g. https://example.com") },
             readOnly = sharing,
@@ -93,13 +103,17 @@ fun QrGeneratorScreen(onNavigateBack: () -> Unit) {
             modifier = Modifier.fillMaxWidth(),
         )
 
-        TextButton(onClick = { input = ""; shareError = null }, enabled = input.isNotEmpty() && !sharing) { Text("Clear") }
+        TextButton(onClick = { input = ""; shareError = null; restoredInput = false }, enabled = input.isNotEmpty() && !sharing) { Text("Clear") }
         Spacer(Modifier.height(20.dp))
         Card(Modifier.fillMaxWidth()) {
             Column(Modifier.fillMaxWidth().padding(20.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                 Text("QR preview", style = MaterialTheme.typography.titleMedium)
                 Spacer(Modifier.height(16.dp))
                 when {
+                    restoredInput && input.isNotEmpty() -> {
+                        Text("Inputs restored. Generate a fresh code when you are ready.")
+                        Button(onClick = { restoredInput = false }) { Text("Generate QR code") }
+                    }
                     generating -> Text("Generating QR code…")
                     bitmap != null -> {
                         Image(
@@ -131,7 +145,7 @@ fun QrGeneratorScreen(onNavigateBack: () -> Unit) {
                     shareError = null
                     scope.launch {
                         try {
-                            shareError = shareQrBitmap(context, bitmap)
+                            shareError = shareQrBitmap(context, bitmap) { !restoredInput && renderedBitmap === bitmap && renderedInput == input }
                         } finally {
                             sharing = false
                         }
@@ -162,7 +176,7 @@ internal fun matrixToBitmap(matrix: com.google.zxing.common.BitMatrix): Bitmap {
 }
 
 /** Returns an actionable error instead of letting storage/intent failures crash the screen. */
-private suspend fun shareQrBitmap(context: android.content.Context, bitmap: Bitmap): String? {
+private suspend fun shareQrBitmap(context: android.content.Context, bitmap: Bitmap, isCurrent: () -> Boolean): String? {
     return try {
         val uri = withContext(Dispatchers.IO) {
             val qrDir = File(context.cacheDir, "qr")
@@ -174,6 +188,7 @@ private suspend fun shareQrBitmap(context: android.content.Context, bitmap: Bitm
                 FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
             })
         }
+        if (!isCurrent()) return "QR content changed. Generate the updated code before sharing."
         val intent = Intent(Intent.ACTION_SEND).apply {
             type = "image/png"
             putExtra(Intent.EXTRA_STREAM, uri)

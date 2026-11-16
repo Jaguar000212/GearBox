@@ -21,11 +21,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.jaguar.gearbox.data.Tools
 import com.jaguar.gearbox.ui.components.ToolScaffold
+import com.jaguar.gearbox.ui.components.rememberToolHistory
 import kotlinx.coroutines.launch
 import kotlin.random.Random
 
 @Composable
 fun SpinBottleScreen(onNavigateBack: () -> Unit) {
+    var runId by rememberSaveable { mutableStateOf("") }
     var finalAngle by rememberSaveable { mutableStateOf(-1) }
     val rotation = remember { Animatable(finalAngle.coerceAtLeast(0).toFloat()) }
     val scope = rememberCoroutineScope()
@@ -36,10 +38,22 @@ fun SpinBottleScreen(onNavigateBack: () -> Unit) {
         else -> "Bottle points $finalAngle° clockwise from the top"
     }
 
+    val history = rememberToolHistory(
+        route = Tools.ROUTE_SPIN_BOTTLE,
+        inputs = mapOf("spin" to "Full circle", "_run" to runId),
+        output = status.takeIf { !spinning && finalAngle in 0..359 },
+        recordingDelayMillis = 0L,
+        onRestore = { _ ->
+            // There is no configuration to import. Leave an active spin undisturbed.
+            if (!spinning) finalAngle = -1
+        },
+    )
+
     ToolScaffold(
         title = "Spin the Bottle",
         icon = Tools.byRoute(Tools.ROUTE_SPIN_BOTTLE)!!.icon,
         onNavigateBack = onNavigateBack,
+        history = history,
     ) {
         Text("Place your phone flat between players. The neck of the bottle points to the selected player.",
             style = MaterialTheme.typography.bodyLarge)
@@ -56,7 +70,7 @@ fun SpinBottleScreen(onNavigateBack: () -> Unit) {
                         drawCircle(ring, radius = size.minDimension / 2 - 4.dp.toPx(), style = Stroke(1.dp.toPx()))
                         drawLine(ring, Offset(center.x, 4.dp.toPx()), Offset(center.x, 16.dp.toPx()), 3.dp.toPx())
                     }
-                    BottleIllustration(Modifier.fillMaxSize(0.72f).graphicsLayer { rotationZ = rotation.value })
+                    BottleIllustration(Modifier.fillMaxSize(0.72f).graphicsLayer { rotationZ = if (!spinning && finalAngle < 0) 0f else rotation.value })
                 }
                 Spacer(Modifier.height(12.dp))
                 Text("The narrow, capped end is the pointer.", style = MaterialTheme.typography.bodySmall,
@@ -81,6 +95,7 @@ fun SpinBottleScreen(onNavigateBack: () -> Unit) {
                             // Animatable honors the system animation-duration scale, including zero.
                             rotation.animateTo(target, animationSpec = tween(durationMillis = 2500))
                             rotation.snapTo(nextAngle.toFloat())
+                            runId = java.util.UUID.randomUUID().toString()
                             finalAngle = nextAngle
                         } finally {
                             spinning = false

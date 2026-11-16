@@ -31,6 +31,7 @@ import com.jaguar.gearbox.data.Tools
 import com.jaguar.gearbox.ui.components.DecimalField
 import com.jaguar.gearbox.ui.components.ResultCard
 import com.jaguar.gearbox.ui.components.ToolScaffold
+import com.jaguar.gearbox.ui.components.rememberToolHistory
 import java.util.Locale
 
 @Composable
@@ -45,10 +46,31 @@ fun TipCalculatorScreen(onNavigateBack: () -> Unit) {
     val calculatedTip = if (billAmount != null && tip != null) billAmount * (tip / 100.0) else null
     val calculatedTotal = if (billAmount != null && calculatedTip != null) billAmount + calculatedTip else null
 
+    val historyOutput = if (billAmount != null && calculatedTip != null && calculatedTotal != null && calculatedTip.isFinite() && calculatedTotal.isFinite()) {
+        "Tip amount: ${formatCurrency(calculatedTip)}\nTotal: ${formatCurrency(calculatedTotal)}\nPer person: ${formatCurrency(calculatedTotal / splitCount)}"
+    } else null
+
+    val history = rememberToolHistory(
+        route = Tools.ROUTE_TIP,
+        inputs = mapOf("bill" to bill, "tipPercent" to tipPercent, "splitCount" to splitCount.toString()),
+        output = historyOutput,
+        modeInputs = mapOf("tipPercent" to tipPercent, "splitCount" to splitCount.toString()),
+        onRestoreMode = { saved ->
+            tipPercent = saved["tipPercent"]?.takeIf { it.toDoubleOrNull()?.let { n -> n.isFinite() && n >= 0 } == true } ?: "15"
+            splitCount = saved["splitCount"]?.toIntOrNull()?.coerceIn(1, 100) ?: 1
+        },
+        onRestore = { saved ->
+            bill = saved["bill"] ?: ""
+            tipPercent = saved["tipPercent"] ?: ""
+            splitCount = saved["splitCount"]?.toIntOrNull()?.coerceIn(1, 100) ?: 1
+        },
+    )
+
     ToolScaffold(
         title = "Tip Calculator",
         icon = Tools.byRoute(Tools.ROUTE_TIP)!!.icon,
         onNavigateBack = onNavigateBack,
+        history = history,
     ) {
         Text("Split the bill", style = MaterialTheme.typography.titleMedium)
         Text("Amounts use the same currency as your bill.", style = MaterialTheme.typography.bodyMedium,

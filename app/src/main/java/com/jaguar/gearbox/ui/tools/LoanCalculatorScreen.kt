@@ -23,6 +23,7 @@ import com.jaguar.gearbox.logic.computeLoanResult
 import com.jaguar.gearbox.ui.components.DecimalField
 import com.jaguar.gearbox.ui.components.ResultCard
 import com.jaguar.gearbox.ui.components.ToolScaffold
+import com.jaguar.gearbox.ui.components.rememberToolHistory
 
 @Composable
 fun LoanCalculatorScreen(onNavigateBack: () -> Unit) {
@@ -50,10 +51,23 @@ fun LoanCalculatorScreen(onNavigateBack: () -> Unit) {
         null
     }
 
+
+    val history = rememberToolHistory(
+        route = Tools.ROUTE_LOAN,
+        inputs = mapOf("principal" to principal, "rate" to rate, "time" to time),
+        output = result,
+        onRestore = { saved ->
+            principal = saved["principal"] ?: ""
+            rate = saved["rate"] ?: ""
+            time = saved["time"] ?: ""
+        },
+    )
+
     ToolScaffold(
         title = "Loan Calculator",
         icon = Tools.byRoute(Tools.ROUTE_LOAN)!!.icon,
         onNavigateBack = onNavigateBack,
+        history = history,
     ) {
         Text("Monthly repayment estimate", style = MaterialTheme.typography.titleMedium)
         Text("Fixed annual rate, equal monthly payments. Fees are not included. Use one currency for all amounts.",

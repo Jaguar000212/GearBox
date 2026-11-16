@@ -2,6 +2,9 @@ package com.jaguar.gearbox.ui.tools
 
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.layout.Box
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -49,6 +52,7 @@ import com.jaguar.gearbox.data.CounterStore
 import com.jaguar.gearbox.data.Tools
 import com.jaguar.gearbox.ui.components.ToolActions
 import com.jaguar.gearbox.ui.components.ToolScaffold
+import com.jaguar.gearbox.ui.components.rememberToolHistory
 import com.jaguar.gearbox.ui.theme.LocalHapticsEnabled
 import com.jaguar.gearbox.widget.CounterWidget
 import kotlinx.coroutines.launch
@@ -85,6 +89,31 @@ fun CounterScreen(onNavigateBack: () -> Unit) {
         scope.launch { CounterWidget().updateAll(context) }
     }
 
+    var stepMenu by remember { mutableStateOf(false) }
+    var focusView by rememberSaveable { mutableStateOf(false) }
+    val history = rememberToolHistory(Tools.ROUTE_COUNTER,
+        mapOf("count" to count.toString(), "step" to step.toString()), "Count: $count", onRestore = { saved ->
+        saved["count"]?.toIntOrNull()?.let { restored ->
+            store.restore(restored)
+            count = store.count; limitReached = store.limitReached
+            scope.launch { CounterWidget().updateAll(context) }
+        }
+        step = saved["step"]?.toIntOrNull()?.takeIf { it in STEP_OPTIONS } ?: 1
+    }, restoreLastResult = false, recordingDelayMillis = 0L, modeInputs = mapOf("step" to step.toString()), onRestoreMode = { saved ->
+        step = saved["step"]?.toIntOrNull()?.takeIf { it in STEP_OPTIONS } ?: 1
+    })
+    if (focusView) AlertDialog(onDismissRequest = { focusView = false }, title = { Text("Counter") },
+        text = {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(count.toString(), style = MaterialTheme.typography.displayLarge,
+                    modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()))
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    FilledTonalButton(onClick = { update(-step) }) { Text("− $step") }
+                    Button(onClick = { update(step) }) { Text("+ $step") }
+                }
+                if (limitReached) Text("Counter limit reached", color = MaterialTheme.colorScheme.error)
+            }
+        }, confirmButton = { TextButton(onClick = { focusView = false }) { Text("Exit focus view") } })
     var confirmReset by rememberSaveable { mutableStateOf(false) }
     if (confirmReset) {
         AlertDialog(
@@ -104,6 +133,7 @@ fun CounterScreen(onNavigateBack: () -> Unit) {
         title = "Counter",
         icon = Tools.byRoute(Tools.ROUTE_COUNTER)!!.icon,
         onNavigateBack = onNavigateBack,
+        history = history,
     ) {
         Spacer(Modifier.height(16.dp))
         Surface(
@@ -136,21 +166,16 @@ fun CounterScreen(onNavigateBack: () -> Unit) {
             onShare = { context.shareText("Count: ${store.count}") },
         )
         Spacer(Modifier.height(24.dp))
-        Text("Step", style = MaterialTheme.typography.titleSmall)
-        Text("Amount added or removed with each tap", style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant)
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            STEP_OPTIONS.forEach { option ->
-                FilterChip(
-                    selected = step == option,
-                    onClick = { step = option },
-                    label = { Text(option.toString()) },
-                    modifier = Modifier.heightIn(min = 48.dp),
-                )
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            Box {
+                TextButton(onClick = { stepMenu = true }) { Text("Step: $step ▾") }
+                DropdownMenu(expanded = stepMenu, onDismissRequest = { stepMenu = false }) {
+                    STEP_OPTIONS.forEach { option ->
+                        DropdownMenuItem(text = { Text(option.toString()) }, onClick = { step = option; stepMenu = false })
+                    }
+                }
             }
+            TextButton(onClick = { focusView = true }) { Text("Focus view") }
         }
         Spacer(Modifier.height(20.dp))
         Row(

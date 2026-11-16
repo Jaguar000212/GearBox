@@ -16,6 +16,16 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Fullscreen
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import androidx.compose.material3.Surface
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.Box
 import androidx.compose.material3.Switch
 import androidx.compose.ui.res.stringResource
 import com.jaguar.gearbox.R
@@ -85,15 +95,12 @@ fun TimerStopwatchScreen(onNavigateBack: () -> Unit, requestStopwatchReset: Bool
     var state by remember { mutableStateOf(ClockRepository.snapshot(context)) }
     var draftMinutes by rememberSaveable { mutableStateOf(state.minutesInput) }
     var draftSeconds by rememberSaveable { mutableStateOf(state.secondsInput) }
-    var alertDetailsExpanded by rememberSaveable { mutableStateOf(false) }
+    var showClockOptions by rememberSaveable { mutableStateOf(false) }
+    var showFocus by rememberSaveable { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
     var notificationsAllowed by remember { mutableStateOf(TimerAlerts.notificationsAllowed(context)) }
     var exactAllowed by remember { mutableStateOf(TimerAlerts.exactAlarmsAllowed(context)) }
     val selectedMode = ClockMode.entries.firstOrNull { it.name == state.mode } ?: ClockMode.STOPWATCH
-    val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
-        notificationsAllowed = TimerAlerts.notificationsAllowed(context)
-        scope.launch(Dispatchers.IO) { ClockRepository.restoreAlarm(context) }
-    }
 
     fun change(updateWidgets: Boolean = true, transform: (ClockState) -> ClockState) {
         scope.launch {
@@ -144,10 +151,37 @@ fun TimerStopwatchScreen(onNavigateBack: () -> Unit, requestStopwatchReset: Bool
     }
 
 
+    if (showFocus) {
+        Dialog(onDismissRequest = { showFocus = false }, properties = DialogProperties(usePlatformDefaultWidth = false)) {
+            Surface(Modifier.fillMaxSize()) {
+                Column(Modifier.fillMaxSize().padding(24.dp), verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(selectedMode.label, style = MaterialTheme.typography.titleLarge)
+                    Spacer(Modifier.height(24.dp))
+                    val displayMillis = if (selectedMode == ClockMode.TIMER) state.timerRemainingMillis else state.stopwatchElapsedMillis
+                    Text(formatDuration(displayMillis), style = MaterialTheme.typography.displayLarge,
+                        fontFamily = FontFamily.Monospace, textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth().clearAndSetSemantics {
+                            val seconds = displayMillis / 1000
+                            contentDescription = "${seconds / 3600} hours, ${(seconds % 3600) / 60} minutes, ${seconds % 60} seconds"
+                        })
+                    Spacer(Modifier.height(24.dp))
+                    TextButton(onClick = { showFocus = false }) { Text("Exit focus view") }
+                }
+            }
+        }
+    }
+    if (showClockOptions) {
+        com.jaguar.gearbox.ui.screens.ClockOptionsDialog { showClockOptions = false }
+    }
     ToolScaffold(
         title = "Timer / Stopwatch",
         icon = Tools.byRoute(Tools.ROUTE_TIMER_STOPWATCH)!!.icon,
         onNavigateBack = onNavigateBack,
+        options = {
+            IconButton(onClick = { showFocus = true }) { Icon(Icons.Filled.Fullscreen, contentDescription = "Focus view") }
+            IconButton(onClick = { showClockOptions = true }) { Icon(Icons.Filled.Settings, contentDescription = "Clock options") }
+        },
     ) {
         TabRow(selectedTabIndex = ClockMode.entries.indexOf(selectedMode)) {
             ClockMode.entries.forEach { entry ->
@@ -157,39 +191,6 @@ fun TimerStopwatchScreen(onNavigateBack: () -> Unit, requestStopwatchReset: Bool
         }
         error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
         Spacer(Modifier.height(20.dp))
-                Card(Modifier.fillMaxWidth()) {
-                    Column(Modifier.padding(16.dp)) {
-                        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                            Text(stringResource(R.string.timer_status_setting), Modifier.weight(1f))
-                            Switch(checked = state.ongoingNotificationEnabled, onCheckedChange = { enabled ->
-                                change { it.copy(ongoingNotificationEnabled = enabled, ongoingNotificationDismissed = false, stopwatchNotificationDismissed = false) }
-                                if (enabled && Build.VERSION.SDK_INT >= 33 && androidx.core.content.ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
-                                    permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                                }
-                            }, modifier = Modifier.semantics {
-                                contentDescription = context.getString(R.string.timer_status_setting)
-                            })
-                        }
-                        Text(stringResource(R.string.timer_status_help), style = MaterialTheme.typography.bodySmall)
-                        if (state.ongoingNotificationEnabled && !TimerStatusNotification.allowed(context)) {
-                            Text(stringResource(R.string.timer_status_blocked), style = MaterialTheme.typography.bodySmall)
-                            TextButton(onClick = {
-                                runCatching { context.startActivity(Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
-                                    .putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)) }
-                            }) { Text("Notification settings") }
-                        }
-                        if (state.ongoingNotificationEnabled && state.stopwatchNotificationDismissed && (state.stopwatchRunning || state.stopwatchElapsedMillis > 0)) {
-                            Text("Stopwatch notification hidden for this session.", style = MaterialTheme.typography.bodySmall)
-                            TextButton(onClick = { change { it.copy(stopwatchNotificationDismissed = false) } }) { Text("Show stopwatch again") }
-                        }
-                        if (state.ongoingNotificationEnabled && state.ongoingNotificationDismissed && state.timerRemainingMillis > 0) {
-                            Text(stringResource(R.string.timer_status_hidden), style = MaterialTheme.typography.bodySmall)
-                            TextButton(onClick = { change { it.copy(ongoingNotificationDismissed = false) } }) {
-                                Text(stringResource(R.string.timer_status_show_again))
-                            }
-                        }
-                    }
-                }
         when (selectedMode) {
             ClockMode.STOPWATCH -> StopwatchSection(
                 elapsedMillis = state.stopwatchElapsedMillis,
@@ -202,45 +203,10 @@ fun TimerStopwatchScreen(onNavigateBack: () -> Unit, requestStopwatchReset: Bool
             )
             ClockMode.TIMER -> {
                 val alertsReady = notificationsAllowed && exactAllowed && !TimerAlerts.schedulingFailed
-                Card(modifier = Modifier.fillMaxWidth()) {
-                    Column(Modifier.padding(16.dp)) {
-                        Text(if (alertsReady) "Completion alerts configured" else "Background alerts need attention",
-                            style = MaterialTheme.typography.titleSmall)
-                        TextButton(onClick = { alertDetailsExpanded = !alertDetailsExpanded }) {
-                            Text(if (alertDetailsExpanded) "Hide alert details" else "How alerts work")
-                        }
-                        if (alertDetailsExpanded) {
-                            Text("Completion notifications use Android alarms. Active timer notifications are optional and do not control alarm delivery.",
-                                style = MaterialTheme.typography.bodySmall)
-                            Text("Android battery restrictions, Do Not Disturb and force-stop can delay or prevent alerts. An active timer is restored after reboot and unlock.",
-                                style = MaterialTheme.typography.bodySmall)
-                        }
-                        if (!alertsReady) Text("Background alerts are not guaranteed. Enable notifications and precise alarms for the best timing.",
-                            style = MaterialTheme.typography.bodySmall)
+                if (!alertsReady) {
+                    TextButton(onClick = { showClockOptions = true }) {
+                        Text("Alerts need attention · Fix", color = MaterialTheme.colorScheme.error)
                     }
-                }
-                if (!notificationsAllowed) {
-                    Text("Notification permission lets GearBox show and sound the completion alert after you leave this screen.",
-                        style = MaterialTheme.typography.bodySmall)
-                    if (Build.VERSION.SDK_INT >= 33) {
-                        OutlinedButton(onClick = { permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS) }) {
-                            Text("Allow notifications")
-                        }
-                    }
-                    OutlinedButton(onClick = {
-                        runCatching { context.startActivity(Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
-                            .putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)) }
-                            .onFailure { error = "Open GearBox notification settings in Android Settings." }
-                    }) { Text("Notification settings") }
-                }
-                if (!exactAllowed && Build.VERSION.SDK_INT >= 31) {
-                    Text("Precise alarm access lets Android deliver near the deadline. Without it, a best-effort alert may be late.",
-                        style = MaterialTheme.typography.bodySmall)
-                    OutlinedButton(onClick = {
-                        runCatching { context.startActivity(Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM,
-                            Uri.parse("package:${context.packageName}"))) }
-                            .onFailure { error = "Open GearBox's Alarms & reminders access in Android Settings." }
-                    }) { Text("Allow precise alarms") }
                 }
                 Spacer(Modifier.height(12.dp))
                 TimerSection(

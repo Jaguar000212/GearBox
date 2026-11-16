@@ -12,6 +12,7 @@ import com.jaguar.gearbox.logic.simplifyRatio
 import com.jaguar.gearbox.ui.components.DecimalField
 import com.jaguar.gearbox.ui.components.ResultCard
 import com.jaguar.gearbox.ui.components.ToolScaffold
+import com.jaguar.gearbox.ui.components.rememberToolHistory
 
 @Composable
 fun RatiosScreen(onNavigateBack: () -> Unit) {
@@ -22,8 +23,18 @@ fun RatiosScreen(onNavigateBack: () -> Unit) {
     val b = partB.trim().toDoubleOrNull()?.takeIf { it.isFinite() }
     val result = if (a != null && b != null) simplifyRatio(a, b) else null
 
+    val history = rememberToolHistory(
+        route = Tools.ROUTE_RATIOS,
+        inputs = mapOf("partA" to partA, "partB" to partB),
+        output = result,
+        onRestore = { saved ->
+            partA = saved["partA"] ?: ""
+            partB = saved["partB"] ?: ""
+        },
+    )
+
     ToolScaffold(title = "Ratios", icon = Tools.byRoute(Tools.ROUTE_RATIOS)!!.icon,
-        onNavigateBack = onNavigateBack) {
+        onNavigateBack = onNavigateBack, history = history) {
         Text("Simplify a ratio", style = MaterialTheme.typography.titleLarge)
         Text("Keep the values in order. For example, 12 : 18 simplifies to 2 : 3.",
             style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)

@@ -15,6 +15,8 @@ import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.MoreVert
 import com.jaguar.gearbox.data.ToolHelp
+import com.jaguar.gearbox.data.ToolExample
+import com.jaguar.gearbox.data.ToolExampleCatalog
 import com.jaguar.gearbox.data.ToolHelpCatalog
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
@@ -132,7 +134,16 @@ fun ToolScaffold(
     }
     if (showPresets && history != null) ToolPresetsDialog(history) { showPresets = false }
     if (showHandoff && history != null) ToolHandoffDialog(history) { showHandoff = false }
-    if (showHelp && help != null) ToolHelpDialog(title, help) { showHelp = false }
+    if (showHelp && help != null) ToolHelpDialog(
+        title = title,
+        help = help,
+        example = if (handoff != null) ToolExampleCatalog.forRoute(helpRoute) else null,
+        onLoadExample = { example ->
+            helpRoute?.let { handoff?.invoke(it, example.inputs) }
+            showHelp = false
+        },
+        onDismiss = { showHelp = false },
+    )
     if (showHistory && history != null) ToolHistoryDialog(history) { showHistory = false }
     if (showSwitcher && openTool != null) ToolSwitcher(onOpen = {
         showSwitcher = false
@@ -165,19 +176,40 @@ private fun ToolSwitcher(onOpen: (Tool) -> Unit, onDismiss: () -> Unit) {
 
 /** Scrolling prose stays usable with large fonts and on short landscape screens. */
 @Composable
-private fun ToolHelpDialog(title: String, help: ToolHelp, onDismiss: () -> Unit) {
+private fun ToolHelpDialog(
+    title: String,
+    help: ToolHelp,
+    example: ToolExample?,
+    onLoadExample: (ToolExample) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    var confirmReplacement by remember { mutableStateOf(false) }
+    if (confirmReplacement && example != null) {
+        AlertDialog(
+            onDismissRequest = { confirmReplacement = false },
+            title = { Text("Replace current inputs?") },
+            text = { Text("This replaces the current tool inputs with the example. Calculations may update automatically; QR and hash still need Generate. This action does not save a copy of your current inputs.", modifier = Modifier.verticalScroll(rememberScrollState())) },
+            confirmButton = { TextButton(onClick = {
+                confirmReplacement = false
+                onLoadExample(example)
+            }) { Text("Replace inputs") } },
+            dismissButton = { TextButton(onClick = { confirmReplacement = false }) { Text("Cancel") } },
+        )
+        return
+    }
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("Help: $title") },
         text = {
             Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 HelpSection("How to use", help.instructions)
-                HelpSection("Example", help.example)
-                Text("Examples are reference only; your inputs stay unchanged.", style = MaterialTheme.typography.bodySmall)
+                HelpSection("Example", example?.description ?: help.example)
+                Text(if (example == null) "Examples are reference only; your inputs stay unchanged." else "Use example loads these inputs only after you confirm.", style = MaterialTheme.typography.bodySmall)
                 HelpSection("Keep in mind", help.limitation)
             }
         },
         confirmButton = { TextButton(onClick = onDismiss) { Text("Close") } },
+        dismissButton = { if (example != null) TextButton(onClick = { confirmReplacement = true }) { Text("Use example") } },
     )
 }
 

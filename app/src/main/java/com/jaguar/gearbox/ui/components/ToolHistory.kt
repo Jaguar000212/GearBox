@@ -45,11 +45,18 @@ fun rememberToolHistory(
     restoreLastResult: Boolean = true,
     allowRestore: Boolean = true,
     expectedHistoryGeneration: Long? = null,
+    // Automatic hydration is distinct from explicit History/Workbench input imports.
+    onRestoreLastResult: (Map<String, String>) -> Unit = onRestore,
+    // QR/Hash hydrate inputs only and cannot produce output until a user action.
+    resultRequiresExplicitAction: Boolean = false,
 ): ToolHistoryBinding {
     val context = LocalContext.current
     val store = remember { ToolMemoryStore(context) }
     val restore by rememberUpdatedState(onRestore)
     val restoreMode by rememberUpdatedState(onRestoreMode)
+    val restoreLast by rememberUpdatedState(onRestoreLastResult)
+    var hydratedInputsFingerprint by rememberSaveable(route) { mutableStateOf<String?>(null) }
+    var hydratedModeFingerprint by rememberSaveable(route) { mutableStateOf<String?>(null) }
     val latestInputs by rememberUpdatedState(inputs)
     val initialInputs = remember(route) { inputs }
     val imported = LocalToolImport.current
@@ -71,7 +78,15 @@ fun rememberToolHistory(
         val saved = withContext(Dispatchers.IO) { store.loadMode(route) to if (restoreLastResult) store.loadResult(route) else null }
         if (latestInputs == initialInputs) {
             if (saved.first.isNotEmpty()) restoreMode(saved.first)
-            saved.second?.let { restore(it.inputs) }
+            saved.second?.let {
+                // Loading a saved result is not a new run. In particular, opening a tool
+                // after clearing its history must not copy its dormant last result back.
+                hydratedInputsFingerprint = if (resultRequiresExplicitAction) null
+                    else historyObservationFingerprint(route, it.inputs, null)
+                hydratedModeFingerprint = historyObservationFingerprint(route,
+                    modeInputs.mapValues { (key, value) -> it.inputs[key] ?: value }, null)
+                restoreLast(it.inputs)
+            }
         }
         initialized = true
     }
@@ -83,6 +98,8 @@ fun rememberToolHistory(
     val modeFingerprint = remember(route, modeInputs) { historyObservationFingerprint(route, modeInputs, null) }
     LaunchedEffect(route, modeFingerprint, initialized) {
         if (!initialized) return@LaunchedEffect
+        if (hydratedModeFingerprint == modeFingerprint) return@LaunchedEffect
+        hydratedModeFingerprint = null
         if (observedModeFingerprint != modeFingerprint) {
             observedModeFingerprint = modeFingerprint
             observedModeGeneration = store.modeGeneration(route)
@@ -107,6 +124,8 @@ fun rememberToolHistory(
         // Async results may temporarily disappear during recreation. Loading/invalid
         // output must not erase the processed observation and replay it on completion.
         if (!initialized || output.isNullOrBlank()) return@LaunchedEffect
+        if (hydratedInputsFingerprint == historyObservationFingerprint(route, inputs, null)) return@LaunchedEffect
+        hydratedInputsFingerprint = null
         if (observedFingerprint != fingerprint) {
             observedFingerprint = fingerprint
             observedGeneration = expectedHistoryGeneration ?: store.historyGeneration(route)

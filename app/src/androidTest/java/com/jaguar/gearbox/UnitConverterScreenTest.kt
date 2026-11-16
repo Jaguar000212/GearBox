@@ -9,14 +9,17 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextReplacement
 import com.jaguar.gearbox.ui.tools.UnitConverterScreen
+import org.junit.After
 import org.junit.Rule
 import org.junit.Test
 
 class UnitConverterScreenTest {
     @get:Rule val rule = createComposeRule()
+    private val isolated = IsolatedToolTestContext()
+    @After fun cleanup() { isolated.cleanup() }
 
     private fun showConverter() {
-        rule.setContent { MaterialTheme { UnitConverterScreen {} } }
+        rule.setContent { isolated.Provide { MaterialTheme { UnitConverterScreen {} } } }
     }
 
     @Test fun defaultResultAndSwapUseUnitSymbols() {
@@ -28,7 +31,7 @@ class UnitConverterScreenTest {
 
     @Test fun negativeTemperatureCanBeEnteredWithoutMinusKeyboard() {
         showConverter()
-        rule.onNodeWithText("Length").performClick()
+        rule.onNodeWithText("Category: Length").performClick()
         rule.onNodeWithText("Temperature").performClick()
         rule.onNodeWithText("Value").performTextReplacement("40")
         rule.onNodeWithContentDescription("Change sign").performClick()

@@ -144,13 +144,13 @@ object Tools {
             content = { onNavigateBack -> AverageCalculatorScreen(onNavigateBack) },
         ),
         Tool(
-            name = "Interest Calculator",
-            description = "Calculates both simple and compound interests.",
+            name = "Loan Calculator",
+            description = "Estimates fixed-rate monthly loan repayments.",
             icon = Icons.Filled.Percent,
             route = ROUTE_LOAN,
             category = ToolCategory.MONEY,
             content = { onNavigateBack -> LoanCalculatorScreen(onNavigateBack) },
-            keywords = listOf("loan", "emi", "installment"),
+            keywords = listOf("loan", "emi", "installment", "interest", "repayment"),
         ),
         Tool(
             name = "Age Calculator",

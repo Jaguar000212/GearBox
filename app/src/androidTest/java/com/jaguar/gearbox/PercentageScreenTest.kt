@@ -6,14 +6,17 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import com.jaguar.gearbox.ui.tools.PercentageCalculatorScreen
+import org.junit.After
 import org.junit.Rule
 import org.junit.Test
 
 class PercentageScreenTest {
     @get:Rule val rule = createComposeRule()
+    private val isolated = IsolatedToolTestContext()
+    @After fun cleanup() { isolated.cleanup() }
 
     @Test fun resultIncludesContextAndActionsOnlyWhenValid() {
-        rule.setContent { MaterialTheme { PercentageCalculatorScreen {} } }
+        rule.setContent { isolated.Provide { MaterialTheme { PercentageCalculatorScreen {} } } }
         rule.onNodeWithText("Copy").assertDoesNotExist()
         rule.onNodeWithText("Percentage", substring = false).performTextInput("15")
         rule.onNodeWithText("Value", substring = false).performTextInput("240")
@@ -23,8 +26,8 @@ class PercentageScreenTest {
     }
 
     @Test fun zeroTotalErrorWaitsForBlur() {
-        rule.setContent { MaterialTheme { PercentageCalculatorScreen {} } }
-        rule.onNodeWithText("Percentage of a value").performClick()
+        rule.setContent { isolated.Provide { MaterialTheme { PercentageCalculatorScreen {} } } }
+        rule.onNodeWithText("Calculation: Percentage of a value").performClick()
         rule.onNodeWithText("What percentage?").performClick()
         rule.onNodeWithText("Total", substring = false).performTextInput("0")
         rule.onNodeWithText("Total must not be zero.").assertDoesNotExist()

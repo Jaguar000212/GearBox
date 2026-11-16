@@ -81,6 +81,7 @@ fun QrGeneratorScreen(onNavigateBack: () -> Unit) {
 
     val history = rememberToolHistory(Tools.ROUTE_QR_GENERATOR,
         inputs = mapOf("text" to input), output = if (bitmap != null) "QR content: $input" else null,
+        resultRequiresExplicitAction = true,
         onRestore = { values ->
             input = values["text"].orEmpty(); restoredInput = true
             renderedInput = null; renderedBitmap = null; shareError = null

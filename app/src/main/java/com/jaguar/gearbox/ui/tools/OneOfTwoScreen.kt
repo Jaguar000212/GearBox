@@ -14,6 +14,7 @@ import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.jaguar.gearbox.data.RandomResultSnapshots
 import com.jaguar.gearbox.data.Tools
 import com.jaguar.gearbox.ui.components.ResultCard
 import com.jaguar.gearbox.ui.components.ToolActions
@@ -44,13 +45,13 @@ internal fun OneOfTwoScreen(
 
     val history = rememberToolHistory(
         route = Tools.ROUTE_ONE_OF_TWO,
-        inputs = mapOf("optionA" to optionA, "optionB" to optionB, "_run" to runId),
+        inputs = mapOf("optionA" to optionA, "optionB" to optionB, "_run" to runId, "_choice" to (chosenIndex?.toString() ?: "")),
         output = summary,
         recordingDelayMillis = 0L,
         onRestore = { saved ->
-            optionA = saved["optionA"] ?: ""
-            optionB = saved["optionB"] ?: ""
-            chosenIndex = null
+            optionA = saved["optionA"].orEmpty(); optionB = saved["optionB"].orEmpty()
+            chosenIndex = RandomResultSnapshots.choice(saved)
+            runId = saved["_run"].orEmpty()
         },
     )
 

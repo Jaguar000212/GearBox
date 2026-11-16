@@ -1,0 +1,44 @@
+package com.jaguar.gearbox.data
+
+import java.time.LocalDate
+
+/** Explicit input-only imports. Never includes game, clock, password or hardware actions. */
+data class ToolExample(val description: String, val inputs: Map<String, String>)
+
+object ToolExampleCatalog {
+    private fun example(description: String, vararg inputs: Pair<String, String>) =
+        ToolExample(description, mapOf(*inputs)).also { require(ToolMemoryPolicy.validInputs(it.inputs)) }
+
+    private val fixed = mapOf(
+        Tools.ROUTE_AVERAGE to example("2, 4, 6 has an average of 4.", "input" to "2, 4, 6"),
+        Tools.ROUTE_AGE to example("Compare 1 January 2000 with 1 January 2025: 25 years.", "earlierDate" to "2000-01-01", "laterDate" to "2025-01-01"),
+        Tools.ROUTE_BASE_CONVERTER to example("Decimal 10 is binary 1010 and hexadecimal A.", "input" to "10", "fromBase" to "DECIMAL"),
+        Tools.ROUTE_BMI to example("Metric example: 170 cm and 65 kg.", "unitSystem" to "METRIC", "heightCm" to "170", "weightKg" to "65", "heightFt" to "", "heightIn" to "", "weightLbs" to ""),
+        Tools.ROUTE_COLOR_PICKER to example("HEX #FF0000 is RGB 255, 0, 0.", "hex" to "#FF0000"),
+        Tools.ROUTE_DATE_CALCULATOR to example("Add 14 days to 1 January 2025.", "baseDate" to "2025-01-01", "amountInput" to "14", "unit" to "DAYS", "direction" to "ADD"),
+        Tools.ROUTE_DECIMAL_TO_FRACTION to example("0.75 equals 3/4.", "input" to "0.75"),
+        Tools.ROUTE_DISCOUNT to example("Apply 20% then 10% off 100: final price 72.", "price" to "100", "discounts" to "20\n10"),
+        Tools.ROUTE_FUEL_COST to example("Distance 120, efficiency 15 distance units per fuel unit, and price 2 per fuel unit: cost 16.", "distance" to "120", "mileage" to "15", "price" to "2"),
+        Tools.ROUTE_GST to example("Add an illustrative 18% tax to 100: total 118. This is not tax advice.", "amount" to "100", "rate" to "18", "inclusive" to "false"),
+        Tools.ROUTE_GEOMETRY to example("Rectangle width 3 and height 4: area 12, perimeter 14.", "shape" to "RECTANGLE", "field1" to "3", "field2" to "4", "field3" to ""),
+        Tools.ROUTE_LOAN to example("Loan amount 100000, annual rate 6%, term 5 years.", "principal" to "100000", "rate" to "6", "time" to "5"),
+        Tools.ROUTE_MORSE_BINARY to example("Encode SOS as Morse code.", "mode" to "TEXT_TO_MORSE", "input" to "SOS"),
+        Tools.ROUTE_NUMBER_TO_ROMAN to example("14 becomes XIV.", "input" to "14"),
+        Tools.ROUTE_NUMBER_TO_WORDS to example("42 becomes forty-two in the international system.", "input" to "42", "system" to "INTERNATIONAL"),
+        Tools.ROUTE_PERCENTAGE to example("20% of 150 is 30.", "mode" to "OF_VALUE", "field1" to "20", "field2" to "150"),
+        Tools.ROUTE_RATIOS to example("Simplify 12:18 to 2:3.", "partA" to "12", "partB" to "18"),
+        Tools.ROUTE_TEXT_TOOLS to example("Convert Hello GearBox to uppercase.", "text" to "Hello GearBox", "case" to "UPPER"),
+        Tools.ROUTE_TIP to example("Bill 100, tip 15%, split between 2 people: 57.50 each.", "bill" to "100", "tipPercent" to "15", "splitCount" to "2"),
+        Tools.ROUTE_UNIT_CONVERTER to example("1 kilometer equals 1000 meters.", "category" to "LENGTH", "fromUnit" to "Kilometers", "toUnit" to "Meters", "input" to "1"),
+        Tools.ROUTE_HASH_GENERATOR to example("Load Hello GearBox with SHA-256, then tap Generate.", "text" to "Hello GearBox", "algorithm" to "SHA256"),
+        Tools.ROUTE_QR_GENERATOR to example("Load Hello GearBox, then tap Generate to make its QR code.", "text" to "Hello GearBox"),
+    )
+
+    val routes: Set<String> = fixed.keys + Tools.ROUTE_DAYS_UNTIL
+
+    fun forRoute(route: String?, today: LocalDate = LocalDate.now()): ToolExample? =
+        if (route == Tools.ROUTE_DAYS_UNTIL) example(
+            "An example event seven days from today (${today.plusDays(7)}).",
+            "label" to "Example event", "targetDate" to today.plusDays(7).toString(),
+        ) else fixed[route]
+}

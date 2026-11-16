@@ -38,6 +38,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.clickable
 import com.jaguar.gearbox.data.Tool
 import com.jaguar.gearbox.data.Tools
+import com.jaguar.gearbox.data.ToolSearchCatalog
+import com.jaguar.gearbox.data.ToolSearchOperation
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -73,6 +75,7 @@ fun ToolScaffold(
     val helpRoute = history?.route ?: Tools.all.firstOrNull { it.icon == icon }?.route
     val help = ToolHelpCatalog.localizedForRoute(context, helpRoute)
     val openTool = LocalToolOpener.current
+    val openOperation = LocalToolOperationOpener.current
     val presetOpener = LocalToolPresetOpener.current
     val handoff = LocalToolHandoff.current
     val hasPresets = history != null && history.configuration.isNotEmpty() && presetOpener != null
@@ -151,21 +154,27 @@ fun ToolScaffold(
     if (showSwitcher && openTool != null) ToolSwitcher(onOpen = {
         showSwitcher = false
         openTool(it)
-    }, onDismiss = { showSwitcher = false })
+    }, onOpenOperation = openOperation?.let { opener -> { selected, operation ->
+        showSwitcher = false
+        opener(selected, operation)
+    } }, onDismiss = { showSwitcher = false })
 }
 
 val LocalToolOpener = staticCompositionLocalOf<((Tool) -> Unit)?> { null }
+val LocalToolOperationOpener = staticCompositionLocalOf<((Tool, ToolSearchOperation) -> Unit)?> { null }
 
 @Composable
-internal fun ToolSwitcher(onOpen: (Tool) -> Unit, onDismiss: () -> Unit) {
+internal fun ToolSwitcher(
+    onOpen: (Tool) -> Unit,
+    onDismiss: () -> Unit,
+    onOpenOperation: ((Tool, ToolSearchOperation) -> Unit)? = null,
+) {
     var query by remember { mutableStateOf("") }
     val context = androidx.compose.ui.platform.LocalContext.current
     val recents = remember(context) { com.jaguar.gearbox.data.RecentToolsStore(context) }
     val recent = if (query.isBlank() && recents.showRecentTools)
         recents.recent.mapNotNull(Tools::byRoute).map { it.localized(context) } else emptyList()
-    val matches = Tools.localized(context).filter { tool ->
-        query.isBlank() || (listOf(tool.name, tool.description, tool.category.localizedLabel(context)) + tool.keywords).any { it.contains(query.trim(), true) }
-    }
+    val matches = ToolSearchCatalog.search(context, query)
     AlertDialog(onDismissRequest = onDismiss, title = { Text(context.getString(com.jaguar.gearbox.R.string.shared_switch_tool)) }, text = {
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Text(context.getString(com.jaguar.gearbox.R.string.shared_switching_keeps_non_password_drafts_in_this_navigation_session_back_le), style = MaterialTheme.typography.bodySmall)
@@ -179,9 +188,17 @@ internal fun ToolSwitcher(onOpen: (Tool) -> Unit, onDismiss: () -> Unit) {
                     }
                     item { Text(context.getString(com.jaguar.gearbox.R.string.shared_all_other_tools), style = MaterialTheme.typography.titleSmall) }
                 }
-                items(matches.filterNot { candidate -> recent.any { it.route == candidate.route } }, key = { it.route }) { tool ->
-                    ListItem(headlineContent = { Text(tool.name) }, supportingContent = { Text(tool.category.localizedLabel(context)) },
-                        leadingContent = { Icon(tool.icon, null) }, modifier = Modifier.clickable { onOpen(tool) })
+                items(matches.filterNot { candidate -> recent.any { it.route == candidate.tool.route } }, key = { it.tool.route }) { result ->
+                    val operation = result.operation
+                    val actionableOperation = operation != null && onOpenOperation != null
+                    ListItem(headlineContent = { Text(if (actionableOperation) result.label else result.tool.name) },
+                        supportingContent = { Text(if (actionableOperation)
+                            context.getString(R.string.operation_search_detail, result.tool.name)
+                            else result.tool.category.localizedLabel(context)) },
+                        leadingContent = { Icon(result.tool.icon, null) }, modifier = Modifier.clickable {
+                            if (operation != null && onOpenOperation != null) onOpenOperation(result.tool, operation)
+                            else onOpen(result.tool)
+                        })
                 }
                 if (matches.isEmpty()) item { Text(context.getString(com.jaguar.gearbox.R.string.shared_no_tools_match_try_another_name_or_task)) }
             }

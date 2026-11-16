@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="operation_open_title">Select %1$s?</string>
+    <string name="operation_mode_only_notice">This selects a mode in %1$s while keeping existing inputs. The current result may change or be cleared. It does not press Generate, Spin, Start, or any other action.</string>
+    <string name="operation_select_mode">Select mode</string>
+    <string name="operation_cancel">Cancel</string>
+    <string name="operation_search_detail">%1$s · Select mode only</string>
+</resources>

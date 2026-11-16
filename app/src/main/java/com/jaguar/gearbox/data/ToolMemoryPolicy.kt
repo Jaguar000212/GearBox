@@ -1,11 +1,13 @@
 package com.jaguar.gearbox.data
 
-/** Local memory is opt-in. Changing the limit never accepts an unbounded value. */
+/** New history/result memory is opt-in; legacy game-session retention stays on by default. */
 data class ToolMemorySettings(
     val historyEnabled: Boolean = false,
     val historyLimit: Int = 20,
     val rememberModes: Boolean = false,
     val rememberResults: Boolean = false,
+    /** Preserve legacy behavior for in-progress games; independent of result/history opt-ins. */
+    val rememberGameSessions: Boolean = true,
 ) {
     fun normalized() = copy(historyLimit = historyLimit.coerceIn(MIN_HISTORY, MAX_HISTORY))
     companion object {
@@ -50,3 +52,8 @@ object ToolMemoryPolicy {
         validInputs(inputs) && output.length <= MAX_FIELD_CHARS &&
             inputs.entries.sumOf { it.key.length + it.value.length } + output.length <= MAX_RECORD_CHARS
 }
+
+/** Live readings and hardware state are snapshots, not commands that can be replayed. */
+fun canRestoreToolSnapshot(route: String): Boolean = ToolMemoryPolicy.permitsRoute(route) && route !in setOf(
+    "tool/bubble_level", "tool/compass", "tool/screen_ruler", "tool/flashlight",
+)

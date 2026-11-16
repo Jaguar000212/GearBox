@@ -24,6 +24,17 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.runtime.rememberCoroutineScope
+import com.jaguar.gearbox.data.ScoreSnapshots
+import com.jaguar.gearbox.data.ToolMemoryStore
+import com.jaguar.gearbox.ui.components.ToolHistoryBinding
+import com.jaguar.gearbox.ui.components.rememberToolHistory
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -49,11 +60,47 @@ fun ScoreboardScreen(onNavigateBack: () -> Unit) {
     val players = store.players
     var newName by rememberSaveable { mutableStateOf("") }
 
+    var pendingRestore by remember { mutableStateOf<Map<String, String>?>(null) }
+    var historyNotice by remember { mutableStateOf<String?>(null) }
+    var focusView by rememberSaveable { mutableStateOf(false) }
+    var savingSnapshot by remember { mutableStateOf(false) }
+    val memory = remember { ToolMemoryStore(context) }
+    val snapshotScope = rememberCoroutineScope()
+    val snapshot = ScoreSnapshots.scoreboard(players.toList())
+    val snapshotSummary = players.mapIndexed { i, p -> "${i + 1}. ${p.name}: ${p.score}" }.joinToString("\n")
+    val restoreBinding = rememberToolHistory(Tools.ROUTE_SCOREBOARD, snapshot.orEmpty(), null,
+        onRestore = { values ->
+            if (store.isReadOnly || ScoreSnapshots.readScoreboard(values) == null) historyNotice = "This snapshot cannot be restored safely."
+            else pendingRestore = values.toMap()
+        }, restoreLastResult = false)
+    val history = ToolHistoryBinding(Tools.ROUTE_SCOREBOARD, restoreBinding.restore, snapshot.orEmpty(),
+        snapshotSummary.takeIf { snapshot != null && players.isNotEmpty() })
+
     ToolScaffold(
         title = "Scoreboard",
         icon = Tools.byRoute(Tools.ROUTE_SCOREBOARD)!!.icon,
         onNavigateBack = onNavigateBack,
+        history = history,
     ) {
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            TextButton(enabled = snapshot != null && players.isNotEmpty() && !savingSnapshot, onClick = {
+                val captured = snapshot ?: return@TextButton
+                val output = snapshotSummary
+                // Capture before dispatch: a later clear/delete invalidates this pending write.
+                val generation = memory.historyGeneration(Tools.ROUTE_SCOREBOARD)
+                savingSnapshot = true
+                snapshotScope.launch {
+                    historyNotice = withContext(Dispatchers.IO) {
+                        if (!memory.settings().historyEnabled) "Enable history in Settings → Tool memory to save snapshots."
+                        else if (memory.record(Tools.ROUTE_SCOREBOARD, captured, output, expectedGeneration = generation)) "Snapshot saved."
+                        else "Snapshot could not be saved. The data may exceed the history size limit."
+                    }
+                    savingSnapshot = false
+                }
+            }) { Text(if (savingSnapshot) "Saving…" else "Save snapshot") }
+            TextButton(onClick = { focusView = true }) { Text("Focus view") }
+        }
+        historyNotice?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
@@ -185,4 +232,21 @@ fun ScoreboardScreen(onNavigateBack: () -> Unit) {
             dismissButton = { TextButton(onClick = { pendingAction = null; pendingRemoval = null }) { Text("Cancel") } },
         )
     }
+    pendingRestore?.let { values ->
+        AlertDialog(onDismissRequest = { pendingRestore = null }, title = { Text("Replace current scoreboard?") },
+            text = { Text("This replaces all current player names and scores with the selected snapshot. Older recovery data is kept. Save a snapshot of the current game first if you need it.") },
+            confirmButton = { TextButton(onClick = {
+                historyNotice = if (store.restoreSnapshot(values)) "Scoreboard restored." else "Could not restore. Current scores were not replaced."
+                pendingRestore = null
+            }) { Text("Replace scoreboard") } },
+            dismissButton = { TextButton(onClick = { pendingRestore = null }) { Text("Cancel") } })
+    }
+    if (focusView) AlertDialog(onDismissRequest = { focusView = false }, title = { Text("Scoreboard") },
+        text = { Column(Modifier.heightIn(max = 460.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            players.forEach { player ->
+                Text(player.name, style = MaterialTheme.typography.titleLarge)
+                Text(player.score.toString(), style = MaterialTheme.typography.displayMedium)
+            }
+        } }, confirmButton = { TextButton(onClick = { focusView = false }) { Text("Exit focus view") } })
+
 }

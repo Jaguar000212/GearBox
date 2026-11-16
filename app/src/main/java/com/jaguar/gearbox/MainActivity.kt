@@ -1,5 +1,7 @@
 package com.jaguar.gearbox
 
+import kotlinx.coroutines.launch
+
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -171,6 +173,8 @@ fun GearBoxApp(
     val context = LocalContext.current
     val favorites = remember { FavoritesStore(context) }
     val recentTools = remember { RecentToolsStore(context) }
+    val recentScope = androidx.compose.runtime.rememberCoroutineScope()
+    val clockNavigationTarget = rememberSaveable { mutableStateOf<String?>(null) }
     var toolImport by remember { mutableStateOf<com.jaguar.gearbox.ui.components.ToolImport?>(null) }
 
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
@@ -178,13 +182,20 @@ fun GearBoxApp(
     val isTopLevel = currentRoute in tabs.map { it.route }
 
     val openTool: (Tool) -> Unit = { tool ->
-        recentTools.recordOpened(tool.route)
+        clockNavigationTarget.value = null
+        recentScope.launch(kotlinx.coroutines.Dispatchers.IO) { recentTools.recordOpened(tool.route) }
         navController.navigate(tool.route)
     }
 
     // Deep-links straight into a tool when GearBox is launched from one of its own app shortcuts.
     LaunchedEffect(pendingRoute) {
         val requestedRoute = pendingRoute ?: return@LaunchedEffect
+        clockNavigationTarget.value = when (requestedRoute) {
+            com.jaguar.gearbox.timer.TimerStatusNotification.COUNTDOWN_ROUTE -> "TIMER"
+            com.jaguar.gearbox.timer.StopwatchStatusNotification.STOPWATCH_ROUTE -> "STOPWATCH"
+            com.jaguar.gearbox.timer.StopwatchStatusNotification.RESET_ROUTE -> "RESET"
+            else -> null
+        }
         val route = if (requestedRoute == com.jaguar.gearbox.timer.TimerStatusNotification.COUNTDOWN_ROUTE || requestedRoute == com.jaguar.gearbox.timer.StopwatchStatusNotification.STOPWATCH_ROUTE || requestedRoute == com.jaguar.gearbox.timer.StopwatchStatusNotification.RESET_ROUTE) {
             kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
                 com.jaguar.gearbox.timer.ClockRepository.update(context) { it.copy(mode = if (requestedRoute == com.jaguar.gearbox.timer.TimerStatusNotification.COUNTDOWN_ROUTE) "TIMER" else "STOPWATCH") }
@@ -192,7 +203,9 @@ fun GearBoxApp(
             if (requestedRoute == com.jaguar.gearbox.timer.StopwatchStatusNotification.RESET_ROUTE) requestedRoute else Tools.ROUTE_TIMER_STOPWATCH
         } else requestedRoute
         if (Tools.byRoute(route) != null || route == com.jaguar.gearbox.timer.StopwatchStatusNotification.RESET_ROUTE) {
-            recentTools.recordOpened(route)
+            kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                recentTools.recordOpened(if (route == com.jaguar.gearbox.timer.StopwatchStatusNotification.RESET_ROUTE) Tools.ROUTE_TIMER_STOPWATCH else route)
+            }
             navController.navigate(route)
         }
         onPendingRouteConsumed()
@@ -215,8 +228,10 @@ fun GearBoxApp(
         Box(modifier = Modifier.padding(padding)) {
             NavHost(navController = navController, startDestination = sessionStartRoute) {
                 composable(com.jaguar.gearbox.timer.StopwatchStatusNotification.RESET_ROUTE) {
-                    com.jaguar.gearbox.ui.tools.TimerStopwatchScreen(
-                        onNavigateBack = { navController.popBackStack() }, requestStopwatchReset = true)
+                    CompositionLocalProvider(com.jaguar.gearbox.ui.tools.LocalClockNavigationTarget provides clockNavigationTarget) {
+                        com.jaguar.gearbox.ui.tools.TimerStopwatchScreen(
+                            onNavigateBack = { navController.popBackStack() }, requestStopwatchReset = true)
+                    }
                 }
                 composable("workbench") {
                     com.jaguar.gearbox.ui.screens.WorkbenchScreen(
@@ -244,6 +259,7 @@ fun GearBoxApp(
                 }
                 composable(ROUTE_SETTINGS) {
                     SettingsScreen(
+                        recentTools = recentTools,
                         launchScreen = launchScreen,
                         onLaunchScreenChange = onLaunchScreenChange,
                         themeMode = themeMode,
@@ -260,6 +276,7 @@ fun GearBoxApp(
                 Tools.all.forEach { tool ->
                     composable(tool.route) {
                         androidx.compose.runtime.CompositionLocalProvider(
+                            com.jaguar.gearbox.ui.tools.LocalClockNavigationTarget provides clockNavigationTarget,
                             com.jaguar.gearbox.ui.components.LocalToolHandoff provides { route: String, inputs: Map<String, String> ->
                                 Tools.byRoute(route)?.let { selected ->
                                     toolImport = com.jaguar.gearbox.ui.components.ToolImport(route, inputs)

@@ -19,6 +19,17 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.runtime.rememberCoroutineScope
+import com.jaguar.gearbox.data.ScoreSnapshots
+import com.jaguar.gearbox.data.ToolMemoryStore
+import com.jaguar.gearbox.ui.components.ToolHistoryBinding
+import com.jaguar.gearbox.ui.components.rememberToolHistory
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -71,11 +82,47 @@ fun ChessScoreboardScreen(onNavigateBack: () -> Unit) {
         persist()
     }
 
+    var pendingRestore by remember { mutableStateOf<Map<String, String>?>(null) }
+    var historyNotice by remember { mutableStateOf<String?>(null) }
+    var focusView by rememberSaveable { mutableStateOf(false) }
+    var savingSnapshot by remember { mutableStateOf(false) }
+    val memory = remember { ToolMemoryStore(context) }
+    val snapshotScope = rememberCoroutineScope()
+    val snapshot = ScoreSnapshots.chess(ChessMatch(whiteName, blackName, whiteScore, blackScore, gamesPlayed))
+    val snapshotSummary = "Chess match\n${whiteName.ifBlank { "White" }}: $whiteScore\n${blackName.ifBlank { "Black" }}: $blackScore\nGames: $gamesPlayed"
+    val restoreBinding = rememberToolHistory(Tools.ROUTE_CHESS_SCOREBOARD, snapshot.orEmpty(), null,
+        onRestore = { values ->
+            if (ScoreSnapshots.readChess(values) == null) historyNotice = "This snapshot cannot be restored safely."
+            else pendingRestore = values.toMap()
+        }, restoreLastResult = false)
+    val history = ToolHistoryBinding(Tools.ROUTE_CHESS_SCOREBOARD, restoreBinding.restore, snapshot.orEmpty(),
+        snapshotSummary.takeIf { snapshot != null })
+
     ToolScaffold(
         title = "Chess Scoreboard",
         icon = Tools.byRoute(Tools.ROUTE_CHESS_SCOREBOARD)!!.icon,
         onNavigateBack = onNavigateBack,
+        history = history,
     ) {
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            TextButton(enabled = snapshot != null && !savingSnapshot, onClick = {
+                val captured = snapshot ?: return@TextButton
+                val output = snapshotSummary
+                // Capture before dispatch: a later clear/delete invalidates this pending write.
+                val generation = memory.historyGeneration(Tools.ROUTE_CHESS_SCOREBOARD)
+                savingSnapshot = true
+                snapshotScope.launch {
+                    historyNotice = withContext(Dispatchers.IO) {
+                        if (!memory.settings().historyEnabled) "Enable history in Settings → Tool memory to save snapshots."
+                        else if (memory.record(Tools.ROUTE_CHESS_SCOREBOARD, captured, output, expectedGeneration = generation)) "Snapshot saved."
+                        else "Snapshot could not be saved. The data may exceed the history size limit."
+                    }
+                    savingSnapshot = false
+                }
+            }) { Text(if (savingSnapshot) "Saving…" else "Save snapshot") }
+            TextButton(onClick = { focusView = true }) { Text("Focus view") }
+        }
+        historyNotice?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -211,6 +258,30 @@ fun ChessScoreboardScreen(onNavigateBack: () -> Unit) {
             dismissButton = { TextButton(onClick = { confirmReset = false }) { Text("Cancel") } },
         )
     }
+    pendingRestore?.let { values ->
+        AlertDialog(onDismissRequest = { pendingRestore = null }, title = { Text("Replace current match?") },
+            text = { Text("This replaces both player names, scores and game count. Undo last result will be cleared. Save a snapshot of the current match first if you need it.") },
+            confirmButton = { TextButton(onClick = {
+                val restored = store.restoreSnapshot(values)
+                if (restored != null) {
+                    whiteName = restored.whiteName; blackName = restored.blackName
+                    whiteScore = restored.whiteScore; blackScore = restored.blackScore; gamesPlayed = restored.gamesPlayed
+                    canUndo = false; lastWhiteDelta = 0f; lastBlackDelta = 0f
+                    historyNotice = "Match restored."
+                } else historyNotice = "Could not restore. Current match was not replaced."
+                pendingRestore = null
+            }) { Text("Replace match") } },
+            dismissButton = { TextButton(onClick = { pendingRestore = null }) { Text("Cancel") } })
+    }
+    if (focusView) AlertDialog(onDismissRequest = { focusView = false }, title = { Text("Chess scoreboard") },
+        text = { Column(Modifier.heightIn(max = 460.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            Text(whiteName.ifBlank { "White" }, style = MaterialTheme.typography.titleLarge)
+            Text(whiteScore.toString(), style = MaterialTheme.typography.displayMedium)
+            Text(blackName.ifBlank { "Black" }, style = MaterialTheme.typography.titleLarge)
+            Text(blackScore.toString(), style = MaterialTheme.typography.displayMedium)
+            Text("Games: $gamesPlayed")
+        } }, confirmButton = { TextButton(onClick = { focusView = false }) { Text("Exit focus view") } })
+
 }
 
 @Composable

@@ -9,9 +9,12 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.jaguar.gearbox.data.GameSessionPolicy
 import com.jaguar.gearbox.data.ToolMemorySettings
 import com.jaguar.gearbox.data.ToolMemoryStore
 import kotlinx.coroutines.Dispatchers
@@ -23,6 +26,7 @@ import kotlinx.coroutines.withContext
 internal fun ToolMemorySettingsSection() {
     val context = LocalContext.current
     val store = remember(context) { ToolMemoryStore(context) }
+    val sessions = remember(context) { GameSessionPolicy(context, store) }
     var settings by remember { mutableStateOf(ToolMemorySettings()) }
     var busy by remember { mutableStateOf(true) }
     val scope = rememberCoroutineScope()
@@ -63,12 +67,19 @@ internal fun ToolMemorySettingsSection() {
             title = { Text("Tool memory & history") },
             text = {
                 Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text("Stored locally on this device, not in cloud backup. Passwords are never saved in history.",
+                    Text("New history and remembered modes/results stay on this device, outside cloud backup. Passwords are never saved in history.",
                         style = MaterialTheme.typography.bodyMedium)
                     MemoryToggle("Remember tool modes", "Reuse supported tools’ last selected options.",
                         settings.rememberModes, !busy) { save(settings.copy(rememberModes = it)) }
                     MemoryToggle("Remember last result", "Restore supported tools’ last result separately from history.",
                         settings.rememberResults, !busy) { save(settings.copy(rememberResults = it)) }
+                    HorizontalDivider()
+                    MemoryToggle("Remember game sessions and participants",
+                        "Resume Tambola, RPS/Tic-tac-toe tallies, team participants and scoreboards. Turning this off stops future automatic loading and saving, without interrupting the current screen.",
+                        settings.rememberGameSessions, !busy) { save(settings.copy(rememberGameSessions = it)) }
+                    Text("Existing saved games are kept when this is off. Re-enabling can resume the old saved game, even after resetting a temporary session. Clear saved game sessions below to remove it. Older game storage may be included in Android backup.",
+                        style = MaterialTheme.typography.bodySmall)
+                    TextButton(enabled = !busy, onClick = { clearTarget = "game sessions" }) { Text("Clear saved game sessions") }
                     HorizontalDivider()
                     MemoryToggle("Keep tool history", "Save completed inputs and results in supported tools. Turning this off pauses collection; it does not delete existing history.",
                         settings.historyEnabled, !busy) { save(settings.copy(historyEnabled = it)) }
@@ -103,14 +114,17 @@ internal fun ToolMemorySettingsSection() {
         AlertDialog(
             onDismissRequest = { clearTarget = null },
             title = { Text("Clear remembered $target?") },
-            text = { Text("This removes saved $target from every supported tool on this device. It cannot be undone. Favorites and active tool sessions are unchanged.") },
-            confirmButton = { TextButton(onClick = {
+            text = { Text(if (target == "game sessions")
+                "Remove saved Tambola numbers, RPS tallies, team participants and both scoreboards, including dormant data while remembering is off? This cannot be undone. Current open sessions, counters, timers, favorites, palettes and tool history are unchanged. An open session can save again if remembering remains on."
+                else "This removes saved $target from every supported tool on this device. It cannot be undone. Favorites and active tool sessions are unchanged.") },
+            confirmButton = { TextButton(enabled = !busy, onClick = {
                 busy = true
                 clearTarget = null
                 scope.launch {
                     try {
                         val success = withContext(Dispatchers.IO) {
                             when (target) {
+                                "game sessions" -> sessions.clearSavedSessions()
                                 "modes" -> store.clearRememberedModes()
                                 "results" -> store.clearRememberedResults()
                                 else -> store.clearHistory()
@@ -130,6 +144,7 @@ private fun MemoryToggle(title: String, description: String, value: Boolean, ena
     ListItem(
         headlineContent = { Text(title) },
         supportingContent = { Text(description) },
-        trailingContent = { Switch(checked = value, enabled = enabled, onCheckedChange = onChange) },
+        trailingContent = { Switch(checked = value, enabled = enabled, onCheckedChange = onChange,
+            modifier = Modifier.semantics { contentDescription = title }) },
     )
 }

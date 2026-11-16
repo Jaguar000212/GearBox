@@ -40,6 +40,8 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
+import androidx.compose.runtime.State
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -63,6 +65,12 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
 import com.jaguar.gearbox.data.Tools
+import com.jaguar.gearbox.data.ToolMemoryStore
+import com.jaguar.gearbox.logic.parseClockSetup
+import com.jaguar.gearbox.logic.restoreClockSetup
+import com.jaguar.gearbox.ui.components.rememberToolHistory
+import com.jaguar.gearbox.ui.components.ToolHistoryBinding
+import com.jaguar.gearbox.ui.components.LocalToolImport
 import com.jaguar.gearbox.logic.ClockState
 import com.jaguar.gearbox.logic.timerDurationMillis
 import com.jaguar.gearbox.logic.toggleCountdown
@@ -81,6 +89,8 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import java.util.Locale
 
+val LocalClockNavigationTarget = staticCompositionLocalOf<State<String?>> { mutableStateOf(null) }
+
 private enum class ClockMode(val label: String) { STOPWATCH("Stopwatch"), TIMER("Timer") }
 
 @Composable
@@ -92,6 +102,15 @@ fun TimerStopwatchScreen(onNavigateBack: () -> Unit, requestStopwatchReset: Bool
     val lifecycleOwner = LocalLifecycleOwner.current
     val scope = rememberCoroutineScope()
     val mutations = remember { Mutex() }
+    val memory = remember { ToolMemoryStore(context) }
+    val clockNavigationTarget = LocalClockNavigationTarget.current
+    val navigationTarget by clockNavigationTarget
+    var preferencesInitialized by rememberSaveable { mutableStateOf(false) }
+    val userInteracted = remember { mutableStateOf(false) }
+    var snapshotInputs by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
+    var snapshotOutput by remember { mutableStateOf<String?>(null) }
+    var snapshotMessage by remember { mutableStateOf<String?>(null) }
+    var capturing by remember { mutableStateOf(false) }
     var state by remember { mutableStateOf(ClockRepository.snapshot(context)) }
     var draftMinutes by rememberSaveable { mutableStateOf(state.minutesInput) }
     var draftSeconds by rememberSaveable { mutableStateOf(state.secondsInput) }
@@ -103,6 +122,7 @@ fun TimerStopwatchScreen(onNavigateBack: () -> Unit, requestStopwatchReset: Bool
     val selectedMode = ClockMode.entries.firstOrNull { it.name == state.mode } ?: ClockMode.STOPWATCH
 
     fun change(updateWidgets: Boolean = true, transform: (ClockState) -> ClockState) {
+        userInteracted.value = true
         scope.launch {
             try {
                 state = mutations.withLock {
@@ -120,6 +140,63 @@ fun TimerStopwatchScreen(onNavigateBack: () -> Unit, requestStopwatchReset: Bool
             }
         }
     }
+
+    fun importSetup(values: Map<String, String>) {
+        userInteracted.value = true
+        val setup = parseClockSetup(values)
+        if (setup == null) { error = "This clock setup is invalid. Choose a valid duration."; return }
+        scope.launch {
+            var refused = false
+            try {
+                state = mutations.withLock { withContext(Dispatchers.IO) {
+                    val updated = ClockRepository.update(context) { current ->
+                        restoreClockSetup(current, setup) ?: current.also { refused = true }
+                    }
+                    TimerWidget().updateAll(context)
+                    updated
+                } }
+                if (refused) error = "Reset running or paused clocks before restoring a setup. Existing clocks were not changed."
+                else {
+                    draftMinutes = setup.minutes; draftSeconds = setup.seconds
+                    snapshotInputs = emptyMap(); snapshotOutput = null
+                    error = null
+                }
+            } catch (cancelled: CancellationException) { throw cancelled }
+            catch (_: Exception) { error = "Could not restore the clock setup. Please try again." }
+        }
+    }
+    val importedSetup = LocalToolImport.current
+    LaunchedEffect(navigationTarget) {
+        if (!preferencesInitialized) {
+            try {
+                val preference = withContext(Dispatchers.IO) {
+                    memory.settings() to parseClockSetup(memory.loadMode(Tools.ROUTE_TIMER_STOPWATCH))
+                }
+                if (!userInteracted.value && importedSetup?.route != Tools.ROUTE_TIMER_STOPWATCH) {
+                    state = mutations.withLock { withContext(Dispatchers.IO) {
+                        ClockRepository.update(context) { current ->
+                            if (userInteracted.value) current else
+                                com.jaguar.gearbox.logic.applyClockPreferences(current, clockNavigationTarget.value,
+                                    requestStopwatchReset, preference.first.rememberModes, preference.second)
+                        }
+                    } }
+                    if (!userInteracted.value) { draftMinutes = state.minutesInput; draftSeconds = state.secondsInput }
+                }
+            } catch (cancelled: CancellationException) { throw cancelled }
+            catch (_: Exception) { error = "Could not load clock preferences. Existing clock state was preserved." }
+            finally { preferencesInitialized = true }
+        }
+    }
+    val configuration = mapOf("mode" to selectedMode.name, "minutes" to draftMinutes, "seconds" to draftSeconds)
+    val adapter = rememberToolHistory(Tools.ROUTE_TIMER_STOPWATCH, inputs = configuration, output = null,
+        onRestore = ::importSetup, modeInputs = configuration.takeIf { preferencesInitialized && parseClockSetup(it) != null }.orEmpty(),
+        onRestoreMode = { values ->
+            if (com.jaguar.gearbox.logic.mayImportClockMode(importedSetup?.route == Tools.ROUTE_TIMER_STOPWATCH)) importSetup(values)
+        },
+        restoreLastResult = false)
+    val history = ToolHistoryBinding(adapter.route, adapter.restore,
+        inputs = snapshotInputs.ifEmpty { configuration }, output = snapshotOutput,
+        configuration = configuration.takeIf { parseClockSetup(it) != null }.orEmpty())
 
     // The store is the only clock writer. Local text drafts update synchronously for fast typing;
     // polling cannot overwrite those drafts, and no disposal callback rewrites clock snapshots.
@@ -178,6 +255,7 @@ fun TimerStopwatchScreen(onNavigateBack: () -> Unit, requestStopwatchReset: Bool
         title = "Timer / Stopwatch",
         icon = Tools.byRoute(Tools.ROUTE_TIMER_STOPWATCH)!!.icon,
         onNavigateBack = onNavigateBack,
+        history = history,
         options = {
             IconButton(onClick = { showFocus = true }) { Icon(Icons.Filled.Fullscreen, contentDescription = "Focus view") }
             IconButton(onClick = { showClockOptions = true }) { Icon(Icons.Filled.Settings, contentDescription = "Clock options") }
@@ -190,6 +268,28 @@ fun TimerStopwatchScreen(onNavigateBack: () -> Unit, requestStopwatchReset: Bool
             }
         }
         error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+        TextButton(enabled = !capturing, onClick = {
+            if (capturing) return@TextButton
+            val historyGeneration = memory.historyGeneration(Tools.ROUTE_TIMER_STOPWATCH)
+            capturing = true
+            scope.launch {
+                try {
+                    val captured = withContext(Dispatchers.IO) { ClockRepository.snapshot(context) }
+                    val inputs = mapOf("mode" to captured.mode, "minutes" to captured.minutesInput, "seconds" to captured.secondsInput)
+                    val output = if (captured.mode == "TIMER") {
+                        "Timer snapshot: ${formatDuration(captured.timerRemainingMillis)} remaining · " +
+                            if (captured.timerFinished) "Finished" else if (captured.timerRunning) "Running" else "Paused / Ready"
+                    } else stopwatchResultText(captured.stopwatchElapsedMillis, captured.laps)
+                    snapshotInputs = inputs; snapshotOutput = output
+                    val recorded = withContext(Dispatchers.IO) { memory.record(Tools.ROUTE_TIMER_STOPWATCH, inputs, output, expectedGeneration = historyGeneration) }
+                    snapshotMessage = if (recorded) "Snapshot added to history. Restore loads setup only, never elapsed time."
+                        else "Snapshot ready in History → Keep result. It was not added to history because collection is off, history changed, or storage is unavailable."
+                } catch (cancelled: CancellationException) { throw cancelled }
+                catch (_: Exception) { error = "Could not capture the clock snapshot." }
+                finally { capturing = false }
+            }
+        }) { Text("Capture snapshot") }
+        snapshotMessage?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
         Spacer(Modifier.height(20.dp))
         when (selectedMode) {
             ClockMode.STOPWATCH -> StopwatchSection(

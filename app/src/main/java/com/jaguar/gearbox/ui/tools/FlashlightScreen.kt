@@ -1,5 +1,6 @@
 package com.jaguar.gearbox.ui.tools
 
+import com.jaguar.gearbox.data.ToolMemoryStore
 import android.content.Context
 import android.hardware.camera2.CameraAccessException
 import android.os.Handler
@@ -31,6 +32,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import com.jaguar.gearbox.ui.components.rememberToolHistory
+import java.util.UUID
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
@@ -66,15 +69,27 @@ fun FlashlightScreen(onNavigateBack: () -> Unit) {
     }
     val cameraId = discovery.first
     var isOn by remember { mutableStateOf(false) }
+    var confirmedIsOn by remember(cameraId, attempt) { mutableStateOf<Boolean?>(null) }
+    val historyStore = remember(context) { ToolMemoryStore(context) }
+    var captureGeneration by remember { mutableStateOf<Long?>(null) }
+    var capturedOutput by remember { mutableStateOf("") }
+    var captureId by remember { mutableStateOf("") }
+    val history = rememberToolHistory(
+        route = Tools.ROUTE_FLASHLIGHT,
+        inputs = mapOf("source" to "Android torch status", "_capture" to captureId),
+        output = capturedOutput.takeIf { it.isNotEmpty() },
+        expectedHistoryGeneration = captureGeneration,
+        onRestore = {}, allowRestore = false, restoreLastResult = false, recordingDelayMillis = 0L,
+    )
     var errorResource by remember(attempt) { mutableStateOf(discovery.second) }
 
     DisposableEffect(cameraManager, cameraId, attempt) {
         val callback = object : CameraManager.TorchCallback() {
             override fun onTorchModeChanged(id: String, enabled: Boolean) {
-                if (id == cameraId) { isOn = enabled; errorResource = null }
+                if (id == cameraId) { isOn = enabled; confirmedIsOn = enabled; errorResource = null }
             }
             override fun onTorchModeUnavailable(id: String) {
-                if (id == cameraId) { isOn = false; errorResource = R.string.flashlight_busy }
+                if (id == cameraId) { isOn = false; confirmedIsOn = null; errorResource = R.string.flashlight_busy }
             }
         }
         if (cameraId != null) {
@@ -91,6 +106,7 @@ fun FlashlightScreen(onNavigateBack: () -> Unit) {
         title = stringResource(R.string.flashlight_title),
         icon = Tools.byRoute(Tools.ROUTE_FLASHLIGHT)!!.icon,
         onNavigateBack = onNavigateBack,
+        history = history,
     ) {
         errorResource?.let { resource ->
             Text(
@@ -105,6 +121,7 @@ fun FlashlightScreen(onNavigateBack: () -> Unit) {
         FlashlightControls(isOn = isOn, onToggle = {
             val next = !isOn
             try {
+                confirmedIsOn = null
                 cameraManager.setTorchMode(cameraId, next)
                 isOn = next
                 errorResource = null
@@ -116,6 +133,20 @@ fun FlashlightScreen(onNavigateBack: () -> Unit) {
                 errorResource = R.string.flashlight_failed
             }
         })
+        Spacer(Modifier.height(16.dp))
+        DeviceSnapshotActions(
+            captureLabel = "Capture torch status",
+            enabled = confirmedIsOn != null && errorResource == null,
+            capturedOutput = capturedOutput,
+            onCapture = {
+                confirmedIsOn?.let { confirmed ->
+                    captureGeneration = historyStore.historyGeneration(Tools.ROUTE_FLASHLIGHT)
+                    capturedOutput = "Flashlight status: ${if (confirmed) "on" else "off"}, reported by Android. This is a status snapshot, not a command to control the torch."
+                    captureId = UUID.randomUUID().toString()
+                }
+            },
+            onClear = { captureGeneration = null; capturedOutput = ""; captureId = "" },
+        )
     }
 }
 

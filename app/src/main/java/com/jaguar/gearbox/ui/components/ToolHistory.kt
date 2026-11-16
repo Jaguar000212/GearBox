@@ -29,6 +29,7 @@ class ToolHistoryBinding(
     val inputs: Map<String, String> = emptyMap(),
     val output: String? = null,
     val configuration: Map<String, String> = emptyMap(),
+    val allowRestore: Boolean = true,
 )
 
 @Composable
@@ -41,6 +42,8 @@ fun rememberToolHistory(
     onRestoreMode: (Map<String, String>) -> Unit = {},
     recordingDelayMillis: Long = 1000L,
     restoreLastResult: Boolean = true,
+    allowRestore: Boolean = true,
+    expectedHistoryGeneration: Long? = null,
 ): ToolHistoryBinding {
     val context = LocalContext.current
     val store = remember { ToolMemoryStore(context) }
@@ -75,16 +78,16 @@ fun rememberToolHistory(
     // Live calculators are recorded after a pause, never for each keystroke or invalid result.
     LaunchedEffect(route, inputs, output, initialized) {
         if (initialized && !output.isNullOrBlank()) {
-            val generation = withContext(Dispatchers.IO) { store.historyGeneration(route) }
+            val generation = expectedHistoryGeneration ?: store.historyGeneration(route)
             val resultToken = withContext(Dispatchers.IO) { store.resultGeneration(route) }
             delay(recordingDelayMillis.coerceAtLeast(0L))
             withContext(Dispatchers.IO) {
                 store.record(route, inputs, output, expectedGeneration = generation)
-                store.saveResult(route, inputs, output, expectedGeneration = resultToken)
+                if (restoreLastResult) store.saveResult(route, inputs, output, expectedGeneration = resultToken)
             }
         }
     }
-    return ToolHistoryBinding(route, { restore(it) }, inputs, output, modeInputs)
+    return ToolHistoryBinding(route, { restore(it) }, inputs, output, modeInputs, allowRestore)
 }
 
 @Composable
@@ -137,7 +140,7 @@ fun ToolHistoryDialog(binding: ToolHistoryBinding, onDismiss: () -> Unit) {
                                 Row {
                                     TextButton(onClick = { context.copyToClipboard("Tool history", historyText(entry)) }) { Text("Copy") }
                                     TextButton(onClick = { context.shareText(historyText(entry)) }) { Text("Share") }
-                                    TextButton(onClick = { binding.restore(entry.inputs); onDismiss() }) { Text("Restore") }
+                                    if (binding.allowRestore) TextButton(onClick = { binding.restore(entry.inputs); onDismiss() }) { Text("Restore") }
                                 }
                                 TextButton(onClick = { scope.launch {
                                     val success = withContext(Dispatchers.IO) { store.remove(binding.route, entry.id) }

@@ -9,6 +9,7 @@ class ToolMemoryPolicyTest {
         assertFalse(defaults.historyEnabled)
         assertFalse(defaults.rememberModes)
         assertFalse(defaults.rememberResults)
+        assertTrue(defaults.rememberGameSessions)
         assertEquals(20, defaults.historyLimit)
         assertEquals(1, defaults.copy(historyLimit = Int.MIN_VALUE).normalized().historyLimit)
         assertEquals(100, defaults.copy(historyLimit = Int.MAX_VALUE).normalized().historyLimit)

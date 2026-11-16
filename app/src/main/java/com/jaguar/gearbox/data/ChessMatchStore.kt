@@ -16,20 +16,24 @@ data class ChessMatch(
  * Persists a [ChessMatch] to [android.content.SharedPreferences] so the match survives fully
  * closing and reopening the app, not just a configuration change.
  */
-class ChessMatchStore(context: Context) {
+class ChessMatchStore(context: Context,
+    private val sessionPolicy: GameSessionPolicy = GameSessionPolicy(context),
+) {
 
     private val prefs = context.applicationContext
         .getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
-    fun load(): ChessMatch = ChessMatch(
-        whiteName = prefs.getString(KEY_WHITE_NAME, null) ?: "White",
-        blackName = prefs.getString(KEY_BLACK_NAME, null) ?: "Black",
-        whiteScore = prefs.getFloat(KEY_WHITE_SCORE, 0f),
-        blackScore = prefs.getFloat(KEY_BLACK_SCORE, 0f),
-        gamesPlayed = prefs.getInt(KEY_GAMES_PLAYED, 0),
-    )
+    fun load(): ChessMatch = sessionPolicy.withPolicy { enabled ->
+        if (!enabled) ChessMatch("White", "Black", 0f, 0f, 0) else ChessMatch(
+            whiteName = prefs.getString(KEY_WHITE_NAME, null) ?: "White",
+            blackName = prefs.getString(KEY_BLACK_NAME, null) ?: "Black",
+            whiteScore = prefs.getFloat(KEY_WHITE_SCORE, 0f),
+            blackScore = prefs.getFloat(KEY_BLACK_SCORE, 0f),
+            gamesPlayed = prefs.getInt(KEY_GAMES_PLAYED, 0),
+        )
+    }
 
-    fun save(match: ChessMatch) {
+    fun save(match: ChessMatch) = sessionPolicy.runIfEnabled {
         prefs.edit {
             putString(KEY_WHITE_NAME, match.whiteName)
                 .putString(KEY_BLACK_NAME, match.blackName)
@@ -37,6 +41,19 @@ class ChessMatchStore(context: Context) {
                 .putFloat(KEY_BLACK_SCORE, match.blackScore)
                 .putInt(KEY_GAMES_PLAYED, match.gamesPlayed)
         }
+    }
+
+    /** Persist a validated, explicitly confirmed snapshot in one preference transaction. */
+    fun restoreSnapshot(values: Map<String, String>): ChessMatch? {
+        val match = ScoreSnapshots.readChess(values) ?: return null
+        val saved = sessionPolicy.withPolicy { enabled ->
+            !enabled || prefs.edit().putString(KEY_WHITE_NAME, match.whiteName)
+            .putString(KEY_BLACK_NAME, match.blackName)
+            .putFloat(KEY_WHITE_SCORE, match.whiteScore)
+            .putFloat(KEY_BLACK_SCORE, match.blackScore)
+            .putInt(KEY_GAMES_PLAYED, match.gamesPlayed).commit()
+        }
+        return match.takeIf { saved }
     }
 
     private companion object {

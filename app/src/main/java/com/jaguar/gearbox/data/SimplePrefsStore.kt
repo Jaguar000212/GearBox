@@ -14,15 +14,27 @@ import androidx.core.content.edit
  * the composable) or the process being killed from Recents. This closes that gap for tools whose
  * state a user would reasonably expect to still be there next time they open the tool.
  */
-class SimplePrefsStore(context: Context) {
+class SimplePrefsStore(
+    context: Context,
+    private val gameSession: Boolean = false,
+    private val sessionPolicy: GameSessionPolicy = GameSessionPolicy(context),
+) {
+    private fun <T> read(default: T, block: () -> T): T =
+        if (!gameSession) block() else sessionPolicy.withPolicy { if (it) block() else default }
+
+    private fun write(block: SharedPreferences.Editor.() -> Unit) {
+        if (gameSession) sessionPolicy.runIfEnabled { prefs.edit(action = block) }
+        else prefs.edit(action = block)
+    }
+
 
     private val prefs = context.applicationContext
         .getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
-    fun getInt(key: String, default: Int): Int = prefs.getInt(key, default)
-    fun getLong(key: String, default: Long): Long = prefs.getLong(key, default)
-    fun getBoolean(key: String, default: Boolean): Boolean = prefs.getBoolean(key, default)
-    fun getString(key: String, default: String): String = prefs.getString(key, default) ?: default
+    fun getInt(key: String, default: Int): Int = read(default) { prefs.getInt(key, default) }
+    fun getLong(key: String, default: Long): Long = read(default) { prefs.getLong(key, default) }
+    fun getBoolean(key: String, default: Boolean): Boolean = read(default) { prefs.getBoolean(key, default) }
+    fun getString(key: String, default: String): String = read(default) { prefs.getString(key, default) ?: default }
 
     fun getIntList(key: String): List<Int> =
         getString(key, "").split(",").mapNotNull { it.toIntOrNull() }
@@ -30,12 +42,12 @@ class SimplePrefsStore(context: Context) {
     fun getLongList(key: String): List<Long> =
         getString(key, "").split(",").mapNotNull { it.toLongOrNull() }
 
-    fun putInt(key: String, value: Int) = prefs.edit { putInt(key, value) }
-    fun putBoolean(key: String, value: Boolean) = prefs.edit { putBoolean(key, value) }
-    fun putString(key: String, value: String) = prefs.edit { putString(key, value) }
+    fun putInt(key: String, value: Int) { write { putInt(key, value) } }
+    fun putBoolean(key: String, value: Boolean) { write { putBoolean(key, value) } }
+    fun putString(key: String, value: String) { write { putString(key, value) } }
 
     /** Batches several writes into a single commit; prefer this over multiple single-key puts. */
-    fun edit(block: SharedPreferences.Editor.() -> Unit) = prefs.edit(action = block)
+    fun edit(block: SharedPreferences.Editor.() -> Unit) { write(block) }
 
     private companion object {
         const val PREFS_NAME = "gearbox_prefs"

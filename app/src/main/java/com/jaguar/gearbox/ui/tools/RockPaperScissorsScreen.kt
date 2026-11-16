@@ -48,7 +48,7 @@ private const val KEY_DRAWS = "rps.draws"
 @Composable
 fun RockPaperScissorsScreen(onNavigateBack: () -> Unit) {
     val context = LocalContext.current
-    val store = remember { SimplePrefsStore(context) }
+    val store = remember { SimplePrefsStore(context, gameSession = true) }
     var runId by rememberSaveable { mutableStateOf("") }
     var playerMove by rememberSaveable { mutableStateOf<String?>(null) }
     var computerMove by rememberSaveable { mutableStateOf<String?>(null) }

@@ -21,12 +21,18 @@ class ToolMemoryStore private constructor(private val directory: File) {
 
     fun settings(): ToolMemorySettings = synchronized(lock) { readSettings() }
 
+    /** One lock orders legacy game writes/clear with changes to the new retention preference. */
+    internal fun <T> withGameSessionPolicy(block: (Boolean) -> T): T = synchronized(lock) {
+        block(readSettings().rememberGameSessions)
+    }
+
     fun saveSettings(settings: ToolMemorySettings): Boolean = synchronized(lock) {
         val value = settings.normalized()
         val previousLimit = readSettings().historyLimit
         val saved = write("settings.json", JSONObject().put("version", 1)
             .put("historyEnabled", value.historyEnabled).put("historyLimit", value.historyLimit)
-            .put("rememberModes", value.rememberModes).put("rememberResults", value.rememberResults))
+            .put("rememberModes", value.rememberModes).put("rememberResults", value.rememberResults)
+            .put("rememberGameSessions", value.rememberGameSessions))
         var trimmed = true
         if (saved && value.historyLimit < previousLimit) {
             directory.listFiles()?.filter { it.name.endsWith(".history.json") }?.forEach { file ->
@@ -180,7 +186,8 @@ class ToolMemoryStore private constructor(private val directory: File) {
     private fun readSettings(): ToolMemorySettings {
         val json = read("settings.json") ?: return ToolMemorySettings()
         return ToolMemorySettings(json.optBoolean("historyEnabled", false), json.optInt("historyLimit", 20),
-            json.optBoolean("rememberModes", false), json.optBoolean("rememberResults", false)).normalized()
+            json.optBoolean("rememberModes", false), json.optBoolean("rememberResults", false),
+            json.optBoolean("rememberGameSessions", true)).normalized()
     }
 
     private fun readEntries(name: String): List<ToolHistoryEntry> {

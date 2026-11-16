@@ -59,7 +59,7 @@ fun TeamPickerScreen(onNavigateBack: () -> Unit) {
     val context = LocalContext.current
     val focusManager = LocalFocusManager.current
     var confirmClear by rememberSaveable { mutableStateOf(false) }
-    val store = remember { SimplePrefsStore(context) }
+    val store = remember { SimplePrefsStore(context, gameSession = true) }
     var names by rememberSaveable(stateSaver = StringListSaver) {
         val saved = store.getString(KEY_NAMES, "")
         mutableStateOf(if (saved.isEmpty()) emptyList() else saved.split(NAME_DELIMITER))
@@ -102,6 +102,7 @@ fun TeamPickerScreen(onNavigateBack: () -> Unit) {
     val history = rememberToolHistory(Tools.ROUTE_TEAM_PICKER,
         mapOf("participants" to names.joinToString(NAME_DELIMITER), "mode" to mode, "teams" to teamCount.toString()),
         if (mode == "pick") winner?.let { "Picked: $it" } else teams.takeIf { it.isNotEmpty() }?.joinToString("\n"),
+        restoreLastResult = false,
         onRestore = { saved ->
             persistNames(saved["participants"].orEmpty().split(NAME_DELIMITER).filter { it.isNotBlank() })
             mode = if (saved["mode"] == "teams") "teams" else "pick"

@@ -167,12 +167,37 @@ class ToolMemoryStore private constructor(private val directory: File) {
         saveNamed("workbench.json", name, route, inputs, output)
     }
 
-    fun removePreset(id: String): Boolean = synchronized(lock) {
-        writeSaved("presets.json", presets().filterNot { it.id == id })
+    /** Rename only metadata; never reorder or alter the captured payload/timestamp. */
+    fun renamePreset(id: String, name: String): Boolean = synchronized(lock) {
+        renameSaved("presets.json", id, name)
     }
-    fun removeSavedResult(id: String): Boolean = synchronized(lock) {
-        writeSaved("workbench.json", savedResults().filterNot { it.id == id })
+    fun renameSavedResult(id: String, name: String): Boolean = synchronized(lock) {
+        renameSaved("workbench.json", id, name)
     }
+    private fun renameSaved(file: String, id: String, name: String): Boolean {
+        val label = name.trim()
+        if (label.isBlank() || label.length > 80) return false
+        val items = readSavedStrict(file) ?: return false
+        if (items.none { it.id == id }) return false
+        return writeSaved(file, items.map { if (it.id == id) it.copy(name = label) else it })
+    }
+
+    /** Explicit IDs only. Stale IDs and an empty selection are harmless no-ops. */
+    fun removePresets(ids: Set<String>): Boolean = synchronized(lock) {
+        removeSaved("presets.json", ids)
+    }
+    fun removeSavedResults(ids: Set<String>): Boolean = synchronized(lock) {
+        removeSaved("workbench.json", ids)
+    }
+    private fun removeSaved(file: String, ids: Set<String>): Boolean {
+        if (ids.size > MAX_SAVED_ITEMS) return false
+        if (ids.isEmpty()) return true
+        val items = readSavedStrict(file) ?: return false
+        val remaining = items.filterNot { it.id in ids }
+        return remaining.size == items.size || writeSaved(file, remaining)
+    }
+    fun removePreset(id: String): Boolean = removePresets(setOf(id))
+    fun removeSavedResult(id: String): Boolean = removeSavedResults(setOf(id))
     fun clearPresets(): Boolean = synchronized(lock) { delete("presets.json") }
     fun clearSavedResults(): Boolean = synchronized(lock) { delete("workbench.json") }
 
@@ -180,7 +205,7 @@ class ToolMemoryStore private constructor(private val directory: File) {
         val label = name.trim()
         if (label.isBlank() || label.length > 80 || !ToolMemoryPolicy.permitsRoute(route) ||
             !ToolMemoryPolicy.validRecord(inputs, output)) return false
-        val existing = readSaved(file)
+        val existing = readSavedStrict(file) ?: return false
         // Unlike automatic history, explicit saves never silently evict an older saved item.
         if (existing.size >= MAX_SAVED_ITEMS) return false
         return writeSaved(file, listOf(SavedToolItem(UUID.randomUUID().toString(), label, route,
@@ -200,6 +225,35 @@ class ToolMemoryStore private constructor(private val directory: File) {
             if (!ToolMemoryPolicy.validRecord(inputs, output)) return@mapNotNull null
             SavedToolItem(id, label, route, time, inputs, output)
         }
+    }
+
+    /** Mutations must never silently drop unreadable/unrecognized rows or fields. */
+    private fun readSavedStrict(name: String): List<SavedToolItem>? {
+        val exists = listOf(name, "$name.bak", "$name.new").any { File(directory, it).exists() }
+        if (!exists) return emptyList()
+        val json = read(name) ?: return null
+        if (json.keys().asSequence().toSet() != setOf("version", "items")) return null
+        if (json.opt("version") != 1) return null
+        val items = json.optJSONArray("items") ?: return null
+        if (items.length() > MAX_SAVED_ITEMS) return null
+        val result = mutableListOf<SavedToolItem>()
+        val ids = mutableSetOf<String>()
+        for (index in 0 until items.length()) {
+            val item = items.optJSONObject(index) ?: return null
+            if (item.keys().asSequence().toSet() != setOf("id", "name", "route", "timestampMillis", "inputs", "output")) return null
+            val id = (item.opt("id") as? String)?.takeIf { it.isNotBlank() && it.length <= 64 } ?: return null
+            if (!ids.add(id)) return null
+            val label = (item.opt("name") as? String)?.takeIf { it.isNotBlank() && it.length <= 80 } ?: return null
+            val route = (item.opt("route") as? String)?.takeIf(ToolMemoryPolicy::permitsRoute) ?: return null
+            val rawTime = item.opt("timestampMillis")
+            if (rawTime !is Long && rawTime !is Int) return null
+            val time = (rawTime as Number).toLong().takeIf { it >= 0 } ?: return null
+            val inputs = parseInputs(item.optJSONObject("inputs")) ?: return null
+            val output = item.opt("output") as? String ?: return null
+            if (!ToolMemoryPolicy.validRecord(inputs, output)) return null
+            result += SavedToolItem(id, label, route, time, inputs, output)
+        }
+        return result
     }
 
     private fun writeSaved(name: String, values: List<SavedToolItem>): Boolean {

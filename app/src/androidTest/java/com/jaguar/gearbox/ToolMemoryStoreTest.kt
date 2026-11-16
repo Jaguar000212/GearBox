@@ -16,6 +16,73 @@ class ToolMemoryStoreTest {
     private val route = "tool/percentage"
     @After fun cleanup() { directory.deleteRecursively() }
 
+    @Test fun selectedMutationsRejectUnreadableCollectionWithoutRewritingBytes() {
+        for (collection in listOf("workbench.json", "presets.json")) {
+            directory.mkdirs()
+            val valid = org.json.JSONObject().put("id", "valid").put("name", "valid")
+                .put("route", route).put("timestampMillis", 1L)
+                .put("inputs", org.json.JSONObject().put("amount", "10")).put("output", "10")
+            val invalid = org.json.JSONObject(valid.toString()).put("id", "invalid").put("inputs", "not an object")
+            val scenarios = listOf(
+                org.json.JSONArray().put(valid).put(invalid),
+                org.json.JSONArray().also { array -> repeat(101) { array.put(org.json.JSONObject(valid.toString()).put("id", "id$it")) } },
+                org.json.JSONArray().put(valid).put(org.json.JSONObject(valid.toString()).put("id", "unknown").put("futureField", "preserve")),
+                org.json.JSONArray().put(valid).put(valid),
+            )
+            for (items in scenarios) {
+                val file = File(directory, collection)
+                val bytes = org.json.JSONObject().put("version", 1).put("items", items).toString().toByteArray()
+                file.writeBytes(bytes)
+                val rename = if (collection == "presets.json") store.renamePreset("valid", "new") else store.renameSavedResult("valid", "new")
+                assertFalse(rename)
+                assertArrayEquals(bytes, file.readBytes())
+                val removed = if (collection == "presets.json") store.removePresets(setOf("valid")) else store.removeSavedResults(setOf("valid"))
+                assertFalse(removed)
+                assertArrayEquals(bytes, file.readBytes())
+                val added = if (collection == "presets.json") store.savePreset("new", route, mapOf("amount" to "20"))
+                    else store.saveToWorkbench("new", route, mapOf("amount" to "20"), "20")
+                assertFalse(added)
+                assertArrayEquals(bytes, file.readBytes())
+            }
+        }
+    }
+
+    @Test fun renameChangesOnlyNameAndKeepsOrderAcrossReload() {
+        assertTrue(store.savePreset("setup", route, mapOf("mode" to "one")))
+        assertTrue(store.saveToWorkbench("first", route, mapOf("amount" to "10"), "ten"))
+        assertTrue(store.saveToWorkbench("second", route, mapOf("amount" to "20"), "twenty"))
+        val before = store.savedResults()
+        assertTrue(store.renameSavedResult(before.last().id, "  Renamed  "))
+        assertEquals(before.map { if (it.id == before.last().id) it.copy(name = "Renamed") else it },
+            ToolMemoryStore.inDirectory(directory).savedResults())
+        val preset = store.presets().single()
+        assertTrue(store.renamePreset(preset.id, "new setup"))
+        assertEquals(preset.copy(name = "new setup"), store.presets().single())
+        assertFalse(store.renamePreset("stale", "new"))
+        assertFalse(store.renameSavedResult(before.first().id, "   "))
+        assertFalse(store.renameSavedResult(before.first().id, "x".repeat(81)))
+        assertEquals(before.first(), store.savedResults().first())
+    }
+
+    @Test fun selectedRemovalIsScopedAtomicAndIgnoresStaleIds() {
+        repeat(3) { store.saveToWorkbench("result $it", route, mapOf("n" to "$it"), "$it") }
+        store.savePreset("setup", route, mapOf("mode" to "one"))
+        val before = store.savedResults()
+        val preset = store.presets().single()
+        assertTrue(store.removeSavedResults(emptySet()))
+        assertEquals(before, store.savedResults())
+        assertTrue(store.removeSavedResults(setOf(before.first().id, before.last().id, "stale")))
+        assertEquals(listOf(before[1]), ToolMemoryStore.inDirectory(directory).savedResults())
+        assertEquals(listOf(preset), store.presets())
+        assertTrue(store.removePresets(setOf(before[1].id)))
+        assertEquals(listOf(preset), store.presets())
+        assertFalse(store.removeSavedResults((1..101).map { "id$it" }.toSet()))
+        assertEquals(listOf(before[1]), store.savedResults())
+        assertTrue(store.removePresets(setOf(preset.id)))
+        assertTrue(store.presets().isEmpty())
+        assertEquals(listOf(before[1]), store.savedResults())
+    }
+
     @Test fun recordingRequiresConsentAndNeverStoresPasswords() {
         assertFalse(store.record(route, mapOf("amount" to "100"), "10"))
         assertTrue(store.saveSettings(ToolMemorySettings(historyEnabled = true)))

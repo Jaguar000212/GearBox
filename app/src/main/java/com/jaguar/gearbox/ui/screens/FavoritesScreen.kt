@@ -45,7 +45,8 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FavoritesScreen(tools: List<Tool>, favorites: FavoritesStore, onOpenTool: (Tool) -> Unit,
-    onOpenPreset: ((String, Map<String, String>) -> Unit)? = null) {
+    onOpenPreset: ((String, Map<String, String>) -> Unit)? = null,
+    onManagePresets: (() -> Unit)? = null) {
     val context = androidx.compose.ui.platform.LocalContext.current
     val toolsByRoute = remember(tools) { tools.associateBy { it.route } }
     val favTools = favorites.favorites.mapNotNull { toolsByRoute[it] }
@@ -114,6 +115,7 @@ fun FavoritesScreen(tools: List<Tool>, favorites: FavoritesStore, onOpenTool: (T
 
     if (showPresets && onOpenPreset != null) FavoritePresetsDialog(
         onDismiss = { showPresets = false },
+        onManage = onManagePresets?.let { manage -> { showPresets = false; manage() } },
         onOpen = { route, inputs -> showPresets = false; onOpenPreset(route, inputs) },
     )
 
@@ -286,7 +288,7 @@ private fun ChooseFavoriteTools(tools: List<Tool>, favorites: FavoritesStore, on
 
 /** Explicit launcher only: selection imports saved setup and never presses Generate/Start. */
 @Composable
-private fun FavoritePresetsDialog(onDismiss: () -> Unit, onOpen: (String, Map<String, String>) -> Unit) {
+private fun FavoritePresetsDialog(onDismiss: () -> Unit, onOpen: (String, Map<String, String>) -> Unit, onManage: (() -> Unit)? = null) {
     val context = androidx.compose.ui.platform.LocalContext.current
     val store = remember(context) { com.jaguar.gearbox.data.ToolMemoryStore(context) }
     var presets by remember { mutableStateOf<List<com.jaguar.gearbox.data.SavedToolItem>>(emptyList()) }
@@ -309,5 +311,6 @@ private fun FavoritePresetsDialog(onDismiss: () -> Unit, onOpen: (String, Map<St
                 }
             }
         }
-    }, confirmButton = { TextButton(onClick = onDismiss) { Text(context.getString(R.string.screen_close_presets)) } })
+    }, confirmButton = { TextButton(onClick = onDismiss) { Text(context.getString(R.string.screen_close_presets)) } },
+        dismissButton = { if (onManage != null) TextButton(onClick = onManage) { Text(context.getString(R.string.workbench_manage_presets)) } })
 }

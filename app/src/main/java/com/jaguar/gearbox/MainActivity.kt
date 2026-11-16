@@ -275,8 +275,11 @@ fun GearBoxApp(
                             onNavigateBack = ::navigateBack, requestStopwatchReset = true)
                     }
                 }
-                composable("workbench") {
+                composable("workbench?presets={presets}", arguments = listOf(
+                    androidx.navigation.navArgument("presets") { type = androidx.navigation.NavType.BoolType; defaultValue = false },
+                )) { entry ->
                     com.jaguar.gearbox.ui.screens.WorkbenchScreen(
+                        initialPresetsSelected = entry.arguments?.getBoolean("presets") ?: false,
                         onNavigateBack = ::navigateBack,
                         onOpen = { route, inputs, isPreset -> Tools.byRoute(route)?.let { tool ->
                             toolImport = com.jaguar.gearbox.ui.components.ToolImport(route, inputs, modeOnly = isPreset)
@@ -298,6 +301,9 @@ fun GearBoxApp(
                         tools = Tools.all,
                         favorites = favorites,
                         onOpenTool = openTool,
+                        onManagePresets = {
+                            userNavigation(); navController.navigate("workbench?presets=true") { launchSingleTop = true }
+                        },
                         onOpenPreset = { route, inputs -> Tools.byRoute(route)?.let { tool ->
                             toolImport = com.jaguar.gearbox.ui.components.ToolImport(route, inputs, modeOnly = true)
                             openTool(tool)

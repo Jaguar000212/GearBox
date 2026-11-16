@@ -3,7 +3,16 @@ package com.jaguar.gearbox.ui.screens
 import com.jaguar.gearbox.data.localizedInputLabel
 import com.jaguar.gearbox.data.localizedName
 import com.jaguar.gearbox.R
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.selection.toggleable
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import com.jaguar.gearbox.data.savedResultComparison
+import com.jaguar.gearbox.ui.components.AdaptiveToolLayout
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -35,11 +44,12 @@ fun WorkbenchScreen(
     onNavigateBack: () -> Unit,
     onOpen: (String, Map<String, String>, Boolean) -> Unit,
     memoryStore: ToolMemoryStore? = null,
+    initialPresetsSelected: Boolean = false,
 ) {
     val context = LocalContext.current
     val store = remember(context, memoryStore) { memoryStore ?: ToolMemoryStore(context) }
     val scope = rememberCoroutineScope()
-    var presetsSelected by rememberSaveable { mutableStateOf(false) }
+    var presetsSelected by rememberSaveable { mutableStateOf(initialPresetsSelected) }
     var results by remember { mutableStateOf<List<SavedToolItem>>(emptyList()) }
     var presets by remember { mutableStateOf<List<SavedToolItem>>(emptyList()) }
     var loaded by remember { mutableStateOf(false) }
@@ -49,7 +59,23 @@ fun WorkbenchScreen(
     var handoffTarget by remember { mutableStateOf<SavedToolItem?>(null) }
     var deleteTarget by remember { mutableStateOf<SavedToolItem?>(null) }
     var deletePreset by remember { mutableStateOf(false) }
+    var query by rememberSaveable { mutableStateOf("") }
+    var selecting by rememberSaveable { mutableStateOf(false) }
+    var selection by rememberSaveable { mutableStateOf<List<String>>(emptyList()) }
+    var renameTarget by remember { mutableStateOf<SavedToolItem?>(null) }
+    var renamePreset by remember { mutableStateOf(false) }
+    var renameText by rememberSaveable { mutableStateOf("") }
+    var batchTargets by remember { mutableStateOf<List<SavedToolItem>>(emptyList()) }
+    var batchPreset by remember { mutableStateOf(false) }
+    var comparison by remember { mutableStateOf<List<SavedToolItem>>(emptyList()) }
     val items = if (presetsSelected) presets else results
+    val visibleItems = items.filter { item -> query.isBlank() || item.name.contains(query.trim(), true) ||
+        Tools.byRoute(item.route)?.localizedName(context)?.contains(query.trim(), true) == true }
+    val selectedItems = visibleItems.filter { it.id in selection }
+    fun leaveSelection() { selecting = false; selection = emptyList() }
+    BackHandler(enabled = selecting && renameTarget == null && batchTargets.isEmpty() && comparison.isEmpty()) {
+        if (!busy) leaveSelection()
+    }
     LaunchedEffect(store) {
         withContext(Dispatchers.IO) { store.savedResults() to store.presets() }.let {
             results = it.first
@@ -62,7 +88,7 @@ fun WorkbenchScreen(
             TopAppBar(
                 title = { Text(context.getString(R.string.screen_workbench)) },
                 navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
+                    IconButton(enabled = !busy, onClick = { if (selecting) leaveSelection() else onNavigateBack() }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = context.getString(R.string.screen_back))
                     }
                 },
@@ -81,13 +107,40 @@ fun WorkbenchScreen(
                     Text(context.getString(R.string.screen_named_results_and_reusable_setups_saved_only_on_this_device_nothi),
                         color = MaterialTheme.colorScheme.onSurfaceVariant)
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        FilterChip(selected = !presetsSelected, onClick = { presetsSelected = false },
+                        FilterChip(selected = !presetsSelected, enabled = !busy, onClick = { if (presetsSelected) { presetsSelected = false; leaveSelection() } },
                             label = { Text(context.getString(R.string.screen_results_1_s, results.size)) })
-                        FilterChip(selected = presetsSelected, onClick = { presetsSelected = true },
+                        FilterChip(selected = presetsSelected, enabled = !busy, onClick = { if (!presetsSelected) { presetsSelected = true; leaveSelection() } },
                             label = { Text(context.getString(R.string.screen_presets_1_s, presets.size)) })
                     }
                     Text(context.resources.getQuantityString(if (presetsSelected) R.plurals.screen_presets_capacity else R.plurals.screen_results_capacity, items.size, items.size, ToolMemoryStore.MAX_SAVED_ITEMS),
                         style = MaterialTheme.typography.labelMedium)
+                    Text(context.getString(R.string.workbench_private_notice), style = MaterialTheme.typography.bodySmall)
+                    OutlinedTextField(query, { query = it; leaveSelection() }, enabled = !busy,
+                        label = { Text(context.getString(R.string.workbench_search)) }, singleLine = true,
+                        modifier = Modifier.fillMaxWidth())
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        TextButton(enabled = loaded && !busy && (items.isNotEmpty() || selecting),
+                            onClick = { if (selecting) leaveSelection() else selecting = true }) {
+                            Text(context.getString(if (selecting) R.string.workbench_cancel_selection else R.string.workbench_select_items))
+                        }
+                        if (selecting) {
+                            Text(context.resources.getQuantityString(R.plurals.workbench_selected_count, selectedItems.size, selectedItems.size))
+                            TextButton(enabled = !busy && visibleItems.isNotEmpty(), onClick = { selection = visibleItems.map { it.id } }) {
+                                Text(context.getString(R.string.workbench_select_visible))
+                            }
+                            TextButton(enabled = !busy && selectedItems.isNotEmpty(), onClick = {
+                                batchPreset = presetsSelected; batchTargets = selectedItems.toList(); error = null
+                            }) { Text(context.getString(R.string.workbench_delete_selected)) }
+                            if (!presetsSelected) {
+                                val canCompare = selectedItems.size == 2 && savedResultComparison(selectedItems[0], selectedItems[1]).compatible
+                                TextButton(enabled = !busy && canCompare, onClick = { comparison = selectedItems.toList() }) {
+                                    Text(context.getString(R.string.workbench_compare))
+                                }
+                            }
+                        }
+                    }
+                    if (selecting && !presetsSelected) Text(context.getString(R.string.workbench_compare_guidance), style = MaterialTheme.typography.bodySmall)
+                    if (loaded && items.isNotEmpty() && visibleItems.isEmpty()) Text(context.getString(R.string.workbench_no_matches))
                     if (!loaded || busy) LinearProgressIndicator(Modifier.fillMaxWidth())
                     error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
                 }
@@ -103,11 +156,17 @@ fun WorkbenchScreen(
                     }
                 }
             }
-            items(items, key = { it.id }) { item ->
+            items(visibleItems, key = { it.id }) { item ->
                 val tool = Tools.all.firstOrNull { it.route == item.route }
                 OutlinedCard(Modifier.widthIn(max = 840.dp).fillMaxWidth()) {
                     Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text(item.name, style = MaterialTheme.typography.titleLarge)
+                        if (selecting) Row(Modifier.fillMaxWidth().toggleable(
+                            value = item.id in selection, enabled = !busy, role = Role.Checkbox,
+                            onValueChange = { checked -> selection = if (checked) selection + item.id else selection - item.id }),
+                            verticalAlignment = Alignment.CenterVertically) {
+                            Checkbox(checked = item.id in selection, onCheckedChange = null)
+                            Text(item.name, style = MaterialTheme.typography.titleLarge, modifier = Modifier.weight(1f))
+                        } else Text(item.name, style = MaterialTheme.typography.titleLarge)
                         Text(tool?.localizedName(context) ?: context.getString(R.string.screen_unavailable_tool), style = MaterialTheme.typography.labelLarge,
                             color = MaterialTheme.colorScheme.primary)
                         Text(DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT)
@@ -121,7 +180,7 @@ fun WorkbenchScreen(
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
-                        FlowRow(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                        if (!selecting) FlowRow(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                             TextButton(onClick = { context.copyToClipboard(item.name, savedItemText(context, item), sensitive = ToolMemoryPolicy.isSensitiveTextRoute(item.route)) }) { Text(context.getString(R.string.screen_copy)) }
                             TextButton(onClick = {
                                 if (ToolMemoryPolicy.isSensitiveTextRoute(item.route)) sharePreview = savedItemText(context, item)
@@ -136,6 +195,9 @@ fun WorkbenchScreen(
                                 TextButton(enabled = !busy, onClick = { handoffTarget = item }) { Text(context.getString(R.string.screen_use_in)) }
                             }
                             TextButton(enabled = !busy, onClick = {
+                                renamePreset = presetsSelected; renameTarget = item; renameText = item.name; error = null
+                            }) { Text(context.getString(R.string.workbench_rename)) }
+                            TextButton(enabled = !busy, onClick = {
                                 deletePreset = presetsSelected
                                 deleteTarget = item
                             }) { Text(context.getString(R.string.screen_delete)) }
@@ -145,6 +207,55 @@ fun WorkbenchScreen(
             }
         }
     }
+    renameTarget?.let { target ->
+        AlertDialog(onDismissRequest = { if (!busy) renameTarget = null },
+            title = { Text(context.getString(R.string.workbench_rename)) },
+            text = { Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedTextField(renameText, { renameText = it }, enabled = !busy,
+                    label = { Text(context.getString(R.string.workbench_name)) }, singleLine = true,
+                    isError = renameText.trim().length > 80,
+                    supportingText = { Text(context.getString(R.string.workbench_name_count, renameText.trim().length)) })
+                error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+            } },
+            confirmButton = { TextButton(enabled = !busy && renameText.trim().length in 1..80, onClick = {
+                busy = true
+                val name = renameText.trim(); val isPreset = renamePreset
+                scope.launch {
+                    try {
+                        val success = withContext(Dispatchers.IO) { if (isPreset) store.renamePreset(target.id, name) else store.renameSavedResult(target.id, name) }
+                        if (success) {
+                            if (isPreset) presets = withContext(Dispatchers.IO) { store.presets() }
+                            else results = withContext(Dispatchers.IO) { store.savedResults() }
+                            renameTarget = null; error = null
+                        } else error = context.getString(R.string.workbench_rename_failed)
+                    } finally { busy = false }
+                }
+            }) { Text(context.getString(R.string.workbench_save_name)) } },
+            dismissButton = { TextButton(enabled = !busy, onClick = { renameTarget = null }) { Text(context.getString(R.string.screen_cancel)) } })
+    }
+    if (batchTargets.isNotEmpty()) AlertDialog(onDismissRequest = { if (!busy) batchTargets = emptyList() },
+        title = { Text(context.resources.getQuantityString(R.plurals.workbench_delete_count, batchTargets.size, batchTargets.size)) },
+        text = { Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(context.getString(if (batchPreset) R.string.workbench_delete_presets_notice else R.string.workbench_delete_results_notice))
+            batchTargets.forEach { Text(it.name) }
+            error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+        } },
+        confirmButton = { TextButton(enabled = !busy, onClick = {
+            busy = true
+            val ids = batchTargets.map { it.id }.toSet(); val isPreset = batchPreset
+            scope.launch {
+                try {
+                    val success = withContext(Dispatchers.IO) { if (isPreset) store.removePresets(ids) else store.removeSavedResults(ids) }
+                    if (success) {
+                        if (isPreset) presets = withContext(Dispatchers.IO) { store.presets() }
+                        else results = withContext(Dispatchers.IO) { store.savedResults() }
+                        batchTargets = emptyList(); leaveSelection(); error = null
+                    } else error = context.getString(R.string.screen_could_not_delete_the_saved_item_please_try_again)
+                } finally { busy = false }
+            }
+        }) { Text(context.getString(R.string.screen_delete)) } },
+        dismissButton = { TextButton(enabled = !busy, onClick = { batchTargets = emptyList() }) { Text(context.getString(R.string.screen_cancel)) } })
+    if (comparison.size == 2) SavedResultComparisonDialog(comparison[0], comparison[1]) { comparison = emptyList() }
     sharePreview?.let { text ->
         SensitiveTextShareDialog(text, onConfirm = {
             sharePreview = null
@@ -196,4 +307,43 @@ private fun savedItemText(context: android.content.Context, item: SavedToolItem)
     append(item.name)
     if (item.inputs.isNotEmpty()) append("\n").append(item.inputs.filterKeys { !it.startsWith("_") }.entries.joinToString("\n") { "${localizedInputLabel(context, it.key)}: ${it.value}" })
     if (item.output.isNotBlank()) append("\n\n").append(item.output)
+}
+
+
+/** Read-only snapshots: this dialog never restores inputs, recalculates, copies or shares. */
+@Composable
+internal fun SavedResultComparisonDialog(first: SavedToolItem, second: SavedToolItem, onDismiss: () -> Unit) {
+    val context = LocalContext.current
+    if (!savedResultComparison(first, second).compatible) return
+    Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
+        Surface(Modifier.fillMaxSize()) {
+            Column(Modifier.fillMaxSize().safeDrawingPadding().padding(16.dp)) {
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                    Text(context.getString(R.string.workbench_comparison_title), style = MaterialTheme.typography.titleLarge, modifier = Modifier.weight(1f))
+                    TextButton(onClick = onDismiss) { Text(context.getString(R.string.workbench_close_comparison)) }
+                }
+                Column(Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text(context.getString(R.string.workbench_snapshot_notice))
+                    AdaptiveToolLayout(input = { ComparisonSnapshot(first) }, result = { ComparisonSnapshot(second) })
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ComparisonSnapshot(item: SavedToolItem) {
+    val context = LocalContext.current
+    OutlinedCard(Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(item.name, style = MaterialTheme.typography.titleLarge)
+            Text(Tools.byRoute(item.route)?.localizedName(context).orEmpty(), style = MaterialTheme.typography.labelLarge)
+            Text(DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT).format(Date(item.timestampMillis)))
+            Text(context.getString(R.string.workbench_saved_inputs), style = MaterialTheme.typography.titleMedium)
+            Text(item.inputs.filterKeys { !it.startsWith("_") }.entries.joinToString("\n") { "${localizedInputLabel(context, it.key)}: ${it.value}" })
+            HorizontalDivider()
+            Text(context.getString(R.string.workbench_saved_output), style = MaterialTheme.typography.titleMedium)
+            Text(item.output)
+        }
+    }
 }

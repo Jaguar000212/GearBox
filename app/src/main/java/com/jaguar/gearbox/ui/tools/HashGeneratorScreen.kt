@@ -41,6 +41,7 @@ fun HashGeneratorScreen(onNavigateBack: () -> Unit) {
     val history = rememberToolHistory(
         route = Tools.ROUTE_HASH_GENERATOR,
         inputs = mapOf("text" to input, "algorithm" to selectedAlgorithm.name), output = hash,
+        resultRequiresExplicitAction = true,
         onRestore = { values ->
             input = values["text"].orEmpty()
             algorithm = TextHashAlgorithm.entries.firstOrNull { it.name == values["algorithm"] }?.name ?: TextHashAlgorithm.SHA256.name

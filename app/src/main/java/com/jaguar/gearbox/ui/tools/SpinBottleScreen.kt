@@ -19,6 +19,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.semantics.*
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.jaguar.gearbox.data.RandomResultSnapshots
 import com.jaguar.gearbox.data.Tools
 import com.jaguar.gearbox.data.UiPreferencesStore
 import androidx.compose.ui.platform.LocalContext
@@ -37,6 +38,8 @@ fun SpinBottleScreen(onNavigateBack: () -> Unit) {
     val rotation = remember { Animatable(finalAngle.coerceAtLeast(0).toFloat()) }
     val scope = rememberCoroutineScope()
     var spinning by remember { mutableStateOf(false) }
+    var spinStartAngle by remember { mutableStateOf(0f) }
+    var animationAligned by remember { mutableStateOf(false) }
     val status = when {
         spinning -> "Spinning…"
         finalAngle < 0 -> "Ready to spin"
@@ -45,12 +48,14 @@ fun SpinBottleScreen(onNavigateBack: () -> Unit) {
 
     val history = rememberToolHistory(
         route = Tools.ROUTE_SPIN_BOTTLE,
-        inputs = mapOf("spin" to "Full circle", "_run" to runId),
+        inputs = mapOf("spin" to "Full circle", "_run" to runId, "_angle" to finalAngle.toString()),
         output = status.takeIf { !spinning && finalAngle in 0..359 },
         recordingDelayMillis = 0L,
-        onRestore = { _ ->
-            // There is no configuration to import. Leave an active spin undisturbed.
-            if (!spinning) finalAngle = -1
+        onRestore = { saved ->
+            if (!spinning) {
+                finalAngle = RandomResultSnapshots.bottle(saved) ?: -1
+                runId = saved["_run"].orEmpty()
+            }
         },
     )
 
@@ -75,7 +80,13 @@ fun SpinBottleScreen(onNavigateBack: () -> Unit) {
                         drawCircle(ring, radius = size.minDimension / 2 - 4.dp.toPx(), style = Stroke(1.dp.toPx()))
                         drawLine(ring, Offset(center.x, 4.dp.toPx()), Offset(center.x, 16.dp.toPx()), 3.dp.toPx())
                     }
-                    BottleIllustration(Modifier.fillMaxSize(0.72f).graphicsLayer { rotationZ = if (!spinning && finalAngle < 0) 0f else rotation.value })
+                    BottleIllustration(Modifier.fillMaxSize(0.72f).graphicsLayer {
+                        rotationZ = when {
+                            !spinning -> finalAngle.coerceAtLeast(0).toFloat()
+                            !animationAligned -> spinStartAngle
+                            else -> rotation.value
+                        }
+                    })
                 }
                 Spacer(Modifier.height(12.dp))
                 Text("The narrow, capped end is the pointer.", style = MaterialTheme.typography.bodySmall,
@@ -86,17 +97,22 @@ fun SpinBottleScreen(onNavigateBack: () -> Unit) {
         Button(
             onClick = {
                 if (!spinning) {
+                    // A restored outcome can differ from the transient Animatable. Keep
+                    // displaying that exact angle until the animation has been aligned.
+                    val current = finalAngle.coerceAtLeast(0).toFloat()
+                    spinStartAngle = current
+                    animationAligned = false
                     // Lock synchronously so rapid taps cannot launch concurrent spins.
                     spinning = true
                     // An interrupted spin must not restore the previous round as its result.
                     finalAngle = -1
                     val nextAngle = Random.nextInt(360)
-                    val current = ((rotation.value % 360f) + 360f) % 360f
                     val delta = (nextAngle - current + 360f) % 360f
                     val target = current + 360f * (5 + Random.nextInt(3)) + delta
                     scope.launch {
                         try {
                             rotation.snapTo(current)
+                            animationAligned = true
                             // Animatable honors the system animation-duration scale, including zero.
                             if (!uiPreferences.reduceMotion) rotation.animateTo(target, animationSpec = tween(durationMillis = 2500))
                             rotation.snapTo(nextAngle.toFloat())

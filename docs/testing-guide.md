@@ -118,3 +118,17 @@ For same-phone side-by-side testing, prefer the [isolated GearBox Preview build]
 Phase 3 CI43904474797 passed at `0e9c73e99b492cbeb51dad8eaa11359acbbb4610`; no device checks have been claimed. For Phase 4 automated results, see the exact-head checks on [PR #59](https://github.com/Jaguar000212/GearBox/pull/59/checks).
 
 Additional details: [focus views](PHASE4_FOCUS_TESTING.md), [switching/presets/handoffs](PHASE4_SWITCHING_TESTING.md).
+
+## Corrective phase: result replay and actionable examples
+
+- Enable Remember last result, complete Coin, Bottle, Dice, Random Number, One of Two and Rock Paper Scissors, leave and reopen each tool. The exact outcome must return without rerolling, replaying animation or increasing a tally. Bottle must point to the same angle; Dice must retain every die.
+- Repeat using History Restore and Workbench Restore. New records carry validated typed outcomes. Older records without those fields restore inputs only, not a guessed result parsed from display text. Invalid outcomes must be rejected safely.
+- Clear history or remembered modes while retaining a saved last result, then reopen/rotate the tool. Hydration must not repopulate the cleared storage. A genuinely new roll/edit must still record normally.
+- QR and Hash restore text/setup only; Generate remains required. Verify the first Generate after hydration can be recorded. Counter, Clock, Team Picker, Tambola, Tic Tac Toe, Scoreboard, Chess Clock, Compass, Level, Flashlight and Ruler still deliberately do not auto-replay saved results. Password remains excluded.
+- Help offers **Use example** in 23 deterministic calculator/converter/text tools. Opening Help, Cancel, Back and dismissal must not change inputs. Confirm replaces inputs exactly once, including when the destination already has a retained draft. QR/Hash examples must not auto-generate. No examples start games, clocks, random actions, hardware or password generation.
+- Home, Favorites and search must call the loan repayment tool **Loan Calculator**, not Interest Calculator. Searching “interest” still finds it.
+- Updated instrumentation selectors cover Password Customize/transient secret state, Geometry, Percentage, Unit Converter and Base Converter. Calculator-memory tests use isolated storage. New tests cover example confirmation and typed result restoration.
+
+**Verification boundary:** Android instrumentation tests are authored and compiled in CI, not executed here. JVM tests/lint/build status must be checked for this exact corrective commit. Owner device execution, TalkBack, hardware, landscape and in-place migration remain unverified. A fresh Preview installation does not exercise upgrade migration.
+
+**Known privacy limitation pending the next phase:** automatic history/result saving can retain private text entered into otherwise ordinary tools, including Text, QR and Hash. New memory files are app-private and excluded from Android backup by storage location, but are not an encrypted vault or automatic secret detector. Existing legacy game/settings backup behavior and Android saved-instance drafts are separate.

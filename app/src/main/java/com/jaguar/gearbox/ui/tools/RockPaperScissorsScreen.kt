@@ -36,6 +36,7 @@ import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import com.jaguar.gearbox.data.SimplePrefsStore
+import com.jaguar.gearbox.data.RandomResultSnapshots
 import com.jaguar.gearbox.data.Tools
 import com.jaguar.gearbox.ui.components.ToolScaffold
 import com.jaguar.gearbox.ui.components.rememberToolHistory
@@ -69,16 +70,21 @@ fun RockPaperScissorsScreen(onNavigateBack: () -> Unit) {
 
     val history = rememberToolHistory(
         route = Tools.ROUTE_RPS,
-        inputs = mapOf("playerMove" to (playerMove ?: ""), "_run" to runId),
+        inputs = mapOf("playerMove" to (playerMove ?: ""), "_run" to runId, "_cpuMove" to computerMove.orEmpty()),
         output = if (playerMove != null && computerMove != null)
             "You: $playerMove\nCPU: $computerMove\n$resultText" else null,
         recordingDelayMillis = 0L,
         onRestore = { saved ->
-            // Restore the choice only. Never roll the CPU or change the saved tally.
             playerMove = RpsMove.entries.firstOrNull { it.name == saved["playerMove"] }?.name
             computerMove = null
             resultText = playerMove?.let { "Previous choice: ${RpsMove.valueOf(it).label}. Tap a move to play." }
                 ?: "Choose your move"
+            RandomResultSnapshots.rps(saved)?.let { (player, cpu) ->
+                playerMove = player; computerMove = cpu
+                resultText = rpsOutcome(RpsMove.valueOf(player), RpsMove.valueOf(cpu)).message
+                runId = saved["_run"].orEmpty()
+                // This is display hydration only: no RNG and no tally update.
+            }
         },
     )
 

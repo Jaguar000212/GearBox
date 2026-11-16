@@ -71,7 +71,7 @@ internal fun ToolMemorySettingsSection() {
                         style = MaterialTheme.typography.bodyMedium)
                     MemoryToggle("Remember tool modes", "Reuse supported tools’ last selected options.",
                         settings.rememberModes, !busy) { save(settings.copy(rememberModes = it)) }
-                    MemoryToggle("Remember last result", "Restore supported tools’ last result separately from history.",
+                    MemoryToggle("Remember last result", "Recalculate supported tools from saved inputs; random tools restore their last outcome. QR and Hash still require Generate. Separate from history.",
                         settings.rememberResults, !busy) { save(settings.copy(rememberResults = it)) }
                     HorizontalDivider()
                     MemoryToggle("Remember game sessions and participants",

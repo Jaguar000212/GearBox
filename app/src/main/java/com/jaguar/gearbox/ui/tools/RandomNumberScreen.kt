@@ -14,6 +14,7 @@ import androidx.compose.ui.semantics.*
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.jaguar.gearbox.data.RandomResultSnapshots
 import com.jaguar.gearbox.data.Tools
 import com.jaguar.gearbox.logic.randomLongInclusive
 import com.jaguar.gearbox.ui.components.ResultCard
@@ -41,7 +42,7 @@ fun RandomNumberScreen(onNavigateBack: () -> Unit) {
 
     val history = rememberToolHistory(
         route = Tools.ROUTE_RANDOM,
-        inputs = mapOf("min" to min, "max" to max, "_run" to runId),
+        inputs = mapOf("min" to min, "max" to max, "_run" to runId, "_number" to result),
         output = result.takeIf { it.isNotEmpty() && low != null && high != null && low <= high },
         recordingDelayMillis = 0L,
         modeInputs = mapOf("min" to min, "max" to max),
@@ -50,9 +51,9 @@ fun RandomNumberScreen(onNavigateBack: () -> Unit) {
             max = saved["max"]?.takeIf { it.trim().toLongOrNull() != null } ?: ""
         },
         onRestore = { saved ->
-            min = saved["min"]?.takeIf { it.trim().toLongOrNull() != null } ?: ""
-            max = saved["max"]?.takeIf { it.trim().toLongOrNull() != null } ?: ""
-            result = ""; submitted = false
+            min = saved["min"].orEmpty(); max = saved["max"].orEmpty()
+            result = RandomResultSnapshots.number(saved)?.toString().orEmpty()
+            runId = saved["_run"].orEmpty(); submitted = false
         },
     )
 

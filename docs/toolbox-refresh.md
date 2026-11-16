@@ -59,3 +59,9 @@ Local whitespace and Python packaging tests passed. Local Gradle execution was b
 Phase 2 CI43904137433 passed at `d3f0c574db2dd058527b8518792fbec8aca320aa`; Phase 3 CI43904474797 passed at `0e9c73e99b492cbeb51dad8eaa11359acbbb4610`. Phase 4 exact-head verification is recorded in [PR #59 checks](https://github.com/Jaguar000212/GearBox/pull/59/checks).
 
 CI now uploads debug app and instrumentation APKs plus checksums for hands-on testing (seven-day retention). These are development artifacts, not a signed release. Ordinary debug uses `com.jaguar.gearbox.beta`; an existing installation with a different signing key may reject an update. CI also provides an opt-in isolated `com.jaguar.gearbox.preview` build for side-by-side testing; see [preview setup and limits](preview-testing.md). Do not uninstall or clear existing data to bypass that error. Use a separate test device/profile or report the conflict.
+
+### Corrective follow-up
+
+Last-result support now restores validated typed outcomes for six random tools (Coin, Bottle, Dice, Random Number, One of Two and Rock Paper Scissors), including explicit History/Workbench reuse, without generating new outcomes or changing tallies. Legacy records without typed outcomes restore inputs only. QR/Hash continue to require Generate; live/destructive tool exclusions remain deliberate.
+
+Help includes confirmed, cancellable example-input imports for 23 deterministic tools rather than claiming every tool has an executable example. Loan Calculator catalog wording now matches its repayment functionality. See the corrective checklist in `testing-guide.md` for scope and remaining verification/privacy limitations.

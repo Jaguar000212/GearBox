@@ -1,6 +1,6 @@
 package com.jaguar.gearbox.data
 
-/** Local, read-only guidance. Examples never populate fields or execute a tool. */
+/** Local guidance. Supported examples can be explicitly loaded after confirmation. */
 data class ToolHelp(val instructions: String, val example: String, val limitation: String)
 
 object ToolHelpCatalog {

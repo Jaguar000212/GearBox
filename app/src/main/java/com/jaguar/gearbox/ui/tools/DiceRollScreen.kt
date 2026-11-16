@@ -17,6 +17,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import com.jaguar.gearbox.data.RandomResultSnapshots
 import com.jaguar.gearbox.data.Tools
 import com.jaguar.gearbox.ui.components.IntListSaver
 import com.jaguar.gearbox.ui.components.ToolActions
@@ -28,6 +29,7 @@ import kotlin.random.Random
 @Composable
 fun DiceRollScreen(onNavigateBack: () -> Unit) {
     val context = LocalContext.current
+    var runId by rememberSaveable { mutableStateOf("") }
     var diceCount by rememberSaveable { mutableIntStateOf(1) }
     var values by rememberSaveable(stateSaver = IntListSaver) { mutableStateOf(emptyList<Int>()) }
     val diceLabel = if (diceCount == 1) "die" else "dice"
@@ -40,8 +42,12 @@ fun DiceRollScreen(onNavigateBack: () -> Unit) {
         values = emptyList()
     }
 
-    val history = rememberToolHistory(Tools.ROUTE_DICE, mapOf("dice" to diceCount.toString()), result,
-        onRestore = { saved -> changeCount(saved["dice"]?.toIntOrNull() ?: 1) },
+    val history = rememberToolHistory(Tools.ROUTE_DICE, mapOf("dice" to diceCount.toString(), "_dice" to values.joinToString(","), "_run" to runId), result,
+        onRestore = { saved ->
+            changeCount(saved["dice"]?.toIntOrNull() ?: 1)
+            values = RandomResultSnapshots.dice(saved).orEmpty()
+            runId = saved["_run"].orEmpty()
+        },
         recordingDelayMillis = 0L,
         modeInputs = mapOf("dice" to diceCount.toString()),
         onRestoreMode = { saved -> changeCount(saved["dice"]?.toIntOrNull() ?: 1) })
@@ -95,7 +101,7 @@ fun DiceRollScreen(onNavigateBack: () -> Unit) {
             }
         }
         Spacer(Modifier.height(16.dp))
-        Button(onClick = { values = List(diceCount) { Random.nextInt(1, 7) } }, modifier = Modifier.fillMaxWidth()) {
+        Button(onClick = { runId = java.util.UUID.randomUUID().toString(); values = List(diceCount) { Random.nextInt(1, 7) } }, modifier = Modifier.fillMaxWidth()) {
             Icon(Icons.Filled.Casino, contentDescription = null)
             Spacer(Modifier.width(8.dp))
             Text(if (values.isEmpty()) "Roll" else "Roll again")

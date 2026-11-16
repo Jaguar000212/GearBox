@@ -18,6 +18,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.*
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.jaguar.gearbox.data.RandomResultSnapshots
 import com.jaguar.gearbox.data.Tools
 import com.jaguar.gearbox.data.UiPreferencesStore
 import com.jaguar.gearbox.ui.components.ToolActions
@@ -41,12 +42,14 @@ fun FlipCoinScreen(onNavigateBack: () -> Unit) {
 
     val history = rememberToolHistory(
         route = Tools.ROUTE_FLIP_COIN,
-        inputs = mapOf("coin" to "Fair coin", "_run" to runId),
+        inputs = mapOf("coin" to "Fair coin", "_run" to runId, "_heads" to (result?.toString() ?: "")),
         output = resultText.takeIf { !flipping && result != null },
         recordingDelayMillis = 0L,
-        onRestore = { _ ->
-            // A history import never flips the coin or interrupts an active flip.
-            if (!flipping) result = null
+        onRestore = { saved ->
+            if (!flipping) {
+                result = RandomResultSnapshots.coin(saved)
+                runId = saved["_run"].orEmpty()
+            }
         },
     )
 

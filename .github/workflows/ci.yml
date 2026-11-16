@@ -55,6 +55,15 @@ jobs:
           :app:assembleDebug :app:assembleDebugAndroidTest :app:assembleRelease
           :app:testDebugUnitTest :app:lintDebug :app:lintRelease
 
+      - name: Verify regular APK identities
+        run: >-
+          python3 scripts/check_apk_identity.py
+          --aapt "$ANDROID_HOME/build-tools/35.0.0/aapt"
+          --app app/build/outputs/apk/debug/app-debug.apk
+          --test app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
+          --expected com.jaguar.gearbox.beta
+          --release app/build/outputs/apk/release/app-release-unsigned.apk
+
       - name: Upload diagnostic reports
         if: always()
         uses: actions/upload-artifact@v4
@@ -84,5 +93,43 @@ jobs:
             app/build/outputs/apk/debug/*.apk
             app/build/outputs/apk/androidTest/debug/*.apk
             app/build/outputs/apk/debug-checksums.sha256
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Build isolated preview app and instrumentation
+        run: >-
+          bash ./gradlew --no-daemon --stacktrace -PisolatedPreview=true
+          :app:assembleDebug :app:assembleDebugAndroidTest :app:testDebugUnitTest :app:lintDebug
+
+      - name: Upload preview diagnostic reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-preview-check-reports
+          path: |
+            app/build/reports/
+            app/build/test-results/
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Verify and package isolated preview
+        run: |
+          mkdir -p app/build/outputs/preview-testing
+          python3 scripts/check_apk_identity.py \
+            --aapt "$ANDROID_HOME/build-tools/35.0.0/aapt" \
+            --app app/build/outputs/apk/debug/app-debug.apk \
+            --test app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk \
+            --expected com.jaguar.gearbox.preview --preview \
+            --release app/build/outputs/apk/release/app-release-unsigned.apk \
+            | tee app/build/outputs/preview-testing/identity.json
+          cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/preview-testing/GearBox-Preview.apk
+          cp app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk app/build/outputs/preview-testing/GearBox-Preview-androidTest.apk
+          (cd app/build/outputs/preview-testing && sha256sum *.apk > checksums.sha256)
+
+      - name: Upload isolated preview testing APKs
+        uses: actions/upload-artifact@v4
+        with:
+          name: gearbox-preview-${{ github.event.pull_request.head.sha || github.sha }}
+          path: app/build/outputs/preview-testing/
           if-no-files-found: error
           retention-days: 7

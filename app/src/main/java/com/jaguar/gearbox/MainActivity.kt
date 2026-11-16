@@ -172,8 +172,8 @@ fun GearBoxApp(
     val favorites = remember { FavoritesStore(context) }
     val recentTools = remember { RecentToolsStore(context) }
     val recentEvents = remember(recentTools) {
-        com.jaguar.gearbox.data.RecentToolEventQueue { route ->
-            kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) { recentTools.recordOpened(route) }
+        com.jaguar.gearbox.data.RecentToolEventQueue { route, generation ->
+            kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) { recentTools.recordOpened(route, expectedGeneration = generation) }
         }
     }
     LaunchedEffect(recentEvents) { recentEvents.consume() }
@@ -195,7 +195,7 @@ fun GearBoxApp(
     }
     val openTool: (Tool) -> Unit = { tool ->
         userNavigation()
-        recentEvents.enqueue(tool.route)
+        recentEvents.enqueue(tool.route, recentTools.generation())
         navController.navigate(tool.route)
     }
 
@@ -221,7 +221,7 @@ fun GearBoxApp(
             if (requestedRoute == com.jaguar.gearbox.timer.StopwatchStatusNotification.RESET_ROUTE) requestedRoute else Tools.ROUTE_TIMER_STOPWATCH
         } else requestedRoute
         if (requestStillCurrent() && (Tools.byRoute(route) != null || route == com.jaguar.gearbox.timer.StopwatchStatusNotification.RESET_ROUTE)) {
-            recentEvents.enqueue(if (route == com.jaguar.gearbox.timer.StopwatchStatusNotification.RESET_ROUTE) Tools.ROUTE_TIMER_STOPWATCH else route)
+            recentEvents.enqueue(if (route == com.jaguar.gearbox.timer.StopwatchStatusNotification.RESET_ROUTE) Tools.ROUTE_TIMER_STOPWATCH else route, recentTools.generation())
             navController.navigate(route)
         }
         onPendingRouteConsumed()

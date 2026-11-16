@@ -99,7 +99,9 @@ fun rememberToolHistory(
     val fingerprint = remember(route, inputs, output) { historyObservationFingerprint(route, inputs, output) }
     // Live calculators are recorded after a pause, never for each keystroke or invalid result.
     LaunchedEffect(route, fingerprint, initialized) {
-        if (!initialized) return@LaunchedEffect
+        // Async results may temporarily disappear during recreation. Loading/invalid
+        // output must not erase the processed observation and replay it on completion.
+        if (!initialized || output.isNullOrBlank()) return@LaunchedEffect
         if (observedFingerprint != fingerprint) {
             observedFingerprint = fingerprint
             observedGeneration = expectedHistoryGeneration ?: store.historyGeneration(route)

@@ -90,4 +90,30 @@ class HistoryObservationRestorationTest {
         compose.waitUntil(5_000) { store.loadMode(route)["unit"] == "in" }
     }
 
+
+    @Test fun transientLoadingAfterRecreationDoesNotReplayClearedAsyncResult() {
+        val route = Tools.ROUTE_COMPASS
+        val store = ToolMemoryStore(isolated)
+        store.saveSettings(ToolMemorySettings(historyEnabled = true))
+        val output = mutableStateOf<String?>("Calculated output")
+        val restoration = StateRestorationTester(compose)
+        restoration.setContent {
+            CompositionLocalProvider(LocalContext provides isolated) {
+                rememberToolHistory(route, mapOf("input" to "unchanged"), output.value, {},
+                    recordingDelayMillis = 0L, restoreLastResult = false)
+            }
+        }
+        compose.waitUntil(5_000) { store.history(route).size == 1 }
+        assertTrue(store.clearHistory(route))
+        compose.runOnIdle { output.value = null }
+        restoration.emulateSavedInstanceStateRestore()
+        compose.waitForIdle()
+        compose.runOnIdle { output.value = "Calculated output" }
+        compose.waitForIdle()
+        Thread.sleep(300)
+        assertTrue(store.history(route).isEmpty())
+        compose.runOnIdle { output.value = "New output" }
+        compose.waitUntil(5_000) { store.history(route).singleOrNull()?.output == "New output" }
+    }
+
 }

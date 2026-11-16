@@ -14,13 +14,14 @@ class RecentToolEventQueueTest {
         val releaseFirst = CompletableDeferred<Unit>()
         val finished = CompletableDeferred<Unit>()
         val seen = mutableListOf<String>()
-        val queue = RecentToolEventQueue { route ->
+        val queue = RecentToolEventQueue { route, generation ->
+            assertEquals(17L, generation)
             if (route == "tool/tip") { firstStarted.complete(Unit); releaseFirst.await() }
             seen += route
             if (route == "tool/percentage") finished.complete(Unit)
         }
-        assertTrue(queue.enqueue("tool/tip"))
-        assertTrue(queue.enqueue("tool/percentage"))
+        assertTrue(queue.enqueue("tool/tip", 17L))
+        assertTrue(queue.enqueue("tool/percentage", 17L))
         val consumer = launch { queue.consume() }
         try {
             withTimeout(5000) { firstStarted.await() }

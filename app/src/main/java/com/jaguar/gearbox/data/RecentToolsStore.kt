@@ -35,25 +35,36 @@ class RecentToolsStore private constructor(
 
     /** Hiding the row does not stop collection; pausing collection does not erase existing routes. */
     fun setShowRecentTools(value: Boolean): Boolean = update { it.copy(show = value) }
-    fun setRecordRecentTools(value: Boolean): Boolean = update { it.copy(record = value) }
-    fun clear(): Boolean = update { it.copy(routes = emptyList()) }
+    fun setRecordRecentTools(value: Boolean): Boolean = update(invalidatePending = true) { it.copy(record = value) }
+    fun clear(): Boolean = update(invalidatePending = true) { it.copy(routes = emptyList()) }
 
-    fun recordOpened(route: String): Boolean {
+    /** Capture at the navigation click, not when a queued writer eventually runs. */
+    fun generation(): Long = synchronized(lock) { generations[stateKey] ?: 0L }
+
+    fun recordOpened(route: String, expectedGeneration: Long? = null): Boolean {
         if (!validRoute.matches(route)) return false
-        return update { current ->
+        return update(expectedGeneration = expectedGeneration) { current ->
             if (!current.record) current
             else current.copy(routes = (listOf(route) + current.routes.filterNot { it == route }).take(MAX_RECENTS))
         }
     }
 
-    private fun update(change: (State) -> State): Boolean = synchronized(lock) {
+    private fun update(
+        expectedGeneration: Long? = null,
+        invalidatePending: Boolean = false,
+        change: (State) -> State,
+    ): Boolean = synchronized(lock) {
+        if (expectedGeneration != null && expectedGeneration != (generations[stateKey] ?: 0L)) return@synchronized false
         // Re-read under the write lock: an older store instance cannot re-enable collection or
         // resurrect routes cleared by another activity/store. Shared state keeps both UIs current.
         val current = readStored() ?: state
         if (current != state) state = current
         val next = change(current)
-        if (next == current) return@synchronized true
-        if (write(next)) { state = next; true } else false
+        if (next == current || write(next)) {
+            state = next
+            if (invalidatePending) generations[stateKey] = (generations[stateKey] ?: 0L) + 1L
+            true
+        } else false
     }
 
     private fun readStored(): State? = runCatching {
@@ -108,6 +119,8 @@ class RecentToolsStore private constructor(
         private val validRoute = Regex("tool/[a-z0-9_]{1,64}")
         private val lock = Any()
         private val states = mutableMapOf<String, WeakReference<MutableState<State>>>()
+        // Pending queues are process-local, so these fences do not need disk persistence.
+        private val generations = mutableMapOf<String, Long>()
         /** Isolated files and preferences for instrumentation tests. */
         fun inFile(file: File, legacy: SharedPreferences? = null) = RecentToolsStore(file, legacy)
     }

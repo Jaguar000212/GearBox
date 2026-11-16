@@ -85,6 +85,26 @@ class RecentToolsPreferencesTest {
         assertTrue(store.recent.isEmpty())
     }
 
+    @Test fun clearAndPauseFenceEventsCapturedBeforeTheAction() {
+        val first = RecentToolsStore.inFile(file)
+        val second = RecentToolsStore.inFile(file)
+        val beforeEmptyClear = first.generation()
+        assertTrue(second.clear())
+        assertFalse(first.recordOpened("tool/tip", beforeEmptyClear))
+        val beforePause = first.generation()
+        assertTrue(second.setRecordRecentTools(false))
+        val whilePaused = first.generation()
+        assertTrue(second.setRecordRecentTools(true))
+        assertFalse(first.recordOpened("tool/percentage", beforePause))
+        assertFalse(first.recordOpened("tool/tip", whilePaused))
+        assertTrue(first.recent.isEmpty())
+        assertTrue(first.recordOpened("tool/tip", first.generation()))
+        val beforeClear = second.generation()
+        assertTrue(first.clear())
+        assertFalse(second.recordOpened("tool/percentage", beforeClear))
+        assertTrue(first.recent.isEmpty())
+    }
+
     @Test fun migrationFailureRetainsLegacyKey() {
         directory.mkdirs()
         val blocked = File(directory, "blocked").apply { writeText("keep") }

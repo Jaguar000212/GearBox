@@ -14,6 +14,8 @@ This is a source-level inventory, not a device-test sign-off. It includes correc
 | Selectors | Compact Base, Geometry, Morse, Date unit, Hash, Text, Percentage and Unit controls; Password Customize | Some tools appropriately retain specialized controls |
 | Adaptive layout | 15 input/result split-pane tools; large fonts revert to one column | Not a universal two-pane UI. Compact single-input converters and live tools use their own layouts |
 | Result actions | Consistent Copy/Share/Clear across deterministic calculators; expanded Clear preserves modes | Date Clear resets date to today; QR shares image; Password deliberately has no Share. No universal sticky bottom bar |
+| Calculation clarity | Show working for Percentage, Tip, Discount, GST and Ratios; Text transformations separated from source-input information | Formula explanations use parsed finite-precision values; not a universal symbolic solver or new text operations |
+| Starting units | Metric/imperial preference for fresh BMI, Unit Converter and Ruler | Existing drafts, saved modes/results and imports win; no conversion of existing inputs, no Fuel or category-switch changes |
 | Color | HEX/RGB plus validated editable HSL with explicit Apply | 8-bit RGB and rounded displayed HSL; not physical color calibration |
 | Sensors | Availability/accuracy/error hints, focused Compass/Level views, flashlight contention handling | Level requires rotation-vector support; no accelerometer/gravity fallback. Ruler is estimated, not calibrated |
 | Focus | Counter, Clock, Scoreboard, Chess Clock, Compass, Level; visible Exit and Back | Scoreboards are read-only in focus. Explicit TalkBack focus return is not guaranteed; test on device |

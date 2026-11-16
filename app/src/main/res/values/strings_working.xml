@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="working_show">Show working</string>
+    <string name="working_hide">Hide working</string>
+    <string name="working_expanded">Expanded</string>
+    <string name="working_collapsed">Collapsed</string>
+    <string name="working_precision">These steps use the calculator’s parsed inputs and formula, not AI. Decimal arithmetic uses finite precision; the main result may display fewer digits.</string>
+    <string name="working_percent_of">Convert the percentage: %1$s ÷ 100 = %2$s.\nMultiply by the value: %2$s × %3$s = %4$s.</string>
+    <string name="working_what_percent">Part ÷ total: %1$s ÷ %2$s = %3$s.\nMultiply by 100: %3$s × 100 = %4$s%%.</string>
+    <string name="working_change">Difference: %1$s − %2$s = %3$s.\nDivide by the original: %3$s ÷ %2$s = %4$s.\nMultiply by 100: %4$s × 100 = %5$s%%.</string>
+    <string name="working_signed_base">The original value is a signed denominator. Negative starting values can reverse the usual increase/decrease interpretation.</string>
+    <string name="working_tip">Tip = %1$s × (%2$s ÷ 100) = %3$s.</string>
+    <string name="working_total">Total = %1$s + %2$s = %3$s.</string>
+    <string name="working_split">Per person = %1$s ÷ %2$d = %3$s.</string>
+    <string name="working_discount_step">Discount %1$d: %2$s × (1 − %3$s ÷ 100) = %4$s.</string>
+    <string name="working_saved">Saved = %1$s − %2$s = %3$s.</string>
+    <string name="working_effective">Effective discount = (%1$s ÷ %2$s) × 100 = %3$s%%.</string>
+    <string name="working_zero_price" formatted="false">The original price is zero. This calculator reports a 0% effective discount rather than dividing by zero.</string>
+    <string name="working_tax_base">Base = %1$s ÷ (1 + %2$s ÷ 100) = %3$s.</string>
+    <string name="working_tax_difference">Included tax = %1$s − %2$s = %3$s.</string>
+    <string name="working_tax_added">Tax = %1$s × (%2$s ÷ 100) = %3$s.</string>
+    <string name="working_ratio_scale">Parsed ratio: %1$s : %2$s.\nMultiply both terms by 10^%3$d to obtain whole numbers: %4$s : %5$s.</string>
+    <string name="working_ratio_gcd">Greatest common divisor of the absolute whole-number terms: %1$s.</string>
+    <string name="working_ratio_divide">Divide both terms by %3$s: (%1$s ÷ %3$s) : (%2$s ÷ %3$s) = %4$s : %5$s.</string>
+    <string name="working_ratio_precision">The decimal representation comes from parsed floating-point values; digits already lost during input parsing cannot be recovered.</string>
+</resources>

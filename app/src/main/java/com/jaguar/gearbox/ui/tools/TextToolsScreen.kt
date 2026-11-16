@@ -1,5 +1,7 @@
 package com.jaguar.gearbox.ui.tools
 
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import com.jaguar.gearbox.R
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -89,37 +91,17 @@ fun TextToolsScreen(onNavigateBack: () -> Unit) {
                 modifier = Modifier.fillMaxWidth(),
             )
 
-            if (input.isNotEmpty()) {
-                Spacer(Modifier.height(16.dp))
-                Card(modifier = Modifier.fillMaxWidth()) {
-                    FlowRow(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        horizontalArrangement = Arrangement.spacedBy(24.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
-                    ) {
-                        StatColumn(context.getString(R.string.special_words), words.size.toString())
-                        StatColumn(context.getString(R.string.special_utf_16_units), input.length.toString())
-                        StatColumn(context.getString(R.string.special_no_spaces), input.count { !it.isWhitespace() }.toString())
-                    }
-                }
-
-                Spacer(Modifier.height(16.dp))
-                Text(
-                    text = if (isPalindrome) context.getString(R.string.special_palindrome) else context.getString(R.string.special_not_a_palindrome),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = if (isPalindrome) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-
-                Spacer(Modifier.height(16.dp))
-                CompactChoiceSelector(
-                    label = context.getString(R.string.calc_convert_to), selected = selectedCase, choices = TextCase.entries,
-                    choiceLabel = { caseLabel(it) }, onSelect = { textCase = it.name },
-                )
-
-
-            }
+            Spacer(Modifier.height(16.dp))
+            Text(context.getString(R.string.text_group_transform),
+                style = MaterialTheme.typography.titleMedium, modifier = Modifier.semantics { heading() })
+            Text(context.getString(R.string.text_group_transform_help),
+                style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            CompactChoiceSelector(
+                label = context.getString(R.string.calc_convert_to), selected = selectedCase, choices = TextCase.entries,
+                choiceLabel = { caseLabel(it) }, onSelect = { textCase = it.name },
+            )
+            Text(context.getString(R.string.text_group_camel_help),
+                style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
 
         }, result = {
             ToolActions(
@@ -133,8 +115,29 @@ fun TextToolsScreen(onNavigateBack: () -> Unit) {
                 Spacer(Modifier.height(12.dp))
                 Text(context.getString(R.string.special_text_result, caseLabel(selectedCase)), style = MaterialTheme.typography.titleMedium)
                 ResultCard(text = converted, selectable = false)
-                Text(context.getString(R.string.special_palindrome_ignores_punctuation_and_case_counts_use_utf_16_units_c),
-                    style = MaterialTheme.typography.bodySmall)
+
+                Spacer(Modifier.height(20.dp))
+                Text(context.getString(R.string.text_group_information),
+                    style = MaterialTheme.typography.titleMedium, modifier = Modifier.semantics { heading() })
+                Text(context.getString(R.string.text_group_information_help),
+                    style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Card(modifier = Modifier.fillMaxWidth()) {
+                    Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        FlowRow(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(24.dp),
+                            verticalArrangement = Arrangement.spacedBy(12.dp),
+                        ) {
+                            StatColumn(context.getString(R.string.special_words), words.size.toString())
+                            StatColumn(context.getString(R.string.special_utf_16_units), input.length.toString())
+                            StatColumn(context.getString(R.string.special_no_spaces), input.count { !it.isWhitespace() }.toString())
+                        }
+                        Text(if (isPalindrome) context.getString(R.string.special_palindrome) else context.getString(R.string.special_not_a_palindrome),
+                            style = MaterialTheme.typography.bodyMedium)
+                    }
+                }
+                Text(context.getString(R.string.text_group_information_limits),
+                    style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
 
             } else Text(context.getString(R.string.special_enter_text_to_see_its_converted_form_and_copy_or_share_the_result),
                 style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)

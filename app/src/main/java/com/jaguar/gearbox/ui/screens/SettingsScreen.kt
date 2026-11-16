@@ -136,6 +136,8 @@ fun SettingsScreen(
         )
 
         HorizontalDivider()
+        DefaultUnitPreference()
+        HorizontalDivider()
         ToolMemorySettingsSection()
         HorizontalDivider()
         SectionHeader(context.getString(R.string.screen_about))

@@ -1,6 +1,7 @@
 package com.jaguar.gearbox.ui.tools
 
 import androidx.compose.ui.res.stringResource
+import com.jaguar.gearbox.ui.components.ShowWorking
 import com.jaguar.gearbox.R
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -118,6 +119,7 @@ fun GstCalculatorScreen(onNavigateBack: () -> Unit) {
                     onCopy = { context.copyToClipboard(context.getString(R.string.calc_gst), summary) },
                     onShare = { context.shareText(summary) },
                 )
+                ShowWorking(taxWorking(context, requireNotNull(amountValue), requireNotNull(rateValue), inclusive))
             } else if (amountValue != null && rateValue != null) {
                 Spacer(Modifier.height(12.dp))
                 Text(stringResource(R.string.calc_the_result_exceeds_the_supported_numeric_range_reduce_t), color = MaterialTheme.colorScheme.error)

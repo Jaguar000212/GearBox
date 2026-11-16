@@ -27,6 +27,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -40,6 +41,8 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.jaguar.gearbox.data.DefaultUnitSystem
+import com.jaguar.gearbox.data.UiPreferencesStore
 import com.jaguar.gearbox.data.Tools
 import com.jaguar.gearbox.logic.formatNonzeroTrimmed
 import com.jaguar.gearbox.ui.components.ToolActions
@@ -123,13 +126,15 @@ private val unitsByCategory: Map<UnitCategory, List<MeasurementUnit>> = mapOf(
 @Composable
 fun UnitConverterScreen(onNavigateBack: () -> Unit) {
     val context = LocalContext.current
+    // Snapshot the starting preference once; never apply it over a restored draft or edit.
+    val initialUnitSystem = remember { UiPreferencesStore(context).preferences.value.defaultUnitSystem }
     val focusManager = LocalFocusManager.current
     var category by rememberSaveable { mutableStateOf(UnitCategory.LENGTH.name) }
     val selectedCategory = UnitCategory.valueOf(category)
     val units = unitsByCategory.getValue(selectedCategory)
 
-    var fromUnit by rememberSaveable { mutableStateOf(units.first().label) }
-    var toUnit by rememberSaveable { mutableStateOf(units.getOrElse(1) { units.first() }.label) }
+    var fromUnit by rememberSaveable { mutableStateOf(if (initialUnitSystem == DefaultUnitSystem.IMPERIAL) "Inches" else units.first().label) }
+    var toUnit by rememberSaveable { mutableStateOf(if (initialUnitSystem == DefaultUnitSystem.IMPERIAL) "Feet" else units.getOrElse(1) { units.first() }.label) }
     var fromExpanded by rememberSaveable { mutableStateOf(false) }
     var toExpanded by rememberSaveable { mutableStateOf(false) }
     var input by rememberSaveable { mutableStateOf("1") }

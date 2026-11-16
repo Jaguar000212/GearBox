@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="text_group_transform">Transform text</string>
+    <string name="text_group_transform_help">Choose a case conversion. The result updates below; your original text stays unchanged.</string>
+    <string name="text_group_camel_help">camelCase uses ASCII letters and digits.</string>
+    <string name="text_group_information">About your input</string>
+    <string name="text_group_information_help">These counts and the palindrome check describe your original text, not the converted result.</string>
+    <string name="text_group_information_limits">Words are separated by whitespace. Counts use UTF-16 units; No spaces excludes all whitespace. The palindrome check ignores punctuation and case.</string>
+</resources>

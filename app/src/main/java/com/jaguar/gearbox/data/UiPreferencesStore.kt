@@ -10,7 +10,8 @@ import java.io.File
 import java.lang.ref.WeakReference
 
 /** Presentation preferences are independent of tool history and never included in cloud backup. */
-data class UiPreferences(val reduceMotion: Boolean = false, val showActiveClockShortcut: Boolean = true)
+data class UiPreferences(val reduceMotion: Boolean = false, val showActiveClockShortcut: Boolean = true,
+    val defaultUnitSystem: DefaultUnitSystem = DefaultUnitSystem.METRIC)
 
 class UiPreferencesStore private constructor(private val file: File) {
     constructor(context: Context) : this(File(context.applicationContext.noBackupFilesDir, "ui_preferences_v1.json"))
@@ -22,6 +23,8 @@ class UiPreferencesStore private constructor(private val file: File) {
     val preferences: StateFlow<UiPreferences> = shared.asStateFlow()
     val reduceMotion: Boolean get() = preferences.value.reduceMotion
     val showActiveClockShortcut: Boolean get() = preferences.value.showActiveClockShortcut
+
+    fun setDefaultUnitSystem(value: DefaultUnitSystem): Boolean = update { it.copy(defaultUnitSystem = value) }
 
     fun setReduceMotion(value: Boolean): Boolean = update { it.copy(reduceMotion = value) }
     fun setShowActiveClockShortcut(value: Boolean): Boolean = update { it.copy(showActiveClockShortcut = value) }
@@ -50,6 +53,7 @@ class UiPreferencesStore private constructor(private val file: File) {
             UiPreferences(
                 reduceMotion = json.opt("reduceMotion") as? Boolean ?: false,
                 showActiveClockShortcut = json.opt("showActiveClockShortcut") as? Boolean ?: true,
+                defaultUnitSystem = DefaultUnitSystem.fromStored(json.opt("defaultUnitSystem") as? String),
             )
         }
     }.getOrNull()
@@ -61,7 +65,8 @@ class UiPreferencesStore private constructor(private val file: File) {
         return try {
             stream = atomic.startWrite()
             stream.write(JSONObject().put("reduceMotion", value.reduceMotion)
-                .put("showActiveClockShortcut", value.showActiveClockShortcut).toString().toByteArray(Charsets.UTF_8))
+                .put("showActiveClockShortcut", value.showActiveClockShortcut)
+                .put("defaultUnitSystem", value.defaultUnitSystem.name).toString().toByteArray(Charsets.UTF_8))
             atomic.finishWrite(stream)
             true
         } catch (_: Exception) {

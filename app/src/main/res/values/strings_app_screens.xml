@@ -22,7 +22,7 @@
     <string name="screen_choose_the_tools_you_reach_for_most_their_order_is_always_yours_t">Choose the tools you reach for most. Their order is always yours to decide.</string>
     <string name="screen_move_1_s_up">Move %1$s up</string>
     <string name="screen_move_1_s_down">Move %1$s down</string>
-    <string name="screen_1_s_of_2_s">%1$s of %2$s</string>
+    <string name="screen_1_s_of_2_s">%1$d of %2$d</string>
     <string name="screen_1_s_removed">%1$s removed</string>
     <string name="screen_remove_1_s">Remove %1$s</string>
     <string name="screen_drag_to_reorder_1_s">Drag to reorder %1$s</string>
@@ -30,7 +30,7 @@
     <string name="screen_no_matching_tools">No matching tools</string>
     <string name="screen_already_in_favorites">Already in Favorites</string>
     <string name="screen_cancel">Cancel</string>
-    <string name="screen_add_1_s">Add %1$s</string>
+    <string name="screen_add_1_s">Add %1$d</string>
     <string name="screen_open_a_saved_setup_without_pressing_generate_or_start_live_calcul">Open a saved setup without pressing Generate or Start. Live calculations may update. Create presets from a tool’s More menu; manage or delete them in Workbench.</string>
     <string name="screen_loading_presets">Loading presets…</string>
     <string name="screen_no_saved_presets_yet">No saved presets yet.</string>
@@ -40,8 +40,8 @@
     <string name="screen_back">Back</string>
     <string name="screen_keep_what_matters">Keep what matters</string>
     <string name="screen_named_results_and_reusable_setups_saved_only_on_this_device_nothi">Named results and reusable setups, saved only on this device. Nothing is added automatically. Turning off automatic retention does not delete these explicit saves.</string>
-    <string name="screen_results_1_s">Results (%1$s)</string>
-    <string name="screen_presets_1_s">Presets (%1$s)</string>
+    <string name="screen_results_1_s">Results (%1$d)</string>
+    <string name="screen_presets_1_s">Presets (%1$d)</string>
     <string name="screen_your_shortcuts_to_a_ready_to_use_tool">Your shortcuts to a ready-to-use tool</string>
     <string name="screen_a_place_for_results_worth_keeping">A place for results worth keeping</string>
     <string name="screen_open_history_save_setup_in_a_supported_tool_to_name_a_setup_you_w">Open History → Save setup in a supported tool to name a setup you want to reuse.</string>
@@ -60,7 +60,7 @@
     <string name="screen_could_not_save_this_change_please_try_again">Could not save this change. Please try again.</string>
     <string name="screen_home_favorites">Home &amp; Favorites</string>
     <string name="screen_recent_tools">Recent tools</string>
-    <string name="screen_a_shortcut_to_your_last_1_s_tools_this_stores_only_tool_names_rou">A shortcut to your last %1$s tools. This stores only tool names/routes, never their inputs or results. Kept on this device, outside cloud backup.</string>
+    <string name="screen_a_shortcut_to_your_last_1_s_tools_this_stores_only_tool_names_rou">A shortcut to your last %1$d tools. This stores only tool names/routes, never their inputs or results. Kept on this device, outside cloud backup.</string>
     <string name="screen_show_recent_tools">Show recent tools</string>
     <string name="screen_display_the_recent_tools_row_on_home_hiding_it_does_not_stop_coll">Display the recent-tools row on Home. Hiding it does not stop collection.</string>
     <string name="screen_record_recent_tools">Record recent tools</string>
@@ -79,7 +79,7 @@
     <string name="screen_could_not_save_preferences_please_try_again">Could not save preferences. Please try again.</string>
     <string name="screen_local_data">Local data</string>
     <string name="screen_tool_memory_history">Tool memory &amp; history</string>
-    <string name="screen_history_on_up_to_1_s_entries_per_tool">History on · Up to %1$s entries per tool</string>
+    <string name="screen_history_on_up_to_1_s_entries_per_tool">History on · Up to %1$d entries per tool</string>
     <string name="screen_history_off_choose_what_your_tools_remember">History off · Choose what your tools remember</string>
     <string name="screen_new_history_and_remembered_modes_results_stay_in_app_private_stor">New history and remembered modes/results stay in app-private storage on this device, outside cloud backup. This is not an encrypted vault. Password-generator secrets are never saved in history.</string>
     <string name="screen_remember_tool_modes">Remember tool modes</string>
@@ -100,7 +100,7 @@
     <string name="screen_1_s_remember_last_result">%1$s: remember last result</string>
     <string name="screen_allow_inputs_and_output_to_be_retained_for_later_use_when_remembe">Allow inputs and output to be retained for later use when Remember last result is on. QR and Hash require Generate.</string>
     <string name="screen_remembered_result">Remembered result</string>
-    <string name="screen_history_1_s">History %1$s</string>
+    <string name="screen_history_1_s">History %1$d</string>
     <string name="screen_review_1_s_saved_data">Review %1$s saved data</string>
     <string name="screen_clear_1_s_history">Clear %1$s history</string>
     <string name="screen_clear_1_s_remembered_result">Clear %1$s remembered result</string>

@@ -92,7 +92,7 @@ fun ChessScoreboardScreen(onNavigateBack: () -> Unit) {
     val memory = remember { ToolMemoryStore(context) }
     val snapshotScope = rememberCoroutineScope()
     val snapshot = ScoreSnapshots.chess(ChessMatch(whiteName, blackName, whiteScore, blackScore, gamesPlayed))
-    val snapshotSummary = context.getString(R.string.game_chess_match_n_1_s_2_s_n_3_s_4_s_ngames_5_s, whiteName.ifBlank { context.getString(R.string.game_white) }, whiteScore, blackName.ifBlank { context.getString(R.string.game_black) }, blackScore, gamesPlayed)
+    val snapshotSummary = context.getString(R.string.game_chess_match_n_1_s_2_s_n_3_s_4_s_ngames_5_s, whiteName.ifBlank { context.getString(R.string.game_white) }, whiteScore.toString(), blackName.ifBlank { context.getString(R.string.game_black) }, blackScore.toString(), gamesPlayed)
     val restoreBinding = rememberToolHistory(Tools.ROUTE_CHESS_SCOREBOARD, snapshot.orEmpty(), null,
         onRestore = { values ->
             if (ScoreSnapshots.readChess(values) == null) historyNotice = context.getString(R.string.game_this_snapshot_cannot_be_restored_safely)
@@ -237,7 +237,7 @@ fun ChessScoreboardScreen(onNavigateBack: () -> Unit) {
             }
         }
         Spacer(Modifier.height(12.dp))
-        val summary = context.getString(R.string.game_chess_match_n_1_s_2_s_n_3_s_4_s_ngames_5_s, whiteName.ifBlank { context.getString(R.string.game_white) }, whiteScore, blackName.ifBlank { context.getString(R.string.game_black) }, blackScore, gamesPlayed)
+        val summary = context.getString(R.string.game_chess_match_n_1_s_2_s_n_3_s_4_s_ngames_5_s, whiteName.ifBlank { context.getString(R.string.game_white) }, whiteScore.toString(), blackName.ifBlank { context.getString(R.string.game_black) }, blackScore.toString(), gamesPlayed)
         ToolActions(
             onCopy = { context.copyToClipboard(context.getString(R.string.game_score_summary), summary) },
             onShare = {

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="calc_1_s_years_2_s_months_3_s_days">%1$s years, %2$s months, %3$s days</string>
+    <string name="calc_1_s_years_2_s_months_3_s_days">%1$d years, %2$d months, %3$d days</string>
     <string name="calc_your_age_difference_will_appear_here_once_both_dates_ar">Your age difference will appear here once both dates are selected.</string>
     <string name="calc_calendar_years_months_and_days_between_1_s_and_2_s">Calendar years, months and days between %1$s and %2$s.</string>
     <string name="calc_age">Age</string>
@@ -26,7 +26,7 @@
     <string name="calc_harmonic_mean">Harmonic mean</string>
     <string name="calc_geometric_mean">Geometric mean</string>
     <string name="calc_other_averages">Other averages</string>
-    <string name="calc_sum_divided_by_1_s_values">Sum divided by %1$s values</string>
+    <string name="calc_sum_divided_by_1_s_values">Sum divided by %1$d values</string>
     <string name="calc_arithmetic_mean_2">Arithmetic mean</string>
     <string name="calc_separate_values_with_commas_for_example_1_2_3_4_5">Separate values with commas, for example: 1, 2, 3, 4, 5.</string>
     <string name="calc_use_finite_numbers_separated_by_commas_check_for_invali">Use finite numbers separated by commas. Check for invalid entries or values outside the supported range.</string>
@@ -41,11 +41,11 @@
     <string name="calc_clear">" Clear"</string>
     <string name="calc_enter_a_whole_number_to_see_binary_octal_decimal_and_he">Enter a whole number to see binary, octal, decimal and hexadecimal results.</string>
     <string name="calc_base_conversion">Base conversion</string>
-    <string name="calc_1_s_base_2_s_n_3_s">%1$s (base %2$s)\n%3$s</string>
+    <string name="calc_1_s_base_2_s_n_3_s">%1$s (base %2$d)\n%3$s</string>
     <string name="calc_converted_values">Converted values</string>
     <string name="calc_whole_numbers_1_s_optional_or_sign">Whole numbers: %1$s. Optional + or - sign.</string>
     <string name="calc_value">Value</string>
-    <string name="calc_1_s_base_2_s">%1$s · base %2$s</string>
+    <string name="calc_1_s_base_2_s">%1$s · base %2$d</string>
     <string name="calc_from_base">From base</string>
     <string name="calc_base_converter">Base Converter</string>
     <string name="calc_1_s_2_s">%1$s: %2$s</string>
@@ -73,9 +73,9 @@
     <string name="calc_days">Days</string>
     <string name="calc_clear_blanks_the_amount_and_resets_the_starting_date_to">Clear blanks the amount and resets the starting date to today. Unit and direction stay unchanged.</string>
     <string name="calc_enter_a_valid_amount_that_keeps_the_date_in_range">Enter a valid amount that keeps the date in range.</string>
-    <string name="calc_1_s_2_s_3_s_from_4_s">%1$s %2$s %3$s from %4$s</string>
+    <string name="calc_1_s_2_s_3_s_from_4_s">%1$s %2$d %3$s from %4$s</string>
     <string name="calc_date">Date</string>
-    <string name="calc_1_s_2_s_3_s_4_s_n_5_s">%1$s • %2$s %3$s %4$s\n%5$s</string>
+    <string name="calc_1_s_2_s_3_s_4_s_n_5_s">%1$s • %2$s %3$d %4$s\n%5$s</string>
     <string name="calc_resulting_date">Resulting date</string>
     <string name="calc_unit">Unit</string>
     <string name="calc_number_of_1_s">Number of %1$s</string>
@@ -105,9 +105,9 @@
     <string name="calc_you_save_1_s_2_s_effective">You save: %1$s (%2$s%% effective)</string>
     <string name="calc_final_price_1_s_n">Final price: %1$s\n</string>
     <string name="calc_add_another_discount">" Add another discount"</string>
-    <string name="calc_remove_discount_1_s">Remove discount %1$s</string>
+    <string name="calc_remove_discount_1_s">Remove discount %1$d</string>
     <string name="calc_enter_a_percentage_from_0_to_100">Enter a percentage from 0 to 100.</string>
-    <string name="calc_discount_1_s">Discount %1$s (%%)</string>
+    <string name="calc_discount_1_s">Discount %1$d (%%)</string>
     <string name="calc_each_discount_applies_to_the_reduced_price_not_the_orig" formatted="false">Each discount applies to the reduced price, not the original price. For example, 20% then 10% saves 28%, not 30%.</string>
     <string name="calc_successive_discounts">Successive discounts</string>
     <string name="calc_enter_a_non_negative_price">Enter a non-negative price.</string>
@@ -183,7 +183,7 @@
     <string name="calc_enter_a_non_negative_rate">Enter a non-negative rate.</string>
     <string name="calc_enter_a_positive_amount">Enter a positive amount.</string>
     <string name="calc_enter_a_whole_number_to_see_its_roman_numeral_for_examp">Enter a whole number to see its Roman numeral. For example, 1994 → MCMXCIV.</string>
-    <string name="calc_1_s_2_s_3">%1$s → %2$s</string>
+    <string name="calc_1_s_2_s_3">%1$d → %2$s</string>
     <string name="calc_roman_numeral">Roman numeral</string>
     <string name="calc_number_1_3999">Number (1-3999)</string>
     <string name="calc_number_to_roman">Number to Roman</string>
@@ -237,9 +237,9 @@
     <string name="calc_simplify_a_ratio">Simplify a ratio</string>
     <string name="calc_ratios">Ratios</string>
     <string name="calc_tip">Tip</string>
-    <string name="calc_tip_1_s_ntotal_bill_with_tip_2_s_nsplit_between_3_s_peo">Tip: %1$s\nTotal bill with tip: %2$s\nSplit between %3$s people</string>
+    <string name="calc_tip_1_s_ntotal_bill_with_tip_2_s_nsplit_between_3_s_peo">Tip: %1$s\nTotal bill with tip: %2$s\nSplit between %3$d people</string>
     <string name="calc_per_person">Per person</string>
-    <string name="calc_per_person_split_1_s_ways_2_s">Per person (split %1$s ways): %2$s</string>
+    <string name="calc_per_person_split_1_s_ways_2_s">Per person (split %1$d ways): %2$s</string>
     <string name="calc_total_1_s_n">Total: %1$s\n</string>
     <string name="calc_tip_amount_1_s_n">Tip amount: %1$s\n</string>
     <string name="calc_bill_1_s_n">Bill: %1$s\n</string>
@@ -320,7 +320,7 @@
     <string name="calc_e_g_12">e.g. 12</string>
     <string name="calc_e_g_18">e.g. 18</string>
     <string name="calc_e_g_45_00">e.g. 45.00</string>
-    <string name="calc_average_summary">Arithmetic mean: %1$s\n\nGeometric Mean: %2$s\nHarmonic Mean: %3$s\n\nSum: %4$s\nCount: %5$s\nLargest: %6$s\nSmallest: %7$s</string>
+    <string name="calc_average_summary">Arithmetic mean: %1$s\n\nGeometric Mean: %2$s\nHarmonic Mean: %3$s\n\nSum: %4$s\nCount: %5$d\nLargest: %6$s\nSmallest: %7$s</string>
     <string name="calc_na_zero">N/A (list contains zero)</string>
     <string name="calc_na_undefined">N/A (undefined or outside numeric range)</string>
     <string name="calc_na_negative">N/A (list contains a negative number)</string>
@@ -335,6 +335,6 @@
     <string name="calc_interest_percentage_label">Interest Percentage:</string>
     <string name="calc_default_event">the date</string>
     <string name="calc_event_today">%1$s is today!</string>
-    <plurals name="calc_days_until"><item quantity="one">%1$s day until %2$s</item><item quantity="other">%1$s days until %2$s</item></plurals>
-    <plurals name="calc_days_since"><item quantity="one">%1$s day since %2$s</item><item quantity="other">%1$s days since %2$s</item></plurals>
+    <plurals name="calc_days_until"><item quantity="one">%1$d day until %2$s</item><item quantity="other">%1$d days until %2$s</item></plurals>
+    <plurals name="calc_days_since"><item quantity="one">%1$d day since %2$s</item><item quantity="other">%1$d days since %2$s</item></plurals>
 </resources>

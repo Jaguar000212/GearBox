@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="game_count_1_s">"Count: %1$s"</string>
+    <string name="game_count_1_s">"Count: %1$d"</string>
     <string name="game_counter">"Counter"</string>
-    <string name="game_1_s">"− %1$s"</string>
-    <string name="game_1_s_3">"+ %1$s"</string>
+    <string name="game_1_s">"− %1$d"</string>
+    <string name="game_1_s_3">"+ %1$d"</string>
     <string name="game_counter_limit_reached">"Counter limit reached"</string>
     <string name="game_reset_count">"Reset count?"</string>
-    <string name="game_the_current_count_1_s_will_be_set_to_zero">"The current count (%1$s) will be set to zero."</string>
+    <string name="game_the_current_count_1_s_will_be_set_to_zero">"The current count (%1$d) will be set to zero."</string>
     <string name="game_reset_count_7">"Reset count"</string>
     <string name="game_keep_counting">"Keep counting"</string>
     <string name="game_count">"Count"</string>
     <string name="game_counter_limit_reached_the_count_has_not_changed">"Counter limit reached. The count has not changed."</string>
-    <string name="game_step_1_s">"Step: %1$s ▾"</string>
+    <string name="game_step_1_s">"Step: %1$d ▾"</string>
     <string name="game_focus_view">"Focus view"</string>
-    <string name="game_decrease_by_1_s">"Decrease by %1$s"</string>
-    <string name="game_1_s_14">" %1$s"</string>
-    <string name="game_increase_by_1_s">"Increase by %1$s"</string>
+    <string name="game_decrease_by_1_s">"Decrease by %1$d"</string>
+    <string name="game_1_s_14">" %1$d"</string>
+    <string name="game_increase_by_1_s">"Increase by %1$d"</string>
     <string name="game_reset">"  Reset"</string>
     <string name="game_could_not_save_the_clock_state_please_try_again">"Could not save the clock state. Please try again."</string>
     <string name="game_this_clock_setup_is_invalid_choose_a_valid_duration">"This clock setup is invalid. Choose a valid duration."</string>
@@ -49,20 +49,20 @@
     <string name="game_stopwatch">"Stopwatch"</string>
     <string name="game_pause_to_copy_or_share_the_elapsed_time_and_laps">"Pause to copy or share the elapsed time and laps."</string>
     <string name="game_laps">"Laps"</string>
-    <string name="game_lap_1_s">"Lap %1$s"</string>
+    <string name="game_lap_1_s">"Lap %1$d"</string>
     <string name="game_split_1_s">"Split %1$s"</string>
     <string name="game_total_1_s">"Total %1$s"</string>
     <string name="game_reset_timer">"Reset timer?"</string>
     <string name="game_the_current_countdown_will_be_stopped_and_cleared">"The current countdown will be stopped and cleared."</string>
     <string name="game_minutes">"Minutes"</string>
     <string name="game_seconds">"Seconds"</string>
-    <string name="game_1_s_min">"%1$s min"</string>
+    <string name="game_1_s_min">"%1$d min"</string>
     <string name="game_time_s_up">"Time\'s up!"</string>
     <string name="game_start_again">"Start again"</string>
     <string name="game_reset_now">"Reset now"</string>
     <string name="game_keep_timing">"Keep timing"</string>
     <string name="game_1_s_hours_2_s_minutes_3_s_seconds">"%1$s hours, %2$s minutes, %3$s seconds"</string>
-    <string name="game_chess_match_n_1_s_2_s_n_3_s_4_s_ngames_5_s">"Chess match\n%1$s: %2$s\n%3$s: %4$s\nGames: %5$s"</string>
+    <string name="game_chess_match_n_1_s_2_s_n_3_s_4_s_ngames_5_s">"Chess match\n%1$s: %2$s\n%3$s: %4$s\nGames: %5$d"</string>
     <string name="game_this_snapshot_cannot_be_restored_safely">"This snapshot cannot be restored safely."</string>
     <string name="game_chess_scoreboard">"Chess Scoreboard"</string>
     <string name="game_enable_history_in_settings_tool_memory_to_save_snapshots">"Enable history in Settings → Tool memory to save snapshots."</string>
@@ -89,7 +89,7 @@
     <string name="game_chess_scoreboard_86">"Chess scoreboard"</string>
     <string name="game_white">"White"</string>
     <string name="game_black">"Black"</string>
-    <string name="game_games_1_s">"Games: %1$s"</string>
+    <string name="game_games_1_s">"Games: %1$d"</string>
     <string name="game_scoreboard">"Scoreboard"</string>
     <string name="game_player_team_name">"Player / team name"</string>
     <string name="game_add_player">"Add player"</string>
@@ -112,16 +112,16 @@
     <string name="game_scoreboard_restored">"Scoreboard restored."</string>
     <string name="game_could_not_restore_current_scores_were_not_replaced">"Could not restore. Current scores were not replaced."</string>
     <string name="game_replace_scoreboard">"Replace scoreboard"</string>
-    <string name="game_dice_roll_1_s_six_sided_2_s_3_s_ntotal_4_s">"Dice Roll (%1$s six-sided %2$s): %3$s\nTotal: %4$s"</string>
+    <string name="game_dice_roll_1_s_six_sided_2_s_3_s_ntotal_4_s">"Dice Roll (%1$d six-sided %2$s): %3$s\nTotal: %4$d"</string>
     <string name="game_dice_roll">"Dice Roll"</string>
     <string name="game_fewer_dice">"Fewer dice"</string>
-    <string name="game_1_s_2_s_selected">"%1$s %2$s selected"</string>
+    <string name="game_1_s_2_s_selected">"%1$d %2$s selected"</string>
     <string name="game_more_dice">"More dice"</string>
     <string name="game_ready_to_roll">"Ready to roll"</string>
     <string name="game_your_roll">"Your roll"</string>
     <string name="game_roll_to_see_each_die_and_the_total_changing_the_count_clea">"Roll to see each die and the total. Changing the count clears the previous roll."</string>
-    <string name="game_die_1_s_2_s">"Die %1$s: %2$s"</string>
-    <string name="game_total_1_s_122">"Total: %1$s"</string>
+    <string name="game_die_1_s_2_s">"Die %1$d: %2$d"</string>
+    <string name="game_total_1_s_122">"Total: %1$d"</string>
     <string name="game_roll">"Roll"</string>
     <string name="game_roll_again">"Roll again"</string>
     <string name="game_dice_roll_125">"Dice roll"</string>
@@ -138,13 +138,13 @@
     <string name="game_coin_flip_1_s">"Coin flip: %1$s"</string>
     <string name="game_spinning">"Spinning…"</string>
     <string name="game_ready_to_spin">"Ready to spin"</string>
-    <string name="game_bottle_points_1_s_clockwise_from_the_top">"Bottle points %1$s° clockwise from the top"</string>
+    <string name="game_bottle_points_1_s_clockwise_from_the_top">"Bottle points %1$d° clockwise from the top"</string>
     <string name="game_spin_the_bottle">"Spin the Bottle"</string>
     <string name="game_place_your_phone_flat_between_players_the_neck_of_the_bott">"Place your phone flat between players. The neck of the bottle points to the selected player."</string>
     <string name="game_the_narrow_capped_end_is_the_pointer">"The narrow, capped end is the pointer."</string>
     <string name="game_spin">"Spin"</string>
     <string name="game_spin_again">"Spin again"</string>
-    <string name="game_option_1_s_selected_n_2_s">"Option %1$s selected\n%2$s"</string>
+    <string name="game_option_1_s_selected_n_2_s">"Option %1$d selected\n%2$s"</string>
     <string name="game_1_of_2">"1 of 2"</string>
     <string name="game_two_choices_one_decision">"Two choices. One decision."</string>
     <string name="game_each_option_has_an_equal_chance_edit_either_option_to_star">"Each option has an equal chance. Edit either option to start a new choice."</string>
@@ -166,10 +166,10 @@
     <string name="game_generate">"Generate"</string>
     <string name="game_generate_again">"Generate again"</string>
     <string name="game_your_number">"Your number"</string>
-    <string name="game_range_1_s_to_2_s_inclusive">"Range: %1$s to %2$s (inclusive)"</string>
+    <string name="game_range_1_s_to_2_s_inclusive">"Range: %1$d to %2$d (inclusive)"</string>
     <string name="game_generate_a_number_to_see_your_result_here">"Generate a number to see your result here."</string>
     <string name="game_random_number">"Random Number"</string>
-    <string name="game_random_number_1_s_2_s_3_s">"Random number (%1$s–%2$s): %3$s"</string>
+    <string name="game_random_number_1_s_2_s_3_s">"Random number (%1$d–%2$d): %3$s"</string>
     <string name="game_toggle_1_s_sign">"Toggle %1$s sign"</string>
     <string name="game_choose_your_move">"Choose your move"</string>
     <string name="game_you_1_s_ncpu_2_s_n_3_s">"You: %1$s\nCPU: %2$s\n%3$s"</string>
@@ -187,25 +187,25 @@
     <string name="game_not_chosen">"Not chosen"</string>
     <string name="game_this_snapshot_contains_invalid_or_repeated_numbers_the_cur">"This snapshot contains invalid or repeated numbers. The current game was not changed."</string>
     <string name="game_restore_tambola_snapshot">"Restore Tambola snapshot?"</string>
-    <string name="game_this_replaces_the_current_1_s_called_numbers_with_the_save">"This replaces the current %1$s called numbers with the saved game. No new number will be called."</string>
+    <string name="game_this_replaces_the_current_1_s_called_numbers_with_the_save">"This replaces the current %1$d called numbers with the saved game. No new number will be called."</string>
     <string name="game_restore">"Restore"</string>
     <string name="game_keep_current_game">"Keep current game"</string>
     <string name="game_reset_game">"Reset game?"</string>
-    <string name="game_this_clears_all_1_s_called_numbers_this_can_t_be_undone">"This clears all %1$s called numbers. This can\'t be undone."</string>
+    <string name="game_this_clears_all_1_s_called_numbers_this_can_t_be_undone">"This clears all %1$d called numbers. This can\'t be undone."</string>
     <string name="game_tambola_numbers">"Tambola Numbers"</string>
     <string name="game_ready_to_play">"Ready to play"</string>
     <string name="game_current_number">"Current number"</string>
     <string name="game_all_90_numbers_called_game_complete">"All 90 numbers called. Game complete!"</string>
-    <string name="game_1_s_called_2_s_remaining">"%1$s called • %2$s remaining"</string>
+    <string name="game_1_s_called_2_s_remaining">"%1$d called • %2$d remaining"</string>
     <string name="game_call_numbers_from_1_to_90_without_repeats">"Call numbers from 1 to 90, without repeats."</string>
     <string name="game_previous_calls_newest_first">"Previous calls · newest first"</string>
     <string name="game_game_complete">"Game complete"</string>
     <string name="game_call_number">"Call number"</string>
     <string name="game_reset_game_202">"Reset game"</string>
     <string name="game_capture_this_game_for_history_recording_follows_your_histo">"Capture this game for History. Recording follows your history setting."</string>
-    <string name="game_snapshot_prepared_1_s_calls_open_history_to_copy_share_or">"Snapshot prepared: %1$s calls. Open History to copy, share or Keep result; automatic recording follows Settings."</string>
-    <string name="game_tambola_1_s_of_90_called_n">"Tambola: %1$s of 90 called\n"</string>
-    <string name="game_current_1_s_ncalled_in_order_2_s">"Current: %1$s\nCalled in order: %2$s"</string>
+    <string name="game_snapshot_prepared_1_s_calls_open_history_to_copy_share_or">"Snapshot prepared: %1$d calls. Open History to copy, share or Keep result; automatic recording follows Settings."</string>
+    <string name="game_tambola_1_s_of_90_called_n">"Tambola: %1$d of 90 called\n"</string>
+    <string name="game_current_1_s_ncalled_in_order_2_s">"Current: %1$d\nCalled in order: %2$s"</string>
     <string name="game_tambola">"Tambola"</string>
     <string name="game_number_board">"Number board"</string>
     <string name="game_called_outlined_current">"✓ Called · outlined = current"</string>
@@ -220,7 +220,7 @@
     <string name="game_pick_one_name_or_make_balanced_teams_repeated_names_count">"Pick one name or make balanced teams. Repeated names count as separate entries."</string>
     <string name="game_pick_a_name">"Pick a name"</string>
     <string name="game_make_teams">"Make teams"</string>
-    <string name="game_participants_1_s_edit">"Participants · %1$s · Edit"</string>
+    <string name="game_participants_1_s_edit">"Participants · %1$d · Edit"</string>
     <string name="game_pick_one_222">"  Pick one"</string>
     <string name="game_picked_name">"Picked name"</string>
     <string name="game_number_of_teams">"Number of teams"</string>
@@ -228,15 +228,15 @@
     <string name="game_more_teams">"More teams"</string>
     <string name="game_add_one_more_name_to_make_teams_you_can_already_pick_one">"Add one more name to make teams. You can already pick one."</string>
     <string name="game_team_sizes_differ_by_at_most_one_participant">"Team sizes differ by at most one participant."</string>
-    <string name="game_team_1_s_2_s">"Team %1$s: %2$s"</string>
+    <string name="game_team_1_s_2_s">"Team %1$d: %2$s"</string>
     <string name="game_split_into_teams">"  Split into teams"</string>
     <string name="game_teams">"Teams"</string>
     <string name="game_add_one_name_to_pick_or_at_least_two_to_split_into_teams_n">"Add one name to pick, or at least two to split into teams. Names are saved on this device."</string>
     <string name="game_participants">"Participants"</string>
     <string name="game_add_a_name">"Add a name"</string>
     <string name="game_add_name">"Add name"</string>
-    <string name="game_participants_1_s">"Participants (%1$s)"</string>
-    <string name="game_remove_participant_1_s_2_s">"Remove participant %1$s: %2$s"</string>
+    <string name="game_participants_1_s">"Participants (%1$d)"</string>
+    <string name="game_remove_participant_1_s_2_s">"Remove participant %1$d: %2$s"</string>
     <string name="game_done">"Done"</string>
     <string name="game_this_snapshot_is_not_a_valid_game_position_the_current_rou">"This snapshot is not a valid game position. The current round was not changed."</string>
     <string name="game_restore_game_snapshot">"Restore game snapshot?"</string>
@@ -246,11 +246,11 @@
     <string name="game_snapshot_prepared_open_history_to_copy_share_or_keep_resul">"Snapshot prepared. Open History to copy, share or Keep result; automatic recording follows Settings."</string>
     <string name="game_timer">"Timer"</string>
     <string name="game_stopwatch_export">"Stopwatch: %1$s"</string>
-    <string name="game_lap_export">"\nLap %1$s: split %2$s, total %3$s"</string>
+    <string name="game_lap_export">"\nLap %1$d: split %2$s, total %3$s"</string>
     <string name="game_remove_player_question">"Remove player?"</string>
     <string name="game_reset_scores_question">"Reset scores?"</string>
     <string name="game_clear_all_question">"Clear all?"</string>
-    <string name="game_dice_count">"%1$s %2$s"</string>
+    <string name="game_dice_count">"%1$d %2$s"</string>
     <plurals name="game_dice_noun">
         <item quantity="one">die</item>
         <item quantity="other">dice</item>
@@ -259,7 +259,7 @@
     <string name="game_heads_symbol">H</string>
     <string name="game_tails_symbol">T</string>
     <string name="game_duration_description">%1$s, %2$s, %3$s</string>
-    <plurals name="game_hours"><item quantity="one">%1$s hour</item><item quantity="other">%1$s hours</item></plurals>
-    <plurals name="game_minutes"><item quantity="one">%1$s minute</item><item quantity="other">%1$s minutes</item></plurals>
-    <plurals name="game_seconds"><item quantity="one">%1$s second</item><item quantity="other">%1$s seconds</item></plurals>
+    <plurals name="game_hours"><item quantity="one">%1$d hour</item><item quantity="other">%1$d hours</item></plurals>
+    <plurals name="game_minutes"><item quantity="one">%1$d minute</item><item quantity="other">%1$d minutes</item></plurals>
+    <plurals name="game_seconds"><item quantity="one">%1$d second</item><item quantity="other">%1$d seconds</item></plurals>
 </resources>

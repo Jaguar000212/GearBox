@@ -94,7 +94,7 @@ fun HomeScreen(
                     color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
-        if (search.isEmpty() && activeCategory == null && recentToolObjs.isNotEmpty()) {
+        if (recentTools.showRecentTools && search.isEmpty() && activeCategory == null && recentToolObjs.isNotEmpty()) {
             item(key = "recent-tools") { RecentToolsRow(recentToolObjs, onOpenTool) }
         }
         if (filtered.isEmpty()) {

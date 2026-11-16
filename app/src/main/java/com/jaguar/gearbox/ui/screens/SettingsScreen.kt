@@ -44,6 +44,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.res.stringResource
+import com.jaguar.gearbox.data.RecentToolsStore
 import com.jaguar.gearbox.data.LaunchScreen
 import androidx.core.net.toUri
 import com.jaguar.gearbox.R
@@ -63,11 +64,13 @@ fun SettingsScreen(
     onHapticsChange: (Boolean) -> Unit,
     launchScreen: LaunchScreen = LaunchScreen.HOME,
     onLaunchScreenChange: (LaunchScreen) -> Unit = {},
+    recentTools: RecentToolsStore? = null,
 ) {
     var showLaunchChoice by rememberSaveable { mutableStateOf(false) }
     var showThemeChoice by rememberSaveable { mutableStateOf(false) }
     var showClockOptions by rememberSaveable { mutableStateOf(false) }
     val context = LocalContext.current
+    val recents = recentTools ?: remember(context) { RecentToolsStore(context) }
     val versionName = remember {
         runCatching {
             context.packageManager.getPackageInfo(context.packageName, 0).versionName
@@ -81,7 +84,7 @@ fun SettingsScreen(
     ) {
         Text("Make it yours", style = MaterialTheme.typography.headlineSmall,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp))
-        Text("Your toolbox, your preferences. Saved tool data stays on this device.",
+        Text("Your toolbox, your preferences. History, presets and workbench saves stay on this device.",
             style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(horizontal = 16.dp))
         SectionHeader(stringResource(R.string.launch_section))
@@ -90,6 +93,8 @@ fun SettingsScreen(
             supportingContent = { Text(stringResource(R.string.launch_screen_summary, launchLabel(launchScreen))) },
             modifier = Modifier.clickable { showLaunchChoice = true },
         )
+        HorizontalDivider()
+        HomePreferencesSection(recents)
         HorizontalDivider()
         SectionHeader("Appearance")
         ListItem(

@@ -1,6 +1,6 @@
 # Toolbox refresh: staged implementation
 
-This branch is built on the exact source of draft launch-screen PR #55. It does not merge or release either change.
+Phase 1 (PR #56) and launch-screen PR #55 were merged after exact-head CI/review checks. Phase 2 builds on that same verified main tree. No release or tag has been created.
 
 ## Implemented foundation
 
@@ -18,12 +18,19 @@ All new history, result, mode, preset and workbench files live in Android `noBac
 
 History is opt-in. Turning a setting off pauses its use without deleting stored data; clear controls are explicit. Existing active clocks, game scores, favorites and manually saved palettes are not reset by these new retention toggles. Live calculations record after a one-second editing pause; button-generated games record completed outcomes. Restoring history restores inputs; QR/hash require explicit regeneration. Counter snapshots are restored only explicitly, never over newer widget state automatically.
 
+## Phase 2: history coverage and retention
+
+- History entry points now cover all 40 non-password tools. Clocks, ongoing games, scoreboards and device tools use deliberate snapshot capture rather than continuous logging.
+- Restoring game snapshots validates state and confirms replacement. Hardware readings cannot be replayed; clock snapshots restore setup only, never start or replace active clocks.
+- Timer presets respect notification/shortcut provenance and authoritative active/paused/finished clocks.
+- Separate Show recent tools and Record recent tools choices, confirmed clear, and bounded route-only local migration.
+- Separate game-session/participant retention, enabled by default to preserve existing data, with explicit clearing of dormant saved games. Legacy game storage still follows older Android backup behavior; new memory/recents/settings are excluded from backup.
+- Living [testing guide](testing-guide.md), including deferred device checks and interruption/restore cases.
+
 ## Still to complete in later reviewable phases
 
-- Per-tool history for ongoing games/scoreboards and explicit snapshots for device sensors (not continuous sensor logging).
 - Broader examples, expandable help and compact selectors across remaining tools.
 - Full adaptive input/result split layouts, reachability and result-action consistency.
-- Settings controls for recent-tool visibility/collection and complete audit of legacy state retention.
 - Broader compatible handoffs and preset entry points, optional active-clock Home shortcut.
 - Device-level layout, TalkBack, font scaling, restore/cancel/navigation and migration QA.
 

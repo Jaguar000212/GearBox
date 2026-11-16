@@ -110,7 +110,7 @@ fun WorkbenchScreen(
                         if (item.output.isNotBlank()) {
                             HorizontalDivider()
                             Text(item.output, style = MaterialTheme.typography.bodyLarge)
-                            Text("Saved snapshot. Restore inputs to recalculate with the current tool.",
+                            Text("Saved snapshot. Where supported, restore inputs to recalculate; physical readings cannot be replayed.",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
@@ -120,7 +120,7 @@ fun WorkbenchScreen(
                                 runCatching { context.shareText(savedItemText(item)) }
                                     .onFailure { error = "No sharing app is available. You can copy this item instead." }
                             }) { Text("Share") }
-                            TextButton(enabled = tool != null && !busy,
+                            TextButton(enabled = tool != null && !busy && (presetsSelected || com.jaguar.gearbox.data.canRestoreToolSnapshot(item.route)),
                                 onClick = { onOpen(item.route, item.inputs, presetsSelected) }) {
                                 Text(if (presetsSelected) "Use preset" else "Restore inputs")
                             }

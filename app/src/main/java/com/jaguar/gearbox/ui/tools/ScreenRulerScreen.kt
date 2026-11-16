@@ -1,5 +1,7 @@
 package com.jaguar.gearbox.ui.tools
 
+import com.jaguar.gearbox.data.ToolMemoryStore
+import androidx.compose.runtime.remember
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -31,12 +33,29 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jaguar.gearbox.data.Tools
 import com.jaguar.gearbox.ui.components.ToolScaffold
+import com.jaguar.gearbox.ui.components.rememberToolHistory
+import java.util.UUID
 
 @Composable
 fun ScreenRulerScreen(onNavigateBack: () -> Unit) {
     val context = LocalContext.current
     val density = LocalDensity.current
     var useMetric by rememberSaveable { mutableStateOf(true) }
+
+    val historyStore = remember(context) { ToolMemoryStore(context) }
+    var captureGeneration by remember { mutableStateOf<Long?>(null) }
+    var capturedOutput by remember { mutableStateOf("") }
+    var capturedUnit by remember { mutableStateOf("") }
+    var captureId by remember { mutableStateOf("") }
+    val history = rememberToolHistory(
+        route = Tools.ROUTE_SCREEN_RULER,
+        inputs = mapOf("unit" to capturedUnit, "_capture" to captureId),
+        output = capturedOutput.takeIf { it.isNotEmpty() },
+        expectedHistoryGeneration = captureGeneration,
+        onRestore = {}, allowRestore = false, restoreLastResult = false, recordingDelayMillis = 0L,
+        modeInputs = mapOf("unit" to if (useMetric) "cm" else "in"),
+        onRestoreMode = { values -> when (values["unit"]) { "cm" -> useMetric = true; "in" -> useMetric = false } },
+    )
 
     // ydpi is the device's reported vertical pixel density - more accurate for a
     // physical-length ruler than deriving it from density-independent dp, which is quantized
@@ -58,6 +77,7 @@ fun ScreenRulerScreen(onNavigateBack: () -> Unit) {
         title = stringResource(R.string.ruler_title),
         icon = Tools.byRoute(Tools.ROUTE_SCREEN_RULER)!!.icon,
         onNavigateBack = onNavigateBack,
+        history = history,
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -80,6 +100,19 @@ fun ScreenRulerScreen(onNavigateBack: () -> Unit) {
         Spacer(Modifier.height(8.dp))
         Text(stringResource(if (useMetric) R.string.ruler_metric_divisions else R.string.ruler_imperial_divisions),
             style = MaterialTheme.typography.labelLarge)
+        Spacer(Modifier.height(16.dp))
+        DeviceSnapshotActions(
+            captureLabel = "Capture scale settings",
+            enabled = true,
+            capturedOutput = capturedOutput,
+            onCapture = {
+                capturedUnit = if (useMetric) "cm" else "in"
+                captureGeneration = historyStore.historyGeneration(Tools.ROUTE_SCREEN_RULER)
+                capturedOutput = "Estimated ruler scale: $capturedUnit, ${if (useMetric) "1 mm" else "1/16 inch"} subdivisions. Based on device-reported density. This captures the scale setup, not an object measurement. Verify against a physical ruler."
+                captureId = UUID.randomUUID().toString()
+            },
+            onClear = { captureGeneration = null; capturedOutput = ""; capturedUnit = ""; captureId = "" },
+        )
         Spacer(Modifier.height(16.dp))
         val minorSubdivisions = if (useMetric) 10 else 16
         val rulerDescription = stringResource(R.string.ruler_description, if (useMetric) "cm" else "in")

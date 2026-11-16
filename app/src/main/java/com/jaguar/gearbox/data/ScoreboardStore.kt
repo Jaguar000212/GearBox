@@ -16,7 +16,9 @@ data class ScorePlayer(val name: String, val score: Int)
  * `rememberSaveable` (which is lost once the process is killed from Recents rather than merely
  * rotated), this survives fully closing and reopening the app — the point of a scoreboard.
  */
-class ScoreboardStore(context: Context, private val key: String) {
+class ScoreboardStore(context: Context, private val key: String,
+    private val sessionPolicy: GameSessionPolicy = GameSessionPolicy(context),
+) {
 
     private val prefs = context.applicationContext
         .getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -24,12 +26,14 @@ class ScoreboardStore(context: Context, private val key: String) {
     private var unreadableV2: String? = null
 
     val players: SnapshotStateList<ScorePlayer> =
-        mutableStateListOf<ScorePlayer>().also { it.addAll(readFromPrefs()) }
+        mutableStateListOf<ScorePlayer>().also { players ->
+            players.addAll(sessionPolicy.withPolicy { if (it) readFromPrefs() else emptyList() })
+        }
 
     val hasUnreadableSavedData: Boolean
         get() = hasRetainedLegacyData || unreadableV2 != null
 
-    val hasRetainedLegacyData: Boolean get() = prefs.contains(key)
+    val hasRetainedLegacyData: Boolean get() = sessionPolicy.isEnabled() && prefs.contains(key)
 
     val isReadOnly: Boolean get() = unreadableV2 != null
 
@@ -75,6 +79,21 @@ class ScoreboardStore(context: Context, private val key: String) {
         if (isReadOnly) return
         players.clear()
         persist()
+    }
+
+    /** A confirmed, fully validated replacement, preserving retained legacy recovery data. */
+    fun restoreSnapshot(values: Map<String, String>): Boolean {
+        if (isReadOnly) return false
+        val restored = ScoreSnapshots.readScoreboard(values) ?: return false
+        val saved = sessionPolicy.withPolicy { enabled ->
+            !enabled || prefs.edit().putString("${key}_v2", encodeV2(restored)).commit()
+        }
+        if (!saved) return false
+        androidx.compose.runtime.snapshots.Snapshot.withMutableSnapshot {
+            players.clear()
+            players.addAll(restored)
+        }
+        return true
     }
 
     private fun decodeV2(encoded: String): List<ScorePlayer> {
@@ -134,7 +153,9 @@ class ScoreboardStore(context: Context, private val key: String) {
 
     private fun persist() {
         if (isReadOnly) return
-        prefs.edit { putString("${key}_v2", encodeV2(players.toList())) }
+        sessionPolicy.runIfEnabled {
+            prefs.edit { putString("${key}_v2", encodeV2(players.toList())) }
+        }
     }
 
     private companion object {

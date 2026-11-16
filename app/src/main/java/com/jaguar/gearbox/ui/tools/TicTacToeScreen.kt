@@ -48,12 +48,16 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.jaguar.gearbox.data.ToolMemoryStore
 import com.jaguar.gearbox.data.SimplePrefsStore
 import com.jaguar.gearbox.data.Tools
 import com.jaguar.gearbox.logic.isBoardFull
 import com.jaguar.gearbox.logic.winningLine
 import com.jaguar.gearbox.ui.components.StringListSaver
 import com.jaguar.gearbox.ui.components.ToolScaffold
+import com.jaguar.gearbox.ui.components.rememberToolHistory
+import com.jaguar.gearbox.logic.TicTacToeSnapshot
+import com.jaguar.gearbox.logic.parseTicTacToeSnapshot
 
 private const val KEY_X_WINS = "tic_tac_toe.x_wins"
 private const val KEY_O_WINS = "tic_tac_toe.o_wins"
@@ -62,7 +66,8 @@ private const val KEY_DRAWS = "tic_tac_toe.draws"
 @Composable
 fun TicTacToeScreen(onNavigateBack: () -> Unit) {
     val context = LocalContext.current
-    val store = remember { SimplePrefsStore(context) }
+    val store = remember { SimplePrefsStore(context, gameSession = true) }
+    val memory = remember { ToolMemoryStore(context) }
     var board by rememberSaveable(stateSaver = StringListSaver) {
         mutableStateOf(List(9) { "" })
     }
@@ -70,6 +75,12 @@ fun TicTacToeScreen(onNavigateBack: () -> Unit) {
     var xWins by rememberSaveable { mutableStateOf(store.getInt(KEY_X_WINS, 0)) }
     var oWins by rememberSaveable { mutableStateOf(store.getInt(KEY_O_WINS, 0)) }
     var draws by rememberSaveable { mutableStateOf(store.getInt(KEY_DRAWS, 0)) }
+    // Capture is a one-shot UI event, not restorable state: rotation must not re-record a deleted snapshot.
+    var capturedBoard by remember { mutableStateOf<String?>(null) }
+    var captureId by remember { mutableStateOf("") }
+    var captureGeneration by remember { mutableStateOf<Long?>(null) }
+    var pendingRestore by rememberSaveable { mutableStateOf<String?>(null) }
+    var importError by rememberSaveable { mutableStateOf<String?>(null) }
     var pendingAction by rememberSaveable { mutableStateOf<String?>(null) }
 
     val cells = board.map { it.ifEmpty { null } }
@@ -100,7 +111,7 @@ fun TicTacToeScreen(onNavigateBack: () -> Unit) {
     fun requestBack() {
         if (roundInProgress) pendingAction = "leave" else onNavigateBack()
     }
-    BackHandler(enabled = roundInProgress && pendingAction == null) { requestBack() }
+    BackHandler(enabled = roundInProgress && pendingAction == null && pendingRestore == null) { requestBack() }
 
     if (pendingAction != null) {
         val leaving = pendingAction == "leave"
@@ -127,11 +138,46 @@ fun TicTacToeScreen(onNavigateBack: () -> Unit) {
         )
     }
 
+    fun applySnapshot(snapshot: TicTacToeSnapshot) {
+        board = snapshot.board
+        currentPlayer = snapshot.nextPlayer
+        capturedBoard = null
+        importError = null
+        // Lifetime scores are deliberately unchanged: importing a winner is not a new win.
+    }
+    val captured = capturedBoard?.let { parseTicTacToeSnapshot(mapOf("board" to it)) }
+    val history = rememberToolHistory(
+        route = Tools.ROUTE_TIC_TAC_TOE,
+        inputs = captured?.inputs()?.plus("_run" to captureId) ?: emptyMap(),
+        output = captured?.summary(),
+        recordingDelayMillis = 0L,
+        expectedHistoryGeneration = captureGeneration,
+        restoreLastResult = false,
+        onRestore = { saved ->
+            val snapshot = parseTicTacToeSnapshot(saved)
+            if (snapshot == null) importError = "This snapshot is not a valid game position. The current round was not changed."
+            else if (board.any { it.isNotEmpty() }) pendingRestore = snapshot.inputs().getValue("board")
+            else applySnapshot(snapshot)
+        },
+    )
+    if (pendingRestore != null) AlertDialog(
+        onDismissRequest = { pendingRestore = null },
+        title = { Text("Restore game snapshot?") },
+        text = { Text("This replaces the current board. Your lifetime tally will not change, and no move will be played automatically.") },
+        confirmButton = { TextButton(onClick = {
+            pendingRestore?.let { parseTicTacToeSnapshot(mapOf("board" to it)) }?.let { applySnapshot(it) }
+            pendingRestore = null
+        }) { Text("Restore") } },
+        dismissButton = { TextButton(onClick = { pendingRestore = null }) { Text("Keep current round") } },
+    )
+
     ToolScaffold(
         title = stringResource(R.string.tic_tac_toe_title),
         icon = Tools.byRoute(Tools.ROUTE_TIC_TAC_TOE)!!.icon,
         onNavigateBack = { requestBack() },
+        history = history,
     ) {
+        importError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
         Card(
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
             modifier = Modifier.fillMaxWidth(),
@@ -242,6 +288,16 @@ fun TicTacToeScreen(onNavigateBack: () -> Unit) {
             TallyCard("O", oWins, Modifier.weight(1f))
         }
 
+        Spacer(Modifier.height(12.dp))
+        OutlinedButton(onClick = {
+            // Fence the explicit event before dispatching its recording effect.
+            captureGeneration = memory.historyGeneration(Tools.ROUTE_TIC_TAC_TOE)
+            capturedBoard = TicTacToeSnapshot(board).inputs().getValue("board")
+            captureId = java.util.UUID.randomUUID().toString()
+        }, enabled = board.any { it.isNotEmpty() }, modifier = Modifier.fillMaxWidth()) { Text("Capture snapshot") }
+        Text(if (captured == null) "Capture this round for History. Recording follows your history setting."
+            else "Snapshot prepared. Open History to copy, share or Keep result; automatic recording follows Settings.",
+            style = MaterialTheme.typography.bodySmall)
         Spacer(Modifier.height(12.dp))
         OutlinedButton(
             onClick = { if (roundInProgress) pendingAction = "restart" else newRound() },

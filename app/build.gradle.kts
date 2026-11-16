@@ -17,6 +17,12 @@ val isolatedPreview = providers.gradleProperty("isolatedPreview").orNull?.let {
     require(it == "true" || it == "false") { "isolatedPreview must be true or false" }
     it == "true"
 } ?: false
+// A bounded second test install avoids replacing the previously delivered preview.
+val previewCheckpoint = providers.gradleProperty("previewCheckpoint").orElse("1").get().also {
+    require(it == "1" || it == "2") { "previewCheckpoint must be 1 or 2" }
+}
+val previewSuffix = if (previewCheckpoint == "2") ".preview2" else ".preview"
+val previewLabel = if (previewCheckpoint == "2") "GearBox Preview 2" else "GearBox Preview"
 
 // Only tag refs determine CI release identity. A branch named v... is not a release.
 // Manual signed-candidate builds may supply an explicit validated release tag.
@@ -78,8 +84,8 @@ android {
             )
         }
         getByName("debug") {
-            applicationIdSuffix = if (isolatedPreview) ".preview" else ".beta"
-            if (isolatedPreview) manifestPlaceholders["appDisplayName"] = "GearBox Preview"
+            applicationIdSuffix = if (isolatedPreview) previewSuffix else ".beta"
+            if (isolatedPreview) manifestPlaceholders["appDisplayName"] = previewLabel
             versionNameSuffix = "-b"
         }
     }

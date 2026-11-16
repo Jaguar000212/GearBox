@@ -14,7 +14,7 @@ data class DeviceCapabilities(val orientationSensor: Boolean?, val cameraFlash: 
             null -> "Requires an orientation sensor; availability could not be checked"
         }
         Tools.ROUTE_FLASHLIGHT -> when (cameraFlash) {
-            true -> "Requires camera permission and an available flash"
+            true -> "Uses camera flash; it may be unavailable while another app uses the camera"
             false -> "Camera flash unavailable on this device"
             null -> "Requires camera flash; availability could not be checked"
         }

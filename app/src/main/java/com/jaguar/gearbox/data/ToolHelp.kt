@@ -16,7 +16,7 @@ object ToolHelpCatalog {
             "Assumes a fixed rate and equal monthly payments. Fees and lender-specific rounding are excluded.",
         ),
         Tools.ROUTE_COUNTER to ToolHelp(
-            "Use the plus and minus controls to track a count; reset starts again.",
+            "Use the plus and minus controls to track a count; reset starts again. A Counter home-screen widget shares this count. Find setup instructions in Settings → Home-screen widgets.",
             "Count attendees as they arrive.",
             "Check the count before resetting; a tap is not a sensor measurement.",
         ),
@@ -121,7 +121,7 @@ object ToolHelpCatalog {
             "Whitespace and punctuation can affect counts; review transformed text before replacing an original.",
         ),
         Tools.ROUTE_TIMER_STOPWATCH to ToolHelp(
-            "Choose Timer for a countdown or Stopwatch for elapsed time; use the on-screen start and pause controls.",
+            "Choose Timer for a countdown or Stopwatch for elapsed time; use the on-screen start and pause controls. A Timer / Stopwatch home-screen widget provides a snapshot and controls. Find setup instructions in Settings → Home-screen widgets.",
             "Set a short countdown to check the behavior before using a longer one.",
             "Background alerts depend on device permissions and power management. Do not rely on it for safety-critical timing.",
         ),

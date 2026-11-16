@@ -13,7 +13,7 @@ def package_name(badging):
     return match.group(1)
 
 
-def validate(app_badging, app_xml, test_badging, test_xml, expected, preview=False):
+def validate(app_badging, app_xml, test_badging, test_xml, expected, preview=False, preview_label="GearBox Preview"):
     if package_name(app_badging) != expected:
         raise ValueError("Unexpected app application ID")
     if package_name(test_badging) != expected + ".test":
@@ -28,7 +28,7 @@ def validate(app_badging, app_xml, test_badging, test_xml, expected, preview=Fal
         raise ValueError("Provider authority is not app-scoped")
     if "name='com.jaguar.gearbox.MainActivity'" not in app_badging:
         raise ValueError("Launch activity changed unexpectedly")
-    if preview and "application-label:'GearBox Preview'" not in app_badging:
+    if preview and f"application-label:'{preview_label}'" not in app_badging:
         raise ValueError("Preview must have a distinct launcher label")
     return {"application_id": expected, "instrumentation_target": target.group(1), "authorities": authorities}
 
@@ -40,11 +40,12 @@ def main():
     parser.add_argument("--test", required=True)
     parser.add_argument("--expected", required=True)
     parser.add_argument("--preview", action="store_true")
+    parser.add_argument("--preview-label", default="GearBox Preview")
     parser.add_argument("--release")
     args = parser.parse_args()
     def dump(apk, mode):
         return subprocess.check_output([args.aapt, "dump", mode, apk] + (["AndroidManifest.xml"] if mode == "xmltree" else []), text=True)
-    result = validate(dump(args.app, "badging"), dump(args.app, "xmltree"), dump(args.test, "badging"), dump(args.test, "xmltree"), args.expected, args.preview)
+    result = validate(dump(args.app, "badging"), dump(args.app, "xmltree"), dump(args.test, "badging"), dump(args.test, "xmltree"), args.expected, args.preview, args.preview_label)
     if args.release:
         release = package_name(dump(args.release, "badging"))
         if release != "com.jaguar.gearbox":

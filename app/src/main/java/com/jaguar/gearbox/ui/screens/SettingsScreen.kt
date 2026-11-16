@@ -96,6 +96,7 @@ fun SettingsScreen(
         HorizontalDivider()
         HomePreferencesSection(recents)
         ActiveClockPreference()
+        WidgetDiscoveryPreference()
         HorizontalDivider()
         SectionHeader("Appearance")
         ListItem(
@@ -249,3 +250,29 @@ private fun GitHubCredit(username: String, profileUrl: String) {
 private fun launchLabel(screen: LaunchScreen): String = stringResource(
     if (screen == LaunchScreen.HOME) R.string.launch_screen_home else R.string.launch_screen_favorites,
 )
+
+
+/** Discovery only: the launcher owns adding and placing widgets. */
+@Composable
+internal fun WidgetDiscoveryPreference() {
+    var open by rememberSaveable { mutableStateOf(false) }
+    ListItem(
+        headlineContent = { Text("Home-screen widgets") },
+        supportingContent = { Text("Find Counter and Timer / Stopwatch on your launcher") },
+        modifier = Modifier.clickable { open = true },
+    )
+    if (open) AlertDialog(
+        onDismissRequest = { open = false },
+        title = { Text("Home-screen widgets") },
+        text = {
+            Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text("Counter: view and change the same count used in the app.")
+                Text("Timer / Stopwatch: view the selected clock and use its controls. The widget is a snapshot, not a continuously ticking display; open the app for a live reading.")
+                Text("To add one, long-press an empty area of your Android home screen, choose Widgets, then find GearBox. Select a widget and place it on your home screen. Menu names and widget support vary by launcher.")
+                Text("If you installed GearBox Preview alongside GearBox, look for the separate GearBox Preview widget group. Preview widgets use only Preview data, not your regular app’s counters or clocks.")
+                Text("This guide does not add a widget or change any running clock. Widget controls affect the matching app’s shared counter or clock.")
+            }
+        },
+        confirmButton = { TextButton(onClick = { open = false }) { Text("Got it") } },
+    )
+}

@@ -161,3 +161,10 @@ Adaptive additions in this follow-up: Age, Average, BMI, Date Calculator, Days U
 Clear contracts: Age removes both dates; Days Until removes label/date; Date Calculator resets its start date to today and blanks amount, preserving unit/direction. BMI preserves measurement system and Geometry preserves selected shape. Clear does not delete saved history/preferences. End-to-end Favorites preset navigation, retained drafts, running/paused clock protection and Back restoration still require owner device checks beyond callback tests.
 
 Corrective PR61 verification: exact head `ee0ce3f07527993e620cdd8fcaf228d24ae4d6ad`, CI43925956976 passed all normal/preview builds, JVM tests, lint and identity guards; instrumentation APK compiled only. Merged as `6474d937c64bca3f83e0897734a632a9c149dd7c`.
+
+## Final checkpoint
+
+- Settings → Home-screen widgets explains Counter and Timer/Stopwatch placement without changing launcher state. Verify instructions and choose the correct Preview app group.
+- Verify flashlight capability text does not promise a camera-permission request flow. Camera/torch contention must show safe errors.
+- Review [the combined scope audit](implementation-scope-audit.md) before declaring completion. In particular, current-input Clear does not delete remembered results; old results can return on reopen if retention is enabled.
+- Test Focus Exit and system Back with keyboard and TalkBack. Shared tool state must remain intact; explicit accessibility-focus return to the launch control is not guaranteed by this implementation.

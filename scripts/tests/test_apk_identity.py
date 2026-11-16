@@ -24,3 +24,38 @@ class ApkIdentityTest(unittest.TestCase):
     def test_preview_label_is_required(self):
         values = self.values(); values[0] = values[0].replace("GearBox Preview", "GearBox")
         with self.assertRaises(ValueError): identity.validate(*values)
+
+    def checkpoint_two(self):
+        values = self.values()
+        values[:5] = [value.replace("com.jaguar.gearbox.preview", "com.jaguar.gearbox.preview2").replace("GearBox Preview", "GearBox Preview 2") for value in values[:5]]
+        return values
+
+    def test_second_preview_identity_passes_with_explicit_label(self):
+        result = identity.validate(*self.checkpoint_two(), preview_label="GearBox Preview 2")
+        self.assertEqual(result["application_id"], "com.jaguar.gearbox.preview2")
+        self.assertEqual(result["instrumentation_target"], "com.jaguar.gearbox.preview2")
+        self.assertEqual(result["authorities"], ["com.jaguar.gearbox.preview2.fileprovider"])
+
+    def test_second_preview_rejects_original_label(self):
+        values = self.checkpoint_two()
+        values[0] = values[0].replace("GearBox Preview 2", "GearBox Preview")
+        with self.assertRaises(ValueError):
+            identity.validate(*values, preview_label="GearBox Preview 2")
+
+    def test_second_preview_cannot_use_first_preview_provider(self):
+        values = self.checkpoint_two()
+        values[1] = values[1].replace("preview2", "preview")
+        with self.assertRaises(ValueError):
+            identity.validate(*values, preview_label="GearBox Preview 2")
+
+    def test_second_preview_cannot_target_first_preview(self):
+        values = self.checkpoint_two()
+        values[3] = values[3].replace("preview2", "preview")
+        with self.assertRaises(ValueError):
+            identity.validate(*values, preview_label="GearBox Preview 2")
+
+    def test_second_preview_cannot_reuse_first_instrumentation_id(self):
+        values = self.checkpoint_two()
+        values[2] = values[2].replace("preview2", "preview")
+        with self.assertRaises(ValueError):
+            identity.validate(*values, preview_label="GearBox Preview 2")

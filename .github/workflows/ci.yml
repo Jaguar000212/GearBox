@@ -98,7 +98,7 @@ jobs:
 
       - name: Build isolated preview app and instrumentation
         run: >-
-          bash ./gradlew --no-daemon --stacktrace -PisolatedPreview=true
+          bash ./gradlew --no-daemon --stacktrace -PisolatedPreview=true -PpreviewCheckpoint=2
           :app:assembleDebug :app:assembleDebugAndroidTest :app:testDebugUnitTest :app:lintDebug
 
       - name: Upload preview diagnostic reports
@@ -119,11 +119,11 @@ jobs:
             --aapt "$ANDROID_HOME/build-tools/35.0.0/aapt" \
             --app app/build/outputs/apk/debug/app-debug.apk \
             --test app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk \
-            --expected com.jaguar.gearbox.preview --preview \
+            --expected com.jaguar.gearbox.preview2 --preview --preview-label "GearBox Preview 2" \
             --release app/build/outputs/apk/release/app-release-unsigned.apk \
             | tee app/build/outputs/preview-testing/identity.json
-          cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/preview-testing/GearBox-Preview.apk
-          cp app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk app/build/outputs/preview-testing/GearBox-Preview-androidTest.apk
+          cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/preview-testing/GearBox-Preview-2.apk
+          cp app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk app/build/outputs/preview-testing/GearBox-Preview-2-androidTest.apk
           (cd app/build/outputs/preview-testing && sha256sum *.apk > checksums.sha256)
 
       - name: Upload isolated preview testing APKs

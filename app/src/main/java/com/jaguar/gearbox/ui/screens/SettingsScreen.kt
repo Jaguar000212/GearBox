@@ -2,6 +2,8 @@ package com.jaguar.gearbox.ui.screens
 
 import android.content.Intent
 import android.os.Build
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -18,6 +20,9 @@ import androidx.compose.material.icons.filled.ColorLens
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Vibration
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -27,12 +32,19 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.res.stringResource
+import com.jaguar.gearbox.data.LaunchScreen
 import androidx.core.net.toUri
 import com.jaguar.gearbox.R
 import com.jaguar.gearbox.ui.theme.ThemeMode
@@ -49,7 +61,10 @@ fun SettingsScreen(
     onDynamicColorChange: (Boolean) -> Unit,
     hapticsEnabled: Boolean,
     onHapticsChange: (Boolean) -> Unit,
+    launchScreen: LaunchScreen = LaunchScreen.HOME,
+    onLaunchScreenChange: (LaunchScreen) -> Unit = {},
 ) {
+    var showLaunchChoice by rememberSaveable { mutableStateOf(false) }
     val context = LocalContext.current
     val versionName = remember {
         runCatching {
@@ -62,6 +77,13 @@ fun SettingsScreen(
             .fillMaxSize()
             .verticalScroll(rememberScrollState()),
     ) {
+        SectionHeader(stringResource(R.string.launch_section))
+        ListItem(
+            headlineContent = { Text(stringResource(R.string.launch_screen_title)) },
+            supportingContent = { Text(stringResource(R.string.launch_screen_summary, launchLabel(launchScreen))) },
+            modifier = Modifier.clickable { showLaunchChoice = true },
+        )
+        HorizontalDivider()
         SectionHeader("Appearance")
         ListItem(
             headlineContent = { Text("Theme") },
@@ -113,6 +135,36 @@ fun SettingsScreen(
         )
         GitHubCredit(username = GITHUB_USERNAME, profileUrl = GITHUB_PROFILE_URL)
     }
+    if (showLaunchChoice) {
+        AlertDialog(
+            onDismissRequest = { showLaunchChoice = false },
+            title = { Text(stringResource(R.string.launch_screen_title)) },
+            text = {
+                Column(Modifier.selectableGroup()) {
+                    Text(stringResource(R.string.launch_screen_help))
+                    LaunchScreen.entries.forEach { screen ->
+                        Row(
+                            modifier = Modifier.fillMaxWidth()
+                                .selectable(selected = screen == launchScreen, role = Role.RadioButton) {
+                                    onLaunchScreenChange(screen)
+                                    showLaunchChoice = false
+                                }.padding(vertical = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            RadioButton(selected = screen == launchScreen, onClick = null)
+                            Text(launchLabel(screen), Modifier.padding(start = 12.dp))
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showLaunchChoice = false }) {
+                    Text(stringResource(R.string.launch_screen_close))
+                }
+            },
+        )
+    }
+
 }
 
 @Composable
@@ -161,3 +213,8 @@ private fun GitHubCredit(username: String, profileUrl: String) {
         )
     }
 }
+
+@Composable
+private fun launchLabel(screen: LaunchScreen): String = stringResource(
+    if (screen == LaunchScreen.HOME) R.string.launch_screen_home else R.string.launch_screen_favorites,
+)

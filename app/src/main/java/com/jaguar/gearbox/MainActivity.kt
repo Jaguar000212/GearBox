@@ -27,6 +27,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -37,6 +38,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.jaguar.gearbox.data.EXTRA_SHORTCUT_ROUTE
+import com.jaguar.gearbox.data.LaunchScreen
+import com.jaguar.gearbox.data.LaunchScreenStore
 import com.jaguar.gearbox.data.FavoritesStore
 import com.jaguar.gearbox.data.RecentToolsStore
 import com.jaguar.gearbox.data.SimplePrefsStore
@@ -60,10 +63,13 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        pendingRoute = intent?.getStringExtra(EXTRA_SHORTCUT_ROUTE)
+        pendingRoute = if (savedInstanceState == null) intent?.getStringExtra(EXTRA_SHORTCUT_ROUTE)
+            else savedInstanceState.getString("navigation.pending_route")
         setContent {
             val context = LocalContext.current
             val prefs = remember { SimplePrefsStore(context) }
+            val launchScreenStore = remember { LaunchScreenStore(context.getSharedPreferences("gearbox_prefs", MODE_PRIVATE)) }
+            var launchScreen by remember { mutableStateOf(launchScreenStore.load()) }
             var themeMode by remember {
                 mutableStateOf(
                     ThemeMode.entries.firstOrNull {
@@ -103,13 +109,26 @@ class MainActivity : ComponentActivity() {
                                 hapticsEnabled = it
                                 prefs.putBoolean(KEY_HAPTICS, it)
                             },
+                            launchScreen = launchScreen,
+                            onLaunchScreenChange = {
+                                launchScreenStore.save(it)
+                                launchScreen = it
+                            },
                             pendingRoute = pendingRoute,
-                            onPendingRouteConsumed = { pendingRoute = null },
+                            onPendingRouteConsumed = {
+                                pendingRoute = null
+                                intent?.removeExtra(EXTRA_SHORTCUT_ROUTE)
+                            },
                         )
                     }
                 }
             }
         }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putString("navigation.pending_route", pendingRoute)
+        super.onSaveInstanceState(outState)
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -140,9 +159,14 @@ fun GearBoxApp(
     onDynamicColorChange: (Boolean) -> Unit,
     hapticsEnabled: Boolean,
     onHapticsChange: (Boolean) -> Unit,
+    launchScreen: LaunchScreen = LaunchScreen.HOME,
+    onLaunchScreenChange: (LaunchScreen) -> Unit = {},
     pendingRoute: String? = null,
     onPendingRouteConsumed: () -> Unit = {},
 ) {
+    // Keep the graph stable while editing preferences and across recreation.
+    // A fresh app session picks up the newly saved preference.
+    val sessionStartRoute = rememberSaveable { launchScreen.route }
     val navController = rememberNavController()
     val context = LocalContext.current
     val favorites = remember { FavoritesStore(context) }
@@ -184,7 +208,7 @@ fun GearBoxApp(
         },
     ) { padding ->
         Box(modifier = Modifier.padding(padding)) {
-            NavHost(navController = navController, startDestination = ROUTE_HOME) {
+            NavHost(navController = navController, startDestination = sessionStartRoute) {
                 composable(com.jaguar.gearbox.timer.StopwatchStatusNotification.RESET_ROUTE) {
                     com.jaguar.gearbox.ui.tools.TimerStopwatchScreen(
                         onNavigateBack = { navController.popBackStack() }, requestStopwatchReset = true)
@@ -206,6 +230,8 @@ fun GearBoxApp(
                 }
                 composable(ROUTE_SETTINGS) {
                     SettingsScreen(
+                        launchScreen = launchScreen,
+                        onLaunchScreenChange = onLaunchScreenChange,
                         themeMode = themeMode,
                         onThemeModeChange = onThemeModeChange,
                         dynamicColorEnabled = dynamicColorEnabled,

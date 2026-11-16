@@ -11,10 +11,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material3.Card
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -31,7 +28,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.jaguar.gearbox.data.Tools
+import com.jaguar.gearbox.ui.components.AdaptiveToolLayout
 import com.jaguar.gearbox.ui.components.ToolScaffold
+import com.jaguar.gearbox.ui.components.CompactChoiceSelector
 import com.jaguar.gearbox.logic.TextCase
 import com.jaguar.gearbox.logic.convertCase
 import java.util.Locale
@@ -47,7 +46,6 @@ fun TextToolsScreen(onNavigateBack: () -> Unit) {
     val context = LocalContext.current
     var input by rememberSaveable { mutableStateOf("") }
     var textCase by rememberSaveable { mutableStateOf(TextCase.TITLE.name) }
-    var caseExpanded by rememberSaveable { mutableStateOf(false) }
     val selectedCase = TextCase.valueOf(textCase)
 
     val words = input.trim().split(Regex("\\s+")).filter { it.isNotEmpty() }
@@ -71,83 +69,67 @@ fun TextToolsScreen(onNavigateBack: () -> Unit) {
         onNavigateBack = onNavigateBack,
         history = history,
     ) {
-        OutlinedTextField(
-            value = input,
-            onValueChange = { input = it },
-            label = { Text("Text") },
-            placeholder = { Text("Type or paste text here") },
-            minLines = 3,
-            maxLines = 8,
-            modifier = Modifier.fillMaxWidth(),
-        )
-
-        if (input.isNotEmpty()) {
-            Spacer(Modifier.height(16.dp))
-            Card(modifier = Modifier.fillMaxWidth()) {
-                FlowRow(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(24.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    StatColumn("Words", words.size.toString())
-                    StatColumn("UTF-16 units", input.length.toString())
-                    StatColumn("No spaces", input.count { !it.isWhitespace() }.toString())
-                }
-            }
-
-            Spacer(Modifier.height(16.dp))
-            Text(
-                text = if (isPalindrome) "Palindrome ✓" else "Not a palindrome",
-                style = MaterialTheme.typography.bodyMedium,
-                color = if (isPalindrome) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+        AdaptiveToolLayout(input = {
+            OutlinedTextField(
+                value = input,
+                onValueChange = { input = it },
+                label = { Text("Text") },
+                placeholder = { Text("Type or paste text here") },
+                minLines = 3,
+                maxLines = 8,
+                modifier = Modifier.fillMaxWidth(),
             )
 
-            Spacer(Modifier.height(16.dp))
-            ExposedDropdownMenuBox(
-                expanded = caseExpanded,
-                onExpandedChange = { caseExpanded = it },
-            ) {
-                OutlinedTextField(
-                    value = selectedCase.label,
-                    onValueChange = {},
-                    readOnly = true,
-                    label = { Text("Convert to") },
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = caseExpanded) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .menuAnchor(),
-                )
-                ExposedDropdownMenu(expanded = caseExpanded, onDismissRequest = { caseExpanded = false }) {
-                    TextCase.entries.forEach { entry ->
-                        DropdownMenuItem(
-                            text = { Text(entry.label) },
-                            onClick = {
-                                textCase = entry.name
-                                caseExpanded = false
-                            },
-                        )
+            if (input.isNotEmpty()) {
+                Spacer(Modifier.height(16.dp))
+                Card(modifier = Modifier.fillMaxWidth()) {
+                    FlowRow(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(24.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        StatColumn("Words", words.size.toString())
+                        StatColumn("UTF-16 units", input.length.toString())
+                        StatColumn("No spaces", input.count { !it.isWhitespace() }.toString())
                     }
                 }
+
+                Spacer(Modifier.height(16.dp))
+                Text(
+                    text = if (isPalindrome) "Palindrome ✓" else "Not a palindrome",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = if (isPalindrome) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+
+                Spacer(Modifier.height(16.dp))
+                CompactChoiceSelector(
+                    label = "Convert to", selected = selectedCase, choices = TextCase.entries,
+                    choiceLabel = { it.label }, onSelect = { textCase = it.name },
+                )
+
+
             }
 
-            Spacer(Modifier.height(12.dp))
-            Text(selectedCase.label + " result", style = MaterialTheme.typography.titleMedium)
-            SelectionContainer { ResultCard(text = converted) }
-            Text("Palindrome ignores punctuation and case. Counts use UTF-16 units; camelCase uses ASCII letters and digits.",
-                style = MaterialTheme.typography.bodySmall)
+        }, result = {
+            ToolActions(
+                onCopy = { context.copyToClipboard("Converted text", converted) },
+                onShare = { context.shareText(converted) },
+                onClear = { input = "" },
+                resultEnabled = input.isNotEmpty(),
+                clearEnabled = input.isNotEmpty(),
+            )
+            if (input.isNotEmpty()) {
+                Spacer(Modifier.height(12.dp))
+                Text(selectedCase.label + " result", style = MaterialTheme.typography.titleMedium)
+                SelectionContainer { ResultCard(text = converted) }
+                Text("Palindrome ignores punctuation and case. Counts use UTF-16 units; camelCase uses ASCII letters and digits.",
+                    style = MaterialTheme.typography.bodySmall)
 
-        }
-
-        Spacer(Modifier.height(16.dp))
-        ToolActions(
-            onCopy = { context.copyToClipboard("Converted text", converted) },
-            onShare = { context.shareText(converted) },
-            onClear = { input = "" },
-            resultEnabled = input.isNotEmpty(),
-            clearEnabled = input.isNotEmpty(),
-        )
+            } else Text("Enter text to see its converted form and copy or share the result.",
+                style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        })
     }
 }
 

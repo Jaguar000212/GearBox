@@ -27,11 +27,19 @@ History is opt-in. Turning a setting off pauses its use without deleting stored 
 - Separate game-session/participant retention, enabled by default to preserve existing data, with explicit clearing of dormant saved games. Legacy game storage still follows older Android backup behavior; new memory/recents/settings are excluded from backup.
 - Living [testing guide](testing-guide.md), including deferred device checks and interruption/restore cases.
 
+## Phase 3: guidance and responsive presentation
+
+- Contextual Help & examples catalog for every tool, available from a secondary menu without crowding the prominent History button.
+- Compact mode dialogs on Base, Geometry, Morse/Binary, Date Unit, Hash, Text case, Percentage and Unit category; simple two-way choices remain visible.
+- Adaptive input/result panes for Percentage, Tip, Unit Converter and Text Tools, with stacked phone/large-text fallback and shared scrolling.
+- Selectable result-card output and wrapping/stacking Copy/Share actions for narrow screens and large text.
+
 ## Still to complete in later reviewable phases
 
-- Broader examples, expandable help and compact selectors across remaining tools.
-- Full adaptive input/result split layouts, reachability and result-action consistency.
+- Apply additional adaptive layouts where tool complexity benefits from them, based on device feedback.
 - Broader compatible handoffs and preset entry points, optional active-clock Home shortcut.
+- Switch-back draft reuse, Favorites edge-hold autoscroll and picker restoration, fuller focus views and explicit reduced-motion control.
+- Capability hints before opening sensor tools; actual availability remains checked inside each tool.
 - Device-level layout, TalkBack, font scaling, restore/cancel/navigation and migration QA.
 
 ## Verification

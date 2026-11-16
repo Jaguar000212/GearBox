@@ -17,11 +17,7 @@ import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.Card
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -40,6 +36,10 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.jaguar.gearbox.data.Tools
 import com.jaguar.gearbox.ui.components.ToolScaffold
+import com.jaguar.gearbox.ui.components.CompactChoiceSelector
+import androidx.compose.material3.FilterChip
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import com.jaguar.gearbox.ui.components.rememberToolHistory
 import com.jaguar.gearbox.ui.components.LocalDateSaver
 import java.time.Instant
@@ -58,7 +58,7 @@ private enum class DateDirection(val label: String) {
     SUBTRACT("Subtract"),
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun DateCalculatorScreen(onNavigateBack: () -> Unit) {
     val context = LocalContext.current
@@ -68,9 +68,7 @@ fun DateCalculatorScreen(onNavigateBack: () -> Unit) {
     var amountFocused by rememberSaveable { mutableStateOf(false) }
     var amountInput by rememberSaveable { mutableStateOf("1") }
     var unit by rememberSaveable { mutableStateOf(DateUnit.DAYS.name) }
-    var unitExpanded by rememberSaveable { mutableStateOf(false) }
     var direction by rememberSaveable { mutableStateOf(DateDirection.ADD.name) }
-    var directionExpanded by rememberSaveable { mutableStateOf(false) }
 
     val selectedUnit = DateUnit.valueOf(unit)
     val selectedDirection = DateDirection.valueOf(direction)
@@ -146,33 +144,10 @@ fun DateCalculatorScreen(onNavigateBack: () -> Unit) {
             modifier = Modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            ExposedDropdownMenuBox(
-                expanded = directionExpanded,
-                onExpandedChange = { directionExpanded = it },
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                OutlinedTextField(
-                    value = selectedDirection.label,
-                    onValueChange = {},
-                    readOnly = true,
-                    label = { Text("Direction") },
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = directionExpanded) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .menuAnchor(),
-                )
-                DropdownMenu(
-                    expanded = directionExpanded,
-                    onDismissRequest = { directionExpanded = false }) {
-                    DateDirection.entries.forEach { entry ->
-                        DropdownMenuItem(
-                            text = { Text(entry.label) },
-                            onClick = {
-                                direction = entry.name
-                                directionExpanded = false
-                            },
-                        )
-                    }
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                DateDirection.entries.forEach { entry ->
+                    FilterChip(selected = selectedDirection == entry,
+                        onClick = { direction = entry.name }, label = { Text(entry.label) })
                 }
             }
             OutlinedTextField(
@@ -189,32 +164,10 @@ fun DateCalculatorScreen(onNavigateBack: () -> Unit) {
         }
 
         Spacer(Modifier.height(12.dp))
-        ExposedDropdownMenuBox(
-            expanded = unitExpanded,
-            onExpandedChange = { unitExpanded = it },
-        ) {
-            OutlinedTextField(
-                value = selectedUnit.label,
-                onValueChange = {},
-                readOnly = true,
-                label = { Text("Unit") },
-                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = unitExpanded) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .menuAnchor(),
-            )
-            DropdownMenu(expanded = unitExpanded, onDismissRequest = { unitExpanded = false }) {
-                DateUnit.entries.forEach { entry ->
-                    DropdownMenuItem(
-                        text = { Text(entry.label) },
-                        onClick = {
-                            unit = entry.name
-                            unitExpanded = false
-                        },
-                    )
-                }
-            }
-        }
+        CompactChoiceSelector(
+            label = "Unit", selected = selectedUnit, choices = DateUnit.entries,
+            choiceLabel = { it.label }, onSelect = { unit = it.name },
+        )
 
         if (result != null) {
             Spacer(Modifier.height(20.dp))

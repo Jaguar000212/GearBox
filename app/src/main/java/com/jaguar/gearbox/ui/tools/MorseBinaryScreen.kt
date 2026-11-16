@@ -11,11 +11,7 @@ import com.jaguar.gearbox.logic.hasUnknownMorseTokens
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -35,6 +31,7 @@ import com.jaguar.gearbox.logic.textToBinary
 import com.jaguar.gearbox.logic.textToMorse
 import com.jaguar.gearbox.ui.components.ResultCard
 import com.jaguar.gearbox.ui.components.ToolScaffold
+import com.jaguar.gearbox.ui.components.CompactChoiceSelector
 import com.jaguar.gearbox.ui.components.rememberToolHistory
 
 private enum class TranslateMode(val label: String, val inputHint: String) {
@@ -49,7 +46,6 @@ private enum class TranslateMode(val label: String, val inputHint: String) {
 fun MorseBinaryScreen(onNavigateBack: () -> Unit) {
     val context = LocalContext.current
     var mode by rememberSaveable { mutableStateOf(TranslateMode.TEXT_TO_MORSE.name) }
-    var modeExpanded by rememberSaveable { mutableStateOf(false) }
     val selectedMode = TranslateMode.valueOf(mode)
     var input by rememberSaveable { mutableStateOf("") }
 
@@ -96,33 +92,10 @@ fun MorseBinaryScreen(onNavigateBack: () -> Unit) {
         onNavigateBack = onNavigateBack,
         history = history,
     ) {
-        ExposedDropdownMenuBox(
-            expanded = modeExpanded,
-            onExpandedChange = { modeExpanded = it },
-        ) {
-            OutlinedTextField(
-                value = selectedMode.label,
-                onValueChange = {},
-                readOnly = true,
-                label = { Text("Direction") },
-                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = modeExpanded) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .menuAnchor(),
-            )
-            DropdownMenu(expanded = modeExpanded, onDismissRequest = { modeExpanded = false }) {
-                TranslateMode.entries.forEach { entry ->
-                    DropdownMenuItem(
-                        text = { Text(entry.label) },
-                        onClick = {
-                            if (mode != entry.name) input = ""
-                            mode = entry.name
-                            modeExpanded = false
-                        },
-                    )
-                }
-            }
-        }
+        CompactChoiceSelector(
+            label = "Direction", selected = selectedMode, choices = TranslateMode.entries,
+            choiceLabel = { it.label }, onSelect = { if (mode != it.name) input = ""; mode = it.name },
+        )
 
         Spacer(Modifier.height(12.dp))
         Text(guidance, style = MaterialTheme.typography.bodyMedium)

@@ -12,11 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Card
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -31,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import com.jaguar.gearbox.data.Tools
 import com.jaguar.gearbox.logic.formatTrimmed
 import com.jaguar.gearbox.ui.components.ToolScaffold
+import com.jaguar.gearbox.ui.components.CompactChoiceSelector
 import com.jaguar.gearbox.ui.components.rememberToolHistory
 import kotlin.math.PI
 import kotlin.math.sqrt
@@ -46,7 +43,6 @@ private enum class Shape(val label: String) {
 fun GeometryCalculatorScreen(onNavigateBack: () -> Unit) {
     val context = LocalContext.current
     var shape by rememberSaveable { mutableStateOf(Shape.CIRCLE.name) }
-    var shapeExpanded by rememberSaveable { mutableStateOf(false) }
     val selectedShape = Shape.valueOf(shape)
 
     var field1 by rememberSaveable { mutableStateOf("") }
@@ -76,33 +72,10 @@ fun GeometryCalculatorScreen(onNavigateBack: () -> Unit) {
         onNavigateBack = onNavigateBack,
         history = history,
     ) {
-        ExposedDropdownMenuBox(
-            expanded = shapeExpanded,
-            onExpandedChange = { shapeExpanded = it },
-        ) {
-            OutlinedTextField(
-                value = selectedShape.label,
-                onValueChange = {},
-                readOnly = true,
-                label = { Text("Shape") },
-                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = shapeExpanded) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .menuAnchor(),
-            )
-            DropdownMenu(expanded = shapeExpanded, onDismissRequest = { shapeExpanded = false }) {
-                Shape.entries.forEach { entry ->
-                    DropdownMenuItem(
-                        text = { Text(entry.label) },
-                        onClick = {
-                            if (shape != entry.name) { field1 = ""; field2 = ""; field3 = "" }
-                            shape = entry.name
-                            shapeExpanded = false
-                        },
-                    )
-                }
-            }
-        }
+        CompactChoiceSelector(
+            label = "Shape", selected = selectedShape, choices = Shape.entries,
+            choiceLabel = { it.label }, onSelect = { if (shape != it.name) { field1 = ""; field2 = ""; field3 = "" }; shape = it.name },
+        )
 
         Spacer(Modifier.height(12.dp))
         Text("Use the same unit for every measurement. Area is in square units; perimeter and circumference use the input unit.", style = MaterialTheme.typography.bodyMedium)

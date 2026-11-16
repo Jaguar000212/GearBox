@@ -8,11 +8,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.ContentCopy
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -28,6 +24,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.jaguar.gearbox.data.Tools
 import com.jaguar.gearbox.ui.components.ToolScaffold
+import com.jaguar.gearbox.ui.components.CompactChoiceSelector
 import com.jaguar.gearbox.ui.components.rememberToolHistory
 import com.jaguar.gearbox.ui.components.ResultCard
 import androidx.compose.ui.text.font.FontFamily
@@ -46,7 +43,6 @@ fun BaseConverterScreen(onNavigateBack: () -> Unit) {
     val context = LocalContext.current
     var input by rememberSaveable { mutableStateOf("") }
     var fromBase by rememberSaveable { mutableStateOf(NumberBase.DECIMAL.name) }
-    var fromExpanded by rememberSaveable { mutableStateOf(false) }
     var touched by rememberSaveable { mutableStateOf(false) }
     var focused by rememberSaveable { mutableStateOf(false) }
 
@@ -82,32 +78,10 @@ fun BaseConverterScreen(onNavigateBack: () -> Unit) {
         onNavigateBack = onNavigateBack,
         history = history,
     ) {
-        ExposedDropdownMenuBox(
-            expanded = fromExpanded,
-            onExpandedChange = { fromExpanded = it },
-        ) {
-            OutlinedTextField(
-                value = "${selectedBase.label} (base ${selectedBase.radix})",
-                onValueChange = {},
-                readOnly = true,
-                label = { Text("From base") },
-                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = fromExpanded) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .menuAnchor(),
-            )
-            DropdownMenu(expanded = fromExpanded, onDismissRequest = { fromExpanded = false }) {
-                NumberBase.entries.forEach { base ->
-                    DropdownMenuItem(
-                        text = { Text("${base.label} · base ${base.radix}") },
-                        onClick = {
-                            fromBase = base.name
-                            fromExpanded = false
-                        },
-                    )
-                }
-            }
-        }
+        CompactChoiceSelector(
+            label = "From base", selected = selectedBase, choices = NumberBase.entries,
+            choiceLabel = { "${it.label} · base ${it.radix}" }, onSelect = { fromBase = it.name },
+        )
 
         Spacer(Modifier.height(12.dp))
         OutlinedTextField(

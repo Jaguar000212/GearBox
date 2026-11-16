@@ -21,6 +21,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.jaguar.gearbox.data.Tools
@@ -50,6 +51,7 @@ private enum class PercentMode(
 @Composable
 fun PercentageCalculatorScreen(onNavigateBack: () -> Unit) {
     val context = LocalContext.current
+    val focusManager = LocalFocusManager.current
     var mode by rememberSaveable { mutableStateOf(PercentMode.OF_VALUE.name) }
     val selectedMode = PercentMode.valueOf(mode)
 
@@ -155,6 +157,14 @@ fun PercentageCalculatorScreen(onNavigateBack: () -> Unit) {
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
+            ToolActions(
+                onClear = {
+                    field1 = ""
+                    field2 = ""
+                    focusManager.clearFocus()
+                },
+                clearEnabled = field1.isNotEmpty() || field2.isNotEmpty(),
+            )
         })
     }
 }

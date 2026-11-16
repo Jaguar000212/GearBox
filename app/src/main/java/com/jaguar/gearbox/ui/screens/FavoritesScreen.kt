@@ -40,9 +40,11 @@ import kotlinx.coroutines.launch
 /** A personal launcher first; editing is a deliberate, accessible mode. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun FavoritesScreen(tools: List<Tool>, favorites: FavoritesStore, onOpenTool: (Tool) -> Unit) {
+fun FavoritesScreen(tools: List<Tool>, favorites: FavoritesStore, onOpenTool: (Tool) -> Unit,
+    onOpenPreset: ((String, Map<String, String>) -> Unit)? = null) {
     val toolsByRoute = remember(tools) { tools.associateBy { it.route } }
     val favTools = favorites.favorites.mapNotNull { toolsByRoute[it] }
+    var showPresets by rememberSaveable { mutableStateOf(false) }
     var editing by rememberSaveable { mutableStateOf(false) }
     var choosing by rememberSaveable { mutableStateOf(false) }
     val snackbar = remember { SnackbarHostState() }
@@ -105,6 +107,11 @@ fun FavoritesScreen(tools: List<Tool>, favorites: FavoritesStore, onOpenTool: (T
         returnToRoute = null
     }
 
+    if (showPresets && onOpenPreset != null) FavoritePresetsDialog(
+        onDismiss = { showPresets = false },
+        onOpen = { route, inputs -> showPresets = false; onOpenPreset(route, inputs) },
+    )
+
     BackHandler(enabled = editing && !choosing) { finishDrag(); editing = false }
     Scaffold(contentWindowInsets = WindowInsets(0, 0, 0, 0), snackbarHost = { SnackbarHost(snackbar) }) { insets ->
         LazyColumn(
@@ -124,6 +131,9 @@ fun FavoritesScreen(tools: List<Tool>, favorites: FavoritesStore, onOpenTool: (T
                         if (favTools.isNotEmpty()) TextButton(onClick = { finishDrag(); editing = !editing }) {
                             Text(if (editing) "Done" else "Edit")
                         }
+                    }
+                    if (onOpenPreset != null && !editing) OutlinedButton(onClick = { finishDrag(); showPresets = true }) {
+                        Icon(Icons.Default.Bookmarks, null); Spacer(Modifier.width(8.dp)); Text("Saved presets")
                     }
                     if (editing) Text("Drag a handle or use the arrows to reorder. Remove a tool with the minus button.",
                         style = MaterialTheme.typography.bodySmall)
@@ -265,4 +275,33 @@ private fun ChooseFavoriteTools(tools: List<Tool>, favorites: FavoritesStore, on
             }
         }
     }
+}
+
+
+/** Explicit launcher only: selection imports saved setup and never presses Generate/Start. */
+@Composable
+private fun FavoritePresetsDialog(onDismiss: () -> Unit, onOpen: (String, Map<String, String>) -> Unit) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val store = remember(context) { com.jaguar.gearbox.data.ToolMemoryStore(context) }
+    var presets by remember { mutableStateOf<List<com.jaguar.gearbox.data.SavedToolItem>>(emptyList()) }
+    var loaded by remember { mutableStateOf(false) }
+    LaunchedEffect(store) {
+        presets = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) { store.presets() }
+        loaded = true
+    }
+    AlertDialog(onDismissRequest = onDismiss, title = { Text("Saved presets") }, text = {
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Text("Open a saved setup without pressing Generate or Start. Live calculations may update. Create presets from a tool’s More menu; manage or delete them in Workbench.")
+            if (!loaded) Text("Loading presets…")
+            else if (presets.isEmpty()) Text("No saved presets yet.")
+            LazyColumn(Modifier.heightIn(max = 400.dp)) {
+                items(presets, key = { it.id }) { preset ->
+                    val tool = com.jaguar.gearbox.data.Tools.byRoute(preset.route)
+                    ListItem(headlineContent = { Text(preset.name) },
+                        supportingContent = { Text(tool?.name ?: "Tool unavailable") },
+                        modifier = Modifier.clickable(enabled = tool != null) { onOpen(preset.route, preset.inputs) })
+                }
+            }
+        }
+    }, confirmButton = { TextButton(onClick = onDismiss) { Text("Close presets") } })
 }

@@ -35,6 +35,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.jaguar.gearbox.data.Tools
+import com.jaguar.gearbox.ui.components.AdaptiveToolLayout
+import com.jaguar.gearbox.ui.components.ToolActions
 import com.jaguar.gearbox.ui.components.ToolScaffold
 import com.jaguar.gearbox.ui.components.CompactChoiceSelector
 import androidx.compose.material3.FilterChip
@@ -132,64 +134,71 @@ fun DateCalculatorScreen(onNavigateBack: () -> Unit) {
         onNavigateBack = onNavigateBack,
         history = history,
     ) {
-        Text("Move forward or backward from a starting date.", style = MaterialTheme.typography.bodyMedium)
-        Spacer(Modifier.height(12.dp))
-        OutlinedButton(onClick = { showPicker = true }, modifier = Modifier.fillMaxWidth()) {
-            Icon(Icons.Filled.DateRange, contentDescription = null)
-            Text("  Starting date: ${formatDate(baseDate)}")
-        }
-
-        Spacer(Modifier.height(16.dp))
-        androidx.compose.foundation.layout.Column(
-            modifier = Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                DateDirection.entries.forEach { entry ->
-                    FilterChip(selected = selectedDirection == entry,
-                        onClick = { direction = entry.name }, label = { Text(entry.label) })
-                }
-            }
-            OutlinedTextField(
-                value = amountInput,
-                onValueChange = { amountInput = it },
-                label = { Text("Number of ${selectedUnit.label.lowercase()}") },
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                modifier = Modifier.fillMaxWidth().onFocusChanged {
-                    if (amountFocused && !it.isFocused) amountTouched = true
-                    amountFocused = it.isFocused
-                },
-            )
-        }
-
-        Spacer(Modifier.height(12.dp))
-        CompactChoiceSelector(
-            label = "Unit", selected = selectedUnit, choices = DateUnit.entries,
-            choiceLabel = { it.label }, onSelect = { unit = it.name },
-        )
-
-        if (result != null) {
-            Spacer(Modifier.height(20.dp))
-            Text("Resulting date", style = MaterialTheme.typography.labelLarge)
-            Spacer(Modifier.height(8.dp))
-            val summary = "${formatDate(baseDate)} • ${selectedDirection.label} $amount ${selectedUnit.label.lowercase()}\n${formatDate(result)}"
-            ResultCard(
-                text = formatDate(result),
-                textStyle = MaterialTheme.typography.headlineMedium,
-                onCopy = { context.copyToClipboard("Date", summary) },
-                onShare = { context.shareText(summary) },
-            )
-            Spacer(Modifier.height(8.dp))
-            Text("${selectedDirection.label} $amount ${selectedUnit.label.lowercase()} from ${formatDate(baseDate)}",
-                style = MaterialTheme.typography.bodyMedium)
-        } else if (amountTouched && !amountFocused && amountInput.isNotBlank()) {
+        AdaptiveToolLayout(input = {
+            Text("Move forward or backward from a starting date.", style = MaterialTheme.typography.bodyMedium)
             Spacer(Modifier.height(12.dp))
-            Text(
-                "Enter a valid amount that keeps the date in range.",
-                color = MaterialTheme.colorScheme.error
+            OutlinedButton(onClick = { showPicker = true }, modifier = Modifier.fillMaxWidth()) {
+                Icon(Icons.Filled.DateRange, contentDescription = null)
+                Text("  Starting date: ${formatDate(baseDate)}")
+            }
+
+            Spacer(Modifier.height(16.dp))
+            androidx.compose.foundation.layout.Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    DateDirection.entries.forEach { entry ->
+                        FilterChip(selected = selectedDirection == entry,
+                            onClick = { direction = entry.name }, label = { Text(entry.label) })
+                    }
+                }
+                OutlinedTextField(
+                    value = amountInput,
+                    onValueChange = { amountInput = it },
+                    label = { Text("Number of ${selectedUnit.label.lowercase()}") },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    modifier = Modifier.fillMaxWidth().onFocusChanged {
+                        if (amountFocused && !it.isFocused) amountTouched = true
+                        amountFocused = it.isFocused
+                    },
+                )
+            }
+
+            Spacer(Modifier.height(12.dp))
+            CompactChoiceSelector(
+                label = "Unit", selected = selectedUnit, choices = DateUnit.entries,
+                choiceLabel = { it.label }, onSelect = { unit = it.name },
             )
-        }
+        }, result = {
+            if (result != null) {
+                Spacer(Modifier.height(20.dp))
+                Text("Resulting date", style = MaterialTheme.typography.labelLarge)
+                Spacer(Modifier.height(8.dp))
+                val summary = "${formatDate(baseDate)} • ${selectedDirection.label} $amount ${selectedUnit.label.lowercase()}\n${formatDate(result)}"
+                ResultCard(
+                    text = formatDate(result),
+                    textStyle = MaterialTheme.typography.headlineMedium,
+                    onCopy = { context.copyToClipboard("Date", summary) },
+                    onShare = { context.shareText(summary) },
+                )
+                Spacer(Modifier.height(8.dp))
+                Text("${selectedDirection.label} $amount ${selectedUnit.label.lowercase()} from ${formatDate(baseDate)}",
+                    style = MaterialTheme.typography.bodyMedium)
+            } else if (amountTouched && !amountFocused && amountInput.isNotBlank()) {
+                Spacer(Modifier.height(12.dp))
+                Text(
+                    "Enter a valid amount that keeps the date in range.",
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
+            Text("Clear blanks the amount and resets the starting date to today. Unit and direction stay unchanged.",
+                style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            ToolActions(onClear = {
+                baseDate = LocalDate.now(); amountInput = ""; amountTouched = false; showPicker = false
+            }, clearEnabled = amountInput.isNotEmpty() || baseDate != LocalDate.now())
+        })
     }
 }
 

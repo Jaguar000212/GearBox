@@ -145,3 +145,19 @@ Additional details: [focus views](PHASE4_FOCUS_TESTING.md), [switching/presets/h
 - No privacy text should call app-private local files an encrypted vault, promise secret detection, or imply auto-saving settings disable Android task-state drafts. Legacy preferences/backups remain separate.
 
 Status: implementation and regression tests are included in the privacy follow-up. Do not treat this checklist as a passed result; exact-head CI and owner device checks are required. Editable input selection still uses Android clipboard behavior; the sensitive hint is applied to explicit app Copy actions, not a promise about every OS clipboard path.
+
+## UI completion follow-up
+
+- Favorites → Saved presets lists explicit local setups and handles empty/loading states. Close/Back must not import; selecting a preset imports configuration once, preserves unrelated draft inputs, and never presses Generate/Start. Live calculators may recalculate. Existing Favorites edit, edge autoscroll, accessible moves and shortcuts remain intact.
+- Quick switch searches category labels as well as names/descriptions/keywords. Blank search shows recents only when Show recent tools is enabled; those tools must not be duplicated below. Search/clear/close must preserve draft behavior.
+- HSL accepts finite decimal values (H 0–360, S/L 0–100) only after Apply. Invalid/blank input leaves applied color, Copy/Share, palette and history unchanged. Check red/green/blue, gray, black/white, 360=0 and fractional values; 8-bit RGB and displayed integer HSL rounding are expected. Changing HEX/RGB, palette or imported color refreshes HSL drafts without loops.
+- Percentage Clear empties both values while retaining mode; Unit Converter Clear empties input/result while retaining category/from/to units. Check invalid-input clear and subsequent calculation as well as valid results.
+- Adaptive calculator panes must preserve input-before-result traversal, large-font single-column fallback and existing scroll behavior. Test phone portrait/landscape, usable width above/below720dp and fonts above1.3×. See the implementation scope in the phase report rather than assuming every tool is two-column.
+
+All new instrumentation checks still require execution on a device/emulator; CI compilation alone does not establish visual or accessibility success.
+
+Adaptive additions in this follow-up: Age, Average, BMI, Date Calculator, Days Until, Discount, Fuel Cost, Geometry, GST, Loan and Ratios. Together with earlier Percentage, Tip, Unit Converter and Text layouts, 15 tools now use adaptive input/result panes. Compact single-input Roman, Number to Words and Decimal to Fraction remain stacked deliberately.
+
+Clear contracts: Age removes both dates; Days Until removes label/date; Date Calculator resets its start date to today and blanks amount, preserving unit/direction. BMI preserves measurement system and Geometry preserves selected shape. Clear does not delete saved history/preferences. End-to-end Favorites preset navigation, retained drafts, running/paused clock protection and Back restoration still require owner device checks beyond callback tests.
+
+Corrective PR61 verification: exact head `ee0ce3f07527993e620cdd8fcaf228d24ae4d6ad`, CI43925956976 passed all normal/preview builds, JVM tests, lint and identity guards; instrumentation APK compiled only. Merged as `6474d937c64bca3f83e0897734a632a9c149dd7c`.

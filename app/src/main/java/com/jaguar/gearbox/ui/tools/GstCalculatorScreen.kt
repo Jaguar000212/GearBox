@@ -25,6 +25,8 @@ import com.jaguar.gearbox.logic.calculateGst
 import com.jaguar.gearbox.logic.formatTrimmed
 import com.jaguar.gearbox.ui.components.DecimalField
 import com.jaguar.gearbox.ui.components.ResultCard
+import com.jaguar.gearbox.ui.components.AdaptiveToolLayout
+import com.jaguar.gearbox.ui.components.ToolActions
 import com.jaguar.gearbox.ui.components.ToolScaffold
 import com.jaguar.gearbox.ui.components.rememberToolHistory
 
@@ -63,68 +65,65 @@ fun GstCalculatorScreen(onNavigateBack: () -> Unit) {
         onNavigateBack = onNavigateBack,
         history = history,
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            FilterChip(
-                selected = !inclusive,
-                onClick = { inclusive = false },
-                label = { Text("Add tax") },
-                modifier = Modifier.weight(1f),
+        AdaptiveToolLayout(input = {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                FilterChip(
+                    selected = !inclusive,
+                    onClick = { inclusive = false },
+                    label = { Text("Add tax") },
+                    modifier = Modifier.weight(1f),
+                )
+                FilterChip(
+                    selected = inclusive,
+                    onClick = { inclusive = true },
+                    label = { Text("Remove tax") },
+                    modifier = Modifier.weight(1f),
+                )
+            }
+
+            Text(if (inclusive) "Extract the tax already included in the amount." else "Calculate tax on top of the base amount.",
+                style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Spacer(Modifier.height(16.dp))
+            DecimalField(
+                value = amount,
+                onValueChange = { amount = it },
+                label = if (inclusive) "Amount (tax included)" else "Amount (before tax)",
+                placeholder = "e.g. 1000",
+                errorText = if (amount.isNotBlank() && amountValue == null) "Enter a valid, finite, non-negative amount." else null,
             )
-            FilterChip(
-                selected = inclusive,
-                onClick = { inclusive = true },
-                label = { Text("Remove tax") },
-                modifier = Modifier.weight(1f),
-            )
-        }
-
-        Text(if (inclusive) "Extract the tax already included in the amount." else "Calculate tax on top of the base amount.",
-            style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        Spacer(Modifier.height(16.dp))
-        DecimalField(
-            value = amount,
-            onValueChange = { amount = it },
-            label = if (inclusive) "Amount (tax included)" else "Amount (before tax)",
-            placeholder = "e.g. 1000",
-            errorText = if (amount.isNotBlank() && amountValue == null) "Enter a valid, finite, non-negative amount." else null,
-        )
-        Spacer(Modifier.height(12.dp))
-        DecimalField(
-            value = rate,
-            onValueChange = { rate = it },
-            label = "Tax rate (%)",
-            errorText = if (rate.isNotBlank() && rateValue == null) "Enter a valid, finite, non-negative rate." else null,
-        )
-
-        if (result != null) {
-            val summary = "Base amount: ${formatTrimmed(result.baseAmount, 2)}\n" +
-                    "Tax amount: ${formatTrimmed(result.taxAmount, 2)}\n" +
-                    "Total: ${formatTrimmed(result.totalAmount, 2)}"
-
-            Spacer(Modifier.height(20.dp))
-            Text(if (inclusive) "Before tax" else "Including tax", style = MaterialTheme.typography.labelLarge)
-            Text(formatTrimmed(if (inclusive) result.baseAmount else result.totalAmount, 2), style = MaterialTheme.typography.headlineLarge, color = MaterialTheme.colorScheme.primary)
             Spacer(Modifier.height(12.dp))
-            ResultCard(
-                text = summary,
-                onCopy = { context.copyToClipboard("GST", summary) },
-                onShare = { context.shareText(summary) },
+            DecimalField(
+                value = rate,
+                onValueChange = { rate = it },
+                label = "Tax rate (%)",
+                errorText = if (rate.isNotBlank() && rateValue == null) "Enter a valid, finite, non-negative rate." else null,
             )
-        } else if (amountValue != null && rateValue != null) {
-            Spacer(Modifier.height(12.dp))
-            Text("The result exceeds the supported numeric range. Reduce the amount or tax rate.", color = MaterialTheme.colorScheme.error)
-        }
-        Spacer(Modifier.height(16.dp))
-        Text("Use the applicable rate; the default is not a tax recommendation.", style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant)
-        androidx.compose.material3.TextButton(modifier = Modifier.fillMaxWidth(), onClick = { amount = ""; rate = "18"; inclusive = false },
-            enabled = amount.isNotEmpty() || rate != "18" || inclusive) {
-            Icon(Icons.Filled.Clear, contentDescription = null)
-            Spacer(Modifier.width(8.dp))
-            Text("Clear")
-        }
+        }, result = {
+            if (result != null) {
+                val summary = "Base amount: ${formatTrimmed(result.baseAmount, 2)}\n" +
+                        "Tax amount: ${formatTrimmed(result.taxAmount, 2)}\n" +
+                        "Total: ${formatTrimmed(result.totalAmount, 2)}"
+
+                Spacer(Modifier.height(20.dp))
+                Text(if (inclusive) "Before tax" else "Including tax", style = MaterialTheme.typography.labelLarge)
+                Text(formatTrimmed(if (inclusive) result.baseAmount else result.totalAmount, 2), style = MaterialTheme.typography.headlineLarge, color = MaterialTheme.colorScheme.primary)
+                Spacer(Modifier.height(12.dp))
+                ResultCard(
+                    text = summary,
+                    onCopy = { context.copyToClipboard("GST", summary) },
+                    onShare = { context.shareText(summary) },
+                )
+            } else if (amountValue != null && rateValue != null) {
+                Spacer(Modifier.height(12.dp))
+                Text("The result exceeds the supported numeric range. Reduce the amount or tax rate.", color = MaterialTheme.colorScheme.error)
+            }
+            Spacer(Modifier.height(16.dp))
+            Text("Use the applicable rate; the default is not a tax recommendation.", style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant)
+            ToolActions(onClear = { amount = "" }, clearEnabled = amount.isNotEmpty())
+        })
     }
 }

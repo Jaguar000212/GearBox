@@ -34,6 +34,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -120,6 +121,7 @@ private val unitsByCategory: Map<UnitCategory, List<MeasurementUnit>> = mapOf(
 @Composable
 fun UnitConverterScreen(onNavigateBack: () -> Unit) {
     val context = LocalContext.current
+    val focusManager = LocalFocusManager.current
     var category by rememberSaveable { mutableStateOf(UnitCategory.LENGTH.name) }
     val selectedCategory = UnitCategory.valueOf(category)
     val units = unitsByCategory.getValue(selectedCategory)
@@ -266,6 +268,8 @@ fun UnitConverterScreen(onNavigateBack: () -> Unit) {
                 onCopy = { equation?.let { context.copyToClipboard("Unit conversion", it) } },
                 onShare = { equation?.let { context.shareText(it) } },
                 resultEnabled = equation != null,
+                onClear = { input = ""; focusManager.clearFocus() },
+                clearEnabled = input.isNotEmpty(),
             )
         })
     }

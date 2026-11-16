@@ -71,3 +71,9 @@ Help includes confirmed, cancellable example-input imports for 23 deterministic 
 Text, QR and Hash now require separate per-tool opt-ins for automatic history and last-result memory, in addition to global switches. Missing choices default OFF on fresh installs and upgrades. Storage enforces the policy, and disabling invalidates queued writes. This does not detect secrets in other tools or disable Android task-state drafts.
 
 Existing records are not silently deleted: Settings provides counts, read-only review and confirmed per-tool history/result clears. Manual Workbench saves remain deliberate and independent, with a preview and privacy warning. Explicit Copy actions for potentially private text request Android's sensitive clipboard treatment; Share requires review before opening an external chooser. App-private storage is not an encrypted vault; OS editable-input selection and legacy backup behavior remain separate.
+
+### UI completion follow-up
+
+Favorites now exposes saved presets through an explicit configuration-only launcher; Quick Switch searches category labels and has a visibility-controlled recent section without duplicates. HSL is editable with finite/range validation and an Apply step; applied RGB remains 8-bit.
+
+Adaptive panes now also cover Age, Average, BMI, Date, Days Until, Discount, Fuel, Geometry, GST, Loan and Ratios (15 tools total with the earlier four). Simple single-input converters remain compact stacked forms. Percentage/Unit Converter gain Clear; calculator Clear controls preserve relevant modes and do not delete saved data. See the testing guide for date-specific reset semantics and execution limits.

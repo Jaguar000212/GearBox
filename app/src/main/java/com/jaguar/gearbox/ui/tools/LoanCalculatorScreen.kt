@@ -22,6 +22,8 @@ import com.jaguar.gearbox.data.Tools
 import com.jaguar.gearbox.logic.computeLoanResult
 import com.jaguar.gearbox.ui.components.DecimalField
 import com.jaguar.gearbox.ui.components.ResultCard
+import com.jaguar.gearbox.ui.components.AdaptiveToolLayout
+import com.jaguar.gearbox.ui.components.ToolActions
 import com.jaguar.gearbox.ui.components.ToolScaffold
 import com.jaguar.gearbox.ui.components.rememberToolHistory
 
@@ -69,63 +71,54 @@ fun LoanCalculatorScreen(onNavigateBack: () -> Unit) {
         onNavigateBack = onNavigateBack,
         history = history,
     ) {
-        Text("Monthly repayment estimate", style = MaterialTheme.typography.titleMedium)
-        Text("Fixed annual rate, equal monthly payments. Fees are not included. Use one currency for all amounts.",
-            style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        Spacer(Modifier.height(16.dp))
-        DecimalField(
-            value = principal,
-            onValueChange = { principal = it },
-            label = "Loan amount",
-            errorText = principalError,
-        )
-        Spacer(Modifier.height(8.dp))
-        DecimalField(
-            value = rate,
-            onValueChange = { rate = it },
-            label = "Annual interest rate (%)",
-            errorText = rateError,
-        )
-        Spacer(Modifier.height(8.dp))
-        DecimalField(
-            value = time,
-            onValueChange = { time = it },
-            label = "Loan term (years)",
-            errorText = timeError,
-        )
-
-        val displayResult = result?.replace("Interest Percentage:", "Interest share of total repayment:")
-        if (displayResult != null) {
+        AdaptiveToolLayout(input = {
+            Text("Monthly repayment estimate", style = MaterialTheme.typography.titleMedium)
+            Text("Fixed annual rate, equal monthly payments. Fees are not included. Use one currency for all amounts.",
+                style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(Modifier.height(16.dp))
-            ResultCard(
-                text = displayResult,
-                onCopy = {
-                    context.copyToClipboard(
-                        "Loan Calculator",
-                        shareBody(principal, rate, time, displayResult)
-                    )
-                },
-                onShare = { context.shareText(shareBody(principal, rate, time, displayResult)) },
+            DecimalField(
+                value = principal,
+                onValueChange = { principal = it },
+                label = "Loan amount",
+                errorText = principalError,
             )
-        } else if (loanAmount != null && interestRate != null && loanTerm != null) {
-            Spacer(Modifier.height(12.dp))
-            Text("Values exceed the supported numeric range.", color = MaterialTheme.colorScheme.error)
-        }
-
-        Spacer(Modifier.height(16.dp))
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            androidx.compose.material3.TextButton(
-                onClick = { principal = ""; rate = ""; time = "" },
-                modifier = Modifier.weight(1f),
-                enabled = principal.isNotEmpty() || rate.isNotEmpty() || time.isNotEmpty(),
-            ) {
-                Icon(Icons.Filled.Clear, contentDescription = null)
-                Text(" Clear")
+            Spacer(Modifier.height(8.dp))
+            DecimalField(
+                value = rate,
+                onValueChange = { rate = it },
+                label = "Annual interest rate (%)",
+                errorText = rateError,
+            )
+            Spacer(Modifier.height(8.dp))
+            DecimalField(
+                value = time,
+                onValueChange = { time = it },
+                label = "Loan term (years)",
+                errorText = timeError,
+            )
+        }, result = {
+            val displayResult = result?.replace("Interest Percentage:", "Interest share of total repayment:")
+            if (displayResult != null) {
+                Spacer(Modifier.height(16.dp))
+                ResultCard(
+                    text = displayResult,
+                    onCopy = {
+                        context.copyToClipboard(
+                            "Loan Calculator",
+                            shareBody(principal, rate, time, displayResult)
+                        )
+                    },
+                    onShare = { context.shareText(shareBody(principal, rate, time, displayResult)) },
+                )
+            } else if (loanAmount != null && interestRate != null && loanTerm != null) {
+                Spacer(Modifier.height(12.dp))
+                Text("Values exceed the supported numeric range.", color = MaterialTheme.colorScheme.error)
             }
-        }
+
+            Spacer(Modifier.height(16.dp))
+            ToolActions(onClear = { principal = ""; rate = ""; time = "" },
+                clearEnabled = principal.isNotEmpty() || rate.isNotEmpty() || time.isNotEmpty())
+        })
     }
 }
 

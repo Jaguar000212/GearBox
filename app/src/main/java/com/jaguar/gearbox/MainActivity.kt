@@ -286,6 +286,10 @@ fun GearBoxApp(
                         tools = Tools.all,
                         favorites = favorites,
                         onOpenTool = openTool,
+                        onOpenPreset = { route, inputs -> Tools.byRoute(route)?.let { tool ->
+                            toolImport = com.jaguar.gearbox.ui.components.ToolImport(route, inputs, modeOnly = true)
+                            openTool(tool)
+                        } },
                     )
                 }
                 composable(ROUTE_SETTINGS) {

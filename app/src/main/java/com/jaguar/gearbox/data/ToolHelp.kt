@@ -41,9 +41,9 @@ object ToolHelpCatalog {
             "This converter handles integers, not decimal fractions; binary only accepts 0 and 1.",
         ),
         Tools.ROUTE_COLOR_PICKER to ToolHelp(
-            "Enter a HEX color or adjust RGB controls; switch views to inspect equivalent values.",
+            "Enter HEX, adjust RGB, or enter HSL and tap Apply HSL. Copy, Share and saved colors use the last applied color.",
             "HEX #FF0000 is RGB 255, 0, 0.",
-            "Screen appearance depends on display settings. HSL is a derived view, not a measurement of a physical object.",
+            "Screen appearance depends on display settings. HSL inputs convert to rounded 8-bit RGB; this is not a measurement of a physical object.",
         ),
         Tools.ROUTE_UNIT_CONVERTER to ToolHelp(
             "Choose a measurement category, source unit, and destination unit before entering a value.",

@@ -33,6 +33,7 @@ import com.jaguar.gearbox.ui.components.ToolActions
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -56,6 +57,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.jaguar.gearbox.data.SimplePrefsStore
 import com.jaguar.gearbox.data.Tools
+import com.jaguar.gearbox.logic.hslToRgb
 import com.jaguar.gearbox.logic.parseHex
 import com.jaguar.gearbox.logic.rgbToHsl
 import com.jaguar.gearbox.ui.components.StringListSaver
@@ -88,6 +90,31 @@ fun ColorPickerScreen(onNavigateBack: () -> Unit) {
     val previewDescription = stringResource(R.string.color_preview, hex)
     val hsl = rgbToHsl(red.roundToInt(), green.roundToInt(), blue.roundToInt())
 
+    var hueInput by rememberSaveable { mutableStateOf(hsl.first.toString()) }
+    var saturationInput by rememberSaveable { mutableStateOf(hsl.second.toString()) }
+    var lightnessInput by rememberSaveable { mutableStateOf(hsl.third.toString()) }
+    var hslSourceHex by rememberSaveable { mutableStateOf(hex) }
+    var hslError by rememberSaveable { mutableStateOf(false) }
+    fun resetHslDraft(r: Int, g: Int, b: Int) {
+        val restored = rgbToHsl(r, g, b)
+        hueInput = restored.first.toString()
+        saturationInput = restored.second.toString()
+        lightnessInput = restored.third.toString()
+        hslSourceHex = String.format("#%02X%02X%02X", r, g, b)
+        hslError = false
+    }
+    // Changed applied colors refresh HSL drafts. Explicit restore/palette actions also
+    // reset them when the color is unchanged. Mere view switches preserve editing drafts.
+    LaunchedEffect(hex) {
+        if (hslSourceHex != hex) {
+            hueInput = hsl.first.toString()
+            saturationInput = hsl.second.toString()
+            lightnessInput = hsl.third.toString()
+            hslSourceHex = hex
+            hslError = false
+        }
+    }
+
     val rgbText = "rgb(${red.roundToInt()}, ${green.roundToInt()}, ${blue.roundToInt()})"
     val hslText = "hsl(${hsl.first}, ${hsl.second}%, ${hsl.third}%)"
     val history = rememberToolHistory(Tools.ROUTE_COLOR_PICKER, mapOf("hex" to hex),
@@ -95,6 +122,7 @@ fun ColorPickerScreen(onNavigateBack: () -> Unit) {
         onRestore = { saved -> parseHex(saved["hex"].orEmpty())?.let { (r, g, b) ->
             red = r.toFloat(); green = g.toFloat(); blue = b.toFloat()
             hexInput = saved.getValue("hex"); hexError = ""
+            resetHslDraft(r, g, b)
         } }, modeInputs = mapOf("view" to view),
         onRestoreMode = { saved -> view = saved["view"]?.takeIf { it in listOf("HEX", "RGB", "HSL") } ?: "HEX" })
     ToolScaffold(
@@ -150,6 +178,7 @@ fun ColorPickerScreen(onNavigateBack: () -> Unit) {
                                     blue = parsed.third.toFloat()
                                     hexInput = savedHex
                                     hexError = ""
+                                    resetHslDraft(parsed.first, parsed.second, parsed.third)
                                 }
                                 .padding(4.dp)
                                 .semantics {
@@ -220,6 +249,29 @@ fun ColorPickerScreen(onNavigateBack: () -> Unit) {
 
         Spacer(Modifier.height(16.dp))
         }
+        if (view == "HSL") {
+            Text("Edit HSL, then Apply. Preview, history, palette, Copy and Share use the last applied color.", style = MaterialTheme.typography.bodySmall)
+            HslField("Hue (0–360°)", "colorHueInput", hueInput, hslError) { hueInput = it; hslError = false }
+            HslField("Saturation (0–100%)", "colorSaturationInput", saturationInput, hslError) { saturationInput = it; hslError = false }
+            HslField("Lightness (0–100%)", "colorLightnessInput", lightnessInput, hslError) { lightnessInput = it; hslError = false }
+            OutlinedButton(onClick = {
+                val parsed = hueInput.trim().toDoubleOrNull()?.let { h ->
+                    saturationInput.trim().toDoubleOrNull()?.let { s ->
+                        lightnessInput.trim().toDoubleOrNull()?.let { l -> hslToRgb(h, s, l) }
+                    }
+                }
+                if (parsed == null) hslError = true
+                else {
+                    red = parsed.first.toFloat(); green = parsed.second.toFloat(); blue = parsed.third.toFloat()
+                    updateDraft()
+                    hslError = false
+                }
+            }) { Text("Apply HSL") }
+            if (hslError) Text("Enter finite numbers: hue 0–360, saturation and lightness 0–100. Use a dot for decimals. The applied color is unchanged.",
+                color = MaterialTheme.colorScheme.error, modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite })
+            Text("360° equals 0°. Colors are rounded to 8-bit RGB; displayed HSL is rounded to whole numbers. Hue is undefined for gray, black and white.", style = MaterialTheme.typography.bodySmall)
+            Spacer(Modifier.height(16.dp))
+        }
         Card(modifier = Modifier.fillMaxWidth()) {
             Column(
                 modifier = Modifier
@@ -230,7 +282,7 @@ fun ColorPickerScreen(onNavigateBack: () -> Unit) {
                     "RGB" -> ColorValue(stringResource(R.string.color_rgb), rgbText)
                     "HSL" -> {
                         ColorValue(stringResource(R.string.color_hsl), hslText)
-                        Text("Adjust the color in HEX or RGB; this view shows the equivalent HSL value.", style = MaterialTheme.typography.bodySmall)
+                        Text("Equivalent HSL of the applied color.", style = MaterialTheme.typography.bodySmall)
                     }
                     else -> ColorValue(stringResource(R.string.color_hex), hex)
                 }
@@ -270,4 +322,12 @@ private fun ColorSlider(label: String, value: Float, onValueChange: (Float) -> U
     }
     Slider(value = value, onValueChange = onValueChange, valueRange = 0f..255f,
         modifier = Modifier.semantics { contentDescription = label })
+}
+
+@Composable
+private fun HslField(label: String, tag: String, value: String, isError: Boolean, onChange: (String) -> Unit) {
+    OutlinedTextField(value = value, onValueChange = onChange, label = { Text(label) },
+        singleLine = true, isError = isError,
+        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Decimal),
+        modifier = Modifier.fillMaxWidth().testTag(tag))
 }

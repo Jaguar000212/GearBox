@@ -154,17 +154,29 @@ fun ToolScaffold(
 val LocalToolOpener = staticCompositionLocalOf<((Tool) -> Unit)?> { null }
 
 @Composable
-private fun ToolSwitcher(onOpen: (Tool) -> Unit, onDismiss: () -> Unit) {
+internal fun ToolSwitcher(onOpen: (Tool) -> Unit, onDismiss: () -> Unit) {
     var query by remember { mutableStateOf("") }
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val recents = remember(context) { com.jaguar.gearbox.data.RecentToolsStore(context) }
+    val recent = if (query.isBlank() && recents.showRecentTools)
+        recents.recent.mapNotNull(Tools::byRoute) else emptyList()
     val matches = Tools.all.filter { tool ->
-        query.isBlank() || (listOf(tool.name, tool.description) + tool.keywords).any { it.contains(query.trim(), true) }
+        query.isBlank() || (listOf(tool.name, tool.description, tool.category.label) + tool.keywords).any { it.contains(query.trim(), true) }
     }
     AlertDialog(onDismissRequest = onDismiss, title = { Text("Switch tool") }, text = {
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Text("Switching keeps non-password drafts in this navigation session. Back leaves the current tool.", style = MaterialTheme.typography.bodySmall)
             OutlinedTextField(value = query, onValueChange = { query = it }, label = { Text("Find a tool") }, singleLine = true)
             LazyColumn(Modifier.heightIn(max = 400.dp)) {
-                items(matches, key = { it.route }) { tool ->
+                if (recent.isNotEmpty()) {
+                    item { Text("Recent tools", style = MaterialTheme.typography.titleSmall) }
+                    items(recent, key = { "recent:${it.route}" }) { tool ->
+                        ListItem(headlineContent = { Text(tool.name) }, supportingContent = { Text(tool.category.label) },
+                            leadingContent = { Icon(tool.icon, null) }, modifier = Modifier.clickable { onOpen(tool) })
+                    }
+                    item { Text("All other tools", style = MaterialTheme.typography.titleSmall) }
+                }
+                items(matches.filterNot { candidate -> recent.any { it.route == candidate.route } }, key = { it.route }) { tool ->
                     ListItem(headlineContent = { Text(tool.name) }, supportingContent = { Text(tool.category.label) },
                         leadingContent = { Icon(tool.icon, null) }, modifier = Modifier.clickable { onOpen(tool) })
                 }

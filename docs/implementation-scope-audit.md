@@ -4,11 +4,12 @@ This is a source-level inventory, not a device-test sign-off. It includes correc
 
 | Area | Implemented | Deliberate limit / verification remaining |
 | --- | --- | --- |
-| Categories | Seven categories, all 41 current tools assigned | No custom categories, multi-category tags or automatic fallback for future unassigned tools |
-| Home | Compact cards, category chooser/counts, keyword/name/description/category search, recents, capability hints, optional active-clock shortcut | Selected category narrows results; Search all fallback. No universal dashboard customization |
+| Categories | Seven categories, all 41 current tools assigned; distinct icons, subtle theme-aware accents and accessible counts | No custom categories, multi-category tags or automatic fallback for future unassigned tools |
+| Home | Compact cards, category chooser/counts, ranked task-language and operation search, recents, capability hints, optional active-clock shortcut | Selected category narrows results; Search all fallback. No universal dashboard customization |
 | Favorites | Launcher/edit modes, searchable chooser, drag edge autoscroll, accessible move actions, removal Undo, shortcut synchronization | Launcher/device behavior and TalkBack need runtime testing |
 | Presets access | Favorites launcher and tool menu, configuration-only explicit imports | Live calculators may recalculate; never implicitly Generate/Start. No preset folders/rename |
-| Quick switch | Category-aware search, optional recents without duplicate entries, Navigation draft preservation | Password excluded; Back discards current destination. Android task state is separate from disk-retention controls |
+| Quick switch | Shared ranked task/operation search, optional recents without duplicate entries, Navigation draft preservation | Password excluded; Back discards current destination. Android task state is separate from disk-retention controls |
+| Operation discovery | Curated existing selector modes, canonical ID validation and explicit mode-only confirmation; no duplicate tools | No AI/freeform interpretation, new tools or automatic Generate/Start; ambiguous matches open the tool without selecting a mode |
 | Tool guidance | Help for all 41 tools; confirmed example-input imports for 23 deterministic tools | Games/random/password/hardware/clock examples are reference-only; no automatic action execution |
 | Selectors | Compact Base, Geometry, Morse, Date unit, Hash, Text, Percentage and Unit controls; Password Customize | Some tools appropriately retain specialized controls |
 | Adaptive layout | 15 input/result split-pane tools; large fonts revert to one column | Not a universal two-pane UI. Compact single-input converters and live tools use their own layouts |

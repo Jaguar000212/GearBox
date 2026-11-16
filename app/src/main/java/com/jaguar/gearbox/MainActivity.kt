@@ -45,6 +45,8 @@ import com.jaguar.gearbox.data.RecentToolsStore
 import com.jaguar.gearbox.data.SimplePrefsStore
 import com.jaguar.gearbox.data.Tool
 import com.jaguar.gearbox.data.Tools
+import com.jaguar.gearbox.data.ToolSearchOperation
+import com.jaguar.gearbox.data.ToolSearchCatalog
 import com.jaguar.gearbox.ui.screens.FavoritesScreen
 import com.jaguar.gearbox.ui.screens.HomeScreen
 import com.jaguar.gearbox.ui.screens.SettingsScreen
@@ -213,6 +215,15 @@ fun GearBoxApp(
         }
     }
     val openTool: (Tool) -> Unit = { navigateToTool(it) }
+    var pendingOperation by remember { mutableStateOf<Pair<Tool, ToolSearchOperation>?>(null) }
+    val openOperation: (Tool, ToolSearchOperation) -> Unit = { selected, operation ->
+        // Only the catalog's canonical operation may supply a mode map. No user input is imported.
+        ToolSearchCatalog.resolveOperation(context, operation.id)?.takeIf { it.tool.route == selected.route }?.let {
+            pendingOperation = it.tool to requireNotNull(it.operation)
+        }
+    }
+    LaunchedEffect(currentRoute) { pendingOperation = null }
+
 
     // Deep-links straight into a tool when GearBox is launched from one of its own app shortcuts.
     LaunchedEffect(pendingRoute) {
@@ -279,6 +290,7 @@ fun GearBoxApp(
                         favorites = favorites,
                         recentTools = recentTools,
                         onOpenTool = openTool,
+                        onOpenOperation = openOperation,
                     )
                 }
                 composable(ROUTE_FAVORITES) {
@@ -331,6 +343,7 @@ fun GearBoxApp(
                                     toolImport = com.jaguar.gearbox.ui.components.ToolImport(tool.route, inputs, modeOnly = true)
                                 }
                             },
+                            com.jaguar.gearbox.ui.components.LocalToolOperationOpener provides openOperation,
                             com.jaguar.gearbox.ui.components.LocalToolOpener provides { selected: Tool ->
                                 if (selected.route != tool.route) navigateToTool(selected, switching = true)
                             },
@@ -339,6 +352,30 @@ fun GearBoxApp(
                 }
             }
         }
+    }
+    pendingOperation?.let { (selected, operation) ->
+        androidx.compose.material3.AlertDialog(
+            onDismissRequest = { pendingOperation = null },
+            title = { Text(context.getString(R.string.operation_open_title, operation.label)) },
+            text = { Text(context.getString(R.string.operation_mode_only_notice, selected.name)) },
+            confirmButton = { androidx.compose.material3.TextButton(onClick = {
+                pendingOperation = null
+                // Re-resolve at the action boundary; never trust a copied/transformed mode map.
+                ToolSearchCatalog.resolveOperation(context, operation.id)?.takeIf { it.tool.route == selected.route }?.let { canonical ->
+                    val modes = canonical.operation?.modeInputs ?: return@let
+                    if (com.jaguar.gearbox.data.ToolMemoryPolicy.permitsRoute(canonical.tool.route) &&
+                        com.jaguar.gearbox.data.ToolMemoryPolicy.validInputs(modes)) {
+                        userNavigation()
+                        toolImport = com.jaguar.gearbox.ui.components.ToolImport(canonical.tool.route, modes, modeOnly = true)
+                        if (navController.currentDestination?.route != canonical.tool.route)
+                            navigateToTool(canonical.tool, switching = true)
+                    }
+                }
+            }) { Text(context.getString(R.string.operation_select_mode)) } },
+            dismissButton = { androidx.compose.material3.TextButton(onClick = { pendingOperation = null }) {
+                Text(context.getString(R.string.operation_cancel))
+            } },
+        )
     }
 }
 

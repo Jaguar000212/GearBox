@@ -1,5 +1,7 @@
 package com.jaguar.gearbox.ui.screens
 
+import com.jaguar.gearbox.ui.components.CategoryEmblem
+import com.jaguar.gearbox.ui.components.CategoryHeading
 import com.jaguar.gearbox.data.localizedLabel
 import com.jaguar.gearbox.data.localizedDescription
 import com.jaguar.gearbox.data.localizedName
@@ -56,6 +58,7 @@ fun HomeScreen(
     favorites: FavoritesStore,
     recentTools: RecentToolsStore,
     onOpenTool: (Tool) -> Unit,
+    onOpenOperation: ((Tool, ToolSearchOperation) -> Unit)? = null,
 ) {
     val context = LocalContext.current
     val uiPreferencesStore = remember(context) { UiPreferencesStore(context) }
@@ -69,12 +72,8 @@ fun HomeScreen(
     var showCategories by rememberSaveable { mutableStateOf(false) }
     val activeCategory = ToolCategory.entries.firstOrNull { it.name == selectedCategory }
     val search = query.trim()
-    val filtered = tools.filter { tool ->
-        (activeCategory == null || tool.category == activeCategory) &&
-            (search.isEmpty() || tool.localizedName(context).contains(search, true) ||
-                tool.localizedDescription(context).contains(search, true) || tool.category.localizedLabel(context).contains(search, true) ||
-                tool.keywords.any { it.contains(search, true) })
-    }
+    val searchResults = ToolSearchCatalog.search(context, search, tools, activeCategory)
+    val filtered = searchResults.map { it.tool }
     val snackbar = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     var undoJob by remember { mutableStateOf<Job?>(null) }
@@ -159,17 +158,25 @@ fun HomeScreen(
             }
         } else if (search.isNotEmpty()) {
             // Search is one flat list, never repeated category groups.
-            items(filtered, key = { it.route }) { tool ->
-                DiscoveryToolRow(tool, favorites, onOpenTool, showCategory = true, capabilityHint = capabilities.localizedHint(context, tool.route), onToggleFavorite = { toggleFavorite(tool) })
+            items(searchResults, key = { it.tool.route }) { result ->
+                val operation = result.operation
+                DiscoveryToolRow(result.tool, favorites, { tool ->
+                    if (operation != null && onOpenOperation != null) onOpenOperation(tool, operation)
+                    else onOpenTool(tool)
+                }, showCategory = true, capabilityHint = capabilities.localizedHint(context, result.tool.route),
+                    onToggleFavorite = { toggleFavorite(result.tool) },
+                    displayTitle = if (operation != null && onOpenOperation != null) result.label else result.tool.name,
+                    displayDetail = if (operation != null && onOpenOperation != null)
+                        context.getString(R.string.operation_search_detail, result.tool.name)
+                        else result.tool.category.localizedLabel(context))
             }
         } else {
             ToolCategory.entries.forEach { category ->
                 val members = filtered.filter { it.category == category }
                 if (members.isNotEmpty()) {
                     item(key = "category-${category.name}") {
-                        Text(category.localizedLabel(context), style = MaterialTheme.typography.titleMedium,
-                            modifier = Modifier.padding(start = 16.dp, top = 20.dp, bottom = 8.dp)
-                                .semantics { heading() })
+                        CategoryHeading(category, members.size,
+                            modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 20.dp, bottom = 8.dp))
                     }
                     items(members, key = { it.route }) { tool ->
                         DiscoveryToolRow(tool, favorites, onOpenTool, showCategory = false, capabilityHint = capabilities.localizedHint(context, tool.route), onToggleFavorite = { toggleFavorite(tool) })
@@ -192,6 +199,7 @@ fun HomeScreen(
                 }
                 items(ToolCategory.entries, key = { it.name }) { category ->
                     ListItem(headlineContent = { Text(category.localizedLabel(context)) },
+                        leadingContent = { CategoryEmblem(category) },
                         supportingContent = { Text(context.resources.getQuantityString(R.plurals.screen_tool_count, tools.count { it.category == category }, tools.count { it.category == category })) },
                         trailingContent = { RadioButton(activeCategory == category, onClick = null) },
                         modifier = Modifier.selectable(selected = activeCategory == category, role = Role.RadioButton) { selectedCategory = category.name; showCategories = false })
@@ -204,6 +212,8 @@ fun HomeScreen(
 @Composable
 internal fun DiscoveryToolRow(tool: Tool, favorites: FavoritesStore, onOpenTool: (Tool) -> Unit, showCategory: Boolean, capabilityHint: String? = null,
     onToggleFavorite: () -> Unit = { favorites.toggle(tool.route) },
+    displayTitle: String? = null,
+    displayDetail: String? = null,
 ) {
     val context = androidx.compose.ui.platform.LocalContext.current
     Surface(
@@ -219,8 +229,8 @@ internal fun DiscoveryToolRow(tool: Tool, favorites: FavoritesStore, onOpenTool:
                     tint = MaterialTheme.colorScheme.onSecondaryContainer)
             }
             Column(Modifier.weight(1f)) {
-                Text(tool.localizedName(context), style = MaterialTheme.typography.titleSmall)
-                Text(if (showCategory) tool.category.localizedLabel(context) else tool.localizedDescription(context),
+                Text(displayTitle ?: tool.localizedName(context), style = MaterialTheme.typography.titleSmall)
+                Text(displayDetail ?: if (showCategory) tool.category.localizedLabel(context) else tool.localizedDescription(context),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant)
                 capabilityHint?.let {

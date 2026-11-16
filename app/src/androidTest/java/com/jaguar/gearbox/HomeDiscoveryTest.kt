@@ -31,7 +31,7 @@ class HomeDiscoveryTest {
         val recents = RecentToolsStore(context)
         rule.setContent {
             MaterialTheme {
-                HomeScreen(listOf(tool), favorites, recents) { opened = it.route }
+                HomeScreen(listOf(tool), favorites, recents, onOpenTool = { opened = it.route })
             }
         }
         rule.onNodeWithText("Search tools").performTextInput("no matching tool")

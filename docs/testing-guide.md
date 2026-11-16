@@ -180,3 +180,17 @@ Corrective PR61 verification: exact head `ee0ce3f07527993e620cdd8fcaf228d24ae4d6
 - Legacy history outputs and user-entered names remain stored text, not automatically translated. Stable unit identifiers, route/action/storage keys, algorithm identifiers, number encodings and the English Number-to-Words algorithm deliberately remain technical/domain data.
 
 Static resource guardrails check XML names/references, indexed formats/plural fallback and direct hardcoded Compose labels. Android CI must also compile resources/app/test APKs and run JVM tests/lint. Instrumentation resource-parity tests are compiled only until executed on a device/emulator.
+
+## Task search and category identity
+
+This phase keeps the same tool routes and seven categories. Search is curated and on-device, not an AI service.
+
+- On Home and Quick switch, search task phrases (including punctuation/case variants), then verify the matching tool and its actual capability. Unsupported tasks must not invent tools or actions.
+- Search `circle area` and `temperature`: the result identifies an existing tool operation rather than registering a duplicate tool. Choose it, cancel the mode-change confirmation once, then confirm. Only the selector changes; existing inputs stay available, and no Generate, Start, roll or share action runs automatically. Live calculators may recalculate when their mode changes.
+- Try an operation for the current tool and for a tool with an existing navigation draft. Check repeated selection, Cancel, Back, reopening the switcher and rotation. Confirm a dismissed request cannot apply later.
+- With a Home category selected, operation/task search remains scoped. Search all clears the category but keeps the query. Clear search returns ordinary tool browsing and recents, without duplicate operation cards.
+- Check blank search, mixed case, punctuation, multiple words and no matches. Exact tool names remain discoverable; category search and localized aliases still work.
+- All seven category headings and chooser rows retain their original localized names and correct counts. Icons/colors supplement text, not replace it. Check light/dark/dynamic color, large fonts and TalkBack; decorative icons should not produce duplicate announcements.
+- Favorites, existing saved modes/history, shortcuts and tool route IDs must remain unchanged.
+
+Automated tests for these flows are separate from hands-on verification. Android instrumentation execution and visual/device accessibility checks remain unperformed here.

@@ -1,0 +1,355 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="search_operation_geometry_circle">Circle area and perimeter</string>
+    <string name="search_operation_geometry_rectangle">Rectangle area and perimeter</string>
+    <string name="search_operation_geometry_triangle">Triangle area and perimeter</string>
+    <string name="search_operation_units_length">Length conversion</string>
+    <string name="search_operation_units_weight">Weight conversion</string>
+    <string name="search_operation_units_volume">Volume conversion</string>
+    <string name="search_operation_units_temperature">Temperature conversion</string>
+    <string name="search_operation_percentage_of_value">Percentage of a value</string>
+    <string name="search_operation_percentage_what_percent">What percentage?</string>
+    <string name="search_operation_percentage_change">Percentage change</string>
+    <string name="search_operation_text_upper">Uppercase</string>
+    <string name="search_operation_text_lower">Lowercase</string>
+    <string name="search_operation_text_title">Title case</string>
+    <string name="search_operation_text_camel">Camel case</string>
+    <string name="search_operation_morse_text_to_morse">Text to Morse</string>
+    <string name="search_operation_morse_morse_to_text">Morse to text</string>
+    <string name="search_operation_morse_text_to_binary">Text to binary</string>
+    <string name="search_operation_morse_binary_to_text">Binary to text</string>
+    <string name="search_operation_base_binary">Binary input base</string>
+    <string name="search_operation_base_octal">Octal input base</string>
+    <string name="search_operation_base_decimal">Decimal input base</string>
+    <string name="search_operation_base_hexadecimal">Hexadecimal input base</string>
+    <string name="search_operation_hash_md5">MD5 hash</string>
+    <string name="search_operation_hash_sha1">SHA-1 hash</string>
+    <string name="search_operation_hash_sha256">SHA-256 hash</string>
+    <string name="search_operation_hash_sha512">SHA-512 hash</string>
+    <string-array name="search_aliases_geometry_circle">
+        <item>circle area</item>
+        <item>circle perimeter</item>
+        <item>area of a circle</item>
+        <item>perimeter of a circle</item>
+    </string-array>
+    <string-array name="search_aliases_geometry_rectangle">
+        <item>rectangle area</item>
+        <item>rectangle perimeter</item>
+        <item>area of a rectangle</item>
+        <item>perimeter of a rectangle</item>
+    </string-array>
+    <string-array name="search_aliases_geometry_triangle">
+        <item>triangle area</item>
+        <item>triangle perimeter</item>
+        <item>area of a triangle</item>
+        <item>perimeter of a triangle</item>
+    </string-array>
+    <string-array name="search_aliases_units_length">
+        <item>length</item>
+        <item>convert length</item>
+        <item>length units</item>
+        <item>meters feet</item>
+        <item>inches centimeters</item>
+        <item>kilometers miles</item>
+    </string-array>
+    <string-array name="search_aliases_units_weight">
+        <item>weight</item>
+        <item>convert weight</item>
+        <item>weight units</item>
+        <item>kilograms pounds</item>
+        <item>grams ounces</item>
+    </string-array>
+    <string-array name="search_aliases_units_volume">
+        <item>volume</item>
+        <item>convert volume</item>
+        <item>volume units</item>
+        <item>liters gallons</item>
+        <item>milliliters cups</item>
+    </string-array>
+    <string-array name="search_aliases_units_temperature">
+        <item>temperature</item>
+        <item>convert temperature</item>
+        <item>temperature units</item>
+        <item>celsius fahrenheit</item>
+        <item>fahrenheit celsius</item>
+        <item>kelvin</item>
+        <item>degrees temperature</item>
+    </string-array>
+    <string-array name="search_aliases_percentage_of_value">
+        <item>percent of a number</item>
+        <item>percentage of value</item>
+    </string-array>
+    <string-array name="search_aliases_percentage_what_percent">
+        <item>what percent</item>
+        <item>part as percentage of total</item>
+    </string-array>
+    <string-array name="search_aliases_percentage_change">
+        <item>percent increase</item>
+        <item>percent decrease</item>
+        <item>percentage change</item>
+    </string-array>
+    <string-array name="search_aliases_text_upper">
+        <item>uppercase</item>
+        <item>capital letters</item>
+        <item>make text uppercase</item>
+    </string-array>
+    <string-array name="search_aliases_text_lower">
+        <item>lowercase</item>
+        <item>small letters</item>
+        <item>make text lowercase</item>
+    </string-array>
+    <string-array name="search_aliases_text_title">
+        <item>title case</item>
+        <item>capitalize words</item>
+    </string-array>
+    <string-array name="search_aliases_text_camel">
+        <item>camel case</item>
+        <item>camelcase</item>
+    </string-array>
+    <string-array name="search_aliases_morse_text_to_morse">
+        <item>encode morse</item>
+        <item>text to morse</item>
+    </string-array>
+    <string-array name="search_aliases_morse_morse_to_text">
+        <item>decode morse</item>
+        <item>morse to text</item>
+    </string-array>
+    <string-array name="search_aliases_morse_text_to_binary">
+        <item>encode binary text</item>
+        <item>text to binary</item>
+    </string-array>
+    <string-array name="search_aliases_morse_binary_to_text">
+        <item>decode binary</item>
+        <item>binary to text</item>
+    </string-array>
+    <string-array name="search_aliases_base_binary">
+        <item>convert binary number</item>
+        <item>binary number base</item>
+        <item>binary to decimal</item>
+    </string-array>
+    <string-array name="search_aliases_base_octal">
+        <item>convert octal number</item>
+        <item>octal number base</item>
+        <item>octal to decimal</item>
+    </string-array>
+    <string-array name="search_aliases_base_decimal">
+        <item>convert decimal number</item>
+        <item>decimal number base</item>
+        <item>decimal to binary</item>
+    </string-array>
+    <string-array name="search_aliases_base_hexadecimal">
+        <item>convert hexadecimal number</item>
+        <item>hexadecimal number base</item>
+        <item>hexadecimal to decimal</item>
+    </string-array>
+    <string-array name="search_aliases_hash_md5">
+        <item>MD5 hash</item>
+        <item>md5</item>
+        <item>hash with MD5</item>
+    </string-array>
+    <string-array name="search_aliases_hash_sha1">
+        <item>SHA-1 hash</item>
+        <item>sha1</item>
+        <item>hash with SHA-1</item>
+    </string-array>
+    <string-array name="search_aliases_hash_sha256">
+        <item>SHA-256 hash</item>
+        <item>sha256</item>
+        <item>hash with SHA-256</item>
+    </string-array>
+    <string-array name="search_aliases_hash_sha512">
+        <item>SHA-512 hash</item>
+        <item>sha512</item>
+        <item>hash with SHA-512</item>
+    </string-array>
+    <string-array name="search_tasks_bubble_level">
+        <item>is this straight</item>
+        <item>is this level</item>
+        <item>level a surface</item>
+        <item>hang a picture</item>
+        <item>check a slope</item>
+    </string-array>
+    <string-array name="search_tasks_compass">
+        <item>which way is north</item>
+        <item>find direction</item>
+        <item>find north</item>
+        <item>magnetic heading</item>
+    </string-array>
+    <string-array name="search_tasks_flashlight">
+        <item>light up the dark</item>
+        <item>turn on torch</item>
+        <item>need some light</item>
+    </string-array>
+    <string-array name="search_tasks_screen_ruler">
+        <item>measure a small object</item>
+        <item>screen ruler length</item>
+        <item>how long is this</item>
+    </string-array>
+    <string-array name="search_tasks_age">
+        <item>how old am i</item>
+        <item>age between dates</item>
+        <item>birthday age</item>
+    </string-array>
+    <string-array name="search_tasks_average">
+        <item>average these numbers</item>
+        <item>arithmetic geometric harmonic mean</item>
+        <item>summary statistics</item>
+    </string-array>
+    <string-array name="search_tasks_loan">
+        <item>monthly loan payment</item>
+        <item>loan repayment</item>
+        <item>emi estimate</item>
+    </string-array>
+    <string-array name="search_tasks_date_calculator">
+        <item>add days to a date</item>
+        <item>subtract weeks from a date</item>
+        <item>date arithmetic</item>
+    </string-array>
+    <string-array name="search_tasks_days_until">
+        <item>days until an event</item>
+        <item>countdown to a date</item>
+        <item>how many days left</item>
+    </string-array>
+    <string-array name="search_tasks_base_converter">
+        <item>convert number base</item>
+        <item>binary decimal hexadecimal</item>
+    </string-array>
+    <string-array name="search_tasks_bmi">
+        <item>body mass index</item>
+        <item>bmi from height and weight</item>
+    </string-array>
+    <string-array name="search_tasks_decimal_to_fraction">
+        <item>decimal as fraction</item>
+        <item>turn decimal into fraction</item>
+    </string-array>
+    <string-array name="search_tasks_discount">
+        <item>sale price</item>
+        <item>price after discount</item>
+        <item>stacked discounts</item>
+    </string-array>
+    <string-array name="search_tasks_fuel_cost">
+        <item>trip fuel cost</item>
+        <item>cost of petrol</item>
+        <item>fuel for a journey</item>
+    </string-array>
+    <string-array name="search_tasks_geometry">
+        <item>shape area perimeter</item>
+        <item>calculate area</item>
+        <item>area and perimeter</item>
+    </string-array>
+    <string-array name="search_tasks_gst">
+        <item>add tax to price</item>
+        <item>remove tax from price</item>
+        <item>tax included price</item>
+    </string-array>
+    <string-array name="search_tasks_number_to_roman">
+        <item>roman numerals</item>
+        <item>number in roman numerals</item>
+    </string-array>
+    <string-array name="search_tasks_number_to_words">
+        <item>spell out a number</item>
+        <item>number in words</item>
+    </string-array>
+    <string-array name="search_tasks_percentage">
+        <item>work out a percentage</item>
+        <item>percentage calculation</item>
+    </string-array>
+    <string-array name="search_tasks_ratios">
+        <item>simplify a ratio</item>
+        <item>ratio between numbers</item>
+    </string-array>
+    <string-array name="search_tasks_tip">
+        <item>calculate a tip</item>
+        <item>tip per person</item>
+        <item>bill with tip per person</item>
+    </string-array>
+    <string-array name="search_tasks_unit_converter">
+        <item>convert measurement units</item>
+        <item>unit conversion</item>
+    </string-array>
+    <string-array name="search_tasks_text_tools">
+        <item>change letter case</item>
+        <item>word and character count</item>
+        <item>convert text case</item>
+    </string-array>
+    <string-array name="search_tasks_hash_generator">
+        <item>hash some text</item>
+        <item>text checksum</item>
+        <item>generate a digest</item>
+    </string-array>
+    <string-array name="search_tasks_qr_generator">
+        <item>make a qr code</item>
+        <item>text to qr</item>
+        <item>link to qr code</item>
+    </string-array>
+    <string-array name="search_tasks_morse_binary">
+        <item>translate morse code</item>
+        <item>text in binary</item>
+        <item>decode binary text</item>
+    </string-array>
+    <string-array name="search_tasks_color_picker">
+        <item>convert color values</item>
+        <item>color hex rgb hsl</item>
+        <item>choose a color</item>
+    </string-array>
+    <string-array name="search_tasks_counter">
+        <item>count things</item>
+        <item>count people</item>
+        <item>tally counter</item>
+    </string-array>
+    <string-array name="search_tasks_timer_stopwatch">
+        <item>time an activity</item>
+        <item>start a countdown</item>
+        <item>measure elapsed time</item>
+    </string-array>
+    <string-array name="search_tasks_password_generator">
+        <item>create a strong password</item>
+        <item>generate a password</item>
+    </string-array>
+    <string-array name="search_tasks_dice">
+        <item>roll dice</item>
+        <item>roll a die</item>
+    </string-array>
+    <string-array name="search_tasks_flip_coin">
+        <item>flip a coin</item>
+        <item>heads or tails</item>
+    </string-array>
+    <string-array name="search_tasks_spin_bottle">
+        <item>spin a bottle</item>
+        <item>choose a direction randomly</item>
+    </string-array>
+    <string-array name="search_tasks_one_of_two">
+        <item>choose between two options</item>
+        <item>pick one of two</item>
+        <item>decide between two things</item>
+    </string-array>
+    <string-array name="search_tasks_random">
+        <item>random number</item>
+        <item>pick a number in a range</item>
+    </string-array>
+    <string-array name="search_tasks_rps">
+        <item>rock paper scissors</item>
+        <item>play against the computer</item>
+    </string-array>
+    <string-array name="search_tasks_tambola">
+        <item>tambola number caller</item>
+        <item>housie caller</item>
+    </string-array>
+    <string-array name="search_tasks_team_picker">
+        <item>pick a name</item>
+        <item>make random teams</item>
+        <item>choose from names</item>
+    </string-array>
+    <string-array name="search_tasks_tic_tac_toe">
+        <item>noughts and crosses</item>
+        <item>tic tac toe game</item>
+    </string-array>
+    <string-array name="search_tasks_scoreboard">
+        <item>keep score</item>
+        <item>two team score</item>
+    </string-array>
+    <string-array name="search_tasks_chess_scoreboard">
+        <item>chess score</item>
+        <item>track chess match score</item>
+    </string-array>
+</resources>

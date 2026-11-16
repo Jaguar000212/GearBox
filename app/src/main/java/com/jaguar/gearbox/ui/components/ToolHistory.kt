@@ -19,6 +19,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.security.MessageDigest
 import java.text.DateFormat
 import java.util.Date
 
@@ -69,18 +70,49 @@ fun rememberToolHistory(
         }
         initialized = true
     }
-    LaunchedEffect(route, modeInputs, initialized) {
-        if (initialized && modeInputs.isNotEmpty()) {
-            val token = withContext(Dispatchers.IO) { store.modeGeneration(route) }
+    // Remember attempted mode observations too: clearing modes must not be undone
+    // merely by recreating the screen with the same configuration still displayed.
+    var observedModeFingerprint by rememberSaveable(route) { mutableStateOf<String?>(null) }
+    var observedModeGeneration by rememberSaveable(route) { mutableStateOf(0L) }
+    var modeObservationProcessed by rememberSaveable(route) { mutableStateOf(false) }
+    val modeFingerprint = remember(route, modeInputs) { historyObservationFingerprint(route, modeInputs, null) }
+    LaunchedEffect(route, modeFingerprint, initialized) {
+        if (!initialized) return@LaunchedEffect
+        if (observedModeFingerprint != modeFingerprint) {
+            observedModeFingerprint = modeFingerprint
+            observedModeGeneration = store.modeGeneration(route)
+            modeObservationProcessed = false
+        }
+        if (!modeObservationProcessed && modeInputs.isNotEmpty()) {
+            val token = observedModeGeneration
+            modeObservationProcessed = true
             withContext(Dispatchers.IO) { store.saveMode(route, modeInputs, expectedGeneration = token) }
         }
     }
+    // Keep only a bounded fingerprint, never a second saved-state copy of private inputs.
+    // The generation belongs to the observation, not the recreated coroutine: a clear
+    // during debounce must remain authoritative even if the device rotates afterward.
+    var observedFingerprint by rememberSaveable(route) { mutableStateOf<String?>(null) }
+    var observedGeneration by rememberSaveable(route) { mutableStateOf(0L) }
+    var observedResultGeneration by rememberSaveable(route) { mutableStateOf(0L) }
+    var observationProcessed by rememberSaveable(route) { mutableStateOf(false) }
+    val fingerprint = remember(route, inputs, output) { historyObservationFingerprint(route, inputs, output) }
     // Live calculators are recorded after a pause, never for each keystroke or invalid result.
-    LaunchedEffect(route, inputs, output, initialized) {
-        if (initialized && !output.isNullOrBlank()) {
-            val generation = expectedHistoryGeneration ?: store.historyGeneration(route)
-            val resultToken = withContext(Dispatchers.IO) { store.resultGeneration(route) }
+    LaunchedEffect(route, fingerprint, initialized) {
+        if (!initialized) return@LaunchedEffect
+        if (observedFingerprint != fingerprint) {
+            observedFingerprint = fingerprint
+            observedGeneration = expectedHistoryGeneration ?: store.historyGeneration(route)
+            observedResultGeneration = store.resultGeneration(route)
+            observationProcessed = false
+        }
+        if (!observationProcessed && !output.isNullOrBlank()) {
+            val generation = observedGeneration
+            val resultToken = observedResultGeneration
             delay(recordingDelayMillis.coerceAtLeast(0L))
+            // Mark before dispatch: recreation must not replay an attempted write, even
+            // when settings or a concurrent clear deliberately reject that write.
+            observationProcessed = true
             withContext(Dispatchers.IO) {
                 store.record(route, inputs, output, expectedGeneration = generation)
                 if (restoreLastResult) store.saveResult(route, inputs, output, expectedGeneration = resultToken)
@@ -200,3 +232,21 @@ val LocalToolImport = staticCompositionLocalOf<ToolImport?> { null }
 val LocalConsumeToolImport = staticCompositionLocalOf<() -> Unit> { {} }
 
 val LocalToolHandoff = staticCompositionLocalOf<((String, Map<String, String>) -> Unit)?> { null }
+
+/** Length framing and sorted keys avoid ambiguous map/string concatenations. Event keys
+ * such as _run and _capture intentionally participate so explicit repeats remain runs. */
+private fun historyObservationFingerprint(route: String, inputs: Map<String, String>, output: String?): String {
+    val digest = MessageDigest.getInstance("SHA-256")
+    fun add(value: String) {
+        val bytes = value.toByteArray(Charsets.UTF_8)
+        val size = bytes.size
+        digest.update(byteArrayOf((size ushr 24).toByte(), (size ushr 16).toByte(), (size ushr 8).toByte(), size.toByte()))
+        digest.update(bytes)
+    }
+    add(route)
+    add(inputs.size.toString())
+    inputs.toSortedMap().forEach { (key, value) -> add(key); add(value) }
+    add(if (output == null) "null" else "value")
+    add(output.orEmpty())
+    return digest.digest().joinToString("") { "%02x".format(it.toInt() and 0xff) }
+}

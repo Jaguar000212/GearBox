@@ -4,11 +4,13 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.util.AtomicFile
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
+import java.lang.ref.WeakReference
 
 /** Recent navigation contains routes only, never tool inputs/results. New data stays out of backup. */
 class RecentToolsStore private constructor(
@@ -21,7 +23,12 @@ class RecentToolsStore private constructor(
     )
 
     private data class State(val show: Boolean = true, val record: Boolean = true, val routes: List<String> = emptyList())
-    private var state by mutableStateOf(load())
+    private val stateKey = runCatching { file.canonicalPath }.getOrDefault(file.absolutePath)
+    private val sharedState: MutableState<State> = synchronized(lock) {
+        states.entries.removeAll { it.value.get() == null }
+        states[stateKey]?.get() ?: mutableStateOf(load()).also { states[stateKey] = WeakReference(it) }
+    }
+    private var state by sharedState
     val recent: List<String> get() = state.routes
     val showRecentTools: Boolean get() = state.show
     val recordRecentTools: Boolean get() = state.record
@@ -40,13 +47,16 @@ class RecentToolsStore private constructor(
     }
 
     private fun update(change: (State) -> State): Boolean = synchronized(lock) {
-        val next = change(state)
-        if (next == state) return@synchronized true
+        // Re-read under the write lock: an older store instance cannot re-enable collection or
+        // resurrect routes cleared by another activity/store. Shared state keeps both UIs current.
+        val current = readStored() ?: state
+        if (current != state) state = current
+        val next = change(current)
+        if (next == current) return@synchronized true
         if (write(next)) { state = next; true } else false
     }
 
-    private fun load(): State = synchronized(lock) {
-        val stored = runCatching {
+    private fun readStored(): State? = runCatching {
             AtomicFile(file).openRead().use { stream ->
                 val bytes = ByteArray(4097)
                 var size = 0
@@ -65,6 +75,9 @@ class RecentToolsStore private constructor(
                     }.distinct())
             }
         }.getOrNull()
+
+    private fun load(): State = synchronized(lock) {
+        val stored = readStored()
         if (stored != null) {
             // Retry legacy cleanup if a previous process stopped after the atomic migration.
             legacy?.edit()?.remove("recent_routes")?.commit()
@@ -94,6 +107,7 @@ class RecentToolsStore private constructor(
         const val MAX_RECENTS = 5
         private val validRoute = Regex("tool/[a-z0-9_]{1,64}")
         private val lock = Any()
+        private val states = mutableMapOf<String, WeakReference<MutableState<State>>>()
         /** Isolated files and preferences for instrumentation tests. */
         fun inFile(file: File, legacy: SharedPreferences? = null) = RecentToolsStore(file, legacy)
     }

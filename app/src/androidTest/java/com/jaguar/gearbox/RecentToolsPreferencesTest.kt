@@ -57,6 +57,34 @@ class RecentToolsPreferencesTest {
         assertEquals(5, store.recent.size)
     }
 
+    @Test fun oldInstancesCannotReenableCollectionOrResurrectClearedRoutes() {
+        val first = RecentToolsStore.inFile(file)
+        val second = RecentToolsStore.inFile(file)
+        first.recordOpened("tool/tip")
+        assertEquals(listOf("tool/tip"), second.recent)
+        first.setRecordRecentTools(false)
+        assertFalse(second.recordRecentTools)
+        second.recordOpened("tool/percentage")
+        assertFalse(first.recordRecentTools)
+        assertEquals(listOf("tool/tip"), first.recent)
+        first.clear()
+        second.setShowRecentTools(false)
+        assertTrue(first.recent.isEmpty())
+        assertFalse(first.showRecentTools)
+        val persisted = RecentToolsStore.inFile(file)
+        assertFalse(persisted.recordRecentTools)
+        assertTrue(persisted.recent.isEmpty())
+    }
+
+    @Test fun mutationsRebaseOnPersistedPreferencesRatherThanCachedValues() {
+        val store = RecentToolsStore.inFile(file)
+        file.writeText("""{"version":1,"show":false,"record":false,"routes":[]}""")
+        store.recordOpened("tool/tip")
+        assertFalse(store.recordRecentTools)
+        assertFalse(store.showRecentTools)
+        assertTrue(store.recent.isEmpty())
+    }
+
     @Test fun migrationFailureRetainsLegacyKey() {
         directory.mkdirs()
         val blocked = File(directory, "blocked").apply { writeText("keep") }

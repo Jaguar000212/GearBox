@@ -33,6 +33,7 @@ private const val KEY_LAST_CALLED = "tambola.last_called"
 fun TambolaScreen(onNavigateBack: () -> Unit) {
     val context = LocalContext.current
     val store = remember { SimplePrefsStore(context, gameSession = true) }
+    val memory = remember { ToolMemoryStore(context) }
     var calledNumbers by rememberSaveable(stateSaver = IntListSaver) {
         mutableStateOf(store.getIntList(KEY_CALLED))
     }

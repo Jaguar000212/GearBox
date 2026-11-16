@@ -22,7 +22,7 @@ This guide grows with each implementation phase. Automated CI builds app/test AP
 - Fresh history is off. Enable it with a limit of 2, complete three distinct calculations and verify only the newest two remain.
 - Set limit 1 and 100; reject 0, 101 and nonnumbers. Lowering the limit trims oldest history, not explicit Workbench saves.
 - Pause history: no new entries, existing entries remain readable. Clear one tool and clear all, cancel each confirmation once, then confirm.
-- Clear while a live calculation is waiting to save: that pending result must not reappear afterward.
+- Clear while a live calculation is waiting to save: that pending result must not reappear afterward, including after rotation. Clear a completed result/mode, rotate without editing, and verify it stays cleared; a genuinely new input/mode may save again.
 - Toggle Remember modes and Remember last result independently. Restart and compare behavior. Rotate while editing: older disk data must not overwrite saved-instance edits.
 - Copy/share a record, restore inputs, and verify mode/units match. Hash/QR imports must clear stale output and require Generate before sharing.
 - Passwords never appear in history, Workbench or presets. Password Copy keeps Android sensitive-clipboard treatment.
@@ -42,7 +42,7 @@ This guide grows with each implementation phase. Automated CI builds app/test AP
 - Show recent tools and Record recent tools are independent. Hiding the strip must not stop recording; pausing recording must not hide existing routes.
 - Clear recent history removes only recent navigation routes, not tool history, favorites, presets or saved results.
 - Restart after each change. Existing recent routes migrate once, stay ordered, and never exceed five.
-- Opening a notification/shortcut routes to the right tool and records the canonical tool, not an internal reset route.
+- Opening a notification/shortcut routes to the right tool and records the canonical tool, not an internal reset route. Rapidly open two tools and verify recents follows tap order; manual navigation/Back must cancel stale pending shortcut navigation.
 
 ### Game-session retention
 - Remember game sessions and participants defaults on to preserve existing progress. Turn it off, make changes, reopen tools: automatic restoration/saving is paused, while the currently open screen is not reset.

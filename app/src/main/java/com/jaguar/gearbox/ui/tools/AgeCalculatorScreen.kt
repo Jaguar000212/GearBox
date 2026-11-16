@@ -24,6 +24,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.jaguar.gearbox.data.Tools
 import com.jaguar.gearbox.ui.components.ResultCard
+import com.jaguar.gearbox.ui.components.AdaptiveToolLayout
+import com.jaguar.gearbox.ui.components.ToolActions
 import com.jaguar.gearbox.ui.components.ToolScaffold
 import com.jaguar.gearbox.ui.components.rememberToolHistory
 import java.time.Instant
@@ -100,40 +102,44 @@ fun AgeCalculatorScreen(onNavigateBack: () -> Unit) {
         onNavigateBack = onNavigateBack,
         history = history,
     ) {
-        Text(
-            "Choose an earlier date and a later date to compare.",
-            style = MaterialTheme.typography.bodyMedium,
-        )
-        Spacer(Modifier.height(12.dp))
-        OutlinedButton(onClick = { pickerTarget = 2 }, modifier = Modifier.fillMaxWidth()) {
-            Icon(Icons.Filled.DateRange, contentDescription = null)
-            Text("  Earlier date: ${earlierDate?.let { formatDate(it) } ?: "Choose date"}")
-        }
-        Spacer(Modifier.height(8.dp))
-        OutlinedButton(onClick = { pickerTarget = 1 }, modifier = Modifier.fillMaxWidth()) {
-            Icon(Icons.Filled.DateRange, contentDescription = null)
-            Text("  Later date: ${laterDate?.let { formatDate(it) } ?: "Choose date"}")
-        }
-
-        if (result != null) {
-            Spacer(Modifier.height(16.dp))
-            ResultCard(
-                text = result,
-                textStyle = MaterialTheme.typography.headlineSmall,
-                onCopy = { context.copyToClipboard("Age", result) },
-                onShare = { context.shareText(result) },
+        AdaptiveToolLayout(input = {
+            Text(
+                "Choose an earlier date and a later date to compare.",
+                style = MaterialTheme.typography.bodyMedium,
             )
-            Spacer(Modifier.height(8.dp))
-            Text("Calendar years, months and days between ${formatDate(earlier!!)} and ${formatDate(later!!)}.",
-                style = MaterialTheme.typography.bodyMedium)
-        } else if (error != null) {
             Spacer(Modifier.height(12.dp))
-            Text(error, color = MaterialTheme.colorScheme.error)
-        } else {
-            Spacer(Modifier.height(20.dp))
-            Text("Your age difference will appear here once both dates are selected.",
-                style = MaterialTheme.typography.bodyMedium)
-        }
+            OutlinedButton(onClick = { pickerTarget = 2 }, modifier = Modifier.fillMaxWidth()) {
+                Icon(Icons.Filled.DateRange, contentDescription = null)
+                Text("  Earlier date: ${earlierDate?.let { formatDate(it) } ?: "Choose date"}")
+            }
+            Spacer(Modifier.height(8.dp))
+            OutlinedButton(onClick = { pickerTarget = 1 }, modifier = Modifier.fillMaxWidth()) {
+                Icon(Icons.Filled.DateRange, contentDescription = null)
+                Text("  Later date: ${laterDate?.let { formatDate(it) } ?: "Choose date"}")
+            }
+        }, result = {
+            if (result != null) {
+                Spacer(Modifier.height(16.dp))
+                ResultCard(
+                    text = result,
+                    textStyle = MaterialTheme.typography.headlineSmall,
+                    onCopy = { context.copyToClipboard("Age", result) },
+                    onShare = { context.shareText(result) },
+                )
+                Spacer(Modifier.height(8.dp))
+                Text("Calendar years, months and days between ${formatDate(earlier!!)} and ${formatDate(later!!)}.",
+                    style = MaterialTheme.typography.bodyMedium)
+            } else if (error != null) {
+                Spacer(Modifier.height(12.dp))
+                Text(error, color = MaterialTheme.colorScheme.error)
+            } else {
+                Spacer(Modifier.height(20.dp))
+                Text("Your age difference will appear here once both dates are selected.",
+                    style = MaterialTheme.typography.bodyMedium)
+            }
+            ToolActions(onClear = { earlierDate = null; laterDate = null; pickerTarget = 0 },
+                clearEnabled = earlierDate != null || laterDate != null)
+        })
     }
 }
 

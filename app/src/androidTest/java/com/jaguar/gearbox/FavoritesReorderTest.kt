@@ -30,7 +30,7 @@ class FavoritesReorderTest {
         // Inject isolated preferences and a no-op shortcut callback: never change the launcher.
         val store = FavoritesStore(prefs)
         store.addAll(tools.map { it.route })
-        rule.setContent { MaterialTheme { FavoritesScreen(tools, store) {} } }
+        rule.setContent { MaterialTheme { FavoritesScreen(tools, store, onOpenTool = {}) } }
         rule.onNodeWithContentDescription("Move ${tools[0].name} up").assertDoesNotExist()
         rule.onNodeWithText("Edit").performClick()
         rule.onNodeWithContentDescription("Move ${tools[0].name} up").assertIsNotEnabled()

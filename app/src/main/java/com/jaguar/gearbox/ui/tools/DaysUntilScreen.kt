@@ -28,6 +28,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.jaguar.gearbox.data.Tools
 import com.jaguar.gearbox.ui.components.ResultCard
+import com.jaguar.gearbox.ui.components.AdaptiveToolLayout
+import com.jaguar.gearbox.ui.components.ToolActions
 import com.jaguar.gearbox.ui.components.ToolScaffold
 import com.jaguar.gearbox.ui.components.rememberToolHistory
 import java.time.Instant
@@ -86,43 +88,47 @@ fun DaysUntilScreen(onNavigateBack: () -> Unit) {
         onNavigateBack = onNavigateBack,
         history = history,
     ) {
-        Text("Count calendar days to a date, or days since it passed.",
-            style = MaterialTheme.typography.bodyMedium)
-        Spacer(Modifier.height(12.dp))
-        OutlinedTextField(
-            value = label,
-            onValueChange = {
-                label = it
-            },
-            label = { Text("Event name (optional)") },
-            placeholder = { Text("e.g. Diwali") },
-            modifier = Modifier.fillMaxWidth(),
-        )
-        Spacer(Modifier.height(12.dp))
-        OutlinedButton(onClick = { showPicker = true }, modifier = Modifier.fillMaxWidth()) {
-            Icon(Icons.Filled.DateRange, contentDescription = null)
-            Text("  Target date: ${targetDate?.let { formatDate(it) } ?: "Choose date"}")
-        }
-
-        val target = targetDate
-        if (target != null) {
-            val summary = daysUntilSummary(today, target, label)
-
-            Spacer(Modifier.height(20.dp))
-            ResultCard(
-                text = summary,
-                textStyle = MaterialTheme.typography.headlineMedium,
-                onCopy = { context.copyToClipboard("Days Until", daysUntilSummary(LocalDate.now(), target, label)) },
-                onShare = { context.shareText(daysUntilSummary(LocalDate.now(), target, label)) },
+        AdaptiveToolLayout(input = {
+            Text("Count calendar days to a date, or days since it passed.",
+                style = MaterialTheme.typography.bodyMedium)
+            Spacer(Modifier.height(12.dp))
+            OutlinedTextField(
+                value = label,
+                onValueChange = {
+                    label = it
+                },
+                label = { Text("Event name (optional)") },
+                placeholder = { Text("e.g. Diwali") },
+                modifier = Modifier.fillMaxWidth(),
             )
-            Spacer(Modifier.height(8.dp))
-            Text("From ${formatDate(today)} to ${formatDate(target)}",
-                style = MaterialTheme.typography.bodyMedium)
-        } else {
-            Spacer(Modifier.height(20.dp))
-            Text("Choose a target date to see your countdown. An event name is optional.",
-                style = MaterialTheme.typography.bodyMedium)
-        }
+            Spacer(Modifier.height(12.dp))
+            OutlinedButton(onClick = { showPicker = true }, modifier = Modifier.fillMaxWidth()) {
+                Icon(Icons.Filled.DateRange, contentDescription = null)
+                Text("  Target date: ${targetDate?.let { formatDate(it) } ?: "Choose date"}")
+            }
+        }, result = {
+            val target = targetDate
+            if (target != null) {
+                val summary = daysUntilSummary(today, target, label)
+
+                Spacer(Modifier.height(20.dp))
+                ResultCard(
+                    text = summary,
+                    textStyle = MaterialTheme.typography.headlineMedium,
+                    onCopy = { context.copyToClipboard("Days Until", daysUntilSummary(LocalDate.now(), target, label)) },
+                    onShare = { context.shareText(daysUntilSummary(LocalDate.now(), target, label)) },
+                )
+                Spacer(Modifier.height(8.dp))
+                Text("From ${formatDate(today)} to ${formatDate(target)}",
+                    style = MaterialTheme.typography.bodyMedium)
+            } else {
+                Spacer(Modifier.height(20.dp))
+                Text("Choose a target date to see your countdown. An event name is optional.",
+                    style = MaterialTheme.typography.bodyMedium)
+            }
+            ToolActions(onClear = { label = ""; targetDate = null; showPicker = false },
+                clearEnabled = label.isNotEmpty() || targetDate != null)
+        })
     }
 }
 

@@ -1,13 +1,8 @@
 package com.jaguar.gearbox
 
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
-import androidx.compose.ui.test.onNodeWithContentDescription
-import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performScrollTo
-import androidx.compose.ui.test.performTextReplacement
 import com.jaguar.gearbox.ui.tools.UnitConverterScreen
 import org.junit.After
 import org.junit.Rule
@@ -45,4 +40,32 @@ class UnitConverterScreenTest {
         rule.onNodeWithText("Copy").assertIsNotEnabled()
         rule.onNodeWithText("Share").assertIsNotEnabled()
     }
+    @Test fun clearPreservesCategoryAndSwappedUnitsForNextConversion() {
+        showConverter()
+        rule.onNodeWithText("Category: Length").performClick()
+        rule.onNodeWithText("Temperature").performClick()
+        rule.onNodeWithText(" Swap units").performScrollTo().performClick()
+        rule.onNodeWithText("Value").performScrollTo().performTextReplacement("32")
+        rule.onNodeWithText("32 °F = 0 °C").assertExists()
+        rule.onNodeWithText("Clear").performScrollTo().performClick()
+        rule.onNodeWithText("Category: Temperature").assertExists()
+        rule.onNodeWithText("Fahrenheit (°F)").assertExists()
+        rule.onNodeWithText("Celsius (°C)").assertExists()
+        rule.onNodeWithText("32 °F = 0 °C").assertDoesNotExist()
+        rule.onNodeWithText("Clear").assertIsNotEnabled()
+        rule.onNodeWithText("Copy").assertIsNotEnabled()
+        rule.onNodeWithText("Share").assertIsNotEnabled()
+        rule.onNodeWithText("Value").performScrollTo().performTextReplacement("212")
+        rule.onNodeWithText("212 °F = 100 °C").assertExists()
+    }
+
+    @Test fun clearAlsoWorksForInvalidConversionInput() {
+        showConverter()
+        rule.onNodeWithText("Value").performTextReplacement("NaN")
+        rule.onNodeWithText("Clear").performScrollTo().performClick()
+        rule.onNodeWithText("Enter a value to see the conversion.").assertExists()
+        rule.onNodeWithText("Enter a valid finite number.").assertDoesNotExist()
+        rule.onNodeWithText("Clear").assertIsNotEnabled()
+    }
+
 }

@@ -26,7 +26,7 @@ class FavoritesChooserRestorationTest {
         val tools = Tools.all.take(2)
         val store = FavoritesStore(prefs)
         val restoration = StateRestorationTester(compose)
-        restoration.setContent { MaterialTheme { FavoritesScreen(tools, store) {} } }
+        restoration.setContent { MaterialTheme { FavoritesScreen(tools, store, onOpenTool = {}) } }
         compose.onNodeWithText("Choose tools").performClick()
         compose.onNodeWithText(tools[0].name).performClick()
         compose.onNodeWithText(tools[1].name).performClick()
@@ -41,7 +41,7 @@ class FavoritesChooserRestorationTest {
     @Test fun cancelDoesNotApplyAndReturnsFocusToChooseTools() {
         val store = FavoritesStore(prefs)
         val tools = Tools.all.take(1)
-        compose.setContent { MaterialTheme { FavoritesScreen(tools, store) {} } }
+        compose.setContent { MaterialTheme { FavoritesScreen(tools, store, onOpenTool = {}) } }
         compose.onNodeWithText("Choose tools").performClick()
         compose.onNodeWithText(tools[0].name).performClick()
         compose.onNodeWithText("Cancel").performClick()

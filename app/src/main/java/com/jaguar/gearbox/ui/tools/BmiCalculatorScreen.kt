@@ -27,6 +27,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.jaguar.gearbox.data.Tools
 import com.jaguar.gearbox.logic.computeBmi
+import com.jaguar.gearbox.ui.components.AdaptiveToolLayout
+import com.jaguar.gearbox.ui.components.ToolActions
 import com.jaguar.gearbox.ui.components.ToolScaffold
 import com.jaguar.gearbox.ui.components.rememberToolHistory
 
@@ -106,83 +108,84 @@ fun BmiCalculatorScreen(onNavigateBack: () -> Unit) {
         onNavigateBack = onNavigateBack,
         history = history,
     ) {
-        Text("Units", style = MaterialTheme.typography.titleMedium)
-        Column(modifier = Modifier.fillMaxWidth()) {
-            BmiUnitSystem.entries.forEach { entry ->
-                FilterChip(
-                    selected = entry == selectedSystem,
-                    onClick = { unitSystem = entry.name },
-                    label = { Text(entry.label) },
-                )
+        AdaptiveToolLayout(input = {
+            Text("Units", style = MaterialTheme.typography.titleMedium)
+            Column(modifier = Modifier.fillMaxWidth()) {
+                BmiUnitSystem.entries.forEach { entry ->
+                    FilterChip(
+                        selected = entry == selectedSystem,
+                        onClick = { unitSystem = entry.name },
+                        label = { Text(entry.label) },
+                    )
+                }
             }
-        }
 
-        Spacer(Modifier.height(12.dp))
-        if (selectedSystem == BmiUnitSystem.METRIC) {
-            OutlinedTextField(
-                value = heightCm,
-                onValueChange = { heightCm = it },
-                label = { Text("Height (cm)") },
-                placeholder = { Text("e.g. 175") },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                modifier = Modifier.fillMaxWidth(),
-            )
             Spacer(Modifier.height(12.dp))
-            OutlinedTextField(
-                value = weightKg,
-                onValueChange = { weightKg = it },
-                label = { Text("Weight (kg)") },
-                placeholder = { Text("e.g. 70") },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                modifier = Modifier.fillMaxWidth(),
-            )
-        } else {
-            Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            if (selectedSystem == BmiUnitSystem.METRIC) {
                 OutlinedTextField(
-                    value = heightFt,
-                    onValueChange = { heightFt = it },
-                    label = { Text("Height (ft)") },
-                    placeholder = { Text("e.g. 5") },
+                    value = heightCm,
+                    onValueChange = { heightCm = it },
+                    label = { Text("Height (cm)") },
+                    placeholder = { Text("e.g. 175") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     modifier = Modifier.fillMaxWidth(),
                 )
+                Spacer(Modifier.height(12.dp))
                 OutlinedTextField(
-                    value = heightIn,
-                    onValueChange = { heightIn = it },
-                    label = { Text("Additional inches (optional)") },
-                    placeholder = { Text("e.g. 9") },
+                    value = weightKg,
+                    onValueChange = { weightKg = it },
+                    label = { Text("Weight (kg)") },
+                    placeholder = { Text("e.g. 70") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            } else {
+                Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    OutlinedTextField(
+                        value = heightFt,
+                        onValueChange = { heightFt = it },
+                        label = { Text("Height (ft)") },
+                        placeholder = { Text("e.g. 5") },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                    OutlinedTextField(
+                        value = heightIn,
+                        onValueChange = { heightIn = it },
+                        label = { Text("Additional inches (optional)") },
+                        placeholder = { Text("e.g. 9") },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
+                Spacer(Modifier.height(12.dp))
+                OutlinedTextField(
+                    value = weightLbs,
+                    onValueChange = { weightLbs = it },
+                    label = { Text("Weight (lbs)") },
+                    placeholder = { Text("e.g. 154") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     modifier = Modifier.fillMaxWidth(),
                 )
             }
+        }, result = {
+            if (result != null) {
+                Spacer(Modifier.height(20.dp))
+                Text("Body mass index", style = MaterialTheme.typography.titleMedium)
+                Spacer(Modifier.height(8.dp))
+                val summary = "BMI: ${result.first}\nAdult category: ${result.second}"
+                ResultCard(text = summary, textStyle = MaterialTheme.typography.headlineSmall,
+                    onCopy = { context.copyToClipboard("BMI", summary) },
+                    onShare = { context.shareText(summary) })
+            } else if (error.isNotEmpty()) {
+                Spacer(Modifier.height(12.dp))
+                Text(error, color = MaterialTheme.colorScheme.error)
+            }
             Spacer(Modifier.height(12.dp))
-            OutlinedTextField(
-                value = weightLbs,
-                onValueChange = { weightLbs = it },
-                label = { Text("Weight (lbs)") },
-                placeholder = { Text("e.g. 154") },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                modifier = Modifier.fillMaxWidth(),
-            )
-        }
-
-        if (result != null) {
-            Spacer(Modifier.height(20.dp))
-            Text("Body mass index", style = MaterialTheme.typography.titleMedium)
-            Spacer(Modifier.height(8.dp))
-            val summary = "BMI: ${result.first}\nAdult category: ${result.second}"
-            ResultCard(text = summary, textStyle = MaterialTheme.typography.headlineSmall,
-                onCopy = { context.copyToClipboard("BMI", summary) },
-                onShare = { context.shareText(summary) })
-        } else if (error.isNotEmpty()) {
-            Spacer(Modifier.height(12.dp))
-            Text(error, color = MaterialTheme.colorScheme.error)
-        }
-        Spacer(Modifier.height(12.dp))
-        Text("These categories are for adults aged 20 and older. BMI is a screening measure, not a diagnosis; it does not assess health on its own.",
-            style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        TextButton(onClick = { heightCm = ""; weightKg = ""; heightFt = ""; heightIn = ""; weightLbs = "" },
-            enabled = listOf(heightCm, weightKg, heightFt, heightIn, weightLbs).any { it.isNotEmpty() },
-            modifier = Modifier.fillMaxWidth()) { Text("Clear") }
+            Text("These categories are for adults aged 20 and older. BMI is a screening measure, not a diagnosis; it does not assess health on its own.",
+                style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            ToolActions(onClear = { heightCm = ""; weightKg = ""; heightFt = ""; heightIn = ""; weightLbs = "" },
+                clearEnabled = listOf(heightCm, weightKg, heightFt, heightIn, weightLbs).any { it.isNotEmpty() })
+        })
     }
 }

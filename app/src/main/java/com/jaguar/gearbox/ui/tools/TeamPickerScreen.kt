@@ -1,5 +1,9 @@
 package com.jaguar.gearbox.ui.tools
 
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.material3.FilterChip
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -45,6 +49,7 @@ import com.jaguar.gearbox.ui.components.ResultCard
 import com.jaguar.gearbox.ui.components.StringListSaver
 import com.jaguar.gearbox.ui.components.ToolActions
 import com.jaguar.gearbox.ui.components.ToolScaffold
+import com.jaguar.gearbox.ui.components.rememberToolHistory
 
 private const val KEY_NAMES = "team_picker.names"
 private const val NAME_DELIMITER = "\n"
@@ -60,6 +65,8 @@ fun TeamPickerScreen(onNavigateBack: () -> Unit) {
         mutableStateOf(if (saved.isEmpty()) emptyList() else saved.split(NAME_DELIMITER))
     }
     var newName by rememberSaveable { mutableStateOf("") }
+    var mode by rememberSaveable { mutableStateOf("pick") }
+    var editing by rememberSaveable { mutableStateOf(false) }
     var teamCount by rememberSaveable { mutableStateOf(2) }
     var winner by rememberSaveable { mutableStateOf<String?>(null) }
     var teams by rememberSaveable(stateSaver = StringListSaver) { mutableStateOf(emptyList()) }
@@ -92,62 +99,38 @@ fun TeamPickerScreen(onNavigateBack: () -> Unit) {
         )
     }
 
+    val history = rememberToolHistory(Tools.ROUTE_TEAM_PICKER,
+        mapOf("participants" to names.joinToString(NAME_DELIMITER), "mode" to mode, "teams" to teamCount.toString()),
+        if (mode == "pick") winner?.let { "Picked: $it" } else teams.takeIf { it.isNotEmpty() }?.joinToString("\n"),
+        onRestore = { saved ->
+            persistNames(saved["participants"].orEmpty().split(NAME_DELIMITER).filter { it.isNotBlank() })
+            mode = if (saved["mode"] == "teams") "teams" else "pick"
+            teamCount = (saved["teams"]?.toIntOrNull() ?: 2).coerceIn(2, names.size.coerceAtLeast(2))
+        }, modeInputs = mapOf("mode" to mode, "teams" to teamCount.toString()),
+        onRestoreMode = { saved ->
+            mode = if (saved["mode"] == "teams") "teams" else "pick"
+            teamCount = (saved["teams"]?.toIntOrNull() ?: 2).coerceIn(2, names.size.coerceAtLeast(2))
+        })
     ToolScaffold(
         title = "Team / Name Picker",
         icon = Tools.byRoute(Tools.ROUTE_TEAM_PICKER)!!.icon,
         onNavigateBack = onNavigateBack,
+        history = history,
     ) {
         Text("Let chance choose", style = MaterialTheme.typography.titleLarge)
         Text("Pick one name or make balanced teams. Repeated names count as separate entries.",
             style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Spacer(Modifier.height(16.dp))
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            OutlinedTextField(
-                value = newName,
-                onValueChange = { newName = it },
-                label = { Text("Add a name") },
-                singleLine = true,
-                modifier = Modifier.weight(1f),
-            )
-            IconButton(onClick = { addName() }, enabled = newName.isNotBlank()) {
-                Icon(Icons.Filled.Add, contentDescription = "Add name")
-            }
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            FilterChip(mode == "pick", { mode = "pick" }, label = { Text("Pick a name") })
+            FilterChip(mode == "teams", { mode = "teams" }, label = { Text("Make teams") })
+        }
+        OutlinedButton(onClick = { editing = true }, modifier = Modifier.fillMaxWidth()) {
+            Text("Participants · ${names.size} · Edit")
         }
 
         if (names.isNotEmpty()) {
-            Spacer(Modifier.height(12.dp))
-            Text("Participants (${names.size})", style = MaterialTheme.typography.titleMedium)
-            Spacer(Modifier.height(8.dp))
-            Card(modifier = Modifier.fillMaxWidth()) {
-                Column(modifier = Modifier.padding(vertical = 4.dp)) {
-                    names.forEachIndexed { index, name ->
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 12.dp, vertical = 4.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                        ) {
-                            Row(modifier = Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
-                                Icon(
-                                    Icons.Filled.Person,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                )
-                                Text(name, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f).padding(start = 8.dp))
-                            }
-                            IconButton(onClick = {
-                                persistNames(names.toMutableList().also { it.removeAt(index) })
-                                winner = null
-                                teams = emptyList()
-                            }) {
-                                Icon(Icons.Filled.Close, contentDescription = "Remove participant ${index + 1}: $name")
-                            }
-                        }
-                    }
-                }
-            }
-
+            if (mode == "pick") {
             Spacer(Modifier.height(20.dp))
             Button(
                 onClick = { focusManager.clearFocus(); winner = names.random() },
@@ -166,6 +149,7 @@ fun TeamPickerScreen(onNavigateBack: () -> Unit) {
                     onShare = { context.shareText(picked) })
             }
 
+            } else {
             Spacer(Modifier.height(20.dp))
             Column(modifier = Modifier.fillMaxWidth()) {
                 Text("Number of teams", style = MaterialTheme.typography.titleMedium)
@@ -217,6 +201,7 @@ fun TeamPickerScreen(onNavigateBack: () -> Unit) {
                     onShare = { context.shareText(summary) },
                 )
             }
+            }
         } else {
             Spacer(Modifier.height(12.dp))
             Text(
@@ -228,4 +213,58 @@ fun TeamPickerScreen(onNavigateBack: () -> Unit) {
         Spacer(Modifier.height(12.dp))
         ToolActions(onClear = { confirmClear = true }, clearEnabled = names.isNotEmpty() || newName.isNotEmpty())
     }
+    if (editing) AlertDialog(
+        onDismissRequest = { editing = false }, title = { Text("Participants") },
+        text = { Column(Modifier.heightIn(max = 420.dp).verticalScroll(rememberScrollState())) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            OutlinedTextField(
+                value = newName,
+                onValueChange = { newName = it },
+                label = { Text("Add a name") },
+                singleLine = true,
+                modifier = Modifier.weight(1f),
+            )
+            IconButton(onClick = { addName() }, enabled = newName.isNotBlank()) {
+                Icon(Icons.Filled.Add, contentDescription = "Add name")
+            }
+        }
+
+            Spacer(Modifier.height(12.dp))
+            Text("Participants (${names.size})", style = MaterialTheme.typography.titleMedium)
+            Spacer(Modifier.height(8.dp))
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Column(modifier = Modifier.padding(vertical = 4.dp)) {
+                    names.forEachIndexed { index, name ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 12.dp, vertical = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                        ) {
+                            Row(modifier = Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    Icons.Filled.Person,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                                Text(name, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f).padding(start = 8.dp))
+                            }
+                            IconButton(onClick = {
+                                persistNames(names.toMutableList().also { it.removeAt(index) })
+                                winner = null
+                                teams = emptyList()
+                            }) {
+                                Icon(Icons.Filled.Close, contentDescription = "Remove participant ${index + 1}: $name")
+                            }
+                        }
+                    }
+                }
+            }
+
+
+        } },
+        confirmButton = { TextButton(onClick = { focusManager.clearFocus(); editing = false }) { Text("Done") } },
+    )
+
 }

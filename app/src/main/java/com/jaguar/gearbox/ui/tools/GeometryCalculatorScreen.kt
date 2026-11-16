@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import com.jaguar.gearbox.data.Tools
 import com.jaguar.gearbox.logic.formatTrimmed
 import com.jaguar.gearbox.ui.components.ToolScaffold
+import com.jaguar.gearbox.ui.components.rememberToolHistory
 import kotlin.math.PI
 import kotlin.math.sqrt
 
@@ -48,14 +49,32 @@ fun GeometryCalculatorScreen(onNavigateBack: () -> Unit) {
     var shapeExpanded by rememberSaveable { mutableStateOf(false) }
     val selectedShape = Shape.valueOf(shape)
 
-    var field1 by rememberSaveable(selectedShape) { mutableStateOf("") }
-    var field2 by rememberSaveable(selectedShape) { mutableStateOf("") }
-    var field3 by rememberSaveable(selectedShape) { mutableStateOf("") }
+    var field1 by rememberSaveable { mutableStateOf("") }
+    var field2 by rememberSaveable { mutableStateOf("") }
+    var field3 by rememberSaveable { mutableStateOf("") }
+
+
+    val history = rememberToolHistory(
+        route = Tools.ROUTE_GEOMETRY,
+        inputs = mapOf("shape" to shape, "field1" to field1, "field2" to field2, "field3" to field3),
+        output = computeResult(selectedShape, field1, field2, field3),
+        modeInputs = mapOf("shape" to shape),
+        onRestoreMode = { saved ->
+            shape = Shape.entries.firstOrNull { it.name == saved["shape"] }?.name ?: Shape.CIRCLE.name
+        },
+        onRestore = { saved ->
+            shape = Shape.entries.firstOrNull { it.name == saved["shape"] }?.name ?: Shape.CIRCLE.name
+            field1 = saved["field1"] ?: ""
+            field2 = saved["field2"] ?: ""
+            field3 = saved["field3"] ?: ""
+        },
+    )
 
     ToolScaffold(
         title = "Geometry Calculator",
         icon = Tools.byRoute(Tools.ROUTE_GEOMETRY)!!.icon,
         onNavigateBack = onNavigateBack,
+        history = history,
     ) {
         ExposedDropdownMenuBox(
             expanded = shapeExpanded,
@@ -76,6 +95,7 @@ fun GeometryCalculatorScreen(onNavigateBack: () -> Unit) {
                     DropdownMenuItem(
                         text = { Text(entry.label) },
                         onClick = {
+                            if (shape != entry.name) { field1 = ""; field2 = ""; field3 = "" }
                             shape = entry.name
                             shapeExpanded = false
                         },

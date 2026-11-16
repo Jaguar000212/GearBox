@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import com.jaguar.gearbox.data.Tools
 import com.jaguar.gearbox.logic.computeBmi
 import com.jaguar.gearbox.ui.components.ToolScaffold
+import com.jaguar.gearbox.ui.components.rememberToolHistory
 
 private enum class BmiUnitSystem(val label: String) {
     METRIC("Metric (cm / kg)"),
@@ -80,10 +81,30 @@ fun BmiCalculatorScreen(onNavigateBack: () -> Unit) {
         ""
     }
 
+
+    val history = rememberToolHistory(
+        route = Tools.ROUTE_BMI,
+        inputs = mapOf("unitSystem" to unitSystem, "heightCm" to heightCm, "weightKg" to weightKg, "heightFt" to heightFt, "heightIn" to heightIn, "weightLbs" to weightLbs),
+        output = result?.let { "BMI: ${it.first}\nAdult category: ${it.second}" },
+        modeInputs = mapOf("unitSystem" to unitSystem),
+        onRestoreMode = { saved ->
+            unitSystem = BmiUnitSystem.entries.firstOrNull { it.name == saved["unitSystem"] }?.name ?: BmiUnitSystem.METRIC.name
+        },
+        onRestore = { saved ->
+            unitSystem = BmiUnitSystem.entries.firstOrNull { it.name == saved["unitSystem"] }?.name ?: BmiUnitSystem.METRIC.name
+            heightCm = saved["heightCm"] ?: ""
+            weightKg = saved["weightKg"] ?: ""
+            heightFt = saved["heightFt"] ?: ""
+            heightIn = saved["heightIn"] ?: ""
+            weightLbs = saved["weightLbs"] ?: ""
+        },
+    )
+
     ToolScaffold(
         title = "BMI Calculator",
         icon = Tools.byRoute(Tools.ROUTE_BMI)!!.icon,
         onNavigateBack = onNavigateBack,
+        history = history,
     ) {
         Text("Units", style = MaterialTheme.typography.titleMedium)
         Column(modifier = Modifier.fillMaxWidth()) {

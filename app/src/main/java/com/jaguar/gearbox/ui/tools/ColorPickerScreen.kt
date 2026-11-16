@@ -19,6 +19,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BookmarkAdd
 import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Card
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -59,6 +60,7 @@ import com.jaguar.gearbox.logic.parseHex
 import com.jaguar.gearbox.logic.rgbToHsl
 import com.jaguar.gearbox.ui.components.StringListSaver
 import com.jaguar.gearbox.ui.components.ToolScaffold
+import com.jaguar.gearbox.ui.components.rememberToolHistory
 import com.jaguar.gearbox.ui.components.ValueRow
 import kotlin.math.roundToInt
 
@@ -72,6 +74,7 @@ fun ColorPickerScreen(onNavigateBack: () -> Unit) {
     var red by rememberSaveable { mutableFloatStateOf(103f) }
     var green by rememberSaveable { mutableFloatStateOf(80f) }
     var blue by rememberSaveable { mutableFloatStateOf(164f) }
+    var view by rememberSaveable { mutableStateOf("HEX") }
     var hexInput by rememberSaveable { mutableStateOf("#6750A4") }
     var hexError by rememberSaveable { mutableStateOf("") }
     var savedNotice by remember { mutableStateOf("") }
@@ -85,10 +88,20 @@ fun ColorPickerScreen(onNavigateBack: () -> Unit) {
     val previewDescription = stringResource(R.string.color_preview, hex)
     val hsl = rgbToHsl(red.roundToInt(), green.roundToInt(), blue.roundToInt())
 
+    val rgbText = "rgb(${red.roundToInt()}, ${green.roundToInt()}, ${blue.roundToInt()})"
+    val hslText = "hsl(${hsl.first}, ${hsl.second}%, ${hsl.third}%)"
+    val history = rememberToolHistory(Tools.ROUTE_COLOR_PICKER, mapOf("hex" to hex),
+        if (parseHex(hexInput) != null) "$hex\n$rgbText\n$hslText" else null,
+        onRestore = { saved -> parseHex(saved["hex"].orEmpty())?.let { (r, g, b) ->
+            red = r.toFloat(); green = g.toFloat(); blue = b.toFloat()
+            hexInput = saved.getValue("hex"); hexError = ""
+        } }, modeInputs = mapOf("view" to view),
+        onRestoreMode = { saved -> view = saved["view"]?.takeIf { it in listOf("HEX", "RGB", "HSL") } ?: "HEX" })
     ToolScaffold(
         title = stringResource(R.string.color_picker_title),
         icon = Tools.byRoute(Tools.ROUTE_COLOR_PICKER)!!.icon,
         onNavigateBack = onNavigateBack,
+        history = history,
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -97,7 +110,7 @@ fun ColorPickerScreen(onNavigateBack: () -> Unit) {
             Box(
                 modifier = Modifier
                     .weight(1f)
-                    .height(120.dp)
+                    .height(180.dp)
                     .background(color, RoundedCornerShape(12.dp))
                     .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(12.dp))
                     .semantics { contentDescription = previewDescription },
@@ -158,11 +171,16 @@ fun ColorPickerScreen(onNavigateBack: () -> Unit) {
         }
 
         Spacer(Modifier.height(20.dp))
-        Text(stringResource(R.string.color_rgb), style = MaterialTheme.typography.titleMedium)
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            listOf("HEX", "RGB", "HSL").forEach { mode ->
+                FilterChip(view == mode, { view = mode }, label = { Text(mode) })
+            }
+        }
         fun updateDraft() {
             hexInput = String.format("#%02X%02X%02X", red.roundToInt(), green.roundToInt(), blue.roundToInt())
             hexError = ""
         }
+        if (view == "RGB") {
         ColorSlider(stringResource(R.string.color_red), red) { red = it; updateDraft() }
         ColorSlider(stringResource(R.string.color_green), green) { green = it; updateDraft() }
         ColorSlider(stringResource(R.string.color_blue), blue) { blue = it; updateDraft() }
@@ -171,6 +189,8 @@ fun ColorPickerScreen(onNavigateBack: () -> Unit) {
         HorizontalDivider()
         Spacer(Modifier.height(16.dp))
 
+        }
+        if (view == "HEX") {
         OutlinedTextField(
             value = hexInput,
             onValueChange = { value ->
@@ -199,19 +219,21 @@ fun ColorPickerScreen(onNavigateBack: () -> Unit) {
         )
 
         Spacer(Modifier.height(16.dp))
-        val rgbText = "rgb(${red.roundToInt()}, ${green.roundToInt()}, ${blue.roundToInt()})"
-        val hslText = "hsl(${hsl.first}, ${hsl.second}%, ${hsl.third}%)"
+        }
         Card(modifier = Modifier.fillMaxWidth()) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp)
             ) {
-                ColorValue(stringResource(R.string.color_hex), hex)
-                Spacer(Modifier.height(8.dp))
-                ColorValue(stringResource(R.string.color_rgb), rgbText)
-                Spacer(Modifier.height(8.dp))
-                ColorValue(stringResource(R.string.color_hsl), hslText)
+                when (view) {
+                    "RGB" -> ColorValue(stringResource(R.string.color_rgb), rgbText)
+                    "HSL" -> {
+                        ColorValue(stringResource(R.string.color_hsl), hslText)
+                        Text("Adjust the color in HEX or RGB; this view shows the equivalent HSL value.", style = MaterialTheme.typography.bodySmall)
+                    }
+                    else -> ColorValue(stringResource(R.string.color_hex), hex)
+                }
             }
         }
 

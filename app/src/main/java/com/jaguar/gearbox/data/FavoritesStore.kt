@@ -1,6 +1,7 @@
 package com.jaguar.gearbox.data
 
 import android.content.Context
+import android.content.SharedPreferences
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.core.content.edit
@@ -13,10 +14,14 @@ import androidx.core.content.edit
  * change, and stored as an ordered, delimited string (rather than a [Set]) so the user's manual
  * reordering of their favourites list actually persists.
  */
-class FavoritesStore(context: Context) {
-
-    private val appContext = context.applicationContext
-    private val prefs = appContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+class FavoritesStore(
+    private val prefs: SharedPreferences,
+    private val syncShortcuts: (List<String>) -> Unit = {},
+) {
+    constructor(context: Context) : this(
+        context.applicationContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE),
+        { routes -> updateDynamicShortcuts(context.applicationContext, routes) },
+    )
 
     /** Observable list of favourited routes, in display order; recomposes automatically on change. */
     val favorites: SnapshotStateList<String> =
@@ -24,7 +29,7 @@ class FavoritesStore(context: Context) {
 
     init {
         // Re-sync on cold start too, e.g. after a reinstall wiped the launcher's own shortcut state.
-        updateDynamicShortcuts(appContext, favorites)
+        syncShortcuts(favorites.toList())
     }
 
     fun isFavorite(route: String): Boolean = favorites.contains(route)
@@ -33,6 +38,19 @@ class FavoritesStore(context: Context) {
         if (!favorites.remove(route)) {
             favorites.add(route)
         }
+        persist()
+    }
+
+    /** Add without disturbing the order of existing favorites. */
+    fun addAll(routes: List<String>) {
+        routes.distinct().filterNot { it in favorites }.forEach { favorites.add(it) }
+        persist()
+    }
+
+    /** Restore an explicitly removed item at its previous position. */
+    fun restore(route: String, position: Int) {
+        if (route in favorites) return
+        favorites.add(position.coerceIn(0, favorites.size), route)
         persist()
     }
 
@@ -60,7 +78,7 @@ class FavoritesStore(context: Context) {
 
     private fun persist() {
         prefs.edit { putString(KEY_FAVORITES, favorites.joinToString(",")) }
-        updateDynamicShortcuts(appContext, favorites)
+        syncShortcuts(favorites.toList())
     }
 
     private companion object {

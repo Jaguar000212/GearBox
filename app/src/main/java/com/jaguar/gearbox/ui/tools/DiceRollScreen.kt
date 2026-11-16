@@ -21,6 +21,7 @@ import com.jaguar.gearbox.data.Tools
 import com.jaguar.gearbox.ui.components.IntListSaver
 import com.jaguar.gearbox.ui.components.ToolActions
 import com.jaguar.gearbox.ui.components.ToolScaffold
+import com.jaguar.gearbox.ui.components.rememberToolHistory
 import kotlin.random.Random
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -39,21 +40,25 @@ fun DiceRollScreen(onNavigateBack: () -> Unit) {
         values = emptyList()
     }
 
+    val history = rememberToolHistory(Tools.ROUTE_DICE, mapOf("dice" to diceCount.toString()), result,
+        onRestore = { saved -> changeCount(saved["dice"]?.toIntOrNull() ?: 1) },
+        recordingDelayMillis = 0L,
+        modeInputs = mapOf("dice" to diceCount.toString()),
+        onRestoreMode = { saved -> changeCount(saved["dice"]?.toIntOrNull() ?: 1) })
     ToolScaffold(
         title = "Dice Roll",
         icon = Tools.byRoute(Tools.ROUTE_DICE)!!.icon,
         onNavigateBack = onNavigateBack,
+        history = history,
     ) {
         Card(Modifier.fillMaxWidth()) {
             Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("Number of dice", style = MaterialTheme.typography.titleMedium)
-                Text("Choose 1–6 six-sided dice.", style = MaterialTheme.typography.bodyMedium)
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Center) {
                     FilledTonalIconButton(onClick = { changeCount(diceCount - 1) }, enabled = diceCount > 1) {
                         Icon(Icons.Filled.Remove, contentDescription = "Fewer dice")
                     }
-                    Text(diceCount.toString(), style = MaterialTheme.typography.headlineMedium,
+                    Text("$diceCount $diceLabel", style = MaterialTheme.typography.headlineMedium,
                         modifier = Modifier.padding(horizontal = 24.dp).semantics {
                             contentDescription = "$diceCount $diceLabel selected"
                         })

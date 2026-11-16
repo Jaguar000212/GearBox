@@ -59,10 +59,20 @@ fun NumberToWordsScreen(onNavigateBack: () -> Unit) {
     }
     val error = if (input.isNotBlank() && parsed == null && !focused && touched) "Enter a signed 64-bit whole number, without commas or decimals." else ""
 
+    val history = com.jaguar.gearbox.ui.components.rememberToolHistory(
+        Tools.ROUTE_NUMBER_TO_WORDS, mapOf("input" to input, "system" to numberSystem), words,
+        onRestore = { values ->
+            input = values["input"].orEmpty()
+            NumberSystem.entries.firstOrNull { it.name == values["system"] }?.let { numberSystem = it.name }
+        },
+        modeInputs = mapOf("system" to numberSystem),
+        onRestoreMode = { values -> NumberSystem.entries.firstOrNull { it.name == values["system"] }?.let { numberSystem = it.name } },
+    )
     ToolScaffold(
         title = "Number to Words",
         icon = Tools.byRoute(Tools.ROUTE_NUMBER_TO_WORDS)!!.icon,
         onNavigateBack = onNavigateBack,
+        history = history,
     ) {
         FlowRow(
             modifier = Modifier.fillMaxWidth(),

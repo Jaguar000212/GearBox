@@ -1,62 +1,39 @@
 package com.jaguar.gearbox.ui.screens
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.AssistChip
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.jaguar.gearbox.R
-import com.jaguar.gearbox.data.FavoritesStore
-import com.jaguar.gearbox.data.RecentToolsStore
-import com.jaguar.gearbox.data.Tool
-import com.jaguar.gearbox.data.ToolCategory
+import com.jaguar.gearbox.data.*
 import com.jaguar.gearbox.logic.adaptiveToolColumnCount
 import com.jaguar.gearbox.ui.components.ToolCard
 
-/**
- * Home screen: a searchable, category-grouped view of every available tool (Compose port of the
- * `AllTools` fragment, extended with search and grouping since the tool count has grown).
- */
+/** Discovery stays separate from the user's curated Favorites. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
@@ -67,138 +44,143 @@ fun HomeScreen(
 ) {
     var query by rememberSaveable { mutableStateOf("") }
     var selectedCategory by rememberSaveable { mutableStateOf<String?>(null) }
-
+    var showCategories by rememberSaveable { mutableStateOf(false) }
+    val activeCategory = ToolCategory.entries.firstOrNull { it.name == selectedCategory }
+    val search = query.trim()
     val filtered = tools.filter { tool ->
-        val matchesQuery = query.isBlank() ||
-                tool.name.contains(query, ignoreCase = true) ||
-                tool.description.contains(query, ignoreCase = true) ||
-                tool.keywords.any { it.contains(query, ignoreCase = true) }
-        val matchesCategory = selectedCategory == null || tool.category.name == selectedCategory
-        matchesQuery && matchesCategory
+        (activeCategory == null || tool.category == activeCategory) &&
+            (search.isEmpty() || tool.name.contains(search, true) ||
+                tool.description.contains(search, true) || tool.category.label.contains(search, true) ||
+                tool.keywords.any { it.contains(search, true) })
     }
-    val grouped = ToolCategory.entries.mapNotNull { category ->
-        val toolsInCategory = filtered.filter { it.category == category }
-        if (toolsInCategory.isEmpty()) null else category to toolsInCategory
-    }
-    val recentToolObjs =
-        recentTools.recent.mapNotNull { route -> tools.firstOrNull { it.route == route } }
+    val recentToolObjs = recentTools.recent.mapNotNull { route -> tools.firstOrNull { it.route == route } }
 
-    BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
-        val columns = adaptiveToolColumnCount(maxWidth.value, LocalDensity.current.fontScale)
-        LazyColumn(modifier = Modifier.fillMaxSize()) {
-            item {
-                OutlinedTextField(
-                    value = query,
-                    onValueChange = { query = it },
-                    label = { Text(stringResource(R.string.layout_search_tools)) },
-                    leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
-                    trailingIcon = {
-                        if (query.isNotEmpty()) {
-                            IconButton(onClick = { query = "" }) {
-                                Icon(Icons.Filled.Clear, contentDescription = stringResource(R.string.layout_clear_search))
-                            }
-                        }
-                    },
-                    singleLine = true,
-                    shape = RoundedCornerShape(20.dp),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 12.dp, vertical = 8.dp),
-                )
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(bottom = 24.dp),
+    ) {
+        item {
+            Column(Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
+                Text("Your everyday toolbox", style = MaterialTheme.typography.headlineSmall)
+                Text("Find a tool. Make something easier.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
-            item {
-                LazyRow(
-                    contentPadding = PaddingValues(horizontal = 12.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    item {
-                        FilterChip(
-                            selected = selectedCategory == null,
-                            onClick = { selectedCategory = null },
-                            label = { Text(stringResource(R.string.layout_all_categories)) },
-                        )
+        }
+        item {
+            OutlinedTextField(
+                value = query, onValueChange = { query = it },
+                label = { Text(stringResource(R.string.layout_search_tools)) },
+                leadingIcon = { Icon(Icons.Default.Search, null) },
+                trailingIcon = {
+                    if (query.isNotEmpty()) IconButton(onClick = { query = "" }) {
+                        Icon(Icons.Default.Clear, stringResource(R.string.layout_clear_search))
                     }
-                    items(ToolCategory.entries) { category ->
-                        FilterChip(
-                            selected = selectedCategory == category.name,
-                            onClick = {
-                                selectedCategory =
-                                    if (selectedCategory == category.name) null else category.name
-                            },
-                            label = { Text(category.label) },
-                        )
+                },
+                singleLine = true,
+                shape = RoundedCornerShape(24.dp),
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+            )
+        }
+        item {
+            Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween) {
+                AssistChip(onClick = { showCategories = true },
+                    label = { Text(activeCategory?.label ?: "All tools") },
+                    trailingIcon = { Icon(Icons.Default.ExpandMore, null) })
+                Text(pluralStringResource(R.plurals.home_tool_count, filtered.size, filtered.size),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        }
+        if (search.isEmpty() && activeCategory == null && recentToolObjs.isNotEmpty()) {
+            item(key = "recent-tools") { RecentToolsRow(recentToolObjs, onOpenTool) }
+        }
+        if (filtered.isEmpty()) {
+            item {
+                Column(Modifier.fillMaxWidth().padding(32.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Icon(Icons.Default.Search, null, Modifier.size(32.dp))
+                    Text(stringResource(R.string.layout_no_tools_found), style = MaterialTheme.typography.titleMedium)
+                    Text(stringResource(R.string.home_empty_hint), style = MaterialTheme.typography.bodyMedium)
+                    if (activeCategory != null) TextButton(onClick = { selectedCategory = null }) {
+                        Text("Search all tools")
+                    }
+                    TextButton(onClick = { query = ""; selectedCategory = null }) {
+                        Text(stringResource(R.string.home_reset_filters))
                     }
                 }
             }
-
-            if (query.isBlank() && selectedCategory == null && recentToolObjs.isNotEmpty()) {
-                item(key = "recent-tools") {
-                    RecentToolsRow(tools = recentToolObjs, onOpenTool = onOpenTool)
+        } else if (search.isNotEmpty()) {
+            // Search is one flat list, never repeated category groups.
+            items(filtered, key = { it.route }) { tool ->
+                DiscoveryToolRow(tool, favorites, onOpenTool, showCategory = true)
+            }
+        } else {
+            ToolCategory.entries.forEach { category ->
+                val members = filtered.filter { it.category == category }
+                if (members.isNotEmpty()) {
+                    item(key = "category-${category.name}") {
+                        Text(category.label, style = MaterialTheme.typography.titleMedium,
+                            modifier = Modifier.padding(start = 16.dp, top = 20.dp, bottom = 8.dp)
+                                .semantics { heading() })
+                    }
+                    items(members, key = { it.route }) { tool ->
+                        DiscoveryToolRow(tool, favorites, onOpenTool, showCategory = false)
+                    }
                 }
             }
-
-            if (grouped.isEmpty()) {
+        }
+    }
+    if (showCategories) {
+        ModalBottomSheet(onDismissRequest = { showCategories = false }) {
+            Text("Browse categories", style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.padding(16.dp))
+            LazyColumn(contentPadding = PaddingValues(bottom = 24.dp)) {
                 item {
-                    Column(
-                        modifier = Modifier.fillMaxWidth().padding(32.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                    ) {
-                        Icon(
-                            Icons.Filled.Search,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.size(32.dp),
-                        )
-                        Text(stringResource(R.string.layout_no_tools_found), style = MaterialTheme.typography.titleMedium)
-                        Text(stringResource(R.string.home_empty_hint),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        TextButton(onClick = { query = ""; selectedCategory = null }) {
-                            Text(stringResource(R.string.home_reset_filters))
-                        }
-                    }
+                    ListItem(headlineContent = { Text("All tools") },
+                        supportingContent = { Text("${tools.size} tools") },
+                        trailingContent = { RadioButton(activeCategory == null, onClick = null) },
+                        modifier = Modifier.selectable(selected = activeCategory == null, role = Role.RadioButton) { selectedCategory = null; showCategories = false })
+                }
+                items(ToolCategory.entries, key = { it.name }) { category ->
+                    ListItem(headlineContent = { Text(category.label) },
+                        supportingContent = { Text("${tools.count { it.category == category }} tools") },
+                        trailingContent = { RadioButton(activeCategory == category, onClick = null) },
+                        modifier = Modifier.selectable(selected = activeCategory == category, role = Role.RadioButton) { selectedCategory = category.name; showCategories = false })
                 }
             }
+        }
+    }
+}
 
-            grouped.forEach { (category, toolsInCategory) ->
-                item(key = "category-${category.name}") {
-                    Column(Modifier.padding(start = 12.dp, top = 20.dp, bottom = 4.dp)) {
-                        Text(
-                            text = category.label,
-                            style = MaterialTheme.typography.titleMedium,
-                            modifier = Modifier.semantics { heading() },
-                        )
-                        Text(
-                            text = pluralStringResource(R.plurals.home_tool_count, toolsInCategory.size, toolsInCategory.size),
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-                }
-                items(toolsInCategory.chunked(columns), key = { row -> "tools-${row.first().route}" }) { row ->
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 12.dp, vertical = 6.dp)
-                            .height(IntrinsicSize.Min),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    ) {
-                        row.forEach { tool ->
-                            ToolCard(
-                                tool = tool,
-                                isFavorite = favorites.isFavorite(tool.route),
-                                onClick = { onOpenTool(tool) },
-                                onToggleFavorite = { favorites.toggle(tool.route) },
-                                modifier = Modifier.weight(1f).fillMaxHeight(),
-                                compact = true,
-                            )
-                        }
-                        repeat(columns - row.size) {
-                            Box(modifier = Modifier.weight(1f))
-                        }
-                    }
-                }
+@Composable
+private fun DiscoveryToolRow(tool: Tool, favorites: FavoritesStore, onOpenTool: (Tool) -> Unit, showCategory: Boolean) {
+    Surface(
+        shape = RoundedCornerShape(18.dp),
+        color = MaterialTheme.colorScheme.surfaceContainerLow,
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
+    ) {
+        Row(Modifier.fillMaxWidth().clickable { onOpenTool(tool) }.padding(start = 14.dp, top = 10.dp, bottom = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Surface(shape = RoundedCornerShape(14.dp), color = MaterialTheme.colorScheme.secondaryContainer) {
+                Icon(tool.icon, null, Modifier.padding(10.dp).size(24.dp),
+                    tint = MaterialTheme.colorScheme.onSecondaryContainer)
+            }
+            Column(Modifier.weight(1f)) {
+                Text(tool.name, style = MaterialTheme.typography.titleSmall)
+                Text(if (showCategory) tool.category.label else tool.description,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            IconButton(onClick = { favorites.toggle(tool.route) }) {
+                val favorite = favorites.isFavorite(tool.route)
+                Icon(if (favorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                    if (favorite) "Remove ${tool.name} from favorites" else "Add ${tool.name} to favorites",
+                    tint = if (favorite) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
     }

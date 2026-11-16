@@ -19,6 +19,7 @@ import com.jaguar.gearbox.logic.randomLongInclusive
 import com.jaguar.gearbox.ui.components.ResultCard
 import com.jaguar.gearbox.ui.components.ToolActions
 import com.jaguar.gearbox.ui.components.ToolScaffold
+import com.jaguar.gearbox.ui.components.rememberToolHistory
 
 @Composable
 fun RandomNumberScreen(onNavigateBack: () -> Unit) {
@@ -26,6 +27,7 @@ fun RandomNumberScreen(onNavigateBack: () -> Unit) {
     var min by rememberSaveable { mutableStateOf("") }
     var max by rememberSaveable { mutableStateOf("") }
     var result by rememberSaveable { mutableStateOf("") }
+    var runId by rememberSaveable { mutableStateOf("") }
     var submitted by rememberSaveable { mutableStateOf(false) }
     val low = min.trim().toLongOrNull()
     val high = max.trim().toLongOrNull()
@@ -37,7 +39,24 @@ fun RandomNumberScreen(onNavigateBack: () -> Unit) {
         else -> null
     }
 
-    ToolScaffold("Random Number Generator", Tools.byRoute(Tools.ROUTE_RANDOM)!!.icon, onNavigateBack) {
+    val history = rememberToolHistory(
+        route = Tools.ROUTE_RANDOM,
+        inputs = mapOf("min" to min, "max" to max, "_run" to runId),
+        output = result.takeIf { it.isNotEmpty() && low != null && high != null && low <= high },
+        recordingDelayMillis = 0L,
+        modeInputs = mapOf("min" to min, "max" to max),
+        onRestoreMode = { saved ->
+            min = saved["min"]?.takeIf { it.trim().toLongOrNull() != null } ?: ""
+            max = saved["max"]?.takeIf { it.trim().toLongOrNull() != null } ?: ""
+        },
+        onRestore = { saved ->
+            min = saved["min"]?.takeIf { it.trim().toLongOrNull() != null } ?: ""
+            max = saved["max"]?.takeIf { it.trim().toLongOrNull() != null } ?: ""
+            result = ""; submitted = false
+        },
+    )
+
+    ToolScaffold("Random Number Generator", Tools.byRoute(Tools.ROUTE_RANDOM)!!.icon, onNavigateBack, history = history) {
         Text("Choose your range", style = MaterialTheme.typography.titleLarge)
         Text("Both endpoints are included. Negative numbers are welcome.",
             style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -49,6 +68,7 @@ fun RandomNumberScreen(onNavigateBack: () -> Unit) {
         Button(
             onClick = {
                 submitted = true
+                runId = java.util.UUID.randomUUID().toString()
                 result = if (low != null && high != null && low <= high) randomLongInclusive(low, high).toString() else ""
             },
             modifier = Modifier.fillMaxWidth(),

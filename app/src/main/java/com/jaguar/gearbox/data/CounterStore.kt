@@ -19,8 +19,11 @@ class CounterStore(context: Context) {
         }
     }
 
-    fun reset() = synchronized(lock) {
-        prefs.edit { putInt(KEY_COUNT, 0); putBoolean(KEY_LIMIT, false) }
+    fun reset() = restore(0)
+
+    /** Restore a history snapshot atomically with respect to screen/widget adjustments. */
+    fun restore(value: Int) = synchronized(lock) {
+        prefs.edit { putInt(KEY_COUNT, value); putBoolean(KEY_LIMIT, false) }
     }
 
     /** Caller retains the returned cleanup callback, keeping the preference listener alive. */

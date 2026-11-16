@@ -12,6 +12,7 @@ import com.jaguar.gearbox.data.Tools
 import com.jaguar.gearbox.logic.computeAverageStatistics
 import com.jaguar.gearbox.ui.components.ToolActions
 import com.jaguar.gearbox.ui.components.ToolScaffold
+import com.jaguar.gearbox.ui.components.rememberToolHistory
 
 @Composable
 fun AverageCalculatorScreen(onNavigateBack: () -> Unit) {
@@ -22,8 +23,17 @@ fun AverageCalculatorScreen(onNavigateBack: () -> Unit) {
     val result = remember(input) { computeAverageStatistics(input) }
     val invalid = input.isNotBlank() && result == null && touched && !focused
 
+    val history = rememberToolHistory(
+        route = Tools.ROUTE_AVERAGE,
+        inputs = mapOf("input" to input),
+        output = result?.asText()?.replaceFirst("Result:", "Arithmetic mean:"),
+        onRestore = { saved ->
+            input = saved["input"] ?: ""
+        },
+    )
+
     ToolScaffold(title = "Average Calculator", icon = Tools.byRoute(Tools.ROUTE_AVERAGE)!!.icon,
-        onNavigateBack = onNavigateBack) {
+        onNavigateBack = onNavigateBack, history = history) {
         OutlinedTextField(
             value = input,
             onValueChange = { input = it },

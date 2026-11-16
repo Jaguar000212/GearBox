@@ -30,6 +30,7 @@ import com.jaguar.gearbox.ui.components.DecimalField
 import com.jaguar.gearbox.ui.components.ResultCard
 import com.jaguar.gearbox.ui.components.StringListSaver
 import com.jaguar.gearbox.ui.components.ToolScaffold
+import com.jaguar.gearbox.ui.components.rememberToolHistory
 
 @Composable
 fun DiscountCalculatorScreen(onNavigateBack: () -> Unit) {
@@ -44,10 +45,24 @@ fun DiscountCalculatorScreen(onNavigateBack: () -> Unit) {
     }
     val allDiscountsValid = discountValues.size == filledDiscounts.size
 
+    val historyResult = if (originalPrice != null && allDiscountsValid && discountValues.isNotEmpty())
+        applyStackedDiscounts(originalPrice, discountValues) else null
+
+    val history = rememberToolHistory(
+        route = Tools.ROUTE_DISCOUNT,
+        inputs = mapOf("price" to price, "discounts" to discounts.joinToString("\n")),
+        output = historyResult?.let { "Final price: ${formatTrimmed(it.finalPrice, 2)}\nYou save: ${formatTrimmed(it.totalSaved, 2)} (${formatTrimmed(it.effectivePercent, 2)}% effective)" },
+        onRestore = { saved ->
+            price = saved["price"] ?: ""
+            discounts = saved["discounts"]?.split("\n")?.ifEmpty { listOf("") } ?: listOf("")
+        },
+    )
+
     ToolScaffold(
         title = "Discount Calculator",
         icon = Tools.byRoute(Tools.ROUTE_DISCOUNT)!!.icon,
         onNavigateBack = onNavigateBack,
+        history = history,
     ) {
         DecimalField(
             value = price,

@@ -35,6 +35,7 @@ import com.jaguar.gearbox.logic.textToBinary
 import com.jaguar.gearbox.logic.textToMorse
 import com.jaguar.gearbox.ui.components.ResultCard
 import com.jaguar.gearbox.ui.components.ToolScaffold
+import com.jaguar.gearbox.ui.components.rememberToolHistory
 
 private enum class TranslateMode(val label: String, val inputHint: String) {
     TEXT_TO_MORSE("Text → Morse", "Text"),
@@ -50,7 +51,7 @@ fun MorseBinaryScreen(onNavigateBack: () -> Unit) {
     var mode by rememberSaveable { mutableStateOf(TranslateMode.TEXT_TO_MORSE.name) }
     var modeExpanded by rememberSaveable { mutableStateOf(false) }
     val selectedMode = TranslateMode.valueOf(mode)
-    var input by rememberSaveable(selectedMode) { mutableStateOf("") }
+    var input by rememberSaveable { mutableStateOf("") }
 
     val output = when {
         input.isBlank() -> null
@@ -75,10 +76,25 @@ fun MorseBinaryScreen(onNavigateBack: () -> Unit) {
     }
     val codeOutput = selectedMode == TranslateMode.TEXT_TO_MORSE || selectedMode == TranslateMode.TEXT_TO_BINARY
 
+    val history = rememberToolHistory(
+        route = Tools.ROUTE_MORSE_BINARY,
+        inputs = mapOf("mode" to mode, "input" to input),
+        output = output?.let { if (warning == null) it else "Partial translation: $it\n$warning" },
+        modeInputs = mapOf("mode" to mode),
+        onRestoreMode = { saved ->
+            mode = TranslateMode.entries.firstOrNull { it.name == saved["mode"] }?.name ?: TranslateMode.TEXT_TO_MORSE.name
+        },
+        onRestore = { saved ->
+            mode = TranslateMode.entries.firstOrNull { it.name == saved["mode"] }?.name ?: TranslateMode.TEXT_TO_MORSE.name
+            input = saved["input"] ?: ""
+        },
+    )
+
     ToolScaffold(
         title = "Morse / Binary Translator",
         icon = Tools.byRoute(Tools.ROUTE_MORSE_BINARY)!!.icon,
         onNavigateBack = onNavigateBack,
+        history = history,
     ) {
         ExposedDropdownMenuBox(
             expanded = modeExpanded,
@@ -99,6 +115,7 @@ fun MorseBinaryScreen(onNavigateBack: () -> Unit) {
                     DropdownMenuItem(
                         text = { Text(entry.label) },
                         onClick = {
+                            if (mode != entry.name) input = ""
                             mode = entry.name
                             modeExpanded = false
                         },

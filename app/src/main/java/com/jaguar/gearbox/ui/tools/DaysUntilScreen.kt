@@ -26,39 +26,26 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import com.jaguar.gearbox.data.SimplePrefsStore
 import com.jaguar.gearbox.data.Tools
 import com.jaguar.gearbox.ui.components.ResultCard
 import com.jaguar.gearbox.ui.components.ToolScaffold
+import com.jaguar.gearbox.ui.components.rememberToolHistory
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
 import com.jaguar.gearbox.logic.daysUntilSummary
 import com.jaguar.gearbox.ui.components.rememberCurrentLocalDate
 
-private const val KEY_LABEL = "days_until.label"
-private const val KEY_TARGET_DATE = "days_until.target_date"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DaysUntilScreen(onNavigateBack: () -> Unit) {
     val context = LocalContext.current
     val today by rememberCurrentLocalDate()
-    val store = remember { SimplePrefsStore(context) }
-    var label by rememberSaveable { mutableStateOf(store.getString(KEY_LABEL, "")) }
-    var targetDate by rememberSaveable {
-        mutableStateOf(
-            store.getString(KEY_TARGET_DATE, "")
-                .let { runCatching { LocalDate.parse(it) }.getOrNull() })
-    }
+    // Existing legacy values remain untouched; automatic restore now follows Tool memory settings.
+    var label by rememberSaveable { mutableStateOf("") }
+    var targetDate by rememberSaveable { mutableStateOf<LocalDate?>(null) }
     var showPicker by rememberSaveable { mutableStateOf(false) }
-
-    fun persist(newLabel: String, newDate: LocalDate?) {
-        store.edit {
-            putString(KEY_LABEL, newLabel)
-            putString(KEY_TARGET_DATE, newDate?.toString() ?: "")
-        }
-    }
 
     if (showPicker) {
         val state = rememberDatePickerState(
@@ -71,7 +58,6 @@ fun DaysUntilScreen(onNavigateBack: () -> Unit) {
                     state.selectedDateMillis?.let { millis ->
                         targetDate =
                             Instant.ofEpochMilli(millis).atZone(ZoneOffset.UTC).toLocalDate()
-                        persist(label, targetDate)
                     }
                     showPicker = false
                 }) { Text("OK") }
@@ -84,10 +70,21 @@ fun DaysUntilScreen(onNavigateBack: () -> Unit) {
         }
     }
 
+    val history = rememberToolHistory(
+        route = Tools.ROUTE_DAYS_UNTIL,
+        inputs = mapOf("label" to label, "targetDate" to (targetDate?.toString() ?: "")),
+        output = targetDate?.let { daysUntilSummary(today, it, label) },
+        onRestore = { saved ->
+            label = saved["label"] ?: ""
+            targetDate = saved["targetDate"]?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
+        },
+    )
+
     ToolScaffold(
         title = "Days Until",
         icon = Tools.byRoute(Tools.ROUTE_DAYS_UNTIL)!!.icon,
         onNavigateBack = onNavigateBack,
+        history = history,
     ) {
         Text("Count calendar days to a date, or days since it passed.",
             style = MaterialTheme.typography.bodyMedium)
@@ -96,7 +93,6 @@ fun DaysUntilScreen(onNavigateBack: () -> Unit) {
             value = label,
             onValueChange = {
                 label = it
-                persist(it, targetDate)
             },
             label = { Text("Event name (optional)") },
             placeholder = { Text("e.g. Diwali") },

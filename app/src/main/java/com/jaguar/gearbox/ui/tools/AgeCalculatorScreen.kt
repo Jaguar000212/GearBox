@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import com.jaguar.gearbox.data.Tools
 import com.jaguar.gearbox.ui.components.ResultCard
 import com.jaguar.gearbox.ui.components.ToolScaffold
+import com.jaguar.gearbox.ui.components.rememberToolHistory
 import java.time.Instant
 import java.time.LocalDate
 import java.time.Period
@@ -82,10 +83,22 @@ fun AgeCalculatorScreen(onNavigateBack: () -> Unit) {
         null
     }
 
+
+    val history = rememberToolHistory(
+        route = Tools.ROUTE_AGE,
+        inputs = mapOf("earlierDate" to (earlierDate?.toString() ?: ""), "laterDate" to (laterDate?.toString() ?: "")),
+        output = result,
+        onRestore = { saved ->
+            earlierDate = saved["earlierDate"]?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
+            laterDate = saved["laterDate"]?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
+        },
+    )
+
     ToolScaffold(
         title = "Age Calculator",
         icon = Tools.byRoute(Tools.ROUTE_AGE)!!.icon,
         onNavigateBack = onNavigateBack,
+        history = history,
     ) {
         Text(
             "Choose an earlier date and a later date to compare.",

@@ -40,10 +40,15 @@ fun NumberToRomanScreen(onNavigateBack: () -> Unit) {
         else -> ""
     }
 
+    val history = com.jaguar.gearbox.ui.components.rememberToolHistory(
+        Tools.ROUTE_NUMBER_TO_ROMAN, mapOf("input" to input), roman,
+        onRestore = { values -> input = values["input"].orEmpty() },
+    )
     ToolScaffold(
         title = "Number to Roman",
         icon = Tools.byRoute(Tools.ROUTE_NUMBER_TO_ROMAN)!!.icon,
         onNavigateBack = onNavigateBack,
+        history = history,
     ) {
         OutlinedTextField(
             value = input,

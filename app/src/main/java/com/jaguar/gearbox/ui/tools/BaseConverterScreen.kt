@@ -28,6 +28,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.jaguar.gearbox.data.Tools
 import com.jaguar.gearbox.ui.components.ToolScaffold
+import com.jaguar.gearbox.ui.components.rememberToolHistory
 import com.jaguar.gearbox.ui.components.ResultCard
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.focus.onFocusChanged
@@ -61,10 +62,25 @@ fun BaseConverterScreen(onNavigateBack: () -> Unit) {
         else -> "Outside the signed 64-bit whole-number range."
     }
 
+    val history = rememberToolHistory(
+        route = Tools.ROUTE_BASE_CONVERTER,
+        inputs = mapOf("input" to input, "fromBase" to fromBase),
+        output = parsed?.let { value -> NumberBase.entries.joinToString("\n") { "${it.label}: ${value.toString(it.radix).uppercase()}" } },
+        modeInputs = mapOf("fromBase" to fromBase),
+        onRestoreMode = { saved ->
+            fromBase = NumberBase.entries.firstOrNull { it.name == saved["fromBase"] }?.name ?: NumberBase.DECIMAL.name
+        },
+        onRestore = { saved ->
+            input = saved["input"] ?: ""
+            fromBase = NumberBase.entries.firstOrNull { it.name == saved["fromBase"] }?.name ?: NumberBase.DECIMAL.name
+        },
+    )
+
     ToolScaffold(
         title = "Base Converter",
         icon = Tools.byRoute(Tools.ROUTE_BASE_CONVERTER)!!.icon,
         onNavigateBack = onNavigateBack,
+        history = history,
     ) {
         ExposedDropdownMenuBox(
             expanded = fromExpanded,

@@ -67,3 +67,22 @@ jobs:
             app/build/test-results/
           if-no-files-found: warn
           retention-days: 14
+
+      - name: Checksum debug testing APKs
+        if: success()
+        run: >-
+          sha256sum app/build/outputs/apk/debug/*.apk
+          app/build/outputs/apk/androidTest/debug/*.apk
+          > app/build/outputs/apk/debug-checksums.sha256
+
+      - name: Upload debug testing APKs
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gearbox-debug-${{ github.event.pull_request.head.sha || github.sha }}
+          path: |
+            app/build/outputs/apk/debug/*.apk
+            app/build/outputs/apk/androidTest/debug/*.apk
+            app/build/outputs/apk/debug-checksums.sha256
+          if-no-files-found: error
+          retention-days: 7

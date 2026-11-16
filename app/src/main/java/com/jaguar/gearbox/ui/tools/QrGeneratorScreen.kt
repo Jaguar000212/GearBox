@@ -43,6 +43,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import com.jaguar.gearbox.data.Tools
 import com.jaguar.gearbox.logic.generateQrMatrix
+import com.jaguar.gearbox.ui.components.SensitiveTextShareDialog
 import com.jaguar.gearbox.ui.components.ToolScaffold
 import com.jaguar.gearbox.ui.components.rememberToolHistory
 import java.io.File
@@ -57,6 +58,7 @@ fun QrGeneratorScreen(onNavigateBack: () -> Unit) {
     var input by rememberSaveable { mutableStateOf("") }
     var shareError by remember { mutableStateOf<String?>(null) }
     var sharing by remember { mutableStateOf(false) }
+    var shareReview by remember { mutableStateOf<Pair<String, Bitmap>?>(null) }
     val scope = rememberCoroutineScope()
 
     var restoredInput by rememberSaveable { mutableStateOf(false) }
@@ -140,17 +142,9 @@ fun QrGeneratorScreen(onNavigateBack: () -> Unit) {
             Spacer(Modifier.height(16.dp))
             Button(
                 onClick = {
-                    // Lock the input before starting IO so the preview and shared payload agree.
-                    if (sharing || renderedInput != input) return@Button
-                    sharing = true
-                    shareError = null
-                    scope.launch {
-                        try {
-                            shareError = shareQrBitmap(context, bitmap) { !restoredInput && renderedBitmap === bitmap && renderedInput == input }
-                        } finally {
-                            sharing = false
-                        }
-                    }
+                    // Reviewing does not write an image or launch an external application.
+                    if (!sharing && !restoredInput && renderedInput == input)
+                        shareReview = input to bitmap
                 },
                 enabled = !sharing,
                 modifier = Modifier.fillMaxWidth(),
@@ -163,6 +157,32 @@ fun QrGeneratorScreen(onNavigateBack: () -> Unit) {
             Spacer(Modifier.height(12.dp))
             Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite })
         }
+    }
+    shareReview?.let { snapshot ->
+        val isCurrent = !restoredInput && input == snapshot.first && renderedInput == snapshot.first && renderedBitmap === snapshot.second
+        if (!isCurrent) {
+            LaunchedEffect(snapshot) { shareReview = null }
+        } else SensitiveTextShareDialog(
+            text = snapshot.first,
+            disclosure = "The external app you choose will receive a QR image encoding the exact content below. Anyone with the image can read that content. Cancel if it contains secrets or private information.",
+            previewLabel = "Content encoded in the QR image",
+            onDismiss = { shareReview = null },
+            onConfirm = {
+                shareReview = null
+                // Check again at confirmation; keep the original lock and final payload guard.
+                if (!sharing && !restoredInput && input == snapshot.first && renderedInput == snapshot.first && renderedBitmap === snapshot.second) {
+                    sharing = true
+                    shareError = null
+                    scope.launch {
+                        try {
+                            shareError = shareQrBitmap(context, snapshot.second) {
+                                !restoredInput && input == snapshot.first && renderedInput == snapshot.first && renderedBitmap === snapshot.second
+                            }
+                        } finally { sharing = false }
+                    }
+                }
+            },
+        )
     }
 }
 

@@ -132,3 +132,16 @@ Additional details: [focus views](PHASE4_FOCUS_TESTING.md), [switching/presets/h
 **Verification boundary:** Android instrumentation tests are authored and compiled in CI, not executed here. JVM tests/lint/build status must be checked for this exact corrective commit. Owner device execution, TalkBack, hardware, landscape and in-place migration remain unverified. A fresh Preview installation does not exercise upgrade migration.
 
 **Known privacy limitation pending the next phase:** automatic history/result saving can retain private text entered into otherwise ordinary tools, including Text, QR and Hash. New memory files are app-private and excluded from Android backup by storage location, but are not an encrypted vault or automatic secret detector. Existing legacy game/settings backup behavior and Android saved-instance drafts are separate.
+
+## Privacy follow-up checklist
+
+- On both fresh and existing installations, Text, QR and Hash automatic history/result saving must start OFF independently of global history/results settings. Enabling one tool must not enable the others. Password remains blocked.
+- Existing saved entries must remain available for review and explicit deletion when recording is disabled. Disabling a toggle must not silently erase history, remembered results or manual Workbench items.
+- Disable a tool during a pending recording, then re-enable: the old queued write must not appear. Repeat with rotation/navigation and separate store instances. New deliberate input/results after enabling should record normally.
+- Clear a tool's history/remembered result with confirmation. Cancel must leave storage unchanged; successful clear must not delete another tool or manual saved items. Check counts and explanatory text.
+- Manual save of potentially private Text/QR/Hash data must disclose what is retained and that automatic-saving controls do not prevent deliberate Workbench saves. Review before confirming; Cancel creates nothing.
+- Copy from these tools/history/Workbench must set Android's sensitive clipboard hint. This suppresses supported system previews, not clipboard access or persistence on every Android version.
+- Share must first present a cancellable review of the exact payload. Cancel/Back sends nothing. Confirm opens the chooser for that reviewed payload only; editing/generating a new result must not substitute an unreviewed payload. QR file generation/sharing must wait for confirmation and still reject stale render state.
+- No privacy text should call app-private local files an encrypted vault, promise secret detection, or imply auto-saving settings disable Android task-state drafts. Legacy preferences/backups remain separate.
+
+Status: implementation and regression tests are included in the privacy follow-up. Do not treat this checklist as a passed result; exact-head CI and owner device checks are required. Editable input selection still uses Android clipboard behavior; the sensitive hint is applied to explicit app Copy actions, not a promise about every OS clipboard path.

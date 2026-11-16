@@ -11,6 +11,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import com.jaguar.gearbox.data.ToolMemoryPolicy
 import com.jaguar.gearbox.data.ToolHistoryEntry
 import com.jaguar.gearbox.data.ToolMemoryStore
 import com.jaguar.gearbox.ui.tools.copyToClipboard
@@ -157,6 +158,7 @@ fun ToolHistoryDialog(binding: ToolHistoryBinding, onDismiss: () -> Unit) {
     var records by remember { mutableStateOf<List<ToolHistoryEntry>>(emptyList()) }
     var enabled by remember { mutableStateOf(false) }
     var loaded by remember { mutableStateOf(false) }
+    var sharePreview by remember { mutableStateOf<String?>(null) }
     var confirmClear by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
     var saving by remember { mutableStateOf<String?>(null) }
@@ -164,7 +166,7 @@ fun ToolHistoryDialog(binding: ToolHistoryBinding, onDismiss: () -> Unit) {
     var busy by remember { mutableStateOf(false) }
     LaunchedEffect(binding.route, binding.inputs, binding.output) {
         delay(1100)
-        withContext(Dispatchers.IO) { store.history(binding.route) to store.settings().historyEnabled }.let {
+        withContext(Dispatchers.IO) { store.history(binding.route) to store.settings().permitsHistory(binding.route) }.let {
             records = it.first; enabled = it.second; loaded = true
         }
     }
@@ -184,7 +186,7 @@ fun ToolHistoryDialog(binding: ToolHistoryBinding, onDismiss: () -> Unit) {
                         TextButton(onClick = { onDismiss(); handoff(com.jaguar.gearbox.data.Tools.ROUTE_HASH_GENERATOR, mapOf("text" to binding.output.orEmpty())) }) { Text("Use in Hash") }
                     }
                 }
-                if (!enabled) Text("History is off. Enable it and choose a limit in Settings → Tool memory. Existing entries stay until you delete them.")
+                if (!enabled) Text("Automatic history is off for this tool. Review global and per-tool controls in Settings → Tool memory. Existing entries stay until you delete them.")
                 Text("Large entries are not recorded: each field and result is limited to 4,096 characters, with 8,192 total per entry.", style = MaterialTheme.typography.bodySmall)
                 if (!loaded) LinearProgressIndicator(Modifier.fillMaxWidth())
                 else if (records.isEmpty()) Text("No saved runs yet. Valid results are recorded after you pause editing when history is enabled.")
@@ -196,8 +198,8 @@ fun ToolHistoryDialog(binding: ToolHistoryBinding, onDismiss: () -> Unit) {
                                 Text(entry.inputs.filterKeys { !it.startsWith("_") }.entries.joinToString("\n") { "${it.key}: ${it.value}" }, style = MaterialTheme.typography.bodySmall)
                                 Text(entry.output, style = MaterialTheme.typography.bodyLarge)
                                 Row {
-                                    TextButton(onClick = { context.copyToClipboard("Tool history", historyText(entry)) }) { Text("Copy") }
-                                    TextButton(onClick = { context.shareText(historyText(entry)) }) { Text("Share") }
+                                    TextButton(onClick = { context.copyToClipboard("Tool history", historyText(entry), sensitive = ToolMemoryPolicy.isSensitiveTextRoute(binding.route)) }) { Text("Copy") }
+                                    TextButton(onClick = { if (ToolMemoryPolicy.isSensitiveTextRoute(binding.route)) sharePreview = historyText(entry) else context.shareText(historyText(entry)) }) { Text("Share") }
                                     if (binding.allowRestore) TextButton(onClick = { binding.restore(entry.inputs); onDismiss() }) { Text("Restore") }
                                 }
                                 TextButton(onClick = { scope.launch {
@@ -213,6 +215,12 @@ fun ToolHistoryDialog(binding: ToolHistoryBinding, onDismiss: () -> Unit) {
         confirmButton = { TextButton(onClick = onDismiss) { Text("Close") } },
         dismissButton = { if (records.isNotEmpty()) TextButton(onClick = { confirmClear = true }) { Text("Clear history") } },
     )
+    sharePreview?.let { text ->
+        SensitiveTextShareDialog(text, onConfirm = {
+            sharePreview = null
+            runCatching { context.shareText(text) }.onFailure { error = "No sharing app is available. You can copy this entry instead." }
+        }, onDismiss = { sharePreview = null })
+    }
     if (confirmClear) AlertDialog(
         onDismissRequest = { confirmClear = false }, title = { Text("Clear this tool’s history?") },
         text = { Text("This removes saved inputs and results from this device. It cannot be undone.") },
@@ -225,8 +233,15 @@ fun ToolHistoryDialog(binding: ToolHistoryBinding, onDismiss: () -> Unit) {
     )
     if (saving != null) AlertDialog(onDismissRequest = { if (!busy) saving = null },
         title = { Text(if (saving == "preset") "Save setup" else "Keep result") },
-        text = { Column {
+        text = { Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text("Saved only on this device in your Workbench. Review inputs before saving private information.")
+            if (ToolMemoryPolicy.isSensitiveTextRoute(binding.route)) {
+                Text("Text, QR and Hash may contain passwords, tokens or private information. This manual save persists even when automatic history and result retention are off. Local storage is not an encrypted vault. Remove secrets before saving.")
+                Text("Save preview", style = MaterialTheme.typography.titleSmall)
+                val previewInputs = if (saving == "preset") binding.configuration else binding.inputs
+                Text(previewInputs.filterKeys { !it.startsWith("_") }.entries.joinToString("\n") { "${it.key}: ${it.value}" })
+                if (saving != "preset" && !binding.output.isNullOrBlank()) Text(binding.output.orEmpty())
+            }
             OutlinedTextField(value = name, onValueChange = { name = it.take(80) }, label = { Text("Name") })
         } },
         confirmButton = { TextButton(enabled = name.isNotBlank() && !busy, onClick = {

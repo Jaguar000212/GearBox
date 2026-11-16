@@ -28,7 +28,7 @@ class WorkbenchScreenTest {
             MaterialTheme { WorkbenchScreen({}, { route, inputs, _ -> restored = route to inputs }, store) }
         }
         compose.waitUntil(5000) { compose.onAllNodesWithText("My estimate").fetchSemanticsNodes().isNotEmpty() }
-        compose.onNodeWithText("Restore inputs").performScrollTo().performClick()
+        compose.onNodeWithText("Restore").performScrollTo().performClick()
         compose.runOnIdle { assertEquals("tool/percentage" to mapOf("amount" to "100"), restored) }
     }
 
@@ -59,4 +59,16 @@ class WorkbenchScreenTest {
         compose.onNodeWithText("Cancel").performClick()
         assertEquals("Keep me", store.savedResults().single().name)
     }
+    @Test fun privateShareRequiresReviewAndCancelLeavesSavedItem() {
+        store.saveToWorkbench("Private example", "tool/text_tools", mapOf("text" to "example private text"), "EXAMPLE PRIVATE TEXT")
+        compose.setContent { MaterialTheme { WorkbenchScreen({}, { _, _, _ -> }, store) } }
+        compose.waitUntil(5000) { compose.onAllNodesWithText("Private example").fetchSemanticsNodes().isNotEmpty() }
+        compose.onNodeWithText("Share").performScrollTo().performClick()
+        compose.onNodeWithText("Review before sharing").assertIsDisplayed()
+        compose.onNodeWithText("The external app you choose will receive this text. It may contain secrets or private information. Cancel if you need to remove anything first.").assertExists()
+        compose.onNodeWithText("Cancel").performClick()
+        compose.onNodeWithText("Review before sharing").assertDoesNotExist()
+        assertEquals("Private example", store.savedResults().single().name)
+    }
+
 }

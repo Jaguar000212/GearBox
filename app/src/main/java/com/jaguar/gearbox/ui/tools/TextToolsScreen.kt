@@ -18,6 +18,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.mutableStateOf
@@ -36,8 +37,8 @@ import com.jaguar.gearbox.logic.convertCase
 import java.util.Locale
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.text.selection.SelectionContainer
 import com.jaguar.gearbox.ui.components.ResultCard
+import com.jaguar.gearbox.ui.components.SensitiveTextShareDialog
 import com.jaguar.gearbox.ui.components.ToolActions
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
@@ -47,6 +48,7 @@ fun TextToolsScreen(onNavigateBack: () -> Unit) {
     var input by rememberSaveable { mutableStateOf("") }
     var textCase by rememberSaveable { mutableStateOf(TextCase.TITLE.name) }
     val selectedCase = TextCase.valueOf(textCase)
+    var shareReview by remember { mutableStateOf<Triple<String, String, String>?>(null) }
 
     val words = input.trim().split(Regex("\\s+")).filter { it.isNotEmpty() }
     val converted = remember(input, selectedCase) { convertCase(input, selectedCase) }
@@ -114,8 +116,8 @@ fun TextToolsScreen(onNavigateBack: () -> Unit) {
 
         }, result = {
             ToolActions(
-                onCopy = { context.copyToClipboard("Converted text", converted) },
-                onShare = { context.shareText(converted) },
+                onCopy = { context.copyToClipboard("Converted text", converted, sensitive = true) },
+                onShare = { shareReview = Triple(input, textCase, converted) },
                 onClear = { input = "" },
                 resultEnabled = input.isNotEmpty(),
                 clearEnabled = input.isNotEmpty(),
@@ -123,13 +125,23 @@ fun TextToolsScreen(onNavigateBack: () -> Unit) {
             if (input.isNotEmpty()) {
                 Spacer(Modifier.height(12.dp))
                 Text(selectedCase.label + " result", style = MaterialTheme.typography.titleMedium)
-                SelectionContainer { ResultCard(text = converted) }
+                ResultCard(text = converted, selectable = false)
                 Text("Palindrome ignores punctuation and case. Counts use UTF-16 units; camelCase uses ASCII letters and digits.",
                     style = MaterialTheme.typography.bodySmall)
 
             } else Text("Enter text to see its converted form and copy or share the result.",
                 style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         })
+    }
+    shareReview?.let { snapshot ->
+        if (snapshot.first != input || snapshot.second != textCase || snapshot.third != converted) {
+            LaunchedEffect(snapshot) { shareReview = null }
+        } else SensitiveTextShareDialog(snapshot.third,
+            onConfirm = {
+                shareReview = null
+                if (snapshot.first == input && snapshot.second == textCase && snapshot.third == converted)
+                    context.shareText(snapshot.third)
+            }, onDismiss = { shareReview = null })
     }
 }
 

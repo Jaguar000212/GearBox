@@ -1,5 +1,8 @@
 package com.jaguar.gearbox
 
+import android.content.Context
+import java.util.UUID
+import org.junit.After
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -16,12 +19,16 @@ import org.junit.Test
 class HomeStatusTest {
     @get:Rule val compose = createComposeRule()
 
+    private val context = InstrumentationRegistry.getInstrumentation().context
+    private val preferencesName = "home_status_${UUID.randomUUID()}"
+    @After fun cleanup() { context.deleteSharedPreferences(preferencesName) }
+
     @Test fun unsupportedSensorHintDoesNotDisableTool() {
         val tool = Tools.byRoute(Tools.ROUTE_COMPASS)!!
         val capabilities = DeviceCapabilities(orientationSensor = false, cameraFlash = false)
         val hint = capabilities.hint(tool.route)!!
         var opened = false
-        val favorites = FavoritesStore(InstrumentationRegistry.getInstrumentation().context)
+        val favorites = FavoritesStore(context.getSharedPreferences(preferencesName, Context.MODE_PRIVATE))
         compose.setContent {
             MaterialTheme {
                 DiscoveryToolRow(tool, favorites, { opened = true }, false, hint)

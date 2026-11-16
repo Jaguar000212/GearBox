@@ -110,7 +110,9 @@ This guide grows with each implementation phase. Automated CI builds app/test AP
 | --- | --- | --- |
 | 1 | CI145 passed for `dcce25a213f65b76c80fa9a68d98fa44a35bf41c`; APK/checksums verified | Initial visual feedback: clean. Full checklist not yet run. |
 | 2 | CI43904137433 passed for `d3f0c574db2dd058527b8518792fbec8aca320aa` (builds, JVM tests, lint; instrumentation compilation only) | Deferred for combined testing |
+| 3 | CI43904474797 passed for `0e9c73e99b492cbeb51dad8eaa11359acbbb4610` | Deferred for combined testing |
+| 4 | See exact-head [PR59 checks](https://github.com/Jaguar000212/GearBox/pull/59/checks); no device execution | Deferred for combined testing |
 
-Phase 3 CI43904474797 passed at `0e9c73e99b492cbeb51dad8eaa11359acbbb4610`; no device checks have been claimed. Phase 4 CI is pending.
+Phase 3 CI43904474797 passed at `0e9c73e99b492cbeb51dad8eaa11359acbbb4610`; no device checks have been claimed. For Phase 4 automated results, see the exact-head checks on [PR #59](https://github.com/Jaguar000212/GearBox/pull/59/checks).
 
 Additional details: [focus views](PHASE4_FOCUS_TESTING.md), [switching/presets/handoffs](PHASE4_SWITCHING_TESTING.md).

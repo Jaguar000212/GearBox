@@ -1,6 +1,7 @@
 package com.jaguar.gearbox.ui.tools
 
 import androidx.compose.ui.res.stringResource
+import com.jaguar.gearbox.ui.components.ShowWorking
 import com.jaguar.gearbox.R
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -134,6 +135,7 @@ fun TipCalculatorScreen(onNavigateBack: () -> Unit) {
                     onCopy = { context.copyToClipboard(context.getString(R.string.calc_tip), shareText) },
                     onShare = { context.shareText(shareText) },
                 )
+                ShowWorking(tipWorking(context, billAmount, requireNotNull(tip), splitCount))
             } else if (billAmount != null && tip != null) {
                 Spacer(Modifier.height(12.dp))
                 Text(stringResource(R.string.calc_values_exceed_the_supported_numeric_range), color = MaterialTheme.colorScheme.error)

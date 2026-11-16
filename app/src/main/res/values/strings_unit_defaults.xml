@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="unit_default_title">Default unit system</string>
+    <string name="unit_default_metric">Metric</string>
+    <string name="unit_default_imperial">Imperial</string>
+    <string name="unit_default_scope">Starts fresh BMI and ruler forms in metric or imperial units, and fresh Unit Converter forms in millimeters/centimeters or inches/feet. Saved modes, results and drafts take priority. Existing forms and category changes are not changed.</string>
+    <string name="unit_default_saving">Saving preference…</string>
+    <string name="unit_default_error">Could not save the unit preference. Please try again.</string>
+</resources>

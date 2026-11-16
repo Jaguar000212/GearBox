@@ -1,6 +1,7 @@
 package com.jaguar.gearbox.ui.tools
 
 import androidx.compose.ui.res.stringResource
+import com.jaguar.gearbox.ui.components.ShowWorking
 import com.jaguar.gearbox.R
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -143,6 +144,7 @@ fun PercentageCalculatorScreen(onNavigateBack: () -> Unit) {
                         Text(detail, style = MaterialTheme.typography.bodyLarge)
                     }
                 }
+                ShowWorking(percentageWorking(context, selectedMode.operation, x, y))
                 Spacer(Modifier.height(12.dp))
                 ToolActions(
                     onCopy = { context.copyToClipboard(context.getString(R.string.calc_percentage), detail) },

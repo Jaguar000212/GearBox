@@ -194,3 +194,10 @@ This phase keeps the same tool routes and seven categories. Search is curated an
 - Favorites, existing saved modes/history, shortcuts and tool route IDs must remain unchanged.
 
 Automated tests for these flows are separate from hands-on verification. Android instrumentation execution and visual/device accessibility checks remain unperformed here.
+
+## Calculation clarity and starting preferences
+
+- Text Tools separates its four existing transformations from information about the original input. Choose a case before typing, inspect camel-case output versus original word/UTF-16 counts, Clear and reopen, and verify mode memory and sensitive Copy/Share review still behave as configured. No additional text operation is introduced.
+- Settings now offers a default unit system for fresh BMI, Unit Converter and Ruler forms. Metric preserves previous defaults; Imperial starts BMI in feet/inches/pounds, converter in Inches→Feet, and ruler in inches. It does not convert existing inputs, change unit-agnostic Fuel Cost, or override remembered modes/results/imports/restored drafts. Follow [unit preference checks](DEFAULT_UNIT_PREFERENCE_TESTING.md), including changing the setting while a draft exists and recreating the app.
+- Percentage, Tip, Discount, GST and Ratios provide a collapsed Show working section for valid results. Expand, change input, hide, and make input invalid: explanation must match the current formula and disappear for invalid input. Check sequential discounts, zero original price, negative-base percentage changes, inclusive tax, and decimal/negative ratios. Steps expose parsed floating-point values, not arbitrary-precision original input. Results/exports/history remain unchanged.
+- Working sections use localized labels and expanded/collapsed accessibility state. Check large font, landscape and TalkBack. Automated resource/formula and UI regression tests are added; device execution remains the owner's testing step.

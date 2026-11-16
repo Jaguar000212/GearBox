@@ -18,6 +18,7 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -27,6 +28,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.jaguar.gearbox.data.DefaultUnitSystem
+import com.jaguar.gearbox.data.UiPreferencesStore
 import com.jaguar.gearbox.data.Tools
 import com.jaguar.gearbox.logic.computeBmi
 import com.jaguar.gearbox.ui.components.AdaptiveToolLayout
@@ -42,7 +45,9 @@ private enum class BmiUnitSystem(val label: Int) {
 @Composable
 fun BmiCalculatorScreen(onNavigateBack: () -> Unit) {
     val context = LocalContext.current
-    var unitSystem by rememberSaveable { mutableStateOf(BmiUnitSystem.METRIC.name) }
+    // Snapshot the starting preference once; never apply it over a restored draft or edit.
+    val initialUnitSystem = remember { UiPreferencesStore(context).preferences.value.defaultUnitSystem }
+    var unitSystem by rememberSaveable { mutableStateOf(if (initialUnitSystem == DefaultUnitSystem.IMPERIAL) BmiUnitSystem.IMPERIAL.name else BmiUnitSystem.METRIC.name) }
     val selectedSystem = BmiUnitSystem.valueOf(unitSystem)
 
     var heightCm by rememberSaveable { mutableStateOf("") }

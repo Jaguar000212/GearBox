@@ -1,6 +1,7 @@
 package com.jaguar.gearbox.ui.tools
 
 import androidx.compose.ui.res.stringResource
+import com.jaguar.gearbox.ui.components.ShowWorking
 import com.jaguar.gearbox.R
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -134,6 +135,7 @@ fun DiscountCalculatorScreen(onNavigateBack: () -> Unit) {
                     onCopy = { context.copyToClipboard(context.getString(R.string.calc_discount), summary) },
                     onShare = { context.shareText(summary) },
                 )
+                ShowWorking(discountWorking(context, originalPrice, discountValues))
             }
             Spacer(Modifier.height(16.dp))
             ToolActions(onClear = { price = ""; discounts = listOf("") },

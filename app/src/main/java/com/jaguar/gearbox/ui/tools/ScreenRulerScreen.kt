@@ -31,6 +31,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.jaguar.gearbox.data.DefaultUnitSystem
+import com.jaguar.gearbox.data.UiPreferencesStore
 import com.jaguar.gearbox.data.Tools
 import com.jaguar.gearbox.ui.components.ToolScaffold
 import com.jaguar.gearbox.ui.components.rememberToolHistory
@@ -39,8 +41,10 @@ import java.util.UUID
 @Composable
 fun ScreenRulerScreen(onNavigateBack: () -> Unit) {
     val context = LocalContext.current
+    // Snapshot the starting preference once; never apply it over a restored draft or edit.
+    val initialUnitSystem = remember { UiPreferencesStore(context).preferences.value.defaultUnitSystem }
     val density = LocalDensity.current
-    var useMetric by rememberSaveable { mutableStateOf(true) }
+    var useMetric by rememberSaveable { mutableStateOf(initialUnitSystem == DefaultUnitSystem.METRIC) }
 
     val historyStore = remember(context) { ToolMemoryStore(context) }
     var captureGeneration by remember { mutableStateOf<Long?>(null) }

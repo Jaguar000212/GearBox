@@ -1,6 +1,7 @@
 package com.jaguar.gearbox.ui.tools
 
 import androidx.compose.ui.res.stringResource
+import com.jaguar.gearbox.ui.components.ShowWorking
 import com.jaguar.gearbox.R
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
@@ -58,6 +59,7 @@ fun RatiosScreen(onNavigateBack: () -> Unit) {
                     onShare = { context.shareText(summary) })
                 Spacer(Modifier.height(8.dp))
                 Text(summary, style = MaterialTheme.typography.bodyMedium)
+                ShowWorking(ratioWorking(context, requireNotNull(a), requireNotNull(b)))
             } else {
                 val guidance = when {
                     (partA.isNotBlank() && a == null) || (partB.isNotBlank() && b == null) ->

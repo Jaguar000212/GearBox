@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="matrix_title">Decision Matrix</string>
+    <string name="matrix_criteria">Criteria</string>
+    <string name="matrix_options">Alternatives and ratings</string>
+    <string name="matrix_criterion_label">Criterion %1$d label</string>
+    <string name="matrix_option_label">Alternative %1$d label</string>
+    <string name="matrix_weight">Criterion %1$d weight (0–100)</string>
+    <string name="matrix_rating">Alternative %1$d, criterion %2$d: %3$s (0–5)</string>
+    <string name="matrix_default_option">Option %1$d</string>
+    <string name="matrix_default_criterion">Criterion %1$d</string>
+    <string name="matrix_add_option">Add alternative</string>
+    <string name="matrix_add_criterion">Add criterion</string>
+    <string name="matrix_remove_option">Remove alternative %1$d</string>
+    <string name="matrix_remove_criterion">Remove criterion %1$d</string>
+    <string name="matrix_remove_title">Remove this row?</string>
+    <string name="matrix_remove_note">Its label and associated ratings or weight will be discarded. This cannot be undone.</string>
+    <string name="matrix_remove">Remove</string>
+    <string name="matrix_cancel">Cancel</string>
+    <string name="matrix_compare">Compare alternatives</string>
+    <string name="matrix_invalid">Use 2–6 alternatives and 1–6 criteria. Labels must be nonblank single lines, at most 60 UTF-16 code units. Weights are whole numbers 0–100, with at least one positive weight; all ratings are whole numbers 0–5.</string>
+    <string name="matrix_rules">Higher ratings must mean better for every criterion. Re-express costs or risks as desirability before rating them. A zero-weight criterion has no effect. Each score is sum(weight × rating) divided by total weight, on a 0–5 scale.</string>
+    <string name="matrix_advisory">This is an arithmetic summary of your judgments, not an objective answer, an AI recommendation or an assessment of people. Do not use it to determine eligibility or make high-impact decisions about people.</string>
+    <string name="matrix_precision">Ranks and ties use exact unrounded scores. Displayed means are rounded to four decimal places. Equal ranks are ties; numbering keeps the original alternative order within a tie.</string>
+    <string name="matrix_privacy">Labels may contain private information. Automatic history and remembered results are off by default for this tool. Saving manually or enabling them stores content locally. Sharing sends the reviewed text to your selected app.</string>
+    <string name="matrix_retention">Explicit imports restore inputs only; press Compare alternatives. Remember results, if enabled, can reconstruct the last completed comparison. No labels or ratings are saved as mode preferences.</string>
+    <string name="matrix_result_title">Weighted comparison</string>
+    <string name="matrix_total_weight">Total weight: %1$d</string>
+    <string name="matrix_score">Rank %1$d · Alternative %2$d: %3$s\nWeighted mean: %4$s / 5 (%5$d ÷ %6$d)</string>
+    <string name="matrix_tie">Tied rank</string>
+    <string name="matrix_empty">Set your criteria, weights and ratings, then compare.</string>
+    <string name="matrix_restore_error">The saved matrix is invalid. Your current setup was kept.</string>
+    <string name="matrix_not_retained">This comparison exceeds local saved-record limits. It will not be retained there; copying or sharing still includes the full result.</string>
+    <string name="matrix_export">%1$s\n%2$s\n%3$s</string>
+</resources>

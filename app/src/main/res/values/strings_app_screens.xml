@@ -92,7 +92,7 @@
     <string name="screen_clear_saved_game_sessions">Clear saved game sessions</string>
     <string name="screen_keep_tool_history">Keep tool history</string>
     <string name="screen_save_completed_inputs_and_results_in_supported_tools_turning_this">Save completed inputs and results in supported tools. Turning this off pauses collection; it does not delete existing history.</string>
-    <string name="screen_text_qr_and_hash_privacy">Private-text tools</string>
+    <string name="screen_text_qr_and_hash_privacy">Private-input tools</string>
     <string name="screen_these_tools_can_contain_secrets_or_personal_information_automatic">These tools can contain secrets or personal information. Automatic saving is off for each by default. Each choice below also requires its global history or last-result switch above to be on.</string>
     <string name="screen_turning_these_choices_off_retains_existing_records_without_loadin">Turning these choices off retains existing records without loading them automatically. Review or explicitly clear them below. Android task drafts can still survive screen recreation; these switches do not disable task drafts. Manually saved Workbench items and presets are separate and remain until you delete them there.</string>
     <string name="screen_1_s_automatic_history">%1$s: automatic history</string>
@@ -209,4 +209,5 @@
     <string name="screen_tab_settings">Settings</string>
     <string name="screen_brand_name" translatable="false">GearBox</string>
     <string name="screen_tool_text_diff">Text Diff</string>
+    <string name="screen_tool_decision_matrix">Decision Matrix</string>
 </resources>

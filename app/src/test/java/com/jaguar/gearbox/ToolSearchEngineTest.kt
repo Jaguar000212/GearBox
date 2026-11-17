@@ -14,6 +14,8 @@ class ToolSearchEngineTest {
         assertEquals(Tools.ROUTE_AGE, matches("HOW OLD AM I?").first().route)
         assertTrue(matches("unsupported quantum teleporter").isEmpty())
         assertEquals("tool/focus_timer", matches("pomodoro interval").first().route)
+        assertEquals("tool/decision_matrix", matches("compare options").first().route)
+        assertNull(matches("decision matrix").first().operationId)
         assertEquals("tool/time_zone_converter", matches("convert time zones").first().route)
         assertNull(matches("time zone converter").first().operationId)
         assertEquals("tool/text_diff", matches("compare two texts").first().route)

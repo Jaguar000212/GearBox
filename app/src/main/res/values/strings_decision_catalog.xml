@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="decision_catalog_name">Decision Matrix</string>
+    <string name="decision_catalog_description">Compare options using your own criteria, weights and ratings.</string>
+    <string name="decision_catalog_instructions">Enter 2 to 6 options and 1 to 6 criteria. Set whole-number weights from 0 to 100, with at least one positive weight, and ratings from 0 to 5. Higher ratings always mean better. Tap Compare to rank weighted scores and show ties.</string>
+    <string name="decision_catalog_example">Compare two generic options using Value and Comfort ratings. Equal weighted totals remain tied rather than choosing a winner.</string>
+    <string name="decision_catalog_limitation">An advisory calculation based only on your inputs, not objective evidence or an AI judgment. For costs or risks, assign higher ratings to more desirable outcomes. Review labels before copying or sharing private information.</string>
+    <string-array name="decision_catalog_keywords"><item>decision matrix</item><item>weighted scores</item><item>compare options</item><item>criteria</item><item>ratings</item></string-array>
+    <string-array name="decision_catalog_tasks"><item>decision matrix</item><item>compare options</item><item>weighted decision</item><item>rank options by criteria</item><item>weighted scores</item></string-array>
+    <string name="decision_catalog_load_example">Load two generic options with equal Value and Comfort weights, then tap Compare to see their tied scores.</string>
+</resources>

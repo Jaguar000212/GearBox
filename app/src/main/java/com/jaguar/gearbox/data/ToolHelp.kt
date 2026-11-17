@@ -40,6 +40,11 @@ object ToolHelpCatalog {
             "Decimal 10 is binary 1010 and hexadecimal A.",
             "This converter handles integers, not decimal fractions; binary only accepts 0 and 1.",
         ),
+        Tools.ROUTE_DECISION_MATRIX to ToolHelp(
+            "Enter 2 to 6 options and 1 to 6 criteria. Set whole-number weights from 0 to 100, with at least one positive weight, and ratings from 0 to 5. Higher ratings always mean better. Tap Compare to rank weighted scores and show ties.",
+            "Compare two generic options using Value and Comfort ratings. Equal weighted totals remain tied rather than choosing a winner.",
+            "An advisory calculation based only on your inputs, not objective evidence or an AI judgment. For costs or risks, assign higher ratings to more desirable outcomes. Review labels before copying or sharing private information.",
+        ),
         Tools.ROUTE_TIME_ZONE_CONVERTER to ToolHelp(
             "Enter a date and local time, choose source and destination IANA zones, then convert. A nonexistent daylight-saving time is rejected. For a repeated time, explicitly select the intended source offset.",
             "Load 15 January 2026 at 12:00 UTC and Asia/Kolkata, then convert to 17:30 on the same day.",

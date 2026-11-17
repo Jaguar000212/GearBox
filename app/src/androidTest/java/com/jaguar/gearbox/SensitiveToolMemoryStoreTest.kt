@@ -14,6 +14,30 @@ class SensitiveToolMemoryStoreTest {
     private fun consent() = ToolMemorySettings(historyEnabled = true, rememberResults = true,
         rememberModes = true, automaticMemory = routes.associateWith { ToolAutomaticMemory(true, true) })
 
+    @Test fun textDiffRequiresItsOwnConsentAndNeverTruncatesOversizedCaptures() {
+        val route = "tool/text_diff"
+        val inputs = mapOf("firstText" to "private first", "secondText" to "private second")
+        val global = ToolMemorySettings(historyEnabled = true, rememberResults = true)
+        store.saveSettings(global)
+        assertFalse(store.record(route, inputs, "comparison"))
+        assertFalse(store.saveResult(route, inputs, "comparison"))
+        val allowed = global.copy(automaticMemory = mapOf(route to ToolAutomaticMemory(true, true)))
+        store.saveSettings(allowed)
+        assertTrue(store.record(route, inputs, "comparison"))
+        assertTrue(store.saveResult(route, inputs, "comparison"))
+        val generation = store.historyGeneration(route)
+        store.saveSettings(global)
+        store.saveSettings(allowed)
+        assertFalse(store.record(route, inputs, "late", generation))
+        val tooLarge = inputs + ("firstText" to "x".repeat(4097))
+        assertFalse(store.record(route, tooLarge, "comparison"))
+        assertFalse(store.saveResult(route, tooLarge, "comparison"))
+        assertFalse(store.saveToWorkbench("Large", route, tooLarge, "comparison"))
+        assertEquals(inputs, store.history(route).single().inputs)
+        assertEquals(inputs, store.loadResult(route)?.inputs)
+        assertTrue(store.savedResults().isEmpty())
+    }
+
     @Test fun globalSettingsAloneCannotCaptureSensitiveInputs() {
         assertTrue(store.saveSettings(ToolMemorySettings(historyEnabled = true, rememberResults = true)))
         routes.forEach { route ->

@@ -8,12 +8,12 @@ import org.junit.Test
 
 class ToolTaxonomyTest {
     @Test fun everyToolHasOneHomeAndRoutesStayUnique() {
-        assertEquals(46, Tools.all.size)
-        assertEquals(46, Tools.all.map { it.route }.distinct().size)
+        assertEquals(47, Tools.all.size)
+        assertEquals(47, Tools.all.map { it.route }.distinct().size)
         assertEquals(7, ToolCategory.entries.size)
         val expected = mapOf(
             ToolCategory.CALCULATORS to 9, ToolCategory.MONEY to 6,
-            ToolCategory.TIME to 7, ToolCategory.UTILITIES to 8,
+            ToolCategory.TIME to 7, ToolCategory.UTILITIES to 9,
             ToolCategory.GAMES_AND_RANDOM to 7, ToolCategory.RANDOM to 4,
             ToolCategory.DEVICE to 5,
         )

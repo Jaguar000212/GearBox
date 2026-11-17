@@ -40,6 +40,11 @@ object ToolHelpCatalog {
             "Decimal 10 is binary 1010 and hexadecimal A.",
             "This converter handles integers, not decimal fractions; binary only accepts 0 and 1.",
         ),
+        Tools.ROUTE_TEXT_DIFF to ToolHelp(
+            "Enter the original and revised text, then tap Compare to inspect added, removed and unchanged lines. Comparison runs locally; automatic history and result saving are off by default.",
+            "Load Hello followed by world, and Hello followed by GearBox, then tap Compare to inspect the changed second line.",
+            "Each text is limited to 16000 characters and 200 lines. Case and whitespace matter; CRLF line endings are normalized and a trailing newline produces an empty line. This is not a semantic comparison or proof of equivalence. Review before copying or sharing private text.",
+        ),
         Tools.ROUTE_SCIENTIFIC_CALCULATOR to ToolHelp(
             "Enter an expression with explicit multiplication, choose degrees or radians for trigonometry, then calculate. Use parentheses for grouping and functions such as sqrt(16), sin(30), ln(e) or log(100).",
             "Load sqrt(16)+2^3, then calculate 12. The example does not calculate until you request it.",

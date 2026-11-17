@@ -59,7 +59,7 @@ object ToolMemoryPolicy {
     fun permitsRoute(route: String): Boolean = routePattern.matches(route) &&
         route != "tool/password_generator" && route != "tool/focus_timer"
 
-    val sensitiveTextRoutes: Set<String> = setOf("tool/text_tools", "tool/qr_generator", "tool/hash_generator")
+    val sensitiveTextRoutes: Set<String> = setOf("tool/text_tools", "tool/qr_generator", "tool/hash_generator", "tool/text_diff")
     fun isSensitiveTextRoute(route: String): Boolean = route in sensitiveTextRoutes
 
     /** Sensitive tools may remember only enumerated non-content selectors, never text. */
@@ -70,7 +70,7 @@ object ToolMemoryPolicy {
         "tool/hash_generator" -> values.keys.all { it == "algorithm" } && values.values.all {
             value -> com.jaguar.gearbox.logic.TextHashAlgorithm.entries.any { it.name == value }
         }
-        "tool/qr_generator" -> values.isEmpty()
+        "tool/qr_generator", "tool/text_diff" -> values.isEmpty()
         "tool/color_blend" -> parseColorBlendSnapshot(values) != null
         "tool/bill_splitter" -> validBillSplitterMode(values)
         "tool/business_day_planner" -> validBusinessDayMode(values)

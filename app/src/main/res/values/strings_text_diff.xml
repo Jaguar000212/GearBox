@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="text_diff_title">Text Diff</string>
+    <string name="text_diff_first">Original text</string>
+    <string name="text_diff_second">Updated text</string>
+    <string name="text_diff_compare">Compare</string>
+    <string name="text_diff_result">Line differences</string>
+    <string name="text_diff_counts">Added: %1$d · Removed: %2$d · Unchanged: %3$d</string>
+    <string name="text_diff_added">Added</string>
+    <string name="text_diff_removed">Removed</string>
+    <string name="text_diff_equal">Unchanged</string>
+    <string name="text_diff_line">%1$s: %2$s</string>
+    <string name="text_diff_empty_line">[empty line]</string>
+    <string name="text_diff_too_long">Each input is limited to 16,000 UTF-16 code units. Shorten the input; nothing has been truncated.</string>
+    <string name="text_diff_too_many_lines">Each input is limited to 200 lines, including a trailing empty line after a final newline. Shorten the input; nothing has been truncated.</string>
+    <string name="text_diff_rules">Compares whole lines, not words or meanings. Case, spaces and tabs matter. CRLF and lone CR line endings are normalized to LF for comparison; original editor text is preserved. A final newline creates a visible empty line, so adding or removing it is a difference. An empty document is represented by one empty line.</string>
+    <string name="text_diff_legend">+ Added, − Removed, = Unchanged. Empty lines are displayed as [empty line]. These markers are presentation labels, not a patch file. The complete bounded result can be scrolled, copied or shared.</string>
+    <string name="text_diff_privacy">Text may contain private information. Automatic history and remembered results are off by default for this tool. If you enable them or save manually, text can be stored locally. Sharing sends the reviewed text to the app you choose.</string>
+    <string name="text_diff_retention">Explicit imports restore inputs only; press Compare. Remember results, if enabled, can reconstruct the last completed comparison.</string>
+    <string name="text_diff_not_retained">This comparison exceeds local history or saved-result limits. It will not be retained there; you can still copy or share the complete result. Nothing is truncated.</string>
+    <string name="text_diff_empty">Enter two texts and press Compare.</string>
+    <string name="text_diff_restore_error">The saved comparison inputs are invalid. Your current texts were kept.</string>
+    <string name="text_diff_export">%1$s\n%2$s\n%3$s</string>
+</resources>

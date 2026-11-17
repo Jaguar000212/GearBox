@@ -7,7 +7,7 @@
     <string name="workbench_select_visible">Select visible items</string>
     <string name="workbench_delete_selected">Delete selected</string>
     <string name="workbench_compare">Compare selected results</string>
-    <string name="workbench_compare_guidance">Select exactly two results from the same supported calculator or converter with matching modes and units. Text, QR, Hash, games and live readings cannot be compared.</string>
+    <string name="workbench_compare_guidance">Select exactly two results from the same supported calculator or converter with matching modes and units. Text, Text Diff, QR, Hash, games and live readings cannot be compared.</string>
     <string name="workbench_no_matches">No saved items match this filter.</string>
     <string name="workbench_rename">Rename</string>
     <string name="workbench_name">Saved name (1–80 characters)</string>

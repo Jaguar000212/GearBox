@@ -317,3 +317,10 @@ This is local date arithmetic with user-selected weekend days and explicit exclu
 - Check DEG/RAD for trigonometric and inverse functions, constants, square roots and logarithms. Domain and nonfinite results must be errors, not misleading numeric output. Floating-point calculations are approximate and do not provide symbolic algebra or a proof of exactness.
 - Exercise expression length/nesting/token limits and repeated operators. Reject excessive work safely. Editing expression or angle mode clears the prior result; explicit imports/examples require Calculate. Remembered-result hydration honors settings without replaying history; mode retention stores angle mode only.
 - Test accessible syntax instructions, keyboard input, copy/share, narrow/wide layouts and large fonts. Existing basic calculator behavior must remain unchanged. JVM tests cover the parser; physical-device UI/accessibility tests remain user-owned.
+
+## Text Diff
+
+- Compare two local texts explicitly. Check identical, empty, added, removed and replaced lines, repeated lines and Unicode. Add/remove/equal indicators must remain understandable without color. A line diff is not a semantic or security-equivalence proof.
+- Verify documented newline normalization and final-newline behavior, maximum character/line limits and bounded computation. Over-limit inputs must report an error rather than silently truncate or hang. Editing either input clears stale output and disables result actions.
+- Text may contain secrets. Automatic history/result saving must remain off for this tool unless its own sensitive-text control and applicable global settings are enabled. Check disabling the tool control clears no preexisting data silently but stops future autosaves; mode-only retention must not save either text. Explicit share/copy and manual saves are separate intentional actions with existing disclosures.
+- Test explicit restore/example imports versus opted-in remembered-result hydration, no history replay, keyboard/large-font/TalkBack comparison markers, adaptive layout and share cancellation. Do not paste real secrets into test fixtures or public reports.

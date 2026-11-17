@@ -41,6 +41,7 @@ object ToolSearchCatalog {
         Tools.ROUTE_HASH_GENERATOR to AliasSpec(R.array.search_tasks_hash_generator, listOf("hash some text", "text checksum", "generate a digest")),
         Tools.ROUTE_QR_GENERATOR to AliasSpec(R.array.search_tasks_qr_generator, listOf("make a qr code", "text to qr", "link to qr code")),
         Tools.ROUTE_MORSE_BINARY to AliasSpec(R.array.search_tasks_morse_binary, listOf("translate morse code", "text in binary", "decode binary text")),
+        Tools.ROUTE_TEXT_DIFF to AliasSpec(R.array.diff_catalog_tasks, listOf("compare two texts", "find text differences", "text diff", "compare lines", "what changed in this text")),
         Tools.ROUTE_SCIENTIFIC_CALCULATOR to AliasSpec(R.array.scientific_catalog_tasks, listOf("scientific calculator", "calculate sine", "calculate cosine", "calculate logarithm", "evaluate expression", "calculate square root")),
         Tools.ROUTE_BUSINESS_DAY_PLANNER to AliasSpec(R.array.business_catalog_tasks, listOf("business day planner", "working days", "skip weekends", "business days between dates", "add business days", "subtract business days", "count business days")),
         Tools.ROUTE_BILL_SPLITTER to AliasSpec(R.array.bill_catalog_tasks, listOf("split the bill", "split bill", "divide restaurant bill", "equal bill shares", "bill per diner")),

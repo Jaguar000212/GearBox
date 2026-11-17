@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="diff_catalog_name">Text Diff</string>
+    <string name="diff_catalog_description">Compare two texts locally and inspect line-by-line changes.</string>
+    <string name="diff_catalog_instructions">Enter the original and revised text, then tap Compare to inspect added, removed and unchanged lines. Comparison runs locally; automatic history and result saving are off by default.</string>
+    <string name="diff_catalog_example">Load Hello followed by world, and Hello followed by GearBox, then tap Compare to inspect the changed second line.</string>
+    <string name="diff_catalog_limitation">Each text is limited to 16000 characters and 200 lines. Case and whitespace matter; CRLF line endings are normalized and a trailing newline produces an empty line. This is not a semantic comparison or proof of equivalence. Review before copying or sharing private text.</string>
+    <string-array name="diff_catalog_keywords"><item>text diff</item><item>compare text</item><item>text differences</item><item>line changes</item></string-array>
+    <string-array name="diff_catalog_tasks"><item>compare two texts</item><item>find text differences</item><item>text diff</item><item>compare lines</item><item>what changed in this text</item></string-array>
+</resources>

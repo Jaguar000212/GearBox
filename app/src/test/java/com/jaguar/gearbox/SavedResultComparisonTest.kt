@@ -29,7 +29,7 @@ class SavedResultComparisonTest {
             assertFalse(savedResultComparison(first, item("b", first.route, fields + (key to "other"))).compatible)
     }
     @Test fun excludedSensitiveLiveGamesAndUnknownToolsRemainExcluded() {
-        for (route in listOf("password_generator", "text_tools", "qr_generator", "hash_generator", "morse_binary", "bmi", "date_calculator", "counter", "timer", "dice", "compass", "new_tool")) {
+        for (route in listOf("password_generator", "text_tools", "text_diff", "qr_generator", "hash_generator", "morse_binary", "bmi", "date_calculator", "counter", "timer", "dice", "compass", "new_tool")) {
             assertFalse(route, savedResultComparison(item("a", "tool/$route"), item("b", "tool/$route")).compatible)
         }
         assertFalse(savedResultComparison(item("a"), item("b", "tool/geometry")).compatible)

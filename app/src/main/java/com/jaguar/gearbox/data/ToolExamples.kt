@@ -10,6 +10,7 @@ object ToolExampleCatalog {
         ToolExample(description, mapOf(*inputs)).also { require(ToolMemoryPolicy.validInputs(it.inputs)) }
 
     private val fixed = mapOf(
+        Tools.ROUTE_TEXT_DIFF to example("Load Hello followed by world, and Hello followed by GearBox, then tap Compare to inspect the changed second line.", "firstText" to "Hello\nworld", "secondText" to "Hello\nGearBox"),
         Tools.ROUTE_SCIENTIFIC_CALCULATOR to example("Load sqrt(16)+2^3, then calculate 12. The example does not calculate until you request it.", "expression" to "sqrt(16)+2^3", "angleMode" to "DEG"),
         Tools.ROUTE_BUSINESS_DAY_PLANNER to example("Load five business days after 16 November 2026 with Saturday and Sunday excluded, then calculate 23 November.", "mode" to "ADD", "start" to "2026-11-16", "end" to "2026-11-23", "offset" to "5", "weekendMask" to "96", "excludedDates" to ""),
         Tools.ROUTE_BILL_SPLITTER to example("Load a bill of 100 with a tip of 10 percent and three diners, then calculate shares of 36.67, 36.67 and 36.66.", "bill" to "100", "tax" to "0", "tipPercent" to "10", "diners" to "3"),

@@ -9,6 +9,8 @@ import androidx.compose.material.icons.filled.Balance
 import androidx.compose.material.icons.filled.Cake
 import androidx.compose.material.icons.filled.Calculate
 import androidx.compose.material.icons.filled.Casino
+import androidx.compose.material.icons.filled.DataObject
+import com.jaguar.gearbox.ui.tools.JsonFormatterScreen
 import androidx.compose.material.icons.filled.AccountTree
 import com.jaguar.gearbox.ui.tools.DeadlinePlannerScreen
 import androidx.compose.material.icons.filled.AspectRatio
@@ -119,6 +121,7 @@ object Tools {
     const val ROUTE_SCOREBOARD = "tool/scoreboard"
     const val ROUTE_RANDOM = "tool/random"
     const val ROUTE_BASE_CONVERTER = "tool/base_converter"
+    const val ROUTE_JSON_FORMATTER = "tool/json_formatter"
     const val ROUTE_DEADLINE_PLANNER = "tool/deadline_planner"
     const val ROUTE_ASPECT_RATIO = "tool/aspect_ratio"
     const val ROUTE_DECISION_MATRIX = "tool/decision_matrix"
@@ -428,6 +431,15 @@ object Tools {
             route = ROUTE_CHESS_SCOREBOARD,
             category = ToolCategory.GAMES_AND_RANDOM,
             content = { onNavigateBack -> ChessScoreboardScreen(onNavigateBack) },
+        ),
+        Tool(
+            name = "JSON Formatter / Validator",
+            description = "Validate, pretty-print or minify JSON locally.",
+            icon = Icons.Filled.DataObject,
+            route = ROUTE_JSON_FORMATTER,
+            category = ToolCategory.UTILITIES,
+            content = { onNavigateBack -> JsonFormatterScreen(onNavigateBack) },
+            keywords = listOf("JSON", "formatter", "validator", "pretty print", "minify"),
         ),
         Tool(
             name = "Deadline & Milestone Planner",

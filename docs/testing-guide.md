@@ -364,3 +364,11 @@ This tool must actually schedule backwards from the target date, not merely list
 - Use the explicit as-of date to show days remaining/overdue. Restore must not silently substitute today's date. No background reminders, calendar events or notifications are created by calculating a plan.
 - Validate names, stable identities, empty/duplicate labels with indexed output, and removal/reorder confirmation behavior. Edits invalidate old output. Explicit imports/examples require Plan; remembered results follow private-input consent and do not replay history.
 - Names/dates may be private. Separate capture controls default off; mode-only memory excludes plan content. Verify reviewed sharing, sensitive copying, accessible ordering controls, large fonts and adaptive layout on-device.
+
+## JSON Formatter & Validator
+
+- Validate top-level objects, arrays and scalar JSON. Test escaped quotes/backslashes/control escapes, Unicode, exponent/negative-zero numbers, nested structures and whitespace. Pretty/minify must preserve number tokens, object member order and string meaning rather than converting through floating-point values.
+- Reject comments, trailing commas, malformed numbers/escapes, extra trailing values and excessive input/depth/work. Duplicate keys follow an explicit strict interoperability policy; do not present this choice as proof that every other parser will reject them. Errors identify line/column without logging private payloads.
+- Formatting/validation is explicit. Edits clear stale output. Test output-expansion bounds and storage-limit warnings without truncation. Explicit imports require processing again; remembered results require both global and tool-specific consent and must not replay history.
+- JSON can contain credentials or personal data. Automatic capture defaults off for this tool, mode memory contains formatting preferences only, Copy is marked sensitive and Share uses an exact review. No external validation or network request occurs. Test large-font/adaptive/TalkBack UI and share cancellation on-device.
+- CSS, XML and HTML are not supported by this JSON phase and must not be advertised as validated here.

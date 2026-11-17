@@ -40,6 +40,11 @@ object ToolHelpCatalog {
             "Decimal 10 is binary 1010 and hexadecimal A.",
             "This converter handles integers, not decimal fractions; binary only accepts 0 and 1.",
         ),
+        Tools.ROUTE_JSON_FORMATTER to ToolHelp(
+            "Enter JSON, choose validation, pretty-printing or minification, then explicitly run the operation. Processing stays local; automatic history and result saving are off by default.",
+            "Try a small object with a name string and an enabled boolean, then explicitly format or validate it.",
+            "JSON only, not CSS, XML or HTML. Duplicate object keys are rejected rather than silently overwritten. Input and nesting limits apply. Valid syntax does not prove data is safe or matches a schema; review before copying or sharing private content.",
+        ),
         Tools.ROUTE_DEADLINE_PLANNER to ToolHelp(
             "Enter a target date, an as-of date, and ordered phase names with calendar-day durations. Tap Plan to schedule backward: the last phase ends on the target date and each earlier phase ends the day before the next begins. Both start and end dates count toward duration.",
             "Load a 10 January 2027 target with Prepare for 2 days and Review for 3 days, then tap Plan. Prepare runs 6 to 7 January and Review runs 8 to 10 January.",

@@ -14,6 +14,29 @@ class SensitiveToolMemoryStoreTest {
     private fun consent() = ToolMemorySettings(historyEnabled = true, rememberResults = true,
         rememberModes = true, automaticMemory = routes.associateWith { ToolAutomaticMemory(true, true) })
 
+    @Test fun jsonRequiresIndependentConsentAndRejectsOversizedCaptureWithoutTruncating() {
+        val route = "tool/json_formatter"
+        val inputs = mapOf("source" to " {\"private\":1.00} ", "mode" to "PRETTY", "indent" to "2")
+        val global = ToolMemorySettings(historyEnabled = true, rememberResults = true, rememberModes = true)
+        assertTrue(store.saveSettings(global))
+        assertFalse(store.record(route, inputs, "output"))
+        assertFalse(store.saveResult(route, inputs, "output"))
+        assertFalse(store.saveMode(route, inputs))
+        assertTrue(store.saveMode(route, inputs - "source"))
+        assertTrue(store.saveSettings(global.copy(automaticMemory = mapOf(route to ToolAutomaticMemory(true, true)))))
+        assertTrue(store.record(route, inputs, "output"))
+        assertTrue(store.saveResult(route, inputs, "output"))
+        val large = inputs + ("source" to "x".repeat(4097))
+        assertFalse(store.record(route, large, "output"))
+        assertFalse(store.saveResult(route, large, "output"))
+        assertFalse(store.record(route, inputs, "x".repeat(4097)))
+        assertEquals(inputs, store.history(route).single().inputs)
+        assertEquals(inputs, store.loadResult(route)?.inputs)
+        assertTrue(store.saveSettings(global))
+        assertNull(store.loadResult(route))
+        assertEquals(inputs, store.rememberedResult(route)?.inputs)
+    }
+
     @Test fun deadlinePlanNeedsIndependentConsentAndSavedAsOfRemainsUnchanged() {
         val route = "tool/deadline_planner"
         val inputs = mapOf("deadline" to "2027-01-10", "asOf" to "2027-01-01", "ids" to "1",

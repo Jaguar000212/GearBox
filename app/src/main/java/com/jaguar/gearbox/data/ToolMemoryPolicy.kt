@@ -59,7 +59,7 @@ object ToolMemoryPolicy {
     fun permitsRoute(route: String): Boolean = routePattern.matches(route) &&
         route != "tool/password_generator" && route != "tool/focus_timer"
 
-    val sensitiveTextRoutes: Set<String> = setOf("tool/text_tools", "tool/qr_generator", "tool/hash_generator", "tool/text_diff", "tool/decision_matrix", "tool/bill_splitter", "tool/deadline_planner")
+    val sensitiveTextRoutes: Set<String> = setOf("tool/text_tools", "tool/qr_generator", "tool/hash_generator", "tool/text_diff", "tool/decision_matrix", "tool/bill_splitter", "tool/deadline_planner", "tool/json_formatter")
     fun isSensitiveTextRoute(route: String): Boolean = route in sensitiveTextRoutes
 
     /** Sensitive tools may remember only enumerated non-content selectors, never text. */
@@ -75,6 +75,7 @@ object ToolMemoryPolicy {
         "tool/bill_splitter" -> validBillSplitterMode(values)
         "tool/business_day_planner" -> validBusinessDayMode(values)
         "tool/scientific_calculator" -> validScientificMode(values)
+        "tool/json_formatter" -> validJsonFormatterMode(values)
         "tool/time_zone_converter" -> validTimeZoneMode(values)
         "tool/aspect_ratio" -> validAspectRatioMode(values)
         else -> permitsRoute(route)

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="json_title">JSON Formatter &amp; Validator</string>
+    <string name="json_source">JSON source</string>
+    <string name="json_mode">Operation</string>
+    <string name="json_validate">Validate</string>
+    <string name="json_pretty">Pretty-print</string>
+    <string name="json_minify">Minify</string>
+    <string name="json_indent">Indentation</string>
+    <string name="json_spaces">%1$d spaces</string>
+    <string name="json_run">Run</string>
+    <string name="json_valid">Valid JSON under the strict interoperability rules below.</string>
+    <string name="json_result">Result</string>
+    <string name="json_empty">Enter JSON and run the selected operation.</string>
+    <string name="json_error_location">%1$s\nLine %2$d, column %3$d (1-based UTF-16 positions)</string>
+    <string name="json_error_syntax">Invalid JSON syntax.</string>
+    <string name="json_error_duplicate">Duplicate object key after decoding escapes. Unique keys are required.</string>
+    <string name="json_error_unicode">Unpaired Unicode surrogate in a string. Valid Unicode scalar strings are required.</string>
+    <string name="json_error_input_limit">Input exceeds 64,000 UTF-16 code units. Nothing was truncated.</string>
+    <string name="json_error_depth_limit">Input exceeds 64 nested arrays or objects.</string>
+    <string name="json_error_token_limit">Input exceeds 20,000 tokens, including punctuation.</string>
+    <string name="json_error_output_limit">Formatted output would exceed 256,000 UTF-16 code units. No partial output was produced. Try Minify or Validate.</string>
+    <string name="json_rules">Accepts any JSON value, including a top-level number, string, boolean or null. Rejects comments, trailing commas, non-JSON numbers, duplicate decoded keys and unpaired Unicode surrogates. Duplicate-key and Unicode checks are deliberate interoperability rules. JSON only: not JavaScript, CSS, XML or HTML.</string>
+    <string name="json_preservation">Key order, number spelling and string escape spelling are preserved. Numbers are not converted to floating point, so large numbers and exponents are not rounded. Pretty-print and Minify change only insignificant whitespace. Source text is never executed or sent to a server.</string>
+    <string name="json_limits">Limits: 64,000 input UTF-16 code units, 64 nested containers, 20,000 tokens and 256,000 formatted-output code units. Limit errors are reported without truncation; output-size errors point to the start of the document rather than a syntax fault.</string>
+    <string name="json_privacy">JSON can contain secrets and private information. Automatic history and remembered results are off by default. Manual saves or enabling them can store source and output locally. Sharing sends the reviewed result to the app you choose.</string>
+    <string name="json_retention">Explicit imports restore inputs only; press Run. Remember results, if enabled, can reconstruct the last successful result. Saved modes retain only the operation and indentation.</string>
+    <string name="json_not_retained">Source or output exceeds local history and saved-result limits. It will not be retained there; you can still copy or share the full result.</string>
+    <string name="json_restore_error">The saved JSON-tool setup is invalid. Your current input was kept.</string>
+</resources>

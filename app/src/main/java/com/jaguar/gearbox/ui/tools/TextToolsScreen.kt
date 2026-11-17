@@ -35,6 +35,7 @@ import com.jaguar.gearbox.data.Tools
 import com.jaguar.gearbox.ui.components.AdaptiveToolLayout
 import com.jaguar.gearbox.ui.components.ToolScaffold
 import com.jaguar.gearbox.ui.components.CompactChoiceSelector
+import com.jaguar.gearbox.logic.SessionUndoRedo
 import com.jaguar.gearbox.logic.TextCase
 import com.jaguar.gearbox.logic.convertCase
 import java.util.Locale
@@ -43,6 +44,8 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import com.jaguar.gearbox.ui.components.ResultCard
 import com.jaguar.gearbox.ui.components.SensitiveTextShareDialog
 import com.jaguar.gearbox.ui.components.ToolActions
+
+private data class TextEditorSnapshot(val input: String, val textCase: String)
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
@@ -58,6 +61,20 @@ fun TextToolsScreen(onNavigateBack: () -> Unit) {
     var textCase by rememberSaveable { mutableStateOf(TextCase.TITLE.name) }
     val selectedCase = TextCase.valueOf(textCase)
     var shareReview by remember { mutableStateOf<Triple<String, String, String>?>(null) }
+    // Prior text stays in bounded RAM only, never in saved-instance state or tool storage.
+    var edits by remember { mutableStateOf(SessionUndoRedo<TextEditorSnapshot>(
+        estimateBytes = { it.input.length.toLong() * 2L + it.textCase.length.toLong() * 2L + 64L },
+        maxSteps = 20, maxBytes = 65536L,
+    )) }
+    fun snapshot() = TextEditorSnapshot(input, textCase)
+    fun edit(next: TextEditorSnapshot) {
+        edits = edits.record(snapshot(), next)
+        input = next.input; textCase = next.textCase; shareReview = null
+    }
+    fun restoreEditor(next: TextEditorSnapshot) {
+        input = next.input; textCase = next.textCase; shareReview = null
+        edits = edits.reset()
+    }
 
     val words = input.trim().split(Regex("\\s+")).filter { it.isNotEmpty() }
     val converted = remember(input, selectedCase) { convertCase(input, selectedCase) }
@@ -68,11 +85,13 @@ fun TextToolsScreen(onNavigateBack: () -> Unit) {
     val history = com.jaguar.gearbox.ui.components.rememberToolHistory(
         Tools.ROUTE_TEXT_TOOLS, mapOf("text" to input, "case" to textCase), converted.takeIf { input.isNotBlank() },
         onRestore = { values ->
-            input = values["text"].orEmpty()
-            TextCase.entries.firstOrNull { it.name == values["case"] }?.let { textCase = it.name }
+            restoreEditor(TextEditorSnapshot(values["text"].orEmpty(),
+                TextCase.entries.firstOrNull { it.name == values["case"] }?.name ?: textCase))
         },
         modeInputs = mapOf("case" to textCase),
-        onRestoreMode = { values -> TextCase.entries.firstOrNull { it.name == values["case"] }?.let { textCase = it.name } },
+        onRestoreMode = { values ->
+            restoreEditor(TextEditorSnapshot(input, TextCase.entries.firstOrNull { it.name == values["case"] }?.name ?: textCase))
+        },
     )
     ToolScaffold(
         title = context.getString(R.string.special_text_tools),
@@ -83,7 +102,7 @@ fun TextToolsScreen(onNavigateBack: () -> Unit) {
         AdaptiveToolLayout(input = {
             OutlinedTextField(
                 value = input,
-                onValueChange = { input = it },
+                onValueChange = { edit(TextEditorSnapshot(it, textCase)) },
                 label = { Text(context.getString(R.string.hash_input)) },
                 placeholder = { Text(context.getString(R.string.special_type_or_paste_text_here)) },
                 minLines = 3,
@@ -91,6 +110,20 @@ fun TextToolsScreen(onNavigateBack: () -> Unit) {
                 modifier = Modifier.fillMaxWidth(),
             )
 
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedButton(enabled = edits.canUndo, onClick = {
+                    edits.undo(snapshot())?.let { step ->
+                        input = step.value.input; textCase = step.value.textCase; edits = step.history; shareReview = null
+                    }
+                }) { Text(context.getString(R.string.text_editor_undo)) }
+                OutlinedButton(enabled = edits.canRedo, onClick = {
+                    edits.redo(snapshot())?.let { step ->
+                        input = step.value.input; textCase = step.value.textCase; edits = step.history; shareReview = null
+                    }
+                }) { Text(context.getString(R.string.text_editor_redo)) }
+            }
+            Text(context.getString(R.string.text_editor_memory_notice), style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(Modifier.height(16.dp))
             Text(context.getString(R.string.text_group_transform),
                 style = MaterialTheme.typography.titleMedium, modifier = Modifier.semantics { heading() })
@@ -98,7 +131,7 @@ fun TextToolsScreen(onNavigateBack: () -> Unit) {
                 style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             CompactChoiceSelector(
                 label = context.getString(R.string.calc_convert_to), selected = selectedCase, choices = TextCase.entries,
-                choiceLabel = { caseLabel(it) }, onSelect = { textCase = it.name },
+                choiceLabel = { caseLabel(it) }, onSelect = { edit(TextEditorSnapshot(input, it.name)) },
             )
             Text(context.getString(R.string.text_group_camel_help),
                 style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -107,7 +140,7 @@ fun TextToolsScreen(onNavigateBack: () -> Unit) {
             ToolActions(
                 onCopy = { context.copyToClipboard(context.getString(R.string.special_converted_text), converted, sensitive = true) },
                 onShare = { shareReview = Triple(input, textCase, converted) },
-                onClear = { input = "" },
+                onClear = { edit(TextEditorSnapshot("", textCase)) },
                 resultEnabled = input.isNotEmpty(),
                 clearEnabled = input.isNotEmpty(),
             )

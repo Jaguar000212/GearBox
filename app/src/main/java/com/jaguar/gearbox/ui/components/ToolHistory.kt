@@ -51,6 +51,8 @@ fun rememberToolHistory(
     onRestoreLastResult: (Map<String, String>) -> Unit = onRestore,
     // QR/Hash hydrate inputs only and cannot produce output until a user action.
     resultRequiresExplicitAction: Boolean = false,
+    // Some editors restore a different result schema/mode than their initial screen state.
+    restoredResultRequiresExplicitAction: (Map<String, String>) -> Boolean = { resultRequiresExplicitAction },
 ): ToolHistoryBinding {
     val context = LocalContext.current
     val store = remember { ToolMemoryStore(context) }
@@ -90,7 +92,7 @@ fun rememberToolHistory(
             saved.second?.let {
                 // Loading a saved result is not a new run. In particular, opening a tool
                 // after clearing its history must not copy its dormant last result back.
-                hydratedInputsFingerprint = if (resultRequiresExplicitAction) null
+                hydratedInputsFingerprint = if (restoredResultRequiresExplicitAction(it.inputs)) null
                     else historyObservationFingerprint(route, it.inputs, null)
                 hydratedModeFingerprint = historyObservationFingerprint(route,
                     modeInputs.mapValues { (key, value) -> it.inputs[key] ?: value }, null)

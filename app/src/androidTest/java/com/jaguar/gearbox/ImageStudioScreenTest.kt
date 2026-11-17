@@ -70,4 +70,22 @@ class ImageStudioScreenTest {
         compose.onNodeWithText(context.getString(R.string.studio_markup_add)).performScrollTo().assertIsNotEnabled()
     }
 
+    @Test fun collageIsExplicitAndEnhancementEditsInvalidateOutput() {
+        val images = listOf(android.graphics.Color.RED,android.graphics.Color.BLUE).map { color ->
+            ImageStudioImage(Bitmap.createBitmap(8,8,Bitmap.Config.ARGB_8888).apply { eraseColor(color) },8,8)
+        }
+        compose.setContent { CompositionLocalProvider(LocalContext provides context) {
+            MaterialTheme { ImageStudioScreen({},initialCollage=images) }
+        } }
+        compose.onNodeWithText(context.getString(R.string.studio_collage_count,2)).assertExists()
+        compose.onNodeWithContentDescription(context.getString(R.string.studio_output_preview)).assertDoesNotExist()
+        compose.onNodeWithText(context.getString(R.string.studio_width)).performScrollTo().performTextReplacement("16")
+        compose.onNodeWithText(context.getString(R.string.studio_height)).performScrollTo().performTextReplacement("8")
+        compose.onNodeWithText(context.getString(R.string.studio_generate)).performScrollTo().performClick()
+        compose.waitUntil(5000) { compose.onAllNodesWithContentDescription(context.getString(R.string.studio_output_preview)).fetchSemanticsNodes().isNotEmpty() }
+        compose.onNodeWithText(context.getString(R.string.studio_brightness)).performScrollTo().performTextReplacement("101")
+        compose.onNodeWithContentDescription(context.getString(R.string.studio_output_preview)).assertDoesNotExist()
+        compose.onNodeWithText(context.getString(R.string.studio_generate)).performScrollTo().assertIsNotEnabled()
+    }
+
 }

@@ -40,11 +40,21 @@ private fun studioFormatLabel(format: ImageStudioFormat): Int = when (format) {
 
 /** initialImage is an internal test seam; normal navigation always starts without an image. */
 @Composable
-fun ImageStudioScreen(onNavigateBack: () -> Unit, initialImage: ImageStudioImage? = null) {
+fun ImageStudioScreen(onNavigateBack: () -> Unit, initialImage: ImageStudioImage? = null, initialCollage: List<ImageStudioImage> = emptyList()) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var active by remember { mutableStateOf(true) }
     var generation by remember { mutableLongStateOf(0) }
+    var collageMode by remember { mutableStateOf(initialCollage.isNotEmpty()) }
+    var collageImages by remember { mutableStateOf(initialCollage) }
+    var collageWidth by remember { mutableStateOf("1024") }
+    var collageHeight by remember { mutableStateOf("1024") }
+    var collageLayout by remember { mutableStateOf(StudioCollageLayout.GRID) }
+    var collageFit by remember { mutableStateOf(StudioImageFit.CONTAIN) }
+    var background by remember { mutableStateOf("#FFFFFF") }
+    var brightness by remember { mutableStateOf("0") }
+    var contrast by remember { mutableStateOf("0") }
+    var saturation by remember { mutableStateOf("0") }
     var source by remember { mutableStateOf(initialImage) }
     var edits by remember { mutableStateOf<List<ImageStudioEdit>>(emptyList()) }
     var output by remember { mutableStateOf<StudioOutput?>(null) }
@@ -97,6 +107,27 @@ fun ImageStudioScreen(onNavigateBack: () -> Unit, initialImage: ImageStudioImage
             }
         }
     }
+    val collagePicker = rememberLauncherForActivityResult(ActivityResultContracts.PickMultipleVisualMedia(4)) { uris ->
+        val wasPicking = picking; picking = false
+        if (wasPicking && active && generation == pickGeneration && collageMode && uris.isNotEmpty()) {
+            if (uris.size !in 2..4) message = R.string.studio_collage_invalid else {
+                val token = generation; busy = true
+                job = scope.launch {
+                    val loaded = mutableListOf<ImageStudioImage>()
+                    var published = false
+                    try {
+                        for (uri in uris) loaded += loadStudioImage(context.contentResolver, uri, maxWorkingPixels = 1_000_000L)
+                        if (active && token == generation && collageMode) {
+                            collageImages = loaded.toList(); published = true
+                        }
+                    } catch (cancelled: CancellationException) { throw cancelled }
+                    catch (_: Exception) { if (active && token == generation) message = R.string.studio_failed }
+                    catch (_: OutOfMemoryError) { if (active && token == generation) message = R.string.studio_failed }
+                    finally { if (!published) loaded.forEach { it.bitmap.recycle() }; if (active && token == generation) busy = false }
+                }
+            }
+        }
+    }
     val saveLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { response ->
         val snapshot = pendingSave; pendingSave = null
         val uri = response.data?.data
@@ -135,24 +166,49 @@ fun ImageStudioScreen(onNavigateBack: () -> Unit, initialImage: ImageStudioImage
     val crop = listOf(left, top, right, bottom).map(::parsedUnsigned).let { values ->
         if (values.all { it != null }) ImageStudioCrop(values[0]!!, values[1]!!, values[2]!!, values[3]!!) else null
     }
-    val targetWidth = parsedUnsigned(width)
+    val enhancement = listOf(brightness, contrast, saturation).map { it.toIntOrNull()?.takeIf { n -> n in -100..100 } }.let {
+        if (it.all { value -> value != null }) StudioEnhancement(it[0]!!, it[1]!!, it[2]!!) else null
+    }
+    val backgroundColor = background.takeIf { Regex("#[0-9a-fA-F]{6}").matches(it) }?.drop(1)?.toLongOrNull(16)?.or(0xff000000L)?.toInt()
+    val targetWidth = parsedUnsigned(if (collageMode) collageWidth else width)
     val cropValid = source?.let { crop?.validFor(it.bitmap.width, it.bitmap.height) } == true
-    val targetHeight = if (aspectLock && cropValid && targetWidth != null && crop != null) {
+    val targetHeight = if (!collageMode && aspectLock && cropValid && targetWidth != null && crop != null) {
         val numerator = targetWidth.toLong() * (crop.bottom - crop.top)
         ((numerator * 2 + (crop.right - crop.left)) / (2L * (crop.right - crop.left))).takeIf { it <= Int.MAX_VALUE }?.toInt()
-    } else if (!aspectLock) parsedUnsigned(height) else null
+    } else if (collageMode || !aspectLock) parsedUnsigned(if (collageMode) collageHeight else height) else null
     val qualityValue = if (format == ImageStudioFormat.PNG) 90 else parsedUnsigned(quality)?.takeIf { it in 1..100 }
-    val canGenerate = source != null && cropValid && targetWidth != null && targetHeight != null &&
-        ImageStudioLimits.validOutput(targetWidth, targetHeight) && qualityValue != null && !busy && !saving && !picking
+    val collageSizeValid = targetWidth != null && targetHeight != null &&
+        runCatching { studioCollageCells(collageImages.size,targetWidth,targetHeight,collageLayout) }.isSuccess
+    val canGenerate = (if (collageMode) collageImages.size in 2..4 && backgroundColor != null && collageSizeValid else source != null && cropValid) && targetWidth != null && targetHeight != null &&
+        ImageStudioLimits.validOutput(targetWidth, targetHeight) && qualityValue != null && enhancement != null && !busy && !saving && !picking
     ToolScaffold(stringResource(R.string.studio_title), Tools.byRoute(Tools.ROUTE_IMAGE_STUDIO)!!.icon, onNavigateBack) {
-        OutlinedButton(enabled = !saving && !picking, onClick = {
+        CompactChoiceSelector(stringResource(R.string.studio_mode), collageMode, listOf(false,true),
+            { context.getString(if(it) R.string.studio_collage else R.string.studio_single) },
+            { if (!saving && !picking && collageMode != it) { invalidate(); collageMode = it
+
+            } })
+        if (collageMode) OutlinedButton(enabled = !saving && !picking, onClick = {
+            invalidate(); collageImages = emptyList(); picking = true; pickGeneration = generation
+            runCatching { collagePicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }
+                .onFailure { picking = false; message = R.string.studio_failed }
+        }) { Text(stringResource(R.string.studio_choose_collage)) }
+        else OutlinedButton(enabled = !saving && !picking, onClick = {
             invalidate(); edits = emptyList(); source = null; picking = true; pickGeneration = generation
             runCatching { picker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }
                 .onFailure { picking = false; message = R.string.studio_failed }
         }) { Text(stringResource(R.string.studio_choose)) }
         Text(stringResource(R.string.studio_disclosure), style = MaterialTheme.typography.bodySmall)
-        source?.let { image ->
+        (if (collageMode) collageImages.firstOrNull() else source)?.let { image ->
             AdaptiveToolLayout(input = {
+                if (collageMode) {
+                    Text(stringResource(R.string.studio_collage_count, collageImages.size))
+                    collageImages.forEachIndexed { index, item -> Image(item.bitmap.asImageBitmap(),
+                        stringResource(R.string.studio_collage_preview,index+1),contentScale=ContentScale.Fit,
+                        modifier=Modifier.fillMaxWidth().heightIn(max=140.dp)) }
+                    StudioCollageChoices(collageLayout,collageFit,background,!saving,
+                        {collageLayout=it;invalidate()},{collageFit=it;invalidate()},{background=it;invalidate()})
+                    Text(stringResource(R.string.studio_collage_note),style=MaterialTheme.typography.bodySmall)
+                } else {
                 Text(stringResource(R.string.studio_source, image.bitmap.width, image.bitmap.height, image.originalWidth, image.originalHeight))
                 Image(image.bitmap.asImageBitmap(), stringResource(R.string.studio_source_preview),
                     contentScale = ContentScale.Fit, modifier = Modifier.fillMaxWidth().heightIn(max = 280.dp))
@@ -163,10 +219,11 @@ fun ImageStudioScreen(onNavigateBack: () -> Unit, initialImage: ImageStudioImage
                 StudioNumber(right, { right = it; invalidate() }, R.string.studio_right, !saving)
                 StudioNumber(bottom, { bottom = it; invalidate() }, R.string.studio_bottom, !saving)
                 Text(stringResource(R.string.studio_crop_note), style = MaterialTheme.typography.bodySmall)
-                StudioNumber(width, { width = it; invalidate() }, R.string.studio_width, !saving)
-                StudioNumber(if (aspectLock) targetHeight?.toString().orEmpty() else height,
-                    { height = it; invalidate() }, R.string.studio_height, !saving && !aspectLock)
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                }
+                StudioNumber(if(collageMode) collageWidth else width, { if(collageMode) collageWidth = it else width = it; invalidate() }, R.string.studio_width, !saving)
+                StudioNumber(if (!collageMode && aspectLock) targetHeight?.toString().orEmpty() else if(collageMode) collageHeight else height,
+                    { if(collageMode) collageHeight = it else height = it; invalidate() }, R.string.studio_height, !saving && (collageMode || !aspectLock))
+                if (!collageMode) Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                     Text(stringResource(R.string.studio_lock), modifier = Modifier.weight(1f))
                     val lockLabel = stringResource(R.string.studio_lock)
                     Switch(checked = aspectLock, enabled = !saving, modifier = Modifier.semantics { contentDescription = lockLabel }, onCheckedChange = {
@@ -174,13 +231,18 @@ fun ImageStudioScreen(onNavigateBack: () -> Unit, initialImage: ImageStudioImage
                         aspectLock = it; invalidate()
                     })
                 }
-                Text(stringResource(R.string.studio_lock_note), style = MaterialTheme.typography.bodySmall)
+                if (!collageMode) Text(stringResource(R.string.studio_lock_note), style = MaterialTheme.typography.bodySmall)
+                StudioEnhancementControls(brightness,contrast,saturation,!saving,
+                    {brightness=it;invalidate()},{contrast=it;invalidate()},{saturation=it;invalidate()})
                 CompactChoiceSelector(stringResource(R.string.studio_format), format, ImageStudioFormat.entries,
                     { context.getString(studioFormatLabel(it)) }, { if (!saving) { format = it; invalidate() } })
                 if (format != ImageStudioFormat.PNG) StudioNumber(quality, { quality = it; invalidate() }, R.string.studio_quality, !saving)
-                if (!canGenerate && !busy && !saving) Text(stringResource(R.string.studio_invalid), color = MaterialTheme.colorScheme.error)
+                if (!canGenerate && !busy && !saving) Text(stringResource(if(collageMode) R.string.studio_collage_invalid else R.string.studio_invalid), color = MaterialTheme.colorScheme.error)
                 Button(enabled = canGenerate, onClick = {
-                    val selectedCrop = crop ?: return@Button
+                    val selectedCrop = crop
+                    val selectedEnhancement = enhancement ?: return@Button
+                    val selectedCollage = collageMode; val selectedSources = collageImages.map { it.bitmap }
+                    val selectedLayout = collageLayout; val selectedFit = collageFit; val selectedBackground = backgroundColor
                     val w = targetWidth ?: return@Button; val h = targetHeight ?: return@Button; val q = qualityValue ?: return@Button
                     invalidate(); val token = generation; val selectedFormat = format; val selectedEdits = edits.toList()
                     busy = true
@@ -188,7 +250,9 @@ fun ImageStudioScreen(onNavigateBack: () -> Unit, initialImage: ImageStudioImage
                         var transformed: Bitmap? = null
                         var preview: Bitmap? = null
                         try {
-                            transformed = transformStudioImage(image.bitmap, selectedCrop, w, h, selectedEdits)
+                            transformed = if (selectedCollage) collageStudioImages(selectedSources,w,h,selectedLayout,selectedFit,
+                                requireNotNull(selectedBackground),selectedEnhancement)
+                            else transformStudioImage(image.bitmap, requireNotNull(selectedCrop), w, h, selectedEdits,selectedEnhancement)
                             val encoded = exportStudioImage(context.cacheDir, requireNotNull(transformed), selectedFormat, q)
                             // Keep ownership before crossing the cancellation boundary back to Main.
                             withContext(Dispatchers.IO) { preview = BitmapFactory.decodeFile(encoded.file.absolutePath) ?: error("No encoded preview") }
@@ -202,7 +266,7 @@ fun ImageStudioScreen(onNavigateBack: () -> Unit, initialImage: ImageStudioImage
                     }
                 }, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.studio_generate)) }
                 if (busy) TextButton(onClick = { invalidate() }) { Text(stringResource(R.string.studio_cancel_work)) }
-                TextButton(enabled = !saving, onClick = { invalidate(); edits = emptyList(); source = null }) { Text(stringResource(R.string.studio_remove)) }
+                TextButton(enabled = !saving, onClick = { invalidate(); if (collageMode) collageImages = emptyList() else { edits = emptyList(); source = null } }) { Text(stringResource(R.string.studio_remove)) }
             }, result = {
                 output?.let { generated ->
                     Image(generated.image.asImageBitmap(), stringResource(R.string.studio_output_preview),
@@ -216,7 +280,7 @@ fun ImageStudioScreen(onNavigateBack: () -> Unit, initialImage: ImageStudioImage
                 Text(stringResource(R.string.studio_lifetime), style = MaterialTheme.typography.bodySmall)
             })
         } ?: Text(stringResource(R.string.studio_no_source))
-        if (busy && source == null) TextButton(onClick = { invalidate() }) { Text(stringResource(R.string.studio_cancel_work)) }
+        if (busy && (if (collageMode) collageImages.isEmpty() else source == null)) TextButton(onClick = { invalidate() }) { Text(stringResource(R.string.studio_cancel_work)) }
         if (busy || saving) { LinearProgressIndicator(Modifier.fillMaxWidth()); Text(stringResource(R.string.studio_busy)) }
         message?.let { Text(stringResource(it)) }
     }

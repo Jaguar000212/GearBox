@@ -21,22 +21,23 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlin.coroutines.coroutineContext
 
-private val studioWorkMutex = Mutex()
+internal val studioWorkMutex = Mutex()
 
 /** Caller owns bitmap lifecycle. Original dimensions are decoder-reported source bounds; bitmap dimensions are authoritative for edits. */
 data class ImageStudioImage(val bitmap: Bitmap, val originalWidth: Int, val originalHeight: Int)
 data class ImageStudioExport(val file: File, val mimeType: String)
 
 /** Only the URI explicitly selected by the user; never persists URI permission or copies originals to disk. */
-suspend fun loadStudioImage(resolver: ContentResolver, uri: Uri): ImageStudioImage {
+suspend fun loadStudioImage(resolver: ContentResolver, uri: Uri, maxWorkingPixels: Long = ImageStudioLimits.MAX_PIXELS): ImageStudioImage {
     var pending: Bitmap? = null
     try { return withContext(Dispatchers.IO) { studioWorkMutex.withLock {
     require(uri.scheme == "content")
+    require(maxWorkingPixels in 1..ImageStudioLimits.MAX_PIXELS)
     val active = coroutineContext
     val bytes = resolver.openInputStream(uri)?.use { readStudioBytes(it) { active.ensureActive() } }
         ?: throw IllegalArgumentException("Unavailable image")
     active.ensureActive()
-    val result = decodeStudioImage(bytes)
+    val result = decodeStudioImage(bytes, maxWorkingPixels)
     pending = result.bitmap
     try { active.ensureActive(); result } catch (error: Throwable) { result.bitmap.recycle(); throw error }
 }
@@ -65,14 +66,14 @@ internal fun readStudioBytes(input: InputStream, checkActive: () -> Unit = {}): 
     return output.toByteArray()
 }
 
-internal fun decodeStudioImage(bytes: ByteArray): ImageStudioImage {
+internal fun decodeStudioImage(bytes: ByteArray, maxWorkingPixels: Long = ImageStudioLimits.MAX_PIXELS): ImageStudioImage {
     require(bytes.isNotEmpty() && bytes.size <= ImageStudioLimits.MAX_BYTES)
     var originalWidth = 0
     var originalHeight = 0
     val bitmap = ImageDecoder.decodeBitmap(ImageDecoder.createSource(ByteBuffer.wrap(bytes))) { decoder, info, _ ->
         originalWidth = info.size.width
         originalHeight = info.size.height
-        val size = ImageStudioLimits.decodedSize(originalWidth, originalHeight)
+        val size = studioWorkingSize(originalWidth, originalHeight, maxWorkingPixels)
         decoder.setTargetSize(size.first, size.second)
         decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
         decoder.setTargetColorSpace(ColorSpace.get(ColorSpace.Named.SRGB))
@@ -87,13 +88,15 @@ internal fun decodeStudioImage(bytes: ByteArray): ImageStudioImage {
 
 /** Never mutates or recycles source. Caller must keep source alive until this returns. */
 suspend fun transformStudioImage(source: Bitmap, crop: ImageStudioCrop, outputWidth: Int, outputHeight: Int,
-    edits: List<ImageStudioEdit> = emptyList()): Bitmap {
+    edits: List<ImageStudioEdit> = emptyList(),
+    enhancement: StudioEnhancement = StudioEnhancement()): Bitmap {
     var pending: Bitmap? = null
     try { return withContext(Dispatchers.Default) { studioWorkMutex.withLock {
         require(!source.isRecycled && ImageStudioLimits.validOutput(source.width, source.height))
         require(crop.validFor(source.width, source.height))
         val operations = edits.toList()
         require(validStudioEdits(operations, source.width, source.height))
+        require(enhancement.valid())
         require(ImageStudioLimits.validOutput(outputWidth, outputHeight))
         coroutineContext.ensureActive()
         val result = Bitmap.createBitmap(outputWidth, outputHeight, Bitmap.Config.ARGB_8888)
@@ -109,6 +112,7 @@ suspend fun transformStudioImage(source: Bitmap, crop: ImageStudioCrop, outputWi
             }
             Canvas(result).drawBitmap(edited, Rect(crop.left, crop.top, crop.right, crop.bottom),
                 Rect(0, 0, outputWidth, outputHeight), Paint(Paint.ANTI_ALIAS_FLAG or Paint.FILTER_BITMAP_FLAG))
+            applyStudioEnhancement(result, enhancement) { active.ensureActive() }
             coroutineContext.ensureActive()
             result
         } catch (error: Throwable) { result.recycle(); throw error }

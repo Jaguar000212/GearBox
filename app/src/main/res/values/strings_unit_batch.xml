@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="unit_reverse">Reverse this conversion</string>
+    <string name="unit_reverse_note">Reverse uses the converted value as the new input and swaps units. Floating-point conversions may not round-trip exactly.</string>
+    <string name="unit_undo">Undo edit</string>
+    <string name="unit_redo">Redo edit</string>
+    <string name="unit_undo_note">Undo/Redo affects editor values and units only, not copying, sharing or saved history. This undo stack keeps up to 20 edits within a 64 KiB budget in memory and is cleared on restore/import or leaving this session.</string>
+    <string name="unit_batch_title">Batch conversion</string>
+    <string name="unit_batch_input">Numbers, one per line</string>
+    <string name="unit_batch_limits">Up to 100 lines and 4,096 characters. Blank or invalid lines receive an error; they are never skipped. All rows use the current category and unit pair.</string>
+    <string name="unit_batch_convert">Convert batch</string>
+    <string name="unit_batch_clear">Clear batch</string>
+    <string name="unit_batch_too_long">Input not accepted: maximum 4,096 characters. Nothing was truncated.</string>
+    <string name="unit_batch_too_many">Input not accepted: maximum 100 lines. Nothing was truncated.</string>
+    <string name="unit_batch_invalid">Invalid finite number</string>
+    <string name="unit_batch_range">Conversion outside finite range</string>
+    <string name="unit_batch_header">Batch: %1$s — %2$s to %3$s</string>
+    <string name="unit_batch_row">Line %1$d: %2$s %3$s = %4$s %5$s</string>
+    <string name="unit_batch_error_row">Line %1$d: “%2$s” — %3$s</string>
+    <string name="unit_single">Single conversion</string>
+    <string name="unit_batch_retention">Batch results are recorded only after Convert batch when your history/result settings allow it. Restore loads batch inputs and units, then requires Convert batch again. Batch comparison is not supported. Undo/Redo does not restore generated batch output.</string>
+    <string name="unit_batch_not_retained">This full batch exceeds the saved-entry size limit and will not be saved to history, remembered results or Workbench. Nothing is truncated. Copy or Share the full result instead.</string>
+    <string name="unit_batch_restore_rejected">The saved batch exceeds 4,096 characters. Restore was rejected; your current editor is unchanged.</string>
+</resources>

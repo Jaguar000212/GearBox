@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="text_editor_undo">Undo edit</string>
+    <string name="text_editor_redo">Redo edit</string>
+    <string name="text_editor_memory_notice">Undo and Redo keep up to 20 edits within a 64 KiB session-memory budget, not on disk. Large edits can clear this stack. Leaving this screen, recreating it or restoring saved inputs resets the stack. Your current draft follows existing Android task-state behavior. Clear can be undone while this stack remains. Undo/Redo may update results and permitted history, but never undo Copy, Share or saved items.</string>
+</resources>

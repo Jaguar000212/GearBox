@@ -40,6 +40,11 @@ object ToolHelpCatalog {
             "Decimal 10 is binary 1010 and hexadecimal A.",
             "This converter handles integers, not decimal fractions; binary only accepts 0 and 1.",
         ),
+        Tools.ROUTE_BUSINESS_DAY_PLANNER to ToolHelp(
+            "Choose Add/subtract or Count between dates. Select your weekend days and enter excluded dates, then calculate. The start date is excluded; counting includes an eligible end date and reverses sign for earlier end dates.",
+            "Five business days after Monday 16 November 2026 is Monday 23 November, excluding Saturday and Sunday with no other excluded dates.",
+            "Excluded dates are entered manually, not an official holiday calendar. This is a planning estimate, not a legal or contractual deadline calculation. Dates use no time zone.",
+        ),
         Tools.ROUTE_BILL_SPLITTER to ToolHelp(
             "Enter the bill and tax amounts, a tip percentage, and 1 to 1000 diners. The tip uses the original bill before tax. Calculate an equal split; remaining cents go to the first diners.",
             "Load a bill of 100 with a tip of 10 percent and three diners, then calculate shares of 36.67, 36.67 and 36.66.",

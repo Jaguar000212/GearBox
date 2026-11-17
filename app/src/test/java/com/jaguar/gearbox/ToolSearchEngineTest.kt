@@ -14,6 +14,8 @@ class ToolSearchEngineTest {
         assertEquals(Tools.ROUTE_AGE, matches("HOW OLD AM I?").first().route)
         assertTrue(matches("unsupported quantum teleporter").isEmpty())
         assertEquals("tool/focus_timer", matches("pomodoro interval").first().route)
+        assertEquals("tool/business_day_planner", matches("business days between dates").first().route)
+        assertNull(matches("add business days").first().operationId)
         assertEquals("tool/bill_splitter", matches("split the bill").first().route)
         assertNull(matches("split the bill").first().operationId)
         assertEquals("tool/color_blend", matches("color blend").first().route)

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="business_catalog_name">Business-day Planner</string>
+    <string name="business_catalog_description">Add or count working days using your weekends and excluded dates.</string>
+    <string name="business_catalog_instructions">Choose Add/subtract or Count between dates. Select your weekend days and enter excluded dates, then calculate. The start date is excluded; counting includes an eligible end date and reverses sign for earlier end dates.</string>
+    <string name="business_catalog_example">Five business days after Monday 16 November 2026 is Monday 23 November, excluding Saturday and Sunday with no other excluded dates.</string>
+    <string name="business_catalog_limitation">Excluded dates are entered manually, not an official holiday calendar. This is a planning estimate, not a legal or contractual deadline calculation. Dates use no time zone.</string>
+    <string-array name="business_catalog_keywords"><item>business days</item><item>working days</item><item>weekdays</item><item>excluded dates</item></string-array>
+    <string-array name="business_catalog_tasks"><item>business day planner</item><item>working days</item><item>skip weekends</item><item>business days between dates</item><item>add business days</item><item>subtract business days</item><item>count business days</item></string-array>
+    <string name="business_catalog_load_example">Load five business days after 16 November 2026 with Saturday and Sunday excluded, then calculate 23 November.</string>
+</resources>

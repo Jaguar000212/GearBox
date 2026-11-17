@@ -38,6 +38,7 @@ fun Tool.localizedName(context: Context): String = when (route) {
     Tools.ROUTE_COUNTER -> R.string.catalog_tool_counter_name
     Tools.ROUTE_SCOREBOARD -> R.string.catalog_tool_scoreboard_name
     Tools.ROUTE_CHESS_SCOREBOARD -> R.string.catalog_tool_chess_scoreboard_name
+    Tools.ROUTE_BUSINESS_DAY_PLANNER -> R.string.business_catalog_name
     Tools.ROUTE_BILL_SPLITTER -> R.string.bill_catalog_name
     Tools.ROUTE_COLOR_BLEND -> R.string.blend_catalog_name
     Tools.ROUTE_COLOR_PICKER -> R.string.catalog_tool_color_picker_name
@@ -86,6 +87,7 @@ fun Tool.localizedDescription(context: Context): String = when (route) {
     Tools.ROUTE_COUNTER -> R.string.catalog_tool_counter_description
     Tools.ROUTE_SCOREBOARD -> R.string.catalog_tool_scoreboard_description
     Tools.ROUTE_CHESS_SCOREBOARD -> R.string.catalog_tool_chess_scoreboard_description
+    Tools.ROUTE_BUSINESS_DAY_PLANNER -> R.string.business_catalog_description
     Tools.ROUTE_BILL_SPLITTER -> R.string.bill_catalog_description
     Tools.ROUTE_COLOR_BLEND -> R.string.blend_catalog_description
     Tools.ROUTE_COLOR_PICKER -> R.string.catalog_tool_color_picker_description
@@ -122,6 +124,7 @@ internal fun localizedToolHelp(context: Context, route: String?): ToolHelp? = wh
     Tools.ROUTE_SCOREBOARD -> ToolHelp(context.getString(R.string.catalog_help_scoreboard_instructions), context.getString(R.string.catalog_help_scoreboard_example), context.getString(R.string.catalog_help_scoreboard_limitation))
     Tools.ROUTE_RANDOM -> ToolHelp(context.getString(R.string.catalog_help_random_instructions), context.getString(R.string.catalog_help_random_example), context.getString(R.string.catalog_help_random_limitation))
     Tools.ROUTE_BASE_CONVERTER -> ToolHelp(context.getString(R.string.catalog_help_base_converter_instructions), context.getString(R.string.catalog_help_base_converter_example), context.getString(R.string.catalog_help_base_converter_limitation))
+    Tools.ROUTE_BUSINESS_DAY_PLANNER -> ToolHelp(context.getString(R.string.business_catalog_instructions), context.getString(R.string.business_catalog_example), context.getString(R.string.business_catalog_limitation))
     Tools.ROUTE_BILL_SPLITTER -> ToolHelp(context.getString(R.string.bill_catalog_instructions), context.getString(R.string.bill_catalog_example), context.getString(R.string.bill_catalog_limitation))
     Tools.ROUTE_COLOR_BLEND -> ToolHelp(context.getString(R.string.blend_catalog_instructions), context.getString(R.string.blend_catalog_example), context.getString(R.string.blend_catalog_limitation))
     Tools.ROUTE_COLOR_PICKER -> ToolHelp(context.getString(R.string.catalog_help_color_picker_instructions), context.getString(R.string.catalog_help_color_picker_example), context.getString(R.string.catalog_help_color_picker_limitation))
@@ -169,6 +172,7 @@ internal fun localizedToolExample(context: Context, route: String?, today: Local
     Tools.ROUTE_AGE -> context.getString(R.string.catalog_example_age)
     Tools.ROUTE_BASE_CONVERTER -> context.getString(R.string.catalog_example_base_converter)
     Tools.ROUTE_BMI -> context.getString(R.string.catalog_example_bmi)
+    Tools.ROUTE_BUSINESS_DAY_PLANNER -> context.getString(R.string.business_catalog_load_example)
     Tools.ROUTE_BILL_SPLITTER -> context.getString(R.string.bill_catalog_example)
     Tools.ROUTE_COLOR_BLEND -> context.getString(R.string.blend_catalog_load_example)
     Tools.ROUTE_COLOR_PICKER -> context.getString(R.string.catalog_example_color_picker)
@@ -199,6 +203,7 @@ internal fun localizedToolExample(context: Context, route: String?, today: Local
 /** Localized discovery terms plus stable English aliases keep existing search habits working. */
 fun Tool.localizedKeywords(context: Context): List<String> {
     val resource = when (route) {
+    Tools.ROUTE_BUSINESS_DAY_PLANNER -> R.array.business_catalog_keywords
     Tools.ROUTE_BILL_SPLITTER -> R.array.bill_catalog_keywords
     Tools.ROUTE_COLOR_BLEND -> R.array.blend_catalog_keywords
     Tools.ROUTE_FOCUS_TIMER -> R.array.focus_catalog_keywords

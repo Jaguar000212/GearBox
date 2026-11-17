@@ -3,6 +3,10 @@ package com.jaguar.gearbox.ui.components
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.res.stringResource
 import com.jaguar.gearbox.R
 
@@ -15,5 +19,6 @@ fun OrientationStatusMessage(status: OrientationStatus) {
         OrientationStatus.UNRELIABLE -> R.string.sensor_unreliable
         OrientationStatus.READY -> return
     }
-    Text(stringResource(resource), style = MaterialTheme.typography.bodyMedium)
+    Text(stringResource(resource), style = MaterialTheme.typography.bodyMedium,
+        modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite })
 }

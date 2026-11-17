@@ -39,6 +39,12 @@ fun rememberOrientationState(): OrientationState {
         val listener = object : SensorEventListener {
             override fun onSensorChanged(event: SensorEvent) {
                 try {
+                    reliable = isOrientationAccuracyUsable(event.accuracy)
+                    if (!reliable) {
+                        smoothed = null
+                        state = OrientationState(status = OrientationStatus.UNRELIABLE)
+                        return
+                    }
                     val rotation = FloatArray(9)
                     val angles = FloatArray(3)
                     SensorManager.getRotationMatrixFromVector(rotation, event.values)
@@ -57,12 +63,16 @@ fun rememberOrientationState(): OrientationState {
                 }
             }
             override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
-                reliable = accuracy != SensorManager.SENSOR_STATUS_UNRELIABLE
-                state = state.copy(status = when {
-                    !reliable -> OrientationStatus.UNRELIABLE
-                    state.snapshot == null -> OrientationStatus.WAITING
-                    else -> OrientationStatus.READY
-                })
+                reliable = isOrientationAccuracyUsable(accuracy)
+                // Accuracy recovery alone is not a fresh measurement. Wait for the next
+                // usable event, and do not smooth it against an unreliable sample.
+                if (!reliable) {
+                    smoothed = null
+                    state = OrientationState(status = OrientationStatus.UNRELIABLE)
+                } else if (state.status != OrientationStatus.READY) {
+                    smoothed = null
+                    state = OrientationState(status = OrientationStatus.WAITING)
+                }
             }
         }
         fun start() {
@@ -96,3 +106,9 @@ fun rememberOrientationState(): OrientationState {
     }
     return state
 }
+
+/** LOW requires calibration, per https://developer.android.com/reference/android/hardware/SensorManager
+ * Only MEDIUM/HIGH readings are eligible for a live estimate or capture; this is not precision certification.
+ */
+internal fun isOrientationAccuracyUsable(accuracy: Int): Boolean =
+    accuracy == SensorManager.SENSOR_STATUS_ACCURACY_MEDIUM || accuracy == SensorManager.SENSOR_STATUS_ACCURACY_HIGH

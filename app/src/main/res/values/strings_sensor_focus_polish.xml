@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sensor_live_hidden">No reliable live measurement is shown. Capture is unavailable until a usable sensor reading returns.</string>
+    <string name="sensor_previous_capture">The captured snapshot below is an earlier reading, not the current sensor state.</string>
+</resources>

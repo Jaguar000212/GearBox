@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="color_inspection_title">Color inspection</string>
+    <string name="color_inspection_selected">Current applied color: %1$s</string>
+    <string name="color_inspection_lightness">HSL lightness: %1$d%%</string>
+    <string name="color_inspection_luminance">Relative luminance: %1$s (0–1)</string>
+    <string name="color_inspection_brightness_note">HSL lightness is a color-model coordinate. Relative luminance weights linear sRGB channels for contrast calculations. Neither measures your screen’s physical brightness.</string>
+    <string name="color_inspection_pair">Inspect an opaque color pair</string>
+    <string name="color_inspection_foreground">Foreground: %1$s</string>
+    <string name="color_inspection_background">Background: %1$s</string>
+    <string name="color_inspection_set_foreground">Use current as foreground</string>
+    <string name="color_inspection_set_background">Use current as background</string>
+    <string name="color_inspection_swap">Swap foreground and background</string>
+    <string name="color_inspection_sample">Sample text</string>
+    <string name="color_inspection_sample_description">Sample text. Foreground %1$s on background %2$s.</string>
+    <string name="color_inspection_ratio">Contrast ratio: %1$s : 1</string>
+    <string name="color_inspection_normal_pass">Meets AA normal-text contrast threshold (4.5:1).</string>
+    <string name="color_inspection_normal_fail">Below AA normal-text contrast threshold (4.5:1).</string>
+    <string name="color_inspection_large_pass">Meets AA large-text contrast threshold (3:1).</string>
+    <string name="color_inspection_large_fail">Below AA large-text contrast threshold (3:1).</string>
+    <string name="color_inspection_caveat">WCAG AA text contrast only. Large text means at least 18 pt regular or 14 pt bold. Actual font, size, rendering, transparency, images and surrounding content are not assessed. Thresholds use the unrounded ratio. This is not a guarantee of overall accessibility.</string>
+</resources>

@@ -297,6 +297,15 @@ fun ColorPickerScreen(onNavigateBack: () -> Unit) {
         if (savedNotice.isNotEmpty()) {
             Text(savedNotice, modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite })
         }
+        Spacer(Modifier.height(20.dp))
+        com.jaguar.gearbox.ui.components.ColorInspection(red.roundToInt(), green.roundToInt(), blue.roundToInt())
+        Spacer(Modifier.height(20.dp))
+        com.jaguar.gearbox.ui.components.LocalImageColorSampler { r, g, b ->
+            red = r.toFloat(); green = g.toFloat(); blue = b.toFloat()
+            hexInput = String.format("#%02X%02X%02X", r, g, b)
+            hexError = ""
+            resetHslDraft(r, g, b)
+        }
     }
 }
 

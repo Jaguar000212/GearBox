@@ -4,7 +4,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class DeveloperPreviewVersionTest {
-    private static final String SHA = "ABCDEF0123456789abcdef0123456789abcdef0123";
+    private static final String SHA = "ABCDEF0123456789abcdef0123456789abcdef01";
     @Test public void previewIdentityAndMonotonicOrdering() {
         DeveloperPreviewVersion first = DeveloperPreviewVersion.fromBuild("1", SHA);
         DeveloperPreviewVersion next = DeveloperPreviewVersion.fromBuild("2", SHA);

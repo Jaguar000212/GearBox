@@ -262,3 +262,5 @@ Individual history deletion must preserve unrelated records. For a deliberately 
 ## Rolling Preview update checks
 
 Install the current release-notes APK, create non-sensitive sample history/settings, then install a later higher-version channel APK. Expect one GearBox Dev Preview app with preserved data, not another app. Verify source SHA/version/checksum and signer fingerprint in the manifest. Old Preview/Preview2, beta and stable installs remain separate and untouched. Check launch tiles/widgets/notifications/sharing remain scoped to the correct install. Test failed build, stale run, signer mismatch, missing key and unowned tag collisions through automated mocks or a disposable repository, never destructive production experiments.
+
+Preview publisher validation accepts the app-scoped FileProvider and AndroidX Startup provider merged by the current dependencies. Unknown, foreign-install, duplicated or malformed authorities must fail closed. The guard is checked against actual signed distribution manifests as well as fixtures; it must not assume FileProvider is the only merged provider.

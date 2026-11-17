@@ -1,6 +1,8 @@
 package com.jaguar.gearbox.tiles
 
+import android.annotation.SuppressLint
 import android.app.PendingIntent
+import android.content.Intent
 import android.os.Build
 import android.service.quicksettings.Tile
 import android.service.quicksettings.TileService
@@ -31,7 +33,6 @@ abstract class ClockLaunchTileService : TileService() {
         else if (!destroyed) launchTool()
     }
 
-    @Suppress("DEPRECATION")
     private fun launchTool() {
         try {
             val intent = buildClockTileIntent(this, target)
@@ -40,10 +41,19 @@ abstract class ClockLaunchTileService : TileService() {
                     PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
                 startActivityAndCollapse(pending)
             } else {
-                startActivityAndCollapse(intent)
+                launchLegacy(intent)
             }
         } catch (_: RuntimeException) {
             Toast.makeText(this, R.string.quick_tile_launch_failed, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    /** Intent launch is supported only before API 34; newer devices use PendingIntent above. */
+    @SuppressLint("StartActivityAndCollapseDeprecated")
+    @Suppress("DEPRECATION")
+    private fun launchLegacy(intent: Intent) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            startActivityAndCollapse(intent)
         }
     }
 

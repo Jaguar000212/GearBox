@@ -24,6 +24,7 @@ class SelectorSensorAccessibilityTest {
     private val isolated = IsolatedToolTestContext()
     @After fun cleanup() { isolated.cleanup() }
 
+    @OptIn(androidx.compose.ui.ExperimentalComposeUiApi::class)
     @Test fun selectorReturnsKeyboardFocusAfterCloseSelectionAndBack() {
         lateinit var inputMode: InputModeManager
         compose.setContent { isolated.Provide { MaterialTheme {

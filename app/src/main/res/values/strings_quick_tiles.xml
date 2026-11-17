@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="quick_tile_timer">Open Timer</string>
+    <string name="quick_tile_stopwatch">Open Stopwatch</string>
+    <string name="quick_tile_open_app">GearBox</string>
+    <string name="quick_tile_launch_description">%1$s in GearBox</string>
+    <string name="quick_tile_launch_only">Launch only; does not start, pause or reset a clock.</string>
+    <string name="quick_tile_launch_failed">Could not open GearBox. Open it from your launcher instead.</string>
+    <string name="quick_tile_settings_title">Quick Settings shortcuts</string>
+    <string name="quick_tile_manual_help">To add Open Timer or Open Stopwatch, open Android’s Quick Settings panel, choose Edit, and drag the GearBox tile into your panel. Tiles only open the tool; they do not start, pause or reset clocks. Unlock may be required. Availability and editing steps vary by device.</string>
+</resources>

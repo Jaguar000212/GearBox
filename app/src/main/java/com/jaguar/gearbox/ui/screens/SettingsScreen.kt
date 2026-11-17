@@ -97,6 +97,7 @@ fun SettingsScreen(
         HomePreferencesSection(recents)
         ActiveClockPreference()
         WidgetDiscoveryPreference()
+        QuickTileDiscoveryPreference()
         HorizontalDivider()
         SectionHeader(context.getString(R.string.screen_appearance))
         ListItem(
@@ -285,4 +286,21 @@ private fun ThemeMode.labelResource(): Int = when (this) {
     ThemeMode.SYSTEM -> R.string.screen_theme_system
     ThemeMode.LIGHT -> R.string.screen_theme_light
     ThemeMode.DARK -> R.string.screen_theme_dark
+}
+
+/** Informational only; Android and the user own tile placement. */
+@Composable
+internal fun QuickTileDiscoveryPreference() {
+    var open by rememberSaveable { mutableStateOf(false) }
+    ListItem(
+        headlineContent = { Text(stringResource(R.string.quick_tile_settings_title)) },
+        supportingContent = { Text(stringResource(R.string.quick_tile_launch_only)) },
+        modifier = Modifier.clickable { open = true },
+    )
+    if (open) AlertDialog(
+        onDismissRequest = { open = false },
+        title = { Text(stringResource(R.string.quick_tile_settings_title)) },
+        text = { Column(Modifier.verticalScroll(rememberScrollState())) { Text(stringResource(R.string.quick_tile_manual_help)) } },
+        confirmButton = { TextButton(onClick = { open = false }) { Text(stringResource(R.string.screen_got_it)) } },
+    )
 }

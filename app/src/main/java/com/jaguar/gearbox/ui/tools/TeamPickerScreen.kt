@@ -49,6 +49,7 @@ import com.jaguar.gearbox.data.SimplePrefsStore
 import com.jaguar.gearbox.data.Tools
 import com.jaguar.gearbox.ui.components.ResultCard
 import com.jaguar.gearbox.ui.components.StringListSaver
+import com.jaguar.gearbox.ui.components.GroupPresentation
 import com.jaguar.gearbox.ui.components.ToolActions
 import com.jaguar.gearbox.ui.components.ToolScaffold
 import com.jaguar.gearbox.ui.components.rememberToolHistory
@@ -60,6 +61,7 @@ private const val NAME_DELIMITER = "\n"
 fun TeamPickerScreen(onNavigateBack: () -> Unit) {
     val context = LocalContext.current
     val focusManager = LocalFocusManager.current
+    var presenting by rememberSaveable { mutableStateOf(false) }
     var confirmClear by rememberSaveable { mutableStateOf(false) }
     val store = remember { SimplePrefsStore(context, gameSession = true) }
     var names by rememberSaveable(stateSaver = StringListSaver) {
@@ -114,6 +116,11 @@ fun TeamPickerScreen(onNavigateBack: () -> Unit) {
             mode = if (saved["mode"] == "teams") "teams" else "pick"
             teamCount = (saved["teams"]?.toIntOrNull() ?: 2).coerceIn(2, names.size.coerceAtLeast(2))
         })
+    val presentationPages = if (mode == "pick") winner?.let { listOf(context.getString(R.string.game_picked_1_s, it)) }.orEmpty() else teams
+    if (presenting && presentationPages.isNotEmpty()) {
+        GroupPresentation(presentationPages, onClose = { presenting = false })
+        return // Do not leave participant/result semantics beneath the hidden presentation.
+    }
     ToolScaffold(
         title = context.getString(R.string.game_team_name_picker),
         icon = Tools.byRoute(Tools.ROUTE_TEAM_PICKER)!!.icon,
@@ -214,6 +221,9 @@ fun TeamPickerScreen(onNavigateBack: () -> Unit) {
             )
         }
         Spacer(Modifier.height(12.dp))
+        if (presentationPages.isNotEmpty()) OutlinedButton(onClick = { focusManager.clearFocus(); presenting = true }, modifier = Modifier.fillMaxWidth()) {
+            Text(context.getString(R.string.group_presentation_open))
+        }
         ToolActions(onClear = { confirmClear = true }, clearEnabled = names.isNotEmpty() || newName.isNotEmpty())
     }
     if (editing) AlertDialog(

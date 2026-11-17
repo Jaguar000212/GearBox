@@ -276,13 +276,15 @@ fun GearBoxApp(
         val originEntry = navController.currentBackStackEntry?.id
         fun requestStillCurrent() = navigationRequests.isCurrent(request) &&
             (originEntry == null || navController.currentBackStackEntry?.id == originEntry)
-        clockNavigationTarget.value = when (requestedRoute) {
+        val tileLaunch = com.jaguar.gearbox.tiles.ClockTileLaunch.fromRoute(requestedRoute)
+        clockNavigationTarget.value = tileLaunch?.route ?: when (requestedRoute) {
             com.jaguar.gearbox.timer.TimerStatusNotification.COUNTDOWN_ROUTE -> "TIMER"
             com.jaguar.gearbox.timer.StopwatchStatusNotification.STOPWATCH_ROUTE -> "STOPWATCH"
             com.jaguar.gearbox.timer.StopwatchStatusNotification.RESET_ROUTE -> "RESET"
             else -> null
         }
-        val route = if (requestedRoute == com.jaguar.gearbox.timer.TimerStatusNotification.COUNTDOWN_ROUTE || requestedRoute == com.jaguar.gearbox.timer.StopwatchStatusNotification.STOPWATCH_ROUTE || requestedRoute == com.jaguar.gearbox.timer.StopwatchStatusNotification.RESET_ROUTE) {
+        val route = if (tileLaunch != null) Tools.ROUTE_TIMER_STOPWATCH
+        else if (requestedRoute == com.jaguar.gearbox.timer.TimerStatusNotification.COUNTDOWN_ROUTE || requestedRoute == com.jaguar.gearbox.timer.StopwatchStatusNotification.STOPWATCH_ROUTE || requestedRoute == com.jaguar.gearbox.timer.StopwatchStatusNotification.RESET_ROUTE) {
             kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
                 com.jaguar.gearbox.timer.ClockRepository.update(context) { current ->
                     if (navigationRequests.isCurrent(request)) current.copy(mode = if (requestedRoute == com.jaguar.gearbox.timer.TimerStatusNotification.COUNTDOWN_ROUTE) "TIMER" else "STOPWATCH") else current

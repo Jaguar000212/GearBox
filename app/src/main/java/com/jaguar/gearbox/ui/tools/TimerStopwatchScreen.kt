@@ -30,6 +30,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.material3.Switch
 import androidx.compose.ui.res.stringResource
 import com.jaguar.gearbox.R
+import com.jaguar.gearbox.tiles.ClockTileLaunch
 import com.jaguar.gearbox.timer.TimerStatusNotification
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
@@ -106,6 +107,9 @@ fun TimerStopwatchScreen(onNavigateBack: () -> Unit, requestStopwatchReset: Bool
     val memory = remember { ToolMemoryStore(context) }
     val clockNavigationTarget = LocalClockNavigationTarget.current
     val navigationTarget by clockNavigationTarget
+    val tileLaunch = ClockTileLaunch.fromRoute(navigationTarget)
+    var tileSelectionConsumed by rememberSaveable(navigationTarget) { mutableStateOf(false) }
+    val tilePresentationOnly = tileLaunch != null && !tileSelectionConsumed
     var preferencesInitialized by rememberSaveable { mutableStateOf(false) }
     val userInteracted = remember { mutableStateOf(false) }
     var snapshotInputs by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
@@ -120,7 +124,7 @@ fun TimerStopwatchScreen(onNavigateBack: () -> Unit, requestStopwatchReset: Bool
     var error by remember { mutableStateOf<String?>(null) }
     var notificationsAllowed by remember { mutableStateOf(TimerAlerts.notificationsAllowed(context)) }
     var exactAllowed by remember { mutableStateOf(TimerAlerts.exactAlarmsAllowed(context)) }
-    val selectedMode = ClockMode.entries.firstOrNull { it.name == state.mode } ?: ClockMode.STOPWATCH
+    val selectedMode = ClockMode.entries.firstOrNull { it.name == if (tilePresentationOnly) tileLaunch?.mode else state.mode } ?: ClockMode.STOPWATCH
 
     fun change(updateWidgets: Boolean = true, transform: (ClockState) -> ClockState) {
         userInteracted.value = true
@@ -143,6 +147,7 @@ fun TimerStopwatchScreen(onNavigateBack: () -> Unit, requestStopwatchReset: Bool
     }
 
     fun importSetup(values: Map<String, String>) {
+        tileSelectionConsumed = true
         userInteracted.value = true
         val setup = parseClockSetup(values)
         if (setup == null) { error = context.getString(R.string.game_this_clock_setup_is_invalid_choose_a_valid_duration); return }
@@ -168,6 +173,11 @@ fun TimerStopwatchScreen(onNavigateBack: () -> Unit, requestStopwatchReset: Bool
     }
     val importedSetup = LocalToolImport.current
     LaunchedEffect(navigationTarget) {
+        if (tileLaunch != null) {
+            // Launch-only: the tile chooses presentation, not persisted mode or duration.
+            preferencesInitialized = true
+            return@LaunchedEffect
+        }
         if (!preferencesInitialized) {
             try {
                 val preference = withContext(Dispatchers.IO) {
@@ -190,9 +200,9 @@ fun TimerStopwatchScreen(onNavigateBack: () -> Unit, requestStopwatchReset: Bool
     }
     val configuration = mapOf("mode" to selectedMode.name, "minutes" to draftMinutes, "seconds" to draftSeconds)
     val adapter = rememberToolHistory(Tools.ROUTE_TIMER_STOPWATCH, inputs = configuration, output = null,
-        onRestore = ::importSetup, modeInputs = configuration.takeIf { preferencesInitialized && parseClockSetup(it) != null }.orEmpty(),
+        onRestore = ::importSetup, modeInputs = configuration.takeIf { !tilePresentationOnly && preferencesInitialized && parseClockSetup(it) != null }.orEmpty(),
         onRestoreMode = { values ->
-            if (com.jaguar.gearbox.logic.mayImportClockMode(importedSetup?.route == Tools.ROUTE_TIMER_STOPWATCH)) importSetup(values)
+            if ((!tilePresentationOnly || importedSetup?.route == Tools.ROUTE_TIMER_STOPWATCH) && com.jaguar.gearbox.logic.mayImportClockMode(importedSetup?.route == Tools.ROUTE_TIMER_STOPWATCH)) importSetup(values)
         },
         restoreLastResult = false)
     val history = ToolHistoryBinding(adapter.route, adapter.restore,
@@ -275,7 +285,7 @@ fun TimerStopwatchScreen(onNavigateBack: () -> Unit, requestStopwatchReset: Bool
     ) {
         TabRow(selectedTabIndex = ClockMode.entries.indexOf(selectedMode)) {
             ClockMode.entries.forEach { entry ->
-                Tab(selected = entry == selectedMode, onClick = { change { it.copy(mode = entry.name) } },
+                Tab(selected = entry == selectedMode, onClick = { tileSelectionConsumed = true; change { it.copy(mode = entry.name) } },
                     text = { Text(context.getString(entry.label)) })
             }
         }
@@ -287,8 +297,8 @@ fun TimerStopwatchScreen(onNavigateBack: () -> Unit, requestStopwatchReset: Bool
             scope.launch {
                 try {
                     val captured = withContext(Dispatchers.IO) { ClockRepository.snapshot(context) }
-                    val inputs = mapOf("mode" to captured.mode, "minutes" to captured.minutesInput, "seconds" to captured.secondsInput)
-                    val output = if (captured.mode == "TIMER") {
+                    val inputs = mapOf("mode" to selectedMode.name, "minutes" to captured.minutesInput, "seconds" to captured.secondsInput)
+                    val output = if (selectedMode == ClockMode.TIMER) {
                         context.getString(R.string.game_timer_snapshot_1_s_remaining, formatDuration(captured.timerRemainingMillis)) +
                             if (captured.timerFinished) context.getString(R.string.game_finished) else if (captured.timerRunning) context.getString(R.string.game_running) else context.getString(R.string.game_paused_ready)
                     } else stopwatchResultText(captured.stopwatchElapsedMillis, captured.laps, context)

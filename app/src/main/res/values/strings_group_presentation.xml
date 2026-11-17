@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="group_presentation_title">Pass the phone</string>
+    <string name="group_presentation_open">Present existing result</string>
+    <string name="group_presentation_close">Close presentation</string>
+    <string name="group_presentation_instructions">Pass the phone with the result hidden. Reveal it when the next person is ready, then hide it before passing again.</string>
+    <string name="group_presentation_page">Result %1$d of %2$d</string>
+    <string name="group_presentation_hidden">Result hidden</string>
+    <string name="group_presentation_reveal">Reveal result</string>
+    <string name="group_presentation_hide">Hide result</string>
+    <string name="group_presentation_previous">Previous result</string>
+    <string name="group_presentation_next">Next result</string>
+    <string name="group_presentation_unchanged">This only displays the existing result. It does not pick again, reshuffle, share or save another copy. Closing returns to the tool, where the existing result is visible.</string>
+</resources>

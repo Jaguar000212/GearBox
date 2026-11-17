@@ -86,7 +86,16 @@ fun BubbleLevelScreen(
         options = { TextButton(onClick = { focusView = true }) { Text(context.getString(R.string.special_focus_view)) } },
     ) {
         OrientationStatusMessage(sensorState.status)
-        if (snapshot == null) return@ToolScaffold
+        if (snapshot == null || sensorState.status != OrientationStatus.READY) {
+            Text(stringResource(R.string.sensor_live_hidden), style = MaterialTheme.typography.bodyMedium)
+            if (capturedOutput.isNotEmpty()) Text(stringResource(R.string.sensor_previous_capture), style = MaterialTheme.typography.bodySmall)
+            DeviceSnapshotActions(
+                captureLabel = context.getString(R.string.special_capture_reading), enabled = false,
+                capturedOutput = capturedOutput, onCapture = {},
+                onClear = { captureGeneration = null; capturedOutput = ""; captureId = "" },
+            )
+            return@ToolScaffold
+        }
 
         val pitchDeg = Math.toDegrees(snapshot.pitchRad.toDouble())
         val rollDeg = Math.toDegrees(snapshot.rollRad.toDouble())

@@ -11,6 +11,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
@@ -27,14 +29,25 @@ fun <T> CompactChoiceSelector(
 ) {
     val context = androidx.compose.ui.platform.LocalContext.current
     var expanded by rememberSaveable { mutableStateOf(false) }
-    OutlinedButton(onClick = { expanded = true }, modifier = modifier.heightIn(min = 48.dp)) {
+    val triggerFocus = remember { FocusRequester() }
+    var returnFocus by remember { mutableStateOf(false) }
+    fun dismiss() { expanded = false; returnFocus = true }
+    LaunchedEffect(expanded, returnFocus) {
+        if (!expanded && returnFocus) {
+            // Wait for the dialog to leave composition before returning keyboard focus.
+            withFrameNanos { }
+            runCatching { triggerFocus.requestFocus() }
+            returnFocus = false
+        }
+    }
+    OutlinedButton(onClick = { expanded = true }, modifier = modifier.focusRequester(triggerFocus).heightIn(min = 48.dp)) {
         Text(context.getString(com.jaguar.gearbox.R.string.shared_label_value, label, choiceLabel(selected)), Modifier.weight(1f, fill = false))
         Spacer(Modifier.width(8.dp))
         Icon(Icons.Filled.ArrowDropDown, contentDescription = null)
     }
     if (expanded) {
         AlertDialog(
-            onDismissRequest = { expanded = false },
+            onDismissRequest = ::dismiss,
             title = { Text(label) },
             text = {
                 Column(Modifier.verticalScroll(rememberScrollState()).selectableGroup()) {
@@ -43,7 +56,7 @@ fun <T> CompactChoiceSelector(
                             Modifier.fillMaxWidth().heightIn(min = 48.dp)
                                 .selectable(selected = selected == choice, role = Role.RadioButton) {
                                     // Dismiss first; the caller owns all input/state changes.
-                                    expanded = false
+                                    dismiss()
                                     onSelect(choice)
                                 }.padding(vertical = 8.dp),
                             verticalAlignment = Alignment.CenterVertically,
@@ -54,7 +67,7 @@ fun <T> CompactChoiceSelector(
                     }
                 }
             },
-            confirmButton = { TextButton(onClick = { expanded = false }) { Text(context.getString(com.jaguar.gearbox.R.string.shared_close)) } },
+            confirmButton = { TextButton(onClick = ::dismiss) { Text(context.getString(com.jaguar.gearbox.R.string.shared_close)) } },
         )
     }
 }

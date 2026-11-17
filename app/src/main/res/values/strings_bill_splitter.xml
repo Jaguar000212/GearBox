@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="bill_split_title">Bill Splitter</string>
+    <string name="bill_split_bill">Original bill, before tax</string>
+    <string name="bill_split_tax">Tax amount</string>
+    <string name="bill_split_tip">Tip percentage of original bill</string>
+    <string name="bill_split_diners">Diners (1–1,000)</string>
+    <string name="bill_split_calculate">Calculate split</string>
+    <string name="bill_split_amount_error">Enter 0 to 1,000,000,000 with at most two decimal places. Use a decimal point, without separators or a currency symbol.</string>
+    <string name="bill_split_tip_error">Enter 0 to 100, with at most two decimal places.</string>
+    <string name="bill_split_diners_error">Enter a whole number from 1 to 1,000.</string>
+    <string name="bill_split_units">All amounts use the same currency units with two decimal places (100 minor units per unit). No currency conversion is performed. Not suitable for currencies with a different number of minor-unit decimal places.</string>
+    <string name="bill_split_math">Tax is an amount, not a percentage. The tip is calculated on the original bill before tax, then rounded once to the nearest minor unit, with halves rounded up. Tax is not calculated for you.</string>
+    <string name="bill_split_restore_note">Explicit History imports and saved setups restore inputs only; press Calculate split. If Remember results is enabled, reopening can restore the last completed split.</string>
+    <string name="bill_split_remainder_note">Extra minor units are assigned to the first diners in this numbered list so the shares add up exactly. The numbering is only a suggested allocation, not a payment or a contact list.</string>
+    <string name="bill_split_empty">Enter the bill details and calculate a split.</string>
+    <string name="bill_split_output_heading">Equal split</string>
+    <string name="bill_split_totals">Bill: %1$s\nTax: %2$s\nTip: %3$s\nTotal: %4$s</string>
+    <string name="bill_split_equal">Each of %1$d diners: %2$s</string>
+    <string name="bill_split_first_one">Diner 1: %1$s</string>
+    <string name="bill_split_first_many">Diners 1–%1$d: %2$s each</string>
+    <string name="bill_split_remaining_one">Diner %1$d: %2$s</string>
+    <string name="bill_split_remaining_many">Diners %1$d–%2$d: %3$s each</string>
+    <string name="bill_split_export">%1$s\n%2$s\nAmounts use two-decimal currency units. No payment is made.</string>
+    <string name="bill_split_restore_error">The saved setup is invalid. Your current inputs were kept.</string>
+</resources>

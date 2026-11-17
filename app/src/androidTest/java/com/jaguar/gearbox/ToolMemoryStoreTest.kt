@@ -16,6 +16,26 @@ class ToolMemoryStoreTest {
     private val route = "tool/percentage"
     @After fun cleanup() { directory.deleteRecursively() }
 
+    @Test fun billSplitterModesCannotRetainBillAmountsAndResultsStayOptIn() {
+        val billRoute = "tool/bill_splitter"
+        val inputs = mapOf("bill" to "100.00", "tax" to "0", "tipPercent" to "10", "diners" to "3")
+        assertFalse(store.record(billRoute, inputs, "110.00"))
+        assertFalse(store.saveResult(billRoute, inputs, "110.00"))
+        store.saveSettings(ToolMemorySettings(rememberModes = true))
+        assertTrue(store.saveMode(billRoute, mapOf("diners" to "3")))
+        assertFalse(store.saveMode(billRoute, inputs))
+        assertEquals(mapOf("diners" to "3"), store.loadMode(billRoute))
+        store.saveSettings(ToolMemorySettings(historyEnabled = true, rememberResults = true))
+        assertTrue(store.record(billRoute, inputs, "110.00"))
+        assertTrue(store.saveResult(billRoute, inputs, "110.00"))
+        assertEquals(inputs, store.loadResult(billRoute)?.inputs)
+        assertTrue(store.savePreset("Three diners", billRoute, mapOf("diners" to "3")))
+        assertEquals(mapOf("diners" to "3"), store.presets().single().inputs)
+        store.saveSettings(ToolMemorySettings())
+        assertNull(store.loadResult(billRoute))
+        assertEquals("110.00", store.history(billRoute).single().output)
+    }
+
     @Test fun colorBlendUsesExistingConsentAndValidatedPaletteModeStorage() {
         val blend = "tool/color_blend"
         val inputs = mapOf("firstHex" to "#000000", "secondHex" to "#FFFFFF", "weight" to "50")

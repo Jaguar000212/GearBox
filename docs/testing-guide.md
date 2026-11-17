@@ -294,3 +294,10 @@ Color Blend is a separate two-color calculation tool. It interpolates opaque sRG
 - Test rotation, background/foreground, narrow/wide layout, large fonts, keyboard navigation and TalkBack. Swatches need textual color values, not color-only labels. Test share cancellation and clipboard output independently on-device. Existing Color Picker sampling/inspection must remain unchanged.
 
 Color Blend restoration distinction: explicit History/Workbench/preset/example imports restore validated inputs and require Blend again. When the user enables automatic remembered results, a validated last-result snapshot reconstructs the deterministic local mix on reopening. No external content is automatically processed, and malformed snapshots must not produce a result.
+
+## Bill Splitter
+
+- Verify exact minor-unit arithmetic and conservation: the sum of all shares equals bill + tax + rounded tip. Remainder cents are distributed explicitly, not lost through independent per-person rounding. Test a total not divisible by the diner count and one diner.
+- Check the stated tip basis (pre-tax bill), supported decimal precision, zero amounts, maximum bounds, malformed/negative values and invalid diner counts. This tool does not process payments, convert currencies or determine tax obligations.
+- Editing inputs invalidates stale output. Explicit restore/example/preset imports require calculation again; remembered-result hydration follows the user's setting and must not replay history. Test lowercase/format normalization equivalents where relevant, opt-in retention and clearing results.
+- Verify copy/share conveys total, diner count and differing remainder shares rather than falsely promising one rounded amount for everyone. Check narrow/wide layouts, large fonts, TalkBack, keyboard input and share cancellation on-device.

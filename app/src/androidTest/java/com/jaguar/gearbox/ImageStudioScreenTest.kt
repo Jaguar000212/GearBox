@@ -52,4 +52,22 @@ class ImageStudioScreenTest {
         compose.onNodeWithText(context.getString(R.string.studio_cancel)).performClick()
         compose.onNodeWithText(context.getString(R.string.studio_saved)).assertDoesNotExist()
     }
+    @Test fun markupRequiresExplicitAddAndChangesInvalidateGeneratedOutput() {
+        val bitmap = Bitmap.createBitmap(8, 8, Bitmap.Config.ARGB_8888)
+        compose.setContent { CompositionLocalProvider(LocalContext provides context) {
+            MaterialTheme { ImageStudioScreen({}, ImageStudioImage(bitmap, 8, 8)) }
+        } }
+        compose.onNodeWithText(context.getString(R.string.studio_markup_show)).performScrollTo().performClick()
+        compose.onNodeWithText(context.getString(R.string.studio_markup_count, 0)).assertExists()
+        compose.onNodeWithText(context.getString(R.string.studio_markup_add)).performScrollTo().performClick()
+        compose.onNodeWithText(context.getString(R.string.studio_markup_count, 1)).assertExists()
+        compose.onNodeWithText(context.getString(R.string.studio_generate)).performScrollTo().performClick()
+        compose.waitUntil(5000) { compose.onAllNodesWithContentDescription(context.getString(R.string.studio_output_preview)).fetchSemanticsNodes().isNotEmpty() }
+        compose.onNodeWithText(context.getString(R.string.studio_markup_delete, 1)).performScrollTo().performClick()
+        compose.onNodeWithContentDescription(context.getString(R.string.studio_output_preview)).assertDoesNotExist()
+        compose.onNodeWithText(context.getString(R.string.studio_markup_count, 0)).assertExists()
+        compose.onNodeWithText(context.getString(R.string.studio_markup_color)).performScrollTo().performTextReplacement("#12345678")
+        compose.onNodeWithText(context.getString(R.string.studio_markup_add)).performScrollTo().assertIsNotEnabled()
+    }
+
 }

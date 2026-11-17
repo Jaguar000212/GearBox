@@ -46,6 +46,7 @@ fun ImageStudioScreen(onNavigateBack: () -> Unit, initialImage: ImageStudioImage
     var active by remember { mutableStateOf(true) }
     var generation by remember { mutableLongStateOf(0) }
     var source by remember { mutableStateOf(initialImage) }
+    var edits by remember { mutableStateOf<List<ImageStudioEdit>>(emptyList()) }
     var output by remember { mutableStateOf<StudioOutput?>(null) }
     var job by remember { mutableStateOf<Job?>(null) }
     var busy by remember { mutableStateOf(false) }
@@ -69,7 +70,7 @@ fun ImageStudioScreen(onNavigateBack: () -> Unit, initialImage: ImageStudioImage
         output = null; review = null; pendingSave = null; message = null
     }
     fun install(image: ImageStudioImage) {
-        source = image; left = "0"; top = "0"; right = image.bitmap.width.toString(); bottom = image.bitmap.height.toString()
+        edits = emptyList(); source = image; left = "0"; top = "0"; right = image.bitmap.width.toString(); bottom = image.bitmap.height.toString()
         width = image.bitmap.width.toString(); height = image.bitmap.height.toString()
     }
     rememberImageStudioModes(mapOf("format" to if (format == ImageStudioFormat.WEBP) "WEBP_LOSSY" else format.name,
@@ -145,7 +146,7 @@ fun ImageStudioScreen(onNavigateBack: () -> Unit, initialImage: ImageStudioImage
         ImageStudioLimits.validOutput(targetWidth, targetHeight) && qualityValue != null && !busy && !saving && !picking
     ToolScaffold(stringResource(R.string.studio_title), Tools.byRoute(Tools.ROUTE_IMAGE_STUDIO)!!.icon, onNavigateBack) {
         OutlinedButton(enabled = !saving && !picking, onClick = {
-            invalidate(); source = null; picking = true; pickGeneration = generation
+            invalidate(); edits = emptyList(); source = null; picking = true; pickGeneration = generation
             runCatching { picker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }
                 .onFailure { picking = false; message = R.string.studio_failed }
         }) { Text(stringResource(R.string.studio_choose)) }
@@ -155,6 +156,8 @@ fun ImageStudioScreen(onNavigateBack: () -> Unit, initialImage: ImageStudioImage
                 Text(stringResource(R.string.studio_source, image.bitmap.width, image.bitmap.height, image.originalWidth, image.originalHeight))
                 Image(image.bitmap.asImageBitmap(), stringResource(R.string.studio_source_preview),
                     contentScale = ContentScale.Fit, modifier = Modifier.fillMaxWidth().heightIn(max = 280.dp))
+                ImageStudioMarkup(image.bitmap.width, image.bitmap.height, edits, !saving,
+                    onDraftChanged = { invalidate() }, onEditsChanged = { edits = it; invalidate() })
                 StudioNumber(left, { left = it; invalidate() }, R.string.studio_left, !saving)
                 StudioNumber(top, { top = it; invalidate() }, R.string.studio_top, !saving)
                 StudioNumber(right, { right = it; invalidate() }, R.string.studio_right, !saving)
@@ -179,13 +182,13 @@ fun ImageStudioScreen(onNavigateBack: () -> Unit, initialImage: ImageStudioImage
                 Button(enabled = canGenerate, onClick = {
                     val selectedCrop = crop ?: return@Button
                     val w = targetWidth ?: return@Button; val h = targetHeight ?: return@Button; val q = qualityValue ?: return@Button
-                    invalidate(); val token = generation; val selectedFormat = format
+                    invalidate(); val token = generation; val selectedFormat = format; val selectedEdits = edits.toList()
                     busy = true
                     job = scope.launch {
                         var transformed: Bitmap? = null
                         var preview: Bitmap? = null
                         try {
-                            transformed = transformStudioImage(image.bitmap, selectedCrop, w, h)
+                            transformed = transformStudioImage(image.bitmap, selectedCrop, w, h, selectedEdits)
                             val encoded = exportStudioImage(context.cacheDir, requireNotNull(transformed), selectedFormat, q)
                             // Keep ownership before crossing the cancellation boundary back to Main.
                             withContext(Dispatchers.IO) { preview = BitmapFactory.decodeFile(encoded.file.absolutePath) ?: error("No encoded preview") }
@@ -199,7 +202,7 @@ fun ImageStudioScreen(onNavigateBack: () -> Unit, initialImage: ImageStudioImage
                     }
                 }, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.studio_generate)) }
                 if (busy) TextButton(onClick = { invalidate() }) { Text(stringResource(R.string.studio_cancel_work)) }
-                TextButton(enabled = !saving, onClick = { invalidate(); source = null }) { Text(stringResource(R.string.studio_remove)) }
+                TextButton(enabled = !saving, onClick = { invalidate(); edits = emptyList(); source = null }) { Text(stringResource(R.string.studio_remove)) }
             }, result = {
                 output?.let { generated ->
                     Image(generated.image.asImageBitmap(), stringResource(R.string.studio_output_preview),

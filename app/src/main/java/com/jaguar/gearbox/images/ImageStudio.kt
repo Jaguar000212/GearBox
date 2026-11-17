@@ -86,21 +86,33 @@ internal fun decodeStudioImage(bytes: ByteArray): ImageStudioImage {
 }
 
 /** Never mutates or recycles source. Caller must keep source alive until this returns. */
-suspend fun transformStudioImage(source: Bitmap, crop: ImageStudioCrop, outputWidth: Int, outputHeight: Int): Bitmap {
+suspend fun transformStudioImage(source: Bitmap, crop: ImageStudioCrop, outputWidth: Int, outputHeight: Int,
+    edits: List<ImageStudioEdit> = emptyList()): Bitmap {
     var pending: Bitmap? = null
     try { return withContext(Dispatchers.Default) { studioWorkMutex.withLock {
         require(!source.isRecycled && ImageStudioLimits.validOutput(source.width, source.height))
         require(crop.validFor(source.width, source.height))
+        val operations = edits.toList()
+        require(validStudioEdits(operations, source.width, source.height))
         require(ImageStudioLimits.validOutput(outputWidth, outputHeight))
         coroutineContext.ensureActive()
         val result = Bitmap.createBitmap(outputWidth, outputHeight, Bitmap.Config.ARGB_8888)
         pending = result
+        var working: Bitmap? = null
         try {
-            Canvas(result).drawBitmap(source, Rect(crop.left, crop.top, crop.right, crop.bottom),
+            val active = coroutineContext
+            val edited = if (operations.isEmpty()) source else {
+                requireNotNull(source.copy(Bitmap.Config.ARGB_8888, true)).also { copy ->
+                    working = copy
+                    applyStudioEdits(copy, operations) { active.ensureActive() }
+                }
+            }
+            Canvas(result).drawBitmap(edited, Rect(crop.left, crop.top, crop.right, crop.bottom),
                 Rect(0, 0, outputWidth, outputHeight), Paint(Paint.ANTI_ALIAS_FLAG or Paint.FILTER_BITMAP_FLAG))
             coroutineContext.ensureActive()
             result
         } catch (error: Throwable) { result.recycle(); throw error }
+        finally { working?.recycle() }
     }
     } } catch (error: Throwable) { pending?.let { if (!it.isRecycled) it.recycle() }; throw error }
 }

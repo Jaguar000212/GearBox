@@ -2,13 +2,21 @@ name: CI
 
 on:
   pull_request:
-  push:
-    branches: [main]
   workflow_dispatch:
+    inputs:
+      upload_debug_apks:
+        description: Upload debug and instrumentation APKs (7-day retention)
+        type: boolean
+        default: false
+      measure_build_cache:
+        description: Run the controlled build-cache experiment without enabling it permanently
+        type: boolean
+        default: false
 
 permissions:
   contents: read
 
+# Only unsigned PR/manual jobs live here; cancelling an obsolete PR cannot interrupt publication.
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -23,91 +31,54 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          persist-credentials: false
+      - name: Classify conservative docs-only PR
+        id: changes
+        env:
+          CHANGE_EVENT: ${{ github.event_name }}
+          CHANGE_BASE: ${{ github.event.pull_request.base.sha }}
+          CHANGE_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: python3 scripts/classify_android_changes.py --event "$CHANGE_EVENT" --base "$CHANGE_BASE" --head "$CHANGE_HEAD"
+      - name: Check docs-only change
+        if: steps.changes.outputs.docs_only == 'true'
+        run: |
+          python3 -m unittest discover -s scripts/tests -v
+          echo "Docs-only PR: conservative allowlist passed. Android tasks were not run; main pushes always receive full validation." >> "$GITHUB_STEP_SUMMARY"
+      - name: Full Android validation
+        if: steps.changes.outputs.docs_only != 'true'
+        uses: ./.github/actions/android-checks
+        with:
+          upload-debug-apks: ${{ github.event_name == 'workflow_dispatch' && inputs.upload_debug_apks && 'true' || 'false' }}
 
-      - name: Test release packaging guardrails
-        run: python3 -m unittest discover -s scripts/tests -v
-
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
+  cache-measurement:
+    name: Measure Gradle build cache
+    if: github.event_name == 'workflow_dispatch' && inputs.measure_build_cache
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: "17"
-
-      - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v4
-
-      - name: Test Android version build logic
-        run: bash ./gradlew -p buildSrc --no-daemon test
-
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
         with:
-          # The default also requests the retired SDK package "tools".
+          cache-read-only: true
+      - uses: android-actions/setup-android@v3
+        with:
           packages: platform-tools
-
-      - name: Install build SDK
-        run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
-
-      - name: Build app and test APKs, run unit tests and lint
-        # Release is unsigned: CI intentionally receives no signing secrets and publishes nothing.
-        run: >-
-          bash ./gradlew --no-daemon --stacktrace --continue
-          :app:assembleDebug :app:assembleDebugAndroidTest :app:assembleRelease
-          :app:testDebugUnitTest :app:lintDebug :app:lintRelease
-
-      - name: Verify regular APK identities
-        run: >-
-          python3 scripts/check_apk_identity.py
-          --aapt "$ANDROID_HOME/build-tools/35.0.0/aapt"
-          --app app/build/outputs/apk/debug/app-debug.apk
-          --test app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
-          --expected com.jaguar.gearbox.beta
-          --release app/build/outputs/apk/release/app-release-unsigned.apk
-
-      - name: Upload diagnostic reports
+      - run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
+      - name: Measure baseline, cold and warm task cache
+        run: python3 scripts/measure_build_cache.py --output-dir build/cache-measurement
+      - name: Preserve measurements
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: android-check-reports
+          name: build-cache-measurement-${{ github.sha }}
           path: |
-            buildSrc/build/reports/
-            buildSrc/build/test-results/
-            app/build/reports/
-            app/build/test-results/
+            build/cache-measurement/run-*/results.json
+            build/cache-measurement/run-*/*.log
           if-no-files-found: warn
           retention-days: 14
-
-      - name: Checksum debug testing APKs
-        if: success()
-        run: >-
-          sha256sum app/build/outputs/apk/debug/*.apk
-          app/build/outputs/apk/androidTest/debug/*.apk
-          > app/build/outputs/apk/debug-checksums.sha256
-
-      - name: Upload debug testing APKs
-        if: success()
-        uses: actions/upload-artifact@v4
-        with:
-          name: gearbox-debug-${{ github.event.pull_request.head.sha || github.sha }}
-          path: |
-            app/build/outputs/apk/debug/*.apk
-            app/build/outputs/apk/androidTest/debug/*.apk
-            app/build/outputs/apk/debug-checksums.sha256
-          if-no-files-found: error
-          retention-days: 7
-
-      - name: Validate unsigned developer-preview release
-        env:
-          DEVELOPER_PREVIEW_RUN_NUMBER: ${{ github.run_number }}
-          DEVELOPER_PREVIEW_SHA: ${{ github.sha }}
-        run: |
-          bash ./gradlew --no-daemon --stacktrace -PdeveloperPreview=true :app:assembleRelease :app:testReleaseUnitTest :app:lintRelease
-          python3 - <<'PYCODE'
-          import os, subprocess
-          from scripts.preview_artifact import preview_metadata, validate_package
-          tool = os.environ["ANDROID_HOME"] + "/build-tools/35.0.0/aapt"
-          apk = "app/build/outputs/apk/release/app-release-unsigned.apk"
-          metadata = preview_metadata(os.environ["DEVELOPER_PREVIEW_RUN_NUMBER"], os.environ["DEVELOPER_PREVIEW_SHA"])
-          validate_package(subprocess.check_output([tool, "dump", "badging", apk], text=True),
-                           subprocess.check_output([tool, "dump", "xmltree", apk, "AndroidManifest.xml"], text=True), metadata)
-          PYCODE

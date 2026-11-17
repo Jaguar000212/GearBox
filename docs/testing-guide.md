@@ -4,11 +4,13 @@ This guide grows with each implementation phase. Automated CI builds app/test AP
 
 ## Safe installation
 
-For same-phone side-by-side testing, prefer the [isolated GearBox Preview build](preview-testing.md). It does not replace the earlier beta app; fresh preview data does not test upgrade migration.
+For current hands-on testing, download the **current APK linked in the public [Preview release notes](https://github.com/Jaguar000212/GearBox/releases/tag/preview)**. Follow the [rolling developer Preview channel guide](preview-testing.md) and verify the linked checksum/build metadata.
 
-- Use the debug APK from the successful CI run for the commit being tested. The artifact also includes the instrumentation APK and SHA-256 checksums.
-- Regular debug uses `com.jaguar.gearbox.beta`; isolated preview uses `com.jaguar.gearbox.preview` and the GearBox Preview label. Neither is a public release.
-- If an existing installation rejects an update because of signing or version differences, **do not uninstall it or clear its data**. Use another test device/profile or report the error.
+- The current channel is **GearBox Dev Preview**, application ID `com.jaguar.gearbox.devpreview`. Its fixed package, persistent signing certificate and increasing version code let later channel APKs update this same installation. Install only the main APK for ordinary manual testing.
+- The first channel installation is separate from stable, beta and historical test previews; it does not migrate their data. Fresh-install tests do not establish upgrade correctness. Test a later same-channel update with non-sensitive sample data to check preservation.
+- Historical CI debug APKs (`com.jaguar.gearbox.beta`) and isolated Preview/Preview 2 APKs (`com.jaguar.gearbox.preview` / `com.jaguar.gearbox.preview2`) are **not** this public rolling channel. Their debug signing certificates can differ across runs; do not expect them to update into GearBox Dev Preview. Keep existing installations/data untouched.
+- CI debug artifacts remain available on demand for developer diagnostics: manually run CI with **Upload debug and instrumentation APKs** enabled. They include a matching instrumentation APK/checksums. Run instrumentation only in a disposable test device/profile, never against data or active clocks you need to preserve.
+- If any installation rejects an update because of signing or version differences, **do not uninstall it or clear its data**. Report the error or use another test device/profile; do not bypass the signature/version checks.
 - Record phone model, Android version, build/commit, font/display scaling and steps when reporting an issue. Avoid sharing private inputs in screenshots.
 
 ## Phase 1: navigation, presentation and local memory
@@ -264,3 +266,8 @@ Individual history deletion must preserve unrelated records. For a deliberately 
 Install the current release-notes APK, create non-sensitive sample history/settings, then install a later higher-version channel APK. Expect one GearBox Dev Preview app with preserved data, not another app. Verify source SHA/version/checksum and signer fingerprint in the manifest. Old Preview/Preview2, beta and stable installs remain separate and untouched. Check launch tiles/widgets/notifications/sharing remain scoped to the correct install. Test failed build, stale run, signer mismatch, missing key and unowned tag collisions through automated mocks or a disposable repository, never destructive production experiments.
 
 Preview publisher validation accepts the app-scoped FileProvider and AndroidX Startup provider merged by the current dependencies. Unknown, foreign-install, duplicated or malformed authorities must fail closed. The guard is checked against actual signed distribution manifests as well as fixtures; it must not assume FileProvider is the only merged provider.
+
+
+## CI efficiency verification
+
+Follow [CI run consolidation and measurement](ci-efficiency.md). Verify one full Developer Preview workflow per main push, the unchanged PR status name, safe superseded-PR cancellation, main publication continuity and optional debug/test artifact availability. Test docs-only versus mixed/source/workflow changes; any classifier uncertainty must take the full path. Main documentation pushes still build/publish. Cache measurements are experiments, not enabled defaults; retention planning is advisory and never deletes assets.

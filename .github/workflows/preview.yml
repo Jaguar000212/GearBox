@@ -13,8 +13,24 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  checks:
+    name: Android build, tests and lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Full Android validation
+        uses: ./.github/actions/android-checks
+        with:
+          upload-debug-apks: 'false'
+
   build:
     name: Validate and sign developer preview
+    needs: checks
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -33,11 +49,6 @@ jobs:
           packages: platform-tools
       - name: Install build SDK
         run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
-      - name: Quality gates without signing secrets
-        run: |
-          python3 -m unittest discover -s scripts/tests -v
-          bash ./gradlew -p buildSrc --no-daemon test
-          bash ./gradlew --no-daemon --stacktrace :app:assembleDebug :app:assembleDebugAndroidTest :app:testDebugUnitTest :app:lintDebug :app:lintRelease
       - name: Decode existing authorized signing key
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}

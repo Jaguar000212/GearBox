@@ -14,7 +14,10 @@ class ToolSearchEngineTest {
         assertEquals(Tools.ROUTE_AGE, matches("HOW OLD AM I?").first().route)
         assertTrue(matches("unsupported quantum teleporter").isEmpty())
         assertEquals("tool/focus_timer", matches("pomodoro interval").first().route)
-        assertTrue(matches("color blend").isEmpty())
+        assertEquals("tool/color_blend", matches("color blend").first().route)
+        assertEquals("tool/color_blend", matches("mix colours").first().route)
+        assertEquals("tool/color_picker", matches("color hex rgb hsl").first().route)
+        assertNull(matches("color blend").first().operationId)
     }
 
     @Test fun explicitOperationsResolveToSafeActualSelectors() {

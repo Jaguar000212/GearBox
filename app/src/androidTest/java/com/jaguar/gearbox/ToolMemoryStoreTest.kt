@@ -16,6 +16,27 @@ class ToolMemoryStoreTest {
     private val route = "tool/percentage"
     @After fun cleanup() { directory.deleteRecursively() }
 
+    @Test fun colorBlendUsesExistingConsentAndValidatedPaletteModeStorage() {
+        val blend = "tool/color_blend"
+        val inputs = mapOf("firstHex" to "#000000", "secondHex" to "#FFFFFF", "weight" to "50")
+        assertFalse(store.record(blend, inputs, "#808080"))
+        assertFalse(store.saveResult(blend, inputs, "#808080"))
+        assertTrue(store.saveSettings(ToolMemorySettings(historyEnabled = true, rememberResults = true, rememberModes = true)))
+        assertTrue(store.saveMode(blend, inputs))
+        assertFalse(store.saveMode(blend, inputs + ("weight" to "101")))
+        assertEquals(inputs, store.loadMode(blend))
+        assertTrue(store.record(blend, inputs, "#808080"))
+        assertTrue(store.saveResult(blend, inputs, "#808080"))
+        assertEquals(inputs, store.loadResult(blend)?.inputs)
+        assertEquals("#808080", store.history(blend).single().output)
+        assertTrue(store.savePreset("Grayscale midpoint", blend, inputs))
+        assertEquals(inputs, store.presets().single().inputs)
+        assertTrue(store.saveSettings(ToolMemorySettings()))
+        assertNull(store.loadResult(blend))
+        assertTrue(store.loadMode(blend).isEmpty())
+        assertEquals("#808080", store.history(blend).single().output)
+    }
+
     @Test fun individualHistoryDeletionPreservesMalformedCollectionsByteForByte() {
         directory.mkdirs()
         val valid = org.json.JSONObject().put("id", "valid").put("timestampMillis", 1L)

@@ -9,6 +9,8 @@ import androidx.compose.material.icons.filled.Balance
 import androidx.compose.material.icons.filled.Cake
 import androidx.compose.material.icons.filled.Calculate
 import androidx.compose.material.icons.filled.Casino
+import androidx.compose.material.icons.filled.Palette
+import com.jaguar.gearbox.ui.tools.ColorBlendScreen
 import androidx.compose.material.icons.filled.Colorize
 import androidx.compose.material.icons.filled.EditCalendar
 import androidx.compose.material.icons.filled.EmojiEvents
@@ -101,6 +103,7 @@ object Tools {
     const val ROUTE_SCOREBOARD = "tool/scoreboard"
     const val ROUTE_RANDOM = "tool/random"
     const val ROUTE_BASE_CONVERTER = "tool/base_converter"
+    const val ROUTE_COLOR_BLEND = "tool/color_blend"
     const val ROUTE_COLOR_PICKER = "tool/color_picker"
     const val ROUTE_UNIT_CONVERTER = "tool/unit_converter"
     const val ROUTE_NUMBER_TO_WORDS = "tool/number_to_words"
@@ -401,6 +404,15 @@ object Tools {
             route = ROUTE_CHESS_SCOREBOARD,
             category = ToolCategory.GAMES_AND_RANDOM,
             content = { onNavigateBack -> ChessScoreboardScreen(onNavigateBack) },
+        ),
+        Tool(
+            name = "Color Blend",
+            description = "Blend two opaque colors by interpolating encoded sRGB channels.",
+            icon = Icons.Filled.Palette,
+            route = ROUTE_COLOR_BLEND,
+            category = ToolCategory.UTILITIES,
+            content = { onNavigateBack -> ColorBlendScreen(onNavigateBack) },
+            keywords = listOf("color blend", "colour blend", "mix colors", "mix colours", "interpolate", "sRGB"),
         ),
         Tool(
             name = "Color Picker",

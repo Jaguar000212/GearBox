@@ -283,3 +283,14 @@ This is a separate tool, not a replacement for Timer & Stopwatch. Test both cloc
 - Reboot during an active session: require an explicit resume/restart decision rather than automatically running an obsolete schedule. Changing wall-clock time or time zone must not change remaining duration on the same boot. Verify package update recovery and notification navigation.
 - Current-session recovery is local operational state, not a History/Workbench result or focus-activity log. Generic result retention and Clear history must not reset live clocks. No task names or secret content are collected. Verify existing Timer & Stopwatch notifications and widgets remain unaffected.
 - Check large fonts, TalkBack labels/selected mode, keyboard focus and narrow/wide layouts. Countdown updates should not continuously interrupt TalkBack announcements. Android notifications, reboot recovery, power-management behavior and actual device timing remain device-test items, not claims established by JVM/CI tests.
+
+## Color Blend
+
+Color Blend is a separate two-color calculation tool. It interpolates opaque sRGB **encoded channels**; it does not simulate paint, physical light, transparency or a calibrated display. The weight is the percentage of the second color. Both endpoints and the method must remain visible so the result is not mistaken for another blending model.
+
+- Test valid upper/lowercase six-digit HEX values, black/white, identical colors and weight endpoints. At 0% the first color wins; at 100% the second wins. Verify midpoint channel rounding and invalid/empty/out-of-range input handling.
+- Editing either color or weight must invalidate stale generated output. Copy, Share and saved-result actions must use only the current validated result, not a former mix. Import/restore must follow the documented explicit-generation and result-retention policy.
+- Verify default-off history, enabled history with bounded count, explicit restore, mode/result retention settings, presets and Clear history without changing unrelated tools. The tool must not silently store arbitrary invalid text or retain a previous result under a new input.
+- Test rotation, background/foreground, narrow/wide layout, large fonts, keyboard navigation and TalkBack. Swatches need textual color values, not color-only labels. Test share cancellation and clipboard output independently on-device. Existing Color Picker sampling/inspection must remain unchanged.
+
+Color Blend restoration distinction: explicit History/Workbench/preset/example imports restore validated inputs and require Blend again. When the user enables automatic remembered results, a validated last-result snapshot reconstructs the deterministic local mix on reopening. No external content is automatically processed, and malformed snapshots must not produce a result.

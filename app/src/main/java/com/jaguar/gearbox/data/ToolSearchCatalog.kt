@@ -41,6 +41,7 @@ object ToolSearchCatalog {
         Tools.ROUTE_HASH_GENERATOR to AliasSpec(R.array.search_tasks_hash_generator, listOf("hash some text", "text checksum", "generate a digest")),
         Tools.ROUTE_QR_GENERATOR to AliasSpec(R.array.search_tasks_qr_generator, listOf("make a qr code", "text to qr", "link to qr code")),
         Tools.ROUTE_MORSE_BINARY to AliasSpec(R.array.search_tasks_morse_binary, listOf("translate morse code", "text in binary", "decode binary text")),
+        Tools.ROUTE_COLOR_BLEND to AliasSpec(R.array.blend_catalog_tasks, listOf("blend two colors", "blend two colours", "mix colors", "mix colours", "interpolate color", "color blend")),
         Tools.ROUTE_COLOR_PICKER to AliasSpec(R.array.search_tasks_color_picker, listOf("convert color values", "color hex rgb hsl", "choose a color")),
         Tools.ROUTE_COUNTER to AliasSpec(R.array.search_tasks_counter, listOf("count things", "count people", "tally counter")),
         Tools.ROUTE_FOCUS_TIMER to AliasSpec(R.array.focus_catalog_tasks, listOf("pomodoro timer", "work rest intervals", "focus and break", "interval timer", "study session")),

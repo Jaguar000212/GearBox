@@ -10,6 +10,7 @@ object ToolExampleCatalog {
         ToolExample(description, mapOf(*inputs)).also { require(ToolMemoryPolicy.validInputs(it.inputs)) }
 
     private val fixed = mapOf(
+        Tools.ROUTE_COLOR_BLEND to example("Load black and white with an equal blend, then tap Blend to calculate #808080.", "firstHex" to "#000000", "secondHex" to "#FFFFFF", "weight" to "50"),
         Tools.ROUTE_AVERAGE to example("2, 4, 6 has an average of 4.", "input" to "2, 4, 6"),
         Tools.ROUTE_AGE to example("Compare 1 January 2000 with 1 January 2025: 25 years.", "earlierDate" to "2000-01-01", "laterDate" to "2025-01-01"),
         Tools.ROUTE_BASE_CONVERTER to example("Decimal 10 is binary 1010 and hexadecimal A.", "input" to "10", "fromBase" to "DECIMAL"),

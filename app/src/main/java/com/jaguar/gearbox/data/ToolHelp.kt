@@ -40,6 +40,11 @@ object ToolHelpCatalog {
             "Decimal 10 is binary 1010 and hexadecimal A.",
             "This converter handles integers, not decimal fractions; binary only accepts 0 and 1.",
         ),
+        Tools.ROUTE_COLOR_BLEND to ToolHelp(
+            "Enter two opaque HEX colors, choose the second color percentage from 0 to 100, then tap Blend.",
+            "Equal parts red #FF0000 and blue #0000FF give #800080 with encoded sRGB interpolation.",
+            "This interpolates encoded sRGB channels, not linear-light values or physical paint. Alpha transparency is not supported.",
+        ),
         Tools.ROUTE_COLOR_PICKER to ToolHelp(
             "Enter HEX, adjust RGB, or enter HSL and tap Apply HSL. Copy, Share and saved colors use the last applied color.",
             "HEX #FF0000 is RGB 255, 0, 0.",

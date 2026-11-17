@@ -71,6 +71,7 @@ object ToolMemoryPolicy {
             value -> com.jaguar.gearbox.logic.TextHashAlgorithm.entries.any { it.name == value }
         }
         "tool/qr_generator" -> values.isEmpty()
+        "tool/color_blend" -> parseColorBlendSnapshot(values) != null
         else -> permitsRoute(route)
     }
 

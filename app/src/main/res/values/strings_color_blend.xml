@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="blend_title">Color Blend</string>
+    <string name="blend_first">First color (#RRGGBB)</string>
+    <string name="blend_second">Second color (#RRGGBB)</string>
+    <string name="blend_weight">Second color weight (whole percent, 0–100)</string>
+    <string name="blend_weight_summary">%1$d%% first color + %2$d%% second color</string>
+    <string name="blend_action">Blend</string>
+    <string name="blend_output_heading">Blended color</string>
+    <string name="blend_hex_error">Enter # followed by exactly six hexadecimal digits (0–9, A–F). Alpha and shorthand are not supported.</string>
+    <string name="blend_weight_error">Enter a whole percentage from 0 to 100.</string>
+    <string name="blend_explanation">Mixes the encoded red, green and blue sRGB channels, rounded to the nearest 8-bit value. This is not paint mixing, physical light mixing or linear-light interpolation. Both colors are opaque; alpha is not supported.</string>
+    <string name="blend_endpoints">0 percent returns the first color; 100 percent returns the second. Editing or explicitly importing inputs clears the previous result. Press Blend to generate a new result. If Remember results is enabled, reopening can restore your last completed blend; presets and History imports still require Blend.</string>
+    <string name="blend_empty">Choose two colors and press Blend.</string>
+    <string name="blend_output">HEX: %1$s\nRGB: %2$d, %3$d, %4$d</string>
+    <string name="blend_swatch">%1$s swatch: %2$s, red %3$d, green %4$d, blue %5$d</string>
+    <string name="blend_first_swatch">First color</string>
+    <string name="blend_second_swatch">Second color</string>
+    <string name="blend_result_swatch">Result</string>
+    <string name="blend_restore_error">This saved setup is not a valid Color Blend input. Your current inputs were kept.</string>
+</resources>

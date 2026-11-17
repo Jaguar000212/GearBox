@@ -6,7 +6,7 @@ import org.junit.Test
 
 class ToolExamplesTest {
     @Test fun examplesAreBoundedInputOnlyAndHaveHelp() {
-        assertEquals(23, ToolExampleCatalog.routes.size)
+        assertEquals(24, ToolExampleCatalog.routes.size)
         ToolExampleCatalog.routes.forEach { route ->
             val example = ToolExampleCatalog.forRoute(route)!!
             assertTrue(ToolMemoryPolicy.permitsRoute(route))
@@ -34,5 +34,10 @@ class ToolExamplesTest {
     @Test fun unitExampleUsesActualRestorableUnitLabels() {
         assertEquals(mapOf("category" to "LENGTH", "fromUnit" to "Kilometers", "toUnit" to "Meters", "input" to "1"),
             ToolExampleCatalog.forRoute(Tools.ROUTE_UNIT_CONVERTER)!!.inputs)
+    }
+    @Test fun colorBlendExampleContainsOnlyValidatedInputs() {
+        val example = requireNotNull(ToolExampleCatalog.forRoute(Tools.ROUTE_COLOR_BLEND))
+        assertEquals(mapOf("firstHex" to "#000000", "secondHex" to "#FFFFFF", "weight" to "50"), example.inputs)
+        assertNotNull(parseColorBlendSnapshot(example.inputs))
     }
 }

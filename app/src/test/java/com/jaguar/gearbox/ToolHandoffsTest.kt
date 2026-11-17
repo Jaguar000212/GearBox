@@ -34,4 +34,23 @@ class ToolHandoffsTest {
         assertTrue(compatibleToolHandoffs("tool/morse_binary", emptyMap(), "Partial translation: ...").isEmpty())
         assertTrue(compatibleToolHandoffs("tool/text_tools", emptyMap(), "").isEmpty())
     }
+    @Test fun wholeDecimalsUseExactInputsAndRespectDestinationRanges() {
+        val choices = compatibleToolHandoffs("tool/decimal_to_fraction", mapOf("input" to "12.000"), "localized fraction")
+        assertEquals("12", choices.single { it.route == "tool/base_converter" }.inputs["input"])
+        assertTrue(compatibleToolHandoffs("tool/decimal_to_fraction", mapOf("input" to "12.5"), "25/2").isEmpty())
+        assertFalse(compatibleToolHandoffs("tool/number_to_words", mapOf("input" to Long.MAX_VALUE.toString()), "words")
+            .any { it.route == "tool/decimal_to_fraction" })
+    }
+    @Test fun ratioHandoffUsesTypedQuotientNeverFormattedOutput() {
+        val choice = compatibleToolHandoffs("tool/ratios", mapOf("partA" to "1", "partB" to "4"), "unrelated localized output").single()
+        assertEquals("tool/decimal_to_fraction", choice.route)
+        assertEquals("0.25", choice.inputs["input"])
+        assertEquals(com.jaguar.gearbox.data.HandoffMeaning.RATIO_QUOTIENT, choice.meaning)
+        for (b in listOf("0", "NaN", "Infinity", "1e-300")) {
+            assertTrue(compatibleToolHandoffs("tool/ratios", mapOf("partA" to "1", "partB" to b), "result").isEmpty())
+        }
+        for (route in listOf("tool/tip", "tool/unit_converter", "tool/random_number", "tool/percentage")) {
+            assertTrue(compatibleToolHandoffs(route, mapOf("input" to "12"), "12").isEmpty())
+        }
+    }
 }

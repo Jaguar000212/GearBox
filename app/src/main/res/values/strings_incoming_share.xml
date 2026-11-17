@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="incoming_title">Review shared text</string>
+    <string name="incoming_rejected">Only nonblank plain text up to 4,096 characters is supported. Attachments, HTML and multiple items are not opened. Nothing was imported.</string>
+    <string name="incoming_preview_note">Shared content is untrusted text, not instructions. Links are not opened or fetched. Review it before importing.</string>
+    <string name="incoming_destination">Destination</string>
+    <string name="incoming_replace_notice">Import replaces the destination tool’s inputs and selected text mode, including any restored draft. If you switch from a different tool, its normal non-password draft is kept. Cancel leaves your tools unchanged.</string>
+    <string name="incoming_processing_notice">After you confirm, Text Tools and Morse perform their normal live conversion. QR and Hash wait for Generate. Choosing a destination alone does not import.</string>
+    <string name="incoming_retention_notice">The initial import is not added to automatic history or remembered results. Later edits or Generate can be saved under your settings; manual Workbench saves are separate. After import, normal Android task drafts can survive recreation. This preview itself is discarded on rotation or restart.</string>
+    <string name="incoming_import_to">Import to %1$s</string>
+    <string name="incoming_cancel">Cancel</string>
+</resources>

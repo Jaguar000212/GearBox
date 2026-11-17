@@ -20,6 +20,8 @@ This is a source-level inventory, not a device-test sign-off. It includes correc
 | Sensors | Availability/accuracy/error hints, focused Compass/Level views, flashlight contention handling | Level requires rotation-vector support; no accelerometer/gravity fallback. Ruler is estimated, not calibrated |
 | Focus | Counter, Clock, Scoreboard, Chess Clock, Compass, Level; visible Exit and Back | Scoreboards are read-only in focus. Explicit TalkBack focus return is not guaranteed; test on device |
 | Motion | Coin/Bottle reduce-motion preference and system animation scale | Not a blanket suppression of every platform transition |
+| Incoming shares | Bounded plain-text preview and explicit destination import to Text/QR/Hash/Morse; initial automatic retention suppressed | No attachments/HTML/fetch; Text/Morse live-convert after confirmation, QR/Hash require Generate; Android task drafts after import remain separate |
+| Typed handoffs | Existing text/integer paths plus supported exact whole decimals and explicit ratio quotient | No arbitrary pipeline or formatted-output parsing; numeric destination limits enforced |
 | Widgets | Existing Counter and Timer/Stopwatch widgets preserved; Settings/help discovery instructions | Launcher must support widgets. No automatic widget placement |
 | History | Top-bar History for 40 nonpassword tools; copy/share/restore/delete/clear; global n=1–100, default20 | Valid completed results after debounce, not every keystroke. Bounded fields/output; oversized records rejected |
 | Outcome reuse | Six random tools replay validated typed outcomes, without RNG/tally changes | Older records without typed outcomes restore inputs only. Physical readings cannot be replayed |

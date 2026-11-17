@@ -270,7 +270,7 @@ Preview publisher validation accepts the app-scoped FileProvider and AndroidX St
 
 ## CI efficiency verification
 
-Follow [CI run consolidation and measurement](ci-efficiency.md). Verify one full Developer Preview workflow per main push, the unchanged PR status name, safe superseded-PR cancellation, main publication continuity and optional debug/test artifact availability. Test docs-only versus mixed/source/workflow changes; any classifier uncertainty must take the full path. Main documentation pushes still build/publish. Cache measurements are experiments, not enabled defaults; retention planning is advisory and never deletes assets.
+Follow [CI run consolidation and measurement](ci-efficiency.md). Verify unsigned CI validation per main push and a separate manual-only Developer Preview workflow, the unchanged PR status name, safe superseded-PR cancellation, manual main publication continuity and optional debug/test artifact availability. Test docs-only versus mixed/source/workflow changes; any classifier uncertainty must take the full path. Main documentation pushes still build but do not publish Preview. Cache measurements are experiments, not enabled defaults; retention planning is advisory and never deletes assets.
 
 ## Focus Timer: Pomodoro and intervals
 

@@ -1,19 +1,19 @@
 name: Developer Preview
 
 on:
-  push:
-    branches: [main]
+  workflow_dispatch:
 
 permissions:
   contents: read
 
-# Never interrupt an asset update. Queued superseded commits are harmlessly skipped by the publisher.
+# Never interrupt an asset update. Manually requested superseded commits are harmlessly skipped by the publisher.
 concurrency:
   group: developer-preview-publisher
   cancel-in-progress: false
 
 jobs:
   checks:
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
     name: Android build, tests and lint
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -29,6 +29,7 @@ jobs:
           upload-debug-apks: 'false'
 
   build:
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
     name: Validate and sign developer preview
     needs: checks
     runs-on: ubuntu-latest
@@ -97,6 +98,7 @@ jobs:
           retention-days: 30
 
   publish:
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
     name: Update public rolling Preview
     needs: build
     runs-on: ubuntu-latest

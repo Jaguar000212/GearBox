@@ -1,6 +1,6 @@
 # Rolling developer Preview channel
 
-The public GitHub release **Preview** (tag `preview`) is the opt-in developer channel. Successful builds from pushes to `main` update this one release. It is always a prerelease and never GitHub's Latest release. Stable/beta remain on the existing `v*` tag workflow, unchanged. Failed or superseded builds do not replace the last successful downloadable build.
+The public GitHub release **Preview** (tag `preview`) is the opt-in developer channel. Only an explicitly requested manual run on `main` can update this release. Pushing or merging code runs unsigned CI validation, not Preview publication. It is always a prerelease and never GitHub's Latest release. Stable/beta remain on the existing `v*` tag workflow, unchanged. Failed or superseded builds do not replace the last successful downloadable build.
 
 ## One installation, ordinary updates
 
@@ -11,9 +11,9 @@ This is a **one-time new channel installation**, not an upgrade from the older r
 ## Build and publish safeguards
 
 - PR CI uses the shared full checks without signing secrets and validates the unsigned developer-preview package/label/providers. Conservative Markdown-only PRs run lightweight guardrails with the same status name; main always runs every check. PR CI does not publish releases.
-- One main-only Preview workflow checks out the exact push SHA, runs shared full Python/JVM/build/lint/identity gates, then signs the isolated release, verifies its certificate and non-debuggable identity, and preserves a distribution artifact. Its existing workflow identity/run sequence remains unchanged.
+- One manual-only, main-guarded Preview workflow checks out the exact manually selected main SHA, runs shared full Python/JVM/build/lint/identity gates, then signs the isolated release, verifies its certificate and non-debuggable identity, and preserves a distribution artifact. Its existing workflow identity/run sequence remains unchanged.
 - The publish job alone gets `contents: write`. It verifies source SHA, run number, version, APK checksum and signer continuity before publication. It refuses unowned `preview` tag/release collisions and immutable releases rather than changing repository security settings.
-- Publishing is serialized and rechecks `main` to prevent an older finished run replacing a newer commit. A failed newer build leaves the previous successful Preview available. Intermediate main pushes may be superseded rather than each being published.
+- Publishing is serialized and rechecks `main` to prevent an older finished run replacing a newer commit. A failed newer build leaves the previous successful Preview available. If main advances during a requested build, publication is skipped; request a new manual run when ready.
 - Versioned assets are uploaded and verified before updating release metadata/tag. Prior assets are retained, so a failed update does not delete the previous APK. GitHub has no atomic transaction for multiple assets/tag/notes: transient inconsistency is possible; use the commit/version/checksum manifest linked in the release notes as the source of truth, not asset ordering or the moving source ZIP alone.
 - The `preview` tag is excluded from ordinary Git version lookup. Existing stable/beta version-code ordering is unchanged.
 - This channel intentionally produces public downloads, not access-restricted developer distribution. Source commit, build date/run, certificate fingerprint and checksums are recorded for traceability.
@@ -29,3 +29,13 @@ Follow [the complete guide](testing-guide.md). Instrumentation runtime, hardware
 See [CI consolidation, on-demand artifacts and measurement](ci-efficiency.md). No release-asset deletion policy is active.
 
 Historical opt-in `isolatedPreview` checkpoint properties remain available for reproducing old builds; CI no longer distributes numbered preview checkpoints. They are not the rolling Preview channel.
+
+## Manual publication and two-build cleanup review
+
+After this workflow reaches main, open **Actions → Developer Preview → Run workflow**, select **main**, and explicitly run it. Other refs are rejected by every job and by the publisher entry point. There is no push, schedule, or workflow-completion publication trigger. Keep `preview.yml` and its workflow identity: the existing run counter, package and signing key maintain upgrade continuity. A same-commit rerun verifies the existing assets and leaves the release unchanged.
+
+A successful new publication links **Current Preview APK** and **Previous APK**, with each checksum and metadata file. Immutable versioned filenames remain unchanged so existing links, checksum filenames and recovery checks stay valid. Existing release notes are not rewritten merely by merging this code.
+
+The desired retained set is the current and previous complete Preview bundles (six assets). This is **not automatic deletion**: older assets can temporarily remain. Inventory exact asset IDs/names/sizes, verify the current and previous bundles, obtain specific action-time approval, and only then perform any separately authorized cleanup. Deletion removes old download links and has no normal GitHub undo. Never delete stable/beta assets, the release/tag itself, or unknown/incomplete staging assets. The older retention planner remains advisory and does not enforce this two-build preference. No cleanup is executed by this workflow or publisher.
+
+Validation checklist: push to main runs unsigned CI only; manual Preview on a non-main ref skips all jobs; manual main runs full gates before signing/publication; stale-main publication skips; same-commit rerun is unchanged; a new commit uses a higher version code and unchanged certificate; current/previous links resolve to distinct immutable bundles. Android install-over-existing and device behavior remain device QA, not implied by Python tests.

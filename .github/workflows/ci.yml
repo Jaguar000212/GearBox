@@ -1,6 +1,8 @@
 name: CI
 
 on:
+  push:
+    branches: [main]
   pull_request:
   workflow_dispatch:
     inputs:
@@ -16,7 +18,7 @@ on:
 permissions:
   contents: read
 
-# Only unsigned PR/manual jobs live here; cancelling an obsolete PR cannot interrupt publication.
+# Only unsigned main/PR/manual jobs live here; cancelling an obsolete PR cannot interrupt publication.
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true

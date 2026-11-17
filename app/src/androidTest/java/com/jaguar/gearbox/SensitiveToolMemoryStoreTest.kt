@@ -14,6 +14,29 @@ class SensitiveToolMemoryStoreTest {
     private fun consent() = ToolMemorySettings(historyEnabled = true, rememberResults = true,
         rememberModes = true, automaticMemory = routes.associateWith { ToolAutomaticMemory(true, true) })
 
+    @Test fun deadlinePlanNeedsIndependentConsentAndSavedAsOfRemainsUnchanged() {
+        val route = "tool/deadline_planner"
+        val inputs = mapOf("deadline" to "2027-01-10", "asOf" to "2027-01-01", "ids" to "1",
+            "names" to "Private milestone", "durations" to "3")
+        val global = ToolMemorySettings(historyEnabled = true, rememberResults = true, rememberModes = true)
+        store.saveSettings(global)
+        assertFalse(store.record(route, inputs, "2027-01-08 through 2027-01-10"))
+        assertFalse(store.saveResult(route, inputs, "plan"))
+        assertFalse(store.saveMode(route, inputs))
+        val allowed = global.copy(automaticMemory = mapOf(route to ToolAutomaticMemory(true, true)))
+        store.saveSettings(allowed)
+        assertTrue(store.record(route, inputs, "plan"))
+        assertTrue(store.saveResult(route, inputs, "plan"))
+        val token = store.historyGeneration(route)
+        store.saveSettings(global)
+        assertNull(store.loadResult(route))
+        assertEquals("2027-01-01", store.rememberedResult(route)?.inputs?.get("asOf"))
+        assertEquals(inputs, store.history(route).single().inputs)
+        store.saveSettings(allowed)
+        assertFalse(store.record(route, inputs, "late", token))
+        assertEquals(inputs, store.loadResult(route)?.inputs)
+    }
+
     @Test fun billUpgradeKeepsHistoricalDataButRequiresNewSeparateConsent() {
         val route = "tool/bill_splitter"
         val inputs = mapOf("bill" to "100", "tax" to "0", "tipPercent" to "10", "diners" to "3")

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="deadline_title">Deadline &amp; Milestone Planner</string>
+    <string name="deadline_target">Final deadline (YYYY-MM-DD)</string>
+    <string name="deadline_asof">Assess remaining days as of (YYYY-MM-DD)</string>
+    <string name="deadline_date_error">Enter a valid ISO date from 1900-01-01 to 2100-12-31.</string>
+    <string name="deadline_phases">Phases in execution order (1–20)</string>
+    <string name="deadline_default_phase">Phase %1$d</string>
+    <string name="deadline_phase_label">Phase #%1$d label</string>
+    <string name="deadline_duration">Phase #%1$d duration (calendar days, 1–3,650)</string>
+    <string name="deadline_add">Add phase at end</string>
+    <string name="deadline_up">Move phase #%1$d earlier</string>
+    <string name="deadline_down">Move phase #%1$d later</string>
+    <string name="deadline_remove_phase">Remove phase #%1$d</string>
+    <string name="deadline_remove_title">Remove this phase?</string>
+    <string name="deadline_remove_note">Its label and duration will be discarded. Recalculate the changed schedule afterward. This cannot be undone.</string>
+    <string name="deadline_remove">Remove</string>
+    <string name="deadline_cancel">Cancel</string>
+    <string name="deadline_plan">Plan backward</string>
+    <string name="deadline_invalid">Use 1–20 phases with nonblank single-line labels up to 60 UTF-16 code units and whole durations of 1–3,650 days each. Combined duration must not exceed 36,500 days.</string>
+    <string name="deadline_range_error">The earliest start would fall before 1900-01-01. Shorten the plan or move the deadline.</string>
+    <string name="deadline_rules">Phases run sequentially in the displayed order, with no gaps or overlap. Each range includes both its start and finish date: a one-day phase starts and finishes on the same date. The last phase finishes on the final deadline; each earlier phase finishes one day before the next starts.</string>
+    <string name="deadline_scope">Uses calendar days, including weekends and holidays, with no time of day or time-zone calculation. This is not a parallel-task dependency planner or an official workday calendar. It creates no reminders, notifications, calendar events or commitments.</string>
+    <string name="deadline_asof_note">Remaining days are signed date differences from your explicit assessment date, not an estimate of work left. That date is saved with the plan and is not silently changed to today when restoring.</string>
+    <string name="deadline_privacy">Labels may be private. Automatic history and remembered results are off by default. Saving manually or enabling them stores content locally. Sharing sends the reviewed plan to your chosen app.</string>
+    <string name="deadline_retention">Explicit imports restore inputs only; press Plan backward. Remember results, if enabled, can reconstruct the completed schedule using its saved assessment date.</string>
+    <string name="deadline_result_title">Backward schedule</string>
+    <string name="deadline_summary">Earliest start: %1$s\nFinal deadline: %2$s\nTotal inclusive calendar days: %3$d\nAssessment date: %4$s</string>
+    <string name="deadline_phase_output">%1$d. Phase #%2$d · %3$s\n%4$s through %5$s (inclusive, %6$d calendar days)\n%7$s</string>
+    <string name="deadline_remaining">Finish in %1$d calendar days from the assessment date</string>
+    <string name="deadline_due">Finishes on the assessment date</string>
+    <string name="deadline_overdue">Finish date was %1$d calendar days before the assessment date</string>
+    <string name="deadline_output">%1$s\n\n%2$s\n\nCalendar-day arithmetic only; no reminders or commitments are created.</string>
+    <string name="deadline_empty">Set the deadline, assessment date and ordered phases, then plan backward.</string>
+    <string name="deadline_restore_error">The saved plan is invalid. Your current draft was kept.</string>
+    <string name="deadline_not_saved">This plan exceeds local saved-record limits. You can still copy or share its full result; nothing is truncated.</string>
+</resources>

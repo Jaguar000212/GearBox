@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="deadline_catalog_name">Deadline &amp; Milestone Planner</string>
+    <string name="deadline_catalog_description">Plan sequential calendar-day phases backward from a target date.</string>
+    <string name="deadline_catalog_instructions">Enter a target date, an as-of date, and ordered phase names with calendar-day durations. Tap Plan to schedule backward: the last phase ends on the target date and each earlier phase ends the day before the next begins. Both start and end dates count toward duration.</string>
+    <string name="deadline_catalog_example">Load a 10 January 2027 target with Prepare for 2 days and Review for 3 days, then tap Plan. Prepare runs 6 to 7 January and Review runs 8 to 10 January.</string>
+    <string name="deadline_catalog_limitation">Sequential calendar-day planning only, including weekends. No holiday calendar, parallel tasks, reminders or calendar events. The as-of date is a reference, not automatic progress tracking or a guarantee that the plan is feasible.</string>
+    <string-array name="deadline_catalog_keywords"><item>deadline planner</item><item>milestones</item><item>backward planning</item><item>phase durations</item><item>project dates</item></string-array>
+    <string-array name="deadline_catalog_tasks"><item>plan backward from deadline</item><item>deadline planner</item><item>milestone planner</item><item>schedule project phases</item><item>backward scheduling</item></string-array>
+</resources>

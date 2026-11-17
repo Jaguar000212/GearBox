@@ -40,6 +40,11 @@ object ToolHelpCatalog {
             "Decimal 10 is binary 1010 and hexadecimal A.",
             "This converter handles integers, not decimal fractions; binary only accepts 0 and 1.",
         ),
+        Tools.ROUTE_DEADLINE_PLANNER to ToolHelp(
+            "Enter a target date, an as-of date, and ordered phase names with calendar-day durations. Tap Plan to schedule backward: the last phase ends on the target date and each earlier phase ends the day before the next begins. Both start and end dates count toward duration.",
+            "Load a 10 January 2027 target with Prepare for 2 days and Review for 3 days, then tap Plan. Prepare runs 6 to 7 January and Review runs 8 to 10 January.",
+            "Sequential calendar-day planning only, including weekends. No holiday calendar, parallel tasks, reminders or calendar events. The as-of date is a reference, not automatic progress tracking or a guarantee that the plan is feasible.",
+        ),
         Tools.ROUTE_ASPECT_RATIO to ToolHelp(
             "Enter source width and height to reduce their ratio. Choose a target width, height, percentage, or a box to fit or fill, then calculate dimensions.",
             "A 1920 by 1080 source has ratio 16:9. Resizing to width 1280 gives height 720.",

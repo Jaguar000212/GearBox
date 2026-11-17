@@ -355,3 +355,12 @@ The original draft covered only a single equally divided bill. The shared-expens
 - Fit must remain within both target-box dimensions; Fill must cover both dimensions. Check extreme ratios and fractional scale, plus displayed centered padding/crop assumptions. These are size calculations, not actual image edits, uploads or guarantees of image quality.
 - Reject zero, negative, malformed and out-of-range values. Only relevant active-mode inputs should control calculation; no hidden invalid field should block an unrelated mode. Edits clear stale results. Explicit imports/examples require Calculate; retained results honor preferences without replay.
 - Check copy/share includes source, mode, result dimensions and rounding assumptions. Verify accessible mode selectors, narrow/wide layouts and large fonts on-device. No image/storage/location permission is needed.
+
+## Deadline & Milestone Planner
+
+This tool must actually schedule backwards from the target date, not merely list manually entered dates. Ordered milestones/phases have calendar-day durations; each phase occupies an inclusive start/end date range, the last finishes on the target date, and the previous phase ends the day before the next starts. It assumes serial dependencies in the visible order, not parallel work or a regional workday calendar.
+
+- Verify one-day phases, multiple durations, leap days, month/year boundaries, exact earliest start and total duration. Reordering phases changes the backward schedule deterministically. Reject excessive durations/counts and any schedule outside supported dates rather than clipping.
+- Use the explicit as-of date to show days remaining/overdue. Restore must not silently substitute today's date. No background reminders, calendar events or notifications are created by calculating a plan.
+- Validate names, stable identities, empty/duplicate labels with indexed output, and removal/reorder confirmation behavior. Edits invalidate old output. Explicit imports/examples require Plan; remembered results follow private-input consent and do not replay history.
+- Names/dates may be private. Separate capture controls default off; mode-only memory excludes plan content. Verify reviewed sharing, sensitive copying, accessible ordering controls, large fonts and adaptive layout on-device.

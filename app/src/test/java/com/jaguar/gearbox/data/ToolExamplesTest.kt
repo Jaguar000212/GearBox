@@ -6,7 +6,7 @@ import org.junit.Test
 
 class ToolExamplesTest {
     @Test fun examplesAreBoundedInputOnlyAndHaveHelp() {
-        assertEquals(31, ToolExampleCatalog.routes.size)
+        assertEquals(32, ToolExampleCatalog.routes.size)
         ToolExampleCatalog.routes.forEach { route ->
             val example = ToolExampleCatalog.forRoute(route)!!
             assertTrue(ToolMemoryPolicy.permitsRoute(route))
@@ -74,5 +74,10 @@ class ToolExamplesTest {
         val inputs = requireNotNull(ToolExampleCatalog.forRoute(Tools.ROUTE_ASPECT_RATIO)).inputs
         assertEquals(mapOf("mode" to "WIDTH", "sourceWidth" to "1920", "sourceHeight" to "1080", "targetWidth" to "1280", "targetHeight" to "", "percent" to ""), inputs)
         assertNotNull(parseAspectRatioSnapshot(inputs))
+    }
+    @Test fun deadlineExampleContainsOnlyValidatedPlanningInputs() {
+        val inputs = requireNotNull(ToolExampleCatalog.forRoute(Tools.ROUTE_DEADLINE_PLANNER)).inputs
+        assertEquals(mapOf("deadline" to "2027-01-10", "asOf" to "2027-01-01", "ids" to "1,2", "names" to "Prepare\nReview", "durations" to "2,3"), inputs)
+        assertNotNull(parseDeadlineSnapshot(inputs))
     }
 }

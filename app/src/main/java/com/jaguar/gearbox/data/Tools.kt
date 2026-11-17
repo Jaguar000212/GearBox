@@ -9,6 +9,8 @@ import androidx.compose.material.icons.filled.Balance
 import androidx.compose.material.icons.filled.Cake
 import androidx.compose.material.icons.filled.Calculate
 import androidx.compose.material.icons.filled.Casino
+import androidx.compose.material.icons.filled.AccountTree
+import com.jaguar.gearbox.ui.tools.DeadlinePlannerScreen
 import androidx.compose.material.icons.filled.AspectRatio
 import com.jaguar.gearbox.ui.tools.AspectRatioScreen
 import androidx.compose.material.icons.filled.TableChart
@@ -117,6 +119,7 @@ object Tools {
     const val ROUTE_SCOREBOARD = "tool/scoreboard"
     const val ROUTE_RANDOM = "tool/random"
     const val ROUTE_BASE_CONVERTER = "tool/base_converter"
+    const val ROUTE_DEADLINE_PLANNER = "tool/deadline_planner"
     const val ROUTE_ASPECT_RATIO = "tool/aspect_ratio"
     const val ROUTE_DECISION_MATRIX = "tool/decision_matrix"
     const val ROUTE_TIME_ZONE_CONVERTER = "tool/time_zone_converter"
@@ -425,6 +428,15 @@ object Tools {
             route = ROUTE_CHESS_SCOREBOARD,
             category = ToolCategory.GAMES_AND_RANDOM,
             content = { onNavigateBack -> ChessScoreboardScreen(onNavigateBack) },
+        ),
+        Tool(
+            name = "Deadline & Milestone Planner",
+            description = "Plan sequential calendar-day phases backward from a target date.",
+            icon = Icons.Filled.AccountTree,
+            route = ROUTE_DEADLINE_PLANNER,
+            category = ToolCategory.TIME,
+            content = { onNavigateBack -> DeadlinePlannerScreen(onNavigateBack) },
+            keywords = listOf("deadline planner", "milestones", "backward planning", "phase durations", "project dates"),
         ),
         Tool(
             name = "Aspect Ratio & Image Size",

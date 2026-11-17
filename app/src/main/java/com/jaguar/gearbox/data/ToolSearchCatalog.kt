@@ -41,6 +41,7 @@ object ToolSearchCatalog {
         Tools.ROUTE_HASH_GENERATOR to AliasSpec(R.array.search_tasks_hash_generator, listOf("hash some text", "text checksum", "generate a digest")),
         Tools.ROUTE_QR_GENERATOR to AliasSpec(R.array.search_tasks_qr_generator, listOf("make a qr code", "text to qr", "link to qr code")),
         Tools.ROUTE_MORSE_BINARY to AliasSpec(R.array.search_tasks_morse_binary, listOf("translate morse code", "text in binary", "decode binary text")),
+        Tools.ROUTE_DEADLINE_PLANNER to AliasSpec(R.array.deadline_catalog_tasks, listOf("plan backward from deadline", "deadline planner", "milestone planner", "schedule project phases", "backward scheduling")),
         Tools.ROUTE_ASPECT_RATIO to AliasSpec(R.array.aspect_catalog_tasks, listOf("aspect ratio", "calculate image dimensions", "image size calculator", "fit dimensions", "fill box dimensions", "maintain aspect ratio")),
         Tools.ROUTE_DECISION_MATRIX to AliasSpec(R.array.decision_catalog_tasks, listOf("decision matrix", "compare options", "weighted decision", "rank options by criteria", "weighted scores")),
         Tools.ROUTE_TIME_ZONE_CONVERTER to AliasSpec(R.array.zone_catalog_tasks, listOf("convert time zones", "time zone converter", "timezone converter", "time in another zone", "UTC to local time", "daylight saving time")),

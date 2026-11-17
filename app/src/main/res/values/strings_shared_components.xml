@@ -41,7 +41,7 @@
     <string name="shared_could_not_clear_history_try_again">Could not clear history. Try again.</string>
     <string name="shared_clear">Clear</string>
     <string name="shared_saved_only_on_this_device_in_your_workbench_review_inputs_before_savin">Saved only on this device in your Workbench. Review inputs before saving private information.</string>
-    <string name="shared_text_qr_and_hash_may_contain_passwords_tokens_or_private_information_t">These tools, including Text Diff, QR, Hash, Decision Matrix and Bill Splitter, may contain passwords, tokens or private information. This manual save persists even when automatic history and result retention are off. Local storage is not an encrypted vault. Remove secrets before saving.</string>
+    <string name="shared_text_qr_and_hash_may_contain_passwords_tokens_or_private_information_t">Inputs and results may contain passwords, tokens, personal information or private plans. This manual save persists even when automatic history and result retention are off. Local storage is not an encrypted vault. Remove secrets before saving.</string>
     <string name="shared_save_preview">Save preview</string>
     <string name="shared_name">Name</string>
     <string name="shared_could_not_save_check_the_100_item_limit_and_input_size">Could not save. Check the 100-item limit and input size.</string>

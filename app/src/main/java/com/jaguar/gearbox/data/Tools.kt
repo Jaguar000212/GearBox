@@ -214,7 +214,7 @@ object Tools {
             route = ROUTE_TIP,
             category = ToolCategory.MONEY,
             content = { onNavigateBack -> TipCalculatorScreen(onNavigateBack) },
-            keywords = listOf("gratuity", "bill split", "split the bill"),
+            keywords = listOf("gratuity", "bill split", "tip and split"),
         ),
         Tool(
             name = "Date Calculator",

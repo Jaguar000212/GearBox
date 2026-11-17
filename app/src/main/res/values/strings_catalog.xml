@@ -358,7 +358,7 @@
     <string-array name="catalog_keywords_tip">
         <item>gratuity</item>
         <item>bill split</item>
-        <item>split the bill</item>
+        <item>tip and split</item>
     </string-array>
     <string-array name="catalog_keywords_discount">
         <item>sale</item>

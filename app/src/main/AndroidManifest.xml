@@ -67,6 +67,15 @@
                 android:resource="@xml/timer_widget_info" />
         </receiver>
 
+        <receiver android:name=".focus.FocusAlarmReceiver" android:exported="false" />
+        <receiver android:name=".focus.FocusRestoreReceiver" android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+                <action android:name="android.app.action.SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED" />
+            </intent-filter>
+        </receiver>
+
         <receiver android:name=".timer.StopwatchStatusActionReceiver" android:exported="false" />
         <receiver android:name=".timer.TimerStatusActionReceiver" android:exported="false" />
         <receiver android:name=".timer.TimerAlarmReceiver" android:exported="false" />

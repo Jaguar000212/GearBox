@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="focus_catalog_name">Focus Timer</string>
+    <string name="focus_catalog_description">Plan Pomodoro focus sessions or repeating work and rest intervals.</string>
+    <string name="focus_catalog_instructions">Choose Pomodoro or intervals, configure work and rest durations, then explicitly start the session.</string>
+    <string name="focus_catalog_example">Try a short work and rest session before relying on a longer schedule.</string>
+    <string name="focus_catalog_limitation">Background alerts depend on device permissions and power management. Live sessions are not imported from History or Workbench. Do not use for safety-critical timing.</string>
+    <string-array name="focus_catalog_keywords"><item>pomodoro</item><item>interval</item><item>focus</item><item>work</item><item>rest</item><item>break</item></string-array>
+    <string-array name="focus_catalog_tasks"><item>pomodoro timer</item><item>work rest intervals</item><item>focus and break</item><item>interval timer</item><item>study session</item></string-array>
+</resources>

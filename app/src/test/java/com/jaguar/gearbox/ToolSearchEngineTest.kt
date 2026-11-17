@@ -13,7 +13,7 @@ class ToolSearchEngineTest {
         assertEquals(Tools.ROUTE_COMPASS, matches("which way is north?").first().route)
         assertEquals(Tools.ROUTE_AGE, matches("HOW OLD AM I?").first().route)
         assertTrue(matches("unsupported quantum teleporter").isEmpty())
-        assertTrue(matches("pomodoro interval").isEmpty())
+        assertEquals("tool/focus_timer", matches("pomodoro interval").first().route)
         assertTrue(matches("color blend").isEmpty())
     }
 

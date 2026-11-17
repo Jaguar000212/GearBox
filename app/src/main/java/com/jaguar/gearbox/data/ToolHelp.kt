@@ -120,6 +120,11 @@ object ToolHelpCatalog {
             "Try Hello world to inspect words and characters.",
             "Whitespace and punctuation can affect counts; review transformed text before replacing an original.",
         ),
+        Tools.ROUTE_FOCUS_TIMER to ToolHelp(
+            "Choose Pomodoro or intervals, configure work and rest durations, then explicitly start the session.",
+            "Try a short work and rest session before relying on a longer schedule.",
+            "Background alerts depend on device permissions and power management. Live sessions are not imported from History or Workbench. Do not use for safety-critical timing.",
+        ),
         Tools.ROUTE_TIMER_STOPWATCH to ToolHelp(
             "Choose Timer for a countdown or Stopwatch for elapsed time; use the on-screen start and pause controls. A Timer / Stopwatch home-screen widget provides a snapshot and controls. Find setup instructions in Settings → Home-screen widgets.",
             "Set a short countdown to check the behavior before using a longer one.",

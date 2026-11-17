@@ -40,6 +40,8 @@ import androidx.compose.material.icons.filled.Straighten
 import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.material.icons.filled.Tag
 import androidx.compose.material.icons.filled.TextFields
+import androidx.compose.material.icons.filled.Timelapse
+import com.jaguar.gearbox.ui.tools.FocusTimerScreen
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material.icons.filled.Translate
 import com.jaguar.gearbox.ui.tools.AgeCalculatorScreen
@@ -115,6 +117,7 @@ object Tools {
     const val ROUTE_RATIOS = "tool/ratios"
     const val ROUTE_DECIMAL_TO_FRACTION = "tool/decimal_to_fraction"
     const val ROUTE_TEXT_TOOLS = "tool/text_tools"
+    const val ROUTE_FOCUS_TIMER = "tool/focus_timer"
     const val ROUTE_TIMER_STOPWATCH = "tool/timer_stopwatch"
     const val ROUTE_BMI = "tool/bmi"
     const val ROUTE_TIP = "tool/tip"
@@ -414,6 +417,15 @@ object Tools {
             route = ROUTE_TEXT_TOOLS,
             category = ToolCategory.UTILITIES,
             content = { onNavigateBack -> TextToolsScreen(onNavigateBack) },
+        ),
+        Tool(
+            name = "Focus Timer",
+            description = "Plan Pomodoro focus sessions or repeating work and rest intervals.",
+            icon = Icons.Filled.Timelapse,
+            route = ROUTE_FOCUS_TIMER,
+            category = ToolCategory.TIME,
+            content = { onNavigateBack -> FocusTimerScreen(onNavigateBack) },
+            keywords = listOf("pomodoro", "interval", "focus", "work", "rest", "break"),
         ),
         Tool(
             name = "Timer / Stopwatch",

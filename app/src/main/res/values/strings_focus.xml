@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="focus_screen_title">Focus Timer</string>
+    <string name="focus_setup">Session setup</string>
+    <string name="focus_mode">Routine</string>
+    <string name="focus_pomodoro">Pomodoro</string>
+    <string name="focus_intervals">Intervals</string>
+    <string name="focus_work_seconds">Work duration (seconds, 1–21,600)</string>
+    <string name="focus_rest_seconds">Short break / rest (seconds, 1–21,600)</string>
+    <string name="focus_long_seconds">Long break (seconds, 1–21,600)</string>
+    <string name="focus_rounds">Work rounds (1–99)</string>
+    <string name="focus_long_every">Long break after every N work rounds (1–20)</string>
+    <string name="focus_setup_note">Breaks occur only between work rounds. The last work round ends the session. Editing this setup does not change an active session.</string>
+    <string name="focus_invalid">Enter whole numbers within the ranges shown.</string>
+    <string name="focus_start">Start session</string>
+    <string name="focus_pause">Pause</string>
+    <string name="focus_resume">Resume</string>
+    <string name="focus_reset">Reset session</string>
+    <string name="focus_cancel">Cancel</string>
+    <string name="focus_replace_title">Replace the current session?</string>
+    <string name="focus_replace_message">The existing session will end and the setup shown will start from its first work round. This cannot be undone.</string>
+    <string name="focus_replace">Replace and start</string>
+    <string name="focus_reset_title">Reset this session?</string>
+    <string name="focus_reset_message">The current progress will be cleared and its scheduled alert cancelled. Your setup fields will stay unchanged.</string>
+    <string name="focus_status_idle">Ready to start</string>
+    <string name="focus_status_running">Running</string>
+    <string name="focus_status_paused">Paused</string>
+    <string name="focus_status_finished">Session finished</string>
+    <string name="focus_status_interrupted">Session interrupted</string>
+    <string name="focus_phase_work">Work</string>
+    <string name="focus_phase_short">Short break / rest</string>
+    <string name="focus_phase_long">Long break</string>
+    <string name="focus_round">Work round %1$d of %2$d</string>
+    <string name="focus_remaining">%1$d h %2$d min %3$d s remaining</string>
+    <string name="focus_session_heading">Current session</string>
+    <string name="focus_loading">Loading session…</string>
+    <string name="focus_failure">Could not update the session. Check the current state before trying again.</string>
+    <string name="focus_background_note">Leaving this screen does not pause the session. Android may delay background alerts because of battery or alarm restrictions. Reopening catches up to the current phase; it does not restart missed phases. This is not a safety-critical alarm.</string>
+    <string name="focus_notification_note">Allow notifications for phase alerts. A session can still run without permission, but notifications may not appear. Notification and alarm settings can also block or delay alerts.</string>
+    <string name="focus_notifications_off">Notifications are currently unavailable or disabled. Do not rely on an audible or visible background alert.</string>
+    <string name="focus_interrupted_note">A device restart or clock discontinuity interrupted this session. Start a new session explicitly; it will not resume automatically.</string>
+    <string name="focus_local_note">Only the current session is kept locally for recovery. This tool does not add history, presets or Workbench records.</string>
+    <string name="focus_inexact_alerts">Exact alarms are not available. Phase alerts may arrive late; the timer still catches up when reopened.</string>
+    <string name="focus_schedule_failed">The background alert could not be scheduled. Keep this screen open or use another alarm you trust.</string>
+</resources>

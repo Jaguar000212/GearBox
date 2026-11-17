@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="focus_backend_channel">Focus Timer phase changes</string>
+    <string name="focus_backend_channel_description">Current phase and session completion alerts. Android may delay delivery.</string>
+    <string name="focus_backend_work">Work</string>
+    <string name="focus_backend_short_break">Rest</string>
+    <string name="focus_backend_long_break">Long break</string>
+    <string name="focus_backend_finished">Focus session finished</string>
+    <string name="focus_backend_finished_body">All work rounds are complete.</string>
+    <string name="focus_backend_phase_title">Focus Timer</string>
+    <string name="focus_backend_phase_body">%1$s · Round %2$d of %3$d</string>
+</resources>

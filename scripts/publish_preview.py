@@ -304,6 +304,17 @@ def publish(api, apk, sha, run_number, fingerprint, source_date):
     return "published"
 
 
+def valid_provider_authorities(value):
+    # AndroidX Startup is merged by dependencies alongside our FileProvider. Keep this
+    # exact app-scoped allowlist: a new provider requires deliberate source review.
+    allowed = {APP_ID + ".fileprovider", APP_ID + ".androidx-startup"}
+    return (isinstance(value, list) and 1 <= len(value) <= len(allowed)
+            and all(isinstance(item, str) for item in value)
+            and len(set(value)) == len(value)
+            and APP_ID + ".fileprovider" in value
+            and set(value).issubset(allowed))
+
+
 def load_manifest(path, expected_sha, expected_run):
     try:
         manifest = json.loads(path.read_text())
@@ -317,7 +328,7 @@ def load_manifest(path, expected_sha, expected_run):
                 manifest["debuggable"] is not False or manifest["label"] != "GearBox Dev Preview" or
                 manifest["apk"] != filename or not HEX.fullmatch(manifest["certificate_sha256"]) or
                 not HEX.fullmatch(manifest["sha256"]) or
-                manifest["provider_authorities"] != [APP_ID + ".fileprovider"]):
+                not valid_provider_authorities(manifest["provider_authorities"])):
             raise ValueError()
         apk_path = path.parent / filename
         if apk_path.is_symlink() or not 0 < apk_path.stat().st_size <= 128 * 1024 * 1024:

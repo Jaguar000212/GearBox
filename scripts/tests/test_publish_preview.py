@@ -170,6 +170,19 @@ class PublisherTest(unittest.TestCase):
             (root/'SHA256SUMS').write_text(digest+'  '+filename+'\n')
             path=root/'preview-manifest.json';path.write_text(json.dumps(metadata))
             self.assertEqual((apk,A,10,CERT,DATE),p.load_manifest(path,A,'10'))
+            metadata['provider_authorities'].append(p.APP_ID+'.androidx-startup')
+            path.write_text(json.dumps(metadata))
+            self.assertEqual((apk,A,10,CERT,DATE),p.load_manifest(path,A,'10'))
+            valid = metadata['provider_authorities']
+            for invalid in ([p.APP_ID+'.androidx-startup'], valid + ['com.jaguar.gearbox.fileprovider'],
+                            [p.APP_ID+'.fileprovider', p.APP_ID+'.unknown'], valid + [valid[0]],
+                            [p.APP_ID+'.fileprovider;com.jaguar.gearbox.beta.shared'], None, 'wrong type', [None]):
+                metadata['provider_authorities'] = invalid
+                path.write_text(json.dumps(metadata))
+                with self.subTest(authorities=invalid), self.assertRaises(p.PublishError):
+                    p.load_manifest(path,A,'10')
+            metadata['provider_authorities'] = valid
+            path.write_text(json.dumps(metadata))
             for sha,run in [(B,'10'),(A,'11')]:
                 with self.assertRaises(p.PublishError):p.load_manifest(path,sha,run)
             (root/filename).write_bytes(b'changed')

@@ -1,24 +1,29 @@
-# Isolated preview testing
+# Rolling developer Preview channel
 
-CI builds the ordinary debug/release checks first, then an opt-in isolated preview:
+The public GitHub release **Preview** (tag `preview`) is the opt-in developer channel. Successful builds from pushes to `main` update this one release. It is always a prerelease and never GitHub's Latest release. Stable/beta remain on the existing `v*` tag workflow, unchanged. Failed or superseded builds do not replace the last successful downloadable build.
 
-```sh
-./gradlew -PisolatedPreview=true -PpreviewCheckpoint=2 :app:assembleDebug :app:assembleDebugAndroidTest
-```
+## One installation, ordinary updates
 
-The current checkpoint changes debug identity to `com.jaguar.gearbox.preview2`, launcher label **GearBox Preview 2**. The bounded `previewCheckpoint` property accepts only `1` or `2`; omitted/default `1` preserves the original opt-in `.preview` identity and **GearBox Preview** label. Ordinary debug remains `com.jaguar.gearbox.beta`; release remains `com.jaguar.gearbox`. No release signing key, tag or release is created.
+Every channel APK uses application ID `com.jaguar.gearbox.devpreview` and label **GearBox Dev Preview**, not a per-build identity. It is a non-debuggable release build signed by the existing authorized persistent signing key. Version code is `1000000 + GITHUB_RUN_NUMBER`; version name is `preview.RUN+SHA7`. The workflow identity/run sequence must remain stable. The publisher rejects changed signer fingerprints, non-increasing versions and mismatched provenance; there is no debug-key fallback. Installing a later channel APK updates the same Preview installation and preserves its data under Android's ordinary update behavior.
 
-The preview can be installed beside both the earlier beta test APK and original Preview without replacing its data, even though CI debug signing certificates differ across runs. It starts fresh, with separate permissions, notification settings, widgets, shortcuts, preferences and history. Do not uninstall or clear the old app. A future preview with a different debug signing key may still require a separate profile or a locally consistent debug signing key; isolation is not a signing-key migration.
+This is a **one-time new channel installation**, not an upgrade from the older randomly signed `.preview` or `.preview2` test APKs. Those older installs remain untouched. Do not uninstall or clear their data. Stable (`com.jaguar.gearbox`) and ordinary debug (`com.jaguar.gearbox.beta`) also remain separate. No automatic cross-package migration is implemented.
 
-## Identity and fidelity checks
+## Build and publish safeguards
 
-- CI checks regular/release package IDs, preview package and distinct label, every merged provider authority, unchanged launcher class, and `.preview2.test` instrumentation targeting `.preview2`.
-- File sharing uses the current package's FileProvider. Shortcuts/widgets/notification actions use explicit components with the current app context. Channel IDs, files and preferences are package-scoped; internal action strings and `gearbox://` identities are not exported public deep links.
-- Source code and tool behavior are unchanged. The preview gets its own unit/lint pass and compiled instrumentation APK. Android instrumentation and hands-on testing remain unexecuted.
-- The preview validates fresh-install behavior, not in-place beta/release upgrades or migration. Upgrade tests require the matching original application ID and signing key.
-- Widgets may have the same individual labels in the picker: choose the **GearBox Preview 2** app group. Launch each app's own shortcut, widget and notification to check isolation.
-- Close the other app's Flashlight when testing, because two apps can compete for the same physical camera/torch hardware.
+- PR CI builds/tests/lints without signing secrets and validates the unsigned developer-preview package/label/providers. It does not publish releases.
+- The main-only Preview workflow checks out the exact push SHA, runs Python/JVM/build/lint gates, signs the isolated release, verifies its certificate and non-debuggable identity, then preserves a distribution artifact.
+- The publish job alone gets `contents: write`. It verifies source SHA, run number, version, APK checksum and signer continuity before publication. It refuses unowned `preview` tag/release collisions and immutable releases rather than changing repository security settings.
+- Publishing is serialized and rechecks `main` to prevent an older finished run replacing a newer commit. A failed newer build leaves the previous successful Preview available. Intermediate main pushes may be superseded rather than each being published.
+- Versioned assets are uploaded and verified before updating release metadata/tag. Prior assets are retained, so a failed update does not delete the previous APK. GitHub has no atomic transaction for multiple assets/tag/notes: transient inconsistency is possible; use the commit/version/checksum manifest linked in the release notes as the source of truth, not asset ordering or the moving source ZIP alone.
+- The `preview` tag is excluded from ordinary Git version lookup. Existing stable/beta version-code ordering is unchanged.
+- This channel intentionally produces public downloads, not access-restricted developer distribution. Source commit, build date/run, certificate fingerprint and checksums are recorded for traceability.
 
-Follow [the complete testing guide](testing-guide.md). Run instrumentation only in a disposable test profile, never against data or active clocks you need to preserve.
+## Testing
 
-The current package contains `GearBox-Preview-2.apk` and its matching instrumentation APK. Install only the main APK for ordinary hands-on testing. No uninstall, data clear, signing secret or signing-key migration is required or performed. Future rebuilds of Preview 2 can still encounter a CI debug-certificate mismatch; do not delete data to work around it.
+Download the APK identified by the current release notes and verify its checksum. Only the main APK is needed for hands-on testing. Check that a second newer Preview APK updates **GearBox Dev Preview** rather than adding another app, and that sample history/settings remain intact. Never use important data as the first upgrade test.
+
+Check this install's own sharing FileProvider, shortcut, widget, notification and Quick Settings tile. Provider authorities use the current application ID; explicit components, notification channels and storage are app-scoped. Close another install's flashlight before testing shared physical camera/torch hardware.
+
+Follow [the complete guide](testing-guide.md). Instrumentation runtime, hardware, TalkBack, large-font/landscape behavior and actual same-channel upgrade tests remain outstanding until performed. The first fresh channel install cannot validate upgrade/migration. Stable signing is necessary for future updates, but source checks alone do not prove Android device behavior.
+
+Historical opt-in `isolatedPreview` checkpoint properties remain available for reproducing old builds; CI no longer distributes numbered preview checkpoints. They are not the rolling Preview channel.

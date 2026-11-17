@@ -85,7 +85,10 @@ class ToolMemoryStore private constructor(private val directory: File) {
     fun remove(route: String, id: String): Boolean = synchronized(lock) {
         if (!ToolMemoryPolicy.permitsRoute(route)) false
         else {
-            val success = writeEntries(fileName(route, "history"), history(route).filterNot { it.id == id })
+            val name = fileName(route, "history")
+            val entries = readEntriesStrict(name) ?: return@synchronized false
+            val remaining = entries.filterNot { it.id == id }
+            val success = remaining.size == entries.size || writeEntries(name, remaining)
             if (success) bumpGeneration(route, "history")
             success
         }
@@ -288,6 +291,31 @@ class ToolMemoryStore private constructor(private val directory: File) {
             if (!ToolMemoryPolicy.validRecord(inputs, output)) return@mapNotNull null
             ToolHistoryEntry(id, timestamp, inputs, output)
         }
+    }
+
+    /** Individual deletion must not discard unrelated rows hidden by the tolerant UI reader. */
+    private fun readEntriesStrict(name: String): List<ToolHistoryEntry>? {
+        if (listOf(name, "$name.bak", "$name.new").none { File(directory, it).exists() }) return emptyList()
+        val json = read(name) ?: return null
+        if (json.opt("version") != 1 || json.keys().asSequence().toSet() != setOf("version", "entries")) return null
+        val array = json.optJSONArray("entries") ?: return null
+        if (array.length() > ToolMemorySettings.MAX_HISTORY) return null
+        val result = mutableListOf<ToolHistoryEntry>()
+        val ids = mutableSetOf<String>()
+        for (index in 0 until array.length()) {
+            val item = array.optJSONObject(index) ?: return null
+            if (item.keys().asSequence().toSet() != setOf("id", "timestampMillis", "inputs", "output")) return null
+            val id = (item.opt("id") as? String)?.takeIf { it.isNotBlank() && it.length <= 64 } ?: return null
+            if (!ids.add(id)) return null
+            val rawTime = item.opt("timestampMillis")
+            if (rawTime !is Long && rawTime !is Int) return null
+            val timestamp = (rawTime as Number).toLong().takeIf { it >= 0 } ?: return null
+            val inputs = parseInputs(item.optJSONObject("inputs")) ?: return null
+            val output = item.opt("output") as? String ?: return null
+            if (!ToolMemoryPolicy.validRecord(inputs, output)) return null
+            result += ToolHistoryEntry(id, timestamp, inputs, output)
+        }
+        return result
     }
 
     private fun parseInputs(json: JSONObject?): Map<String, String>? {

@@ -250,3 +250,15 @@ Incoming-share launch mode is `singleTop`: a topmost GearBox Activity can receiv
 - Verify the Quick Settings PendingIntent launch on Android 14+ and the legacy launch on Android 11–13. OEM lockscreen, tile placement and task-stack behavior require device testing. Tiles are launch shortcuts, not live running-state indicators.
 - Compact selectors return keyboard focus to their trigger after choice, Close or Back. Test keyboard navigation and TalkBack separately; keyboard focus restoration does not establish screen-reader focus guarantees.
 - Compass/Level status changes are polite announcements, not continuous readout announcements. Unreliable/low-accuracy sensors must not display an apparently trustworthy live heading/level verdict. Existing explicitly captured snapshots remain labeled as snapshots. Check unavailable sensors, startup, failure, accuracy recovery, focus views and large fonts on hardware.
+
+
+## Final source cross-check
+
+The [final source cross-check](implementation-scope-audit.md#final-improvement-cross-check) records selected coverage and deliberate limits. Test the selected implementations, not unsupported universal batch/Undo/split-pane behavior. No additional tools are included. The [rolling developer Preview channel](preview-testing.md) uses a fixed package and persistent signer for future updates; do not uninstall or clear previous test data.
+
+Individual history deletion must preserve unrelated records. For a deliberately corrupted test-only history file, deleting one visible row must fail without rewriting the collection or invalidating queued observations. Valid rows still delete normally; explicit Clear history retains its confirmed whole-collection behavior. Never inject corruption into data you need to preserve.
+
+
+## Rolling Preview update checks
+
+Install the current release-notes APK, create non-sensitive sample history/settings, then install a later higher-version channel APK. Expect one GearBox Dev Preview app with preserved data, not another app. Verify source SHA/version/checksum and signer fingerprint in the manifest. Old Preview/Preview2, beta and stable installs remain separate and untouched. Check launch tiles/widgets/notifications/sharing remain scoped to the correct install. Test failed build, stale run, signer mismatch, missing key and unowned tag collisions through automated mocks or a disposable repository, never destructive production experiments.

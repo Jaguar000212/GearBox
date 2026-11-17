@@ -59,7 +59,7 @@ object ToolMemoryPolicy {
     fun permitsRoute(route: String): Boolean = routePattern.matches(route) &&
         route != "tool/password_generator" && route != "tool/focus_timer"
 
-    val sensitiveTextRoutes: Set<String> = setOf("tool/text_tools", "tool/qr_generator", "tool/hash_generator", "tool/text_diff", "tool/decision_matrix")
+    val sensitiveTextRoutes: Set<String> = setOf("tool/text_tools", "tool/qr_generator", "tool/hash_generator", "tool/text_diff", "tool/decision_matrix", "tool/bill_splitter")
     fun isSensitiveTextRoute(route: String): Boolean = route in sensitiveTextRoutes
 
     /** Sensitive tools may remember only enumerated non-content selectors, never text. */

@@ -470,12 +470,12 @@ object Tools {
         ),
         Tool(
             name = "Bill Splitter",
-            description = "Draft an equal bill split with tax, tip and exact cent remainders.",
+            description = "Draft a simple bill split or shared expenses with balances and settlement suggestions.",
             icon = Icons.Filled.RequestQuote,
             route = ROUTE_BILL_SPLITTER,
             category = ToolCategory.MONEY,
             content = { onNavigateBack -> BillSplitterScreen(onNavigateBack) },
-            keywords = listOf("split the bill", "split bill", "equal shares", "diners", "tax", "tip"),
+            keywords = listOf("split the bill", "split bill", "equal shares", "diners", "tax", "tip", "shared expenses", "payer", "beneficiaries", "settlement"),
         ),
         Tool(
             name = "Color Blend",

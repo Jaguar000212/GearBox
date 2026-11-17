@@ -25,6 +25,8 @@ class ToolSearchEngineTest {
         assertEquals("tool/business_day_planner", matches("business days between dates").first().route)
         assertNull(matches("add business days").first().operationId)
         assertEquals("tool/bill_splitter", matches("split the bill").first().route)
+        assertEquals("tool/bill_splitter", matches("who owes whom").first().route)
+        assertNull(matches("shared expenses").first().operationId)
         assertNull(matches("split the bill").first().operationId)
         assertEquals("tool/color_blend", matches("color blend").first().route)
         assertEquals("tool/color_blend", matches("mix colours").first().route)

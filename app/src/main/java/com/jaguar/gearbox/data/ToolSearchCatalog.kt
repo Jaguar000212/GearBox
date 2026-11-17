@@ -46,7 +46,7 @@ object ToolSearchCatalog {
         Tools.ROUTE_TEXT_DIFF to AliasSpec(R.array.diff_catalog_tasks, listOf("compare two texts", "find text differences", "text diff", "compare lines", "what changed in this text")),
         Tools.ROUTE_SCIENTIFIC_CALCULATOR to AliasSpec(R.array.scientific_catalog_tasks, listOf("scientific calculator", "calculate sine", "calculate cosine", "calculate logarithm", "evaluate expression", "calculate square root")),
         Tools.ROUTE_BUSINESS_DAY_PLANNER to AliasSpec(R.array.business_catalog_tasks, listOf("business day planner", "working days", "skip weekends", "business days between dates", "add business days", "subtract business days", "count business days")),
-        Tools.ROUTE_BILL_SPLITTER to AliasSpec(R.array.bill_catalog_tasks, listOf("split the bill", "split bill", "divide restaurant bill", "equal bill shares", "bill per diner")),
+        Tools.ROUTE_BILL_SPLITTER to AliasSpec(R.array.bill_catalog_tasks, listOf("split the bill", "split bill", "divide restaurant bill", "equal bill shares", "bill per diner", "shared expenses", "who owes whom", "expense balances", "settlement suggestions")),
         Tools.ROUTE_COLOR_BLEND to AliasSpec(R.array.blend_catalog_tasks, listOf("blend two colors", "blend two colours", "mix colors", "mix colours", "interpolate color", "color blend")),
         Tools.ROUTE_COLOR_PICKER to AliasSpec(R.array.search_tasks_color_picker, listOf("convert color values", "color hex rgb hsl", "choose a color")),
         Tools.ROUTE_COUNTER to AliasSpec(R.array.search_tasks_counter, listOf("count things", "count people", "tally counter")),

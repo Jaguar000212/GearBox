@@ -210,4 +210,5 @@
     <string name="screen_brand_name" translatable="false">GearBox</string>
     <string name="screen_tool_text_diff">Text Diff</string>
     <string name="screen_tool_decision_matrix">Decision Matrix</string>
+    <string name="screen_tool_bill_splitter">Bill Splitter (Simple and Shared)</string>
 </resources>

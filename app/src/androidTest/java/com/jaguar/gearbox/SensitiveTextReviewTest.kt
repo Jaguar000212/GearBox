@@ -52,7 +52,7 @@ class SensitiveTextReviewTest {
         compose.onNodeWithText("Save preview").assertExists()
         compose.onNodeWithText("text: sample input").assertExists()
         compose.onNodeWithText("SAMPLE OUTPUT").assertExists()
-        compose.onNodeWithText("These tools, including Text Diff, QR, Hash and Decision Matrix, may contain passwords, tokens or private information. This manual save persists even when automatic history and result retention are off. Local storage is not an encrypted vault. Remove secrets before saving.").assertExists()
+        compose.onNodeWithText("These tools, including Text Diff, QR, Hash, Decision Matrix and Bill Splitter, may contain passwords, tokens or private information. This manual save persists even when automatic history and result retention are off. Local storage is not an encrypted vault. Remove secrets before saving.").assertExists()
         compose.onNodeWithText("Cancel").performClick()
         compose.onNodeWithText("Save preview").assertDoesNotExist()
     }

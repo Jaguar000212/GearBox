@@ -86,7 +86,8 @@ class ToolMemoryStoreTest {
         assertTrue(store.saveMode(billRoute, mapOf("diners" to "3")))
         assertFalse(store.saveMode(billRoute, inputs))
         assertEquals(mapOf("diners" to "3"), store.loadMode(billRoute))
-        store.saveSettings(ToolMemorySettings(historyEnabled = true, rememberResults = true))
+        store.saveSettings(ToolMemorySettings(historyEnabled = true, rememberResults = true,
+            automaticMemory = mapOf(billRoute to com.jaguar.gearbox.data.ToolAutomaticMemory(true, true))))
         assertTrue(store.record(billRoute, inputs, "110.00"))
         assertTrue(store.saveResult(billRoute, inputs, "110.00"))
         assertEquals(inputs, store.loadResult(billRoute)?.inputs)

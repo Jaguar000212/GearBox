@@ -14,6 +14,27 @@ class SensitiveToolMemoryStoreTest {
     private fun consent() = ToolMemorySettings(historyEnabled = true, rememberResults = true,
         rememberModes = true, automaticMemory = routes.associateWith { ToolAutomaticMemory(true, true) })
 
+    @Test fun billUpgradeKeepsHistoricalDataButRequiresNewSeparateConsent() {
+        val route = "tool/bill_splitter"
+        val inputs = mapOf("bill" to "100", "tax" to "0", "tipPercent" to "10", "diners" to "3")
+        val global = ToolMemorySettings(historyEnabled = true, rememberResults = true)
+        val allowed = global.copy(automaticMemory = mapOf(route to ToolAutomaticMemory(true, true)))
+        store.saveSettings(allowed)
+        assertTrue(store.record(route, inputs, "110.00"))
+        assertTrue(store.saveResult(route, inputs, "110.00"))
+        // A pre-shared-expenses install had global switches only, with no bill-specific consent.
+        File(context.noBackupFilesDir, "tool_memory_v1/settings.json").writeText(
+            """{"version":1,"historyEnabled":true,"historyLimit":20,"rememberResults":true}""")
+        val upgraded = ToolMemoryStore(context)
+        assertFalse(upgraded.settings().permitsHistory(route))
+        assertNull(upgraded.loadResult(route))
+        assertEquals(inputs, upgraded.rememberedResult(route)?.inputs)
+        assertEquals(inputs, upgraded.history(route).single().inputs)
+        assertFalse(upgraded.record(route, inputs, "new"))
+        upgraded.saveSettings(allowed)
+        assertEquals(inputs, upgraded.loadResult(route)?.inputs)
+    }
+
     @Test fun decisionMatrixHasIndependentConsentAndPreservesRejectedCaptureData() {
         val route = "tool/decision_matrix"
         val inputs = mapOf("optionLabels" to "Private A\nPrivate B", "criterionLabels" to "Cost",

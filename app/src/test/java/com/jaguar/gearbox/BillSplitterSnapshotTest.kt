@@ -32,6 +32,6 @@ class BillSplitterSnapshotTest {
         assertFalse(ToolMemoryPolicy.validMode(route, mapOf("diners" to "0")))
         assertFalse(ToolMemorySettings().permitsHistory(route))
         assertFalse(ToolMemorySettings().permitsResult(route))
-        assertTrue(ToolMemorySettings(historyEnabled = true, rememberResults = true).permitsResult(route))
+        assertFalse(ToolMemorySettings(historyEnabled = true, rememberResults = true).permitsResult(route))
     }
 }

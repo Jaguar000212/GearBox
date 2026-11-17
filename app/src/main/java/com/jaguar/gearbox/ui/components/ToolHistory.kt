@@ -53,12 +53,20 @@ fun rememberToolHistory(
     resultRequiresExplicitAction: Boolean = false,
     // Some editors restore a different result schema/mode than their initial screen state.
     restoredResultRequiresExplicitAction: (Map<String, String>) -> Boolean = { resultRequiresExplicitAction },
+    // Opt-in semantic validator: rejected restores must not release dormant hydration capture.
+    canResetHydratedCaptureOnRestore: (Map<String, String>) -> Boolean = { false },
+    // Multi-schema editors can restore a different mode-key shape than their initial view.
+    restoredModeInputs: (Map<String, String>) -> Map<String, String> = { saved ->
+        modeInputs.mapValues { (key, value) -> saved[key] ?: value }
+    },
 ): ToolHistoryBinding {
     val context = LocalContext.current
     val store = remember { ToolMemoryStore(context) }
     val restore by rememberUpdatedState(onRestore)
     val restoreMode by rememberUpdatedState(onRestoreMode)
     val restoreLast by rememberUpdatedState(onRestoreLastResult)
+    val restoreModeInputs by rememberUpdatedState(restoredModeInputs)
+    val canResetHydratedCapture by rememberUpdatedState(canResetHydratedCaptureOnRestore)
     var importedInputsFingerprint by rememberSaveable(route) { mutableStateOf<String?>(null) }
     var hydratedInputsFingerprint by rememberSaveable(route) { mutableStateOf<String?>(null) }
     var hydratedModeFingerprint by rememberSaveable(route) { mutableStateOf<String?>(null) }
@@ -79,7 +87,10 @@ fun rememberToolHistory(
                     hydratedModeFingerprint = historyObservationFingerprint(route,
                         modeInputs.mapValues { (key, value) -> imported.inputs[key] ?: value }, null)
                 }
-                if (imported.modeOnly) restoreMode(imported.inputs) else restore(imported.inputs)
+                if (imported.modeOnly) restoreMode(imported.inputs) else {
+                    if (canResetHydratedCapture(imported.inputs)) hydratedInputsFingerprint = null
+                    restore(imported.inputs)
+                }
             }
             consumeImport()
             initialized = true
@@ -94,8 +105,7 @@ fun rememberToolHistory(
                 // after clearing its history must not copy its dormant last result back.
                 hydratedInputsFingerprint = if (restoredResultRequiresExplicitAction(it.inputs)) null
                     else historyObservationFingerprint(route, it.inputs, null)
-                hydratedModeFingerprint = historyObservationFingerprint(route,
-                    modeInputs.mapValues { (key, value) -> it.inputs[key] ?: value }, null)
+                hydratedModeFingerprint = historyObservationFingerprint(route, restoreModeInputs(it.inputs), null)
                 restoreLast(it.inputs)
             }
         }
@@ -164,7 +174,11 @@ fun rememberToolHistory(
             }
         }
     }
-    return ToolHistoryBinding(route, { restore(it) }, inputs, output, modeInputs, allowRestore)
+    return ToolHistoryBinding(route, {
+        // Explicit History restore is a fresh user action, unlike automatic hydration.
+        if (canResetHydratedCapture(it)) hydratedInputsFingerprint = null
+        restore(it)
+    }, inputs, output, modeInputs, allowRestore)
 }
 
 @Composable

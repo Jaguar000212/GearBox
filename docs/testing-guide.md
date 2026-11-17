@@ -338,3 +338,13 @@ This is local date arithmetic with user-selected weekend days and explicit exclu
 - Verify weighted sums, normalization and ties using unrounded totals. Zero-weight criteria contribute nothing; all-zero weights are rejected. Test duplicate/empty/long labels, invalid scores, dimension changes, limits and exact shape validation. The sum/weight formula must be visible; rounding must not create or break rankings.
 - Adding/removing options or criteria invalidates the result; destructive removal should be deliberate. Import/example loads inputs only. Remembered results honor explicit opt-in without replay; no labels or ratings are stored under mode-only retention.
 - Labels may be private. Test separate default-off automatic history/result controls, exact reviewed sharing and sensitive clipboard handling. Existing storage limits remain unchanged. Verify accessible row/criterion labels, large fonts, keyboard, adaptive layouts and reset/remove confirmations on-device.
+
+## Bill Splitter: shared expenses correction
+
+The original draft covered only a single equally divided bill. The shared-expenses follow-up completes the separate multi-payer workflow; both modes remain in the same tool.
+
+- Enter participants and several expenses, each with one payer and an explicit nonempty beneficiary subset. Verify each expense's exact cents are fully assigned, including a payer who is not a beneficiary and uneven-cent splits. Sum of paid equals sum of owed; net balances sum to zero.
+- Verify suggested transfers settle every net balance without inventing money. Transfers are deterministic suggestions, not executed payments and not a promise of the fewest possible transactions. Test zero expenses/amounts, ties, everyone already settled, maximum bounds and malformed references.
+- Editing/removing participants cannot silently transfer an expense to another person. Confirm destructive changes and test stale confirmations after newer edits. Switching simple/shared modes or restoring either schema must not import into the wrong editor or show stale results.
+- Names and expenses are private inputs. Bill Splitter's separate automatic-capture controls default off; existing history is not silently deleted. Mode retention excludes participant names and expense content. Explicit reviewed Share and sensitive Copy remain deliberate actions. Test legacy simple snapshots, shared snapshots, opted-in result restoration and no replay.
+- Check keyboard/TalkBack payer and beneficiary selection, indexed labels for duplicate names, large fonts, adaptive layouts and copy/share readability. No payment service or contact access is used; device UI tests remain user-owned.

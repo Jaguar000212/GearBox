@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="bill_catalog_name">Bill Splitter</string>
-    <string name="bill_catalog_description">Draft an equal bill split with tax, tip and exact cent remainders.</string>
-    <string name="bill_catalog_instructions">Enter the bill and tax amounts, a tip percentage, and 1 to 1000 diners. The tip uses the original bill before tax. Calculate an equal split; remaining cents go to the first diners.</string>
+    <string name="bill_catalog_description">Draft a simple bill split or shared expenses with balances and settlement suggestions.</string>
+    <string name="bill_catalog_instructions">For a simple bill, enter bill and tax amounts, tip percentage and diners; tip uses the original bill before tax. For shared expenses, enter participants, each amount, who paid and who benefited, then calculate balances and suggested settlements. For example, if A pays 30 for A and B equally, B owes A 15.</string>
     <string name="bill_catalog_example">Load a bill of 100 with a tip of 10 percent and three diners, then calculate shares of 36.67, 36.67 and 36.66.</string>
-    <string name="bill_catalog_limitation">This is a draft with two decimal currency places, not a payment or currency conversion. It does not track who paid or split individual items.</string>
-    <string-array name="bill_catalog_keywords"><item>split the bill</item><item>split bill</item><item>equal shares</item><item>diners</item><item>tax</item><item>tip</item></string-array>
-    <string-array name="bill_catalog_tasks"><item>split the bill</item><item>split bill</item><item>divide restaurant bill</item><item>equal bill shares</item><item>bill per diner</item></string-array>
+    <string name="bill_catalog_limitation">Draft calculations use two decimal currency places. Settlement suggestions do not send money, verify payments or guarantee the fewest transfers. Use one currency and review participant labels and amounts before sharing.</string>
+    <string-array name="bill_catalog_keywords"><item>split the bill</item><item>split bill</item><item>equal shares</item><item>diners</item><item>tax</item><item>tip</item><item>shared expenses</item><item>payer</item><item>beneficiaries</item><item>settlement</item></string-array>
+    <string-array name="bill_catalog_tasks"><item>split the bill</item><item>split bill</item><item>divide restaurant bill</item><item>equal bill shares</item><item>bill per diner</item><item>shared expenses</item><item>who owes whom</item><item>expense balances</item><item>settlement suggestions</item></string-array>
+    <string name="bill_catalog_reference_example">Simple bill: 100 plus a 10 percent tip split three ways gives 36.67, 36.67 and 36.66. Shared expenses: if A pays 30 for A and B equally, B owes A 15.</string>
 </resources>

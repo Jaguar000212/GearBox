@@ -1,0 +1,107 @@
+name: Developer Preview
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+# Never interrupt an asset update. Queued superseded commits are harmlessly skipped by the publisher.
+concurrency:
+  group: developer-preview-publisher
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Validate and sign developer preview
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: gradle/actions/setup-gradle@v4
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
+      - name: Install build SDK
+        run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
+      - name: Quality gates without signing secrets
+        run: |
+          python3 -m unittest discover -s scripts/tests -v
+          bash ./gradlew -p buildSrc --no-daemon test
+          bash ./gradlew --no-daemon --stacktrace :app:assembleDebug :app:assembleDebugAndroidTest :app:testDebugUnitTest :app:lintDebug :app:lintRelease
+      - name: Decode existing authorized signing key
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          for name in KEYSTORE_BASE64 KEYSTORE_PASSWORD KEY_ALIAS KEY_PASSWORD; do
+            if [[ -z "${!name}" ]]; then echo "::error::Missing required signing secret: $name"; exit 1; fi
+          done
+          umask 077
+          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/preview.jks"
+          test -s "$RUNNER_TEMP/preview.jks"
+      - name: Build signed isolated release
+        env:
+          KEYSTORE_PATH: ${{ runner.temp }}/preview.jks
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          DEVELOPER_PREVIEW_RUN_NUMBER: ${{ github.run_number }}
+          DEVELOPER_PREVIEW_SHA: ${{ github.sha }}
+        run: bash ./gradlew --no-daemon --stacktrace -PdeveloperPreview=true :app:assembleRelease :app:testReleaseUnitTest :app:lintRelease
+      - name: Remove decoded signing key
+        if: always()
+        run: rm -f "$RUNNER_TEMP/preview.jks"
+      - name: Verify signature and isolated APK provenance
+        run: python3 scripts/preview_artifact.py "$GITHUB_RUN_NUMBER" "$GITHUB_SHA" --apk-dir app/build/outputs/apk/release --build-tools "$ANDROID_HOME/build-tools/35.0.0"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: developer-preview-distribution
+          path: dist/
+          if-no-files-found: error
+          retention-days: 14
+      - name: Preserve mapping and diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: developer-preview-diagnostics
+          path: |
+            app/build/outputs/mapping/release/mapping.txt
+            app/build/reports/
+            app/build/test-results/
+            buildSrc/build/reports/
+          if-no-files-found: warn
+          retention-days: 30
+
+  publish:
+    name: Update public rolling Preview
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/download-artifact@v4
+        with:
+          name: developer-preview-distribution
+          path: dist
+      - name: Publish verified main build
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python3 scripts/publish_preview.py --repository "$GITHUB_REPOSITORY" --manifest dist/preview-manifest.json

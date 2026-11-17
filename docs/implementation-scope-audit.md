@@ -37,6 +37,28 @@ This is a source-level inventory, not a device-test sign-off. It includes correc
 | Games/clocks | Game retention controls, explicit snapshot/restore guards; active clocks preserved | New Preview identity has separate clocks/data and cannot verify in-place migration |
 | Build/test | Normal+preview builds, JVM tests, lint, APK identity guards; expanded isolated instrumentation tests | Instrumentation runtime, hardware, TalkBack, landscape/large-font visual QA and upgrade migration still unverified |
 
-## Fresh preview versus upgrade testing
+## Preview and upgrade testing
 
-GearBox Preview 2 uses a separate identity to avoid replacing either the earlier Preview or beta app. It starts with fresh data and permissions. Do not delete old app data. Fresh-install feature tests cannot establish migration correctness, and a future build with another CI debug certificate may not update this installation. Stable debug signing remains unresolved; no signing secret has been introduced.
+The rolling developer Preview channel uses one fixed `.devpreview` application ID and persistent signing for future in-place updates. Earlier `.preview`/`.preview2` APKs remain separate and untouched; no cross-package migration is implemented. See [channel safeguards](preview-testing.md). Fresh installation alone does not verify upgrade behavior, and device testing remains outstanding.
+
+## Final improvement cross-check
+
+Source review of the completed feature phases distinguishes selected implementations from universal promises. New tools (including separate focus/interval and Color Blend tools) remain deferred.
+
+| Approved improvement | Source evidence and selected coverage | Intentionally not claimed |
+| --- | --- | --- |
+| Task-language/operation discovery and category identity | `ToolSearchCatalog`, `ToolSearchEngine`, `CategoryVisual`, `MainActivity`: 41 curated alias sets, 26 existing-mode operations, seven icons/accent/count identities | AI interpretation, duplicate tools, new operations, custom categories or future-unassigned fallback |
+| Whole-app visual refresh and navigation | `HomeScreen`, `FavoritesScreen`, `ToolScaffold`: compact discovery, favorites/recents, operation-aware quick switch and explicit mode import | Every screen rebuilt, configurable dashboard or visual device approval |
+| Adaptive layouts and reachability | `AdaptiveToolLayout`: 15 screens; 720dp minimum/1.3 maximum font-scale split. `ToolActions`: 26 screens, wrapping primary actions/full-width Clear; `ResultCard`: 22 screens | Universal split panes or sticky bottom actions. Small converters/live tools retain specialized layouts |
+| Actionable help and input/result consistency | `ToolHelp`: 41 records; `ToolExamples`: 22 fixed plus dynamic Days Until =23 confirmed input examples; clear/copy/share policies preserve route-specific behavior | Auto-Generate/Start, password sharing or arbitrary help actions |
+| Starting units, calculations and editing | `DefaultUnitSystem`: fresh BMI/Ruler/Unit length; `ShowWorking`: Percentage/Tip/Discount/GST/Ratios; Unit batch/reverse; `SessionUndoRedo`: Text/Unit | Every category gets unit defaults, every calculator is reversible, or general app/game/clock undo |
+| Privacy/history/retention | `ToolMemoryPolicy`, `ToolMemoryStore`, `ToolHistory`: bounded optional captures, generation fencing, password exclusion, Text/QR/Hash additional opt-ins, explicit outcome restore | Secret detection, encrypted vault, secure erase or all app data excluded from backup. Morse and other arbitrary inputs still follow ordinary retention settings |
+| Workbench and presets | `WorkbenchScreen`, `SavedResultComparison`: names/filter/selected deletion; nine validated deterministic comparison route schemas | Folders, payload editing, arbitrary same-tool comparison or batch comparison |
+| Compatible handoffs and shared input | Typed `ToolHandoffs` and incoming-share parser/inbox: destination preview, explicit choice, bounded payloads and initial-retention suppression | Arbitrary pipelines, attachments, fetching links or automatic action execution; Text/Morse live-convert after confirmation |
+| Color improvements | `LocalImageColorSampler`, `ColorInspection`, HSL controls: local selected image, bounded decoding, explicit RGB sample, lightness/luminance and pair contrast | Full-resolution/physical color certification, alpha-aware contrast or a new Color Blend tool |
+| Group use and system access | `GroupPresentation`, Team Picker; existing Scoreboard focus; `ClockLaunchTileService`: two manual-add launch-only tiles | New games/tools, auto tile placement, live-state indicators or clock command execution |
+| Accessibility/motion/device honesty | Shared selector keyboard-focus return; coordinate sampling; reliable sensor gating/polite status; Coin/Bottle reduced motion | Universal TalkBack focus restoration, universal animation suppression or silent sensor-stream stall detection |
+
+### Verification boundary
+
+CI builds ordinary debug, unsigned release and isolated preview; runs JVM tests and lint; compiles instrumentation APKs and checks package identities. Authored/compiled instrumentation tests are **not executed device tests**. Hardware, TalkBack, lockscreen/Quick Settings, actual large-font/landscape visuals and upgrade/migration remain outstanding. The first rolling channel installation is fresh, not a migration test. Future same-channel updates require the verified permanent signer and increasing version. Do not remove older installs/data.

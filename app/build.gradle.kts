@@ -1,4 +1,5 @@
 import com.jaguar.versioning.ReleaseVersion
+import com.jaguar.versioning.DeveloperPreviewVersion
 
 plugins {
     alias(libs.plugins.android.application)
@@ -17,6 +18,27 @@ val isolatedPreview = providers.gradleProperty("isolatedPreview").orNull?.let {
     require(it == "true" || it == "false") { "isolatedPreview must be true or false" }
     it == "true"
 } ?: false
+// Dedicated rolling development release. Explicit provenance is mandatory; never infer it
+// from a version tag or use a stable/beta installation identity for these artifacts.
+val developerPreview = providers.gradleProperty("developerPreview").orNull?.let {
+    require(it == "true" || it == "false") { "developerPreview must be true or false" }
+    it == "true"
+} ?: false
+require(!developerPreview || !isolatedPreview) { "developerPreview and isolatedPreview cannot be combined" }
+val developerPreviewVersion = if (developerPreview) DeveloperPreviewVersion.fromBuild(
+    providers.gradleProperty("developerPreviewRunNumber").orElse(providers.environmentVariable("DEVELOPER_PREVIEW_RUN_NUMBER")).orNull,
+    providers.gradleProperty("developerPreviewSha").orElse(providers.environmentVariable("DEVELOPER_PREVIEW_SHA")).orNull,
+) else null
+// Unsigned validation builds are allowed. Publication separately verifies signing; if signing
+// is requested here, fail closed on incomplete credentials rather than producing a false candidate.
+if (developerPreview && releaseKeystorePath != null) {
+    require(releaseKeystorePath.isNotBlank() && file(releaseKeystorePath).isFile && file(releaseKeystorePath).canRead()) {
+        "Developer preview signing requires a readable KEYSTORE_PATH"
+    }
+    listOf("KEYSTORE_PASSWORD", "KEY_ALIAS", "KEY_PASSWORD").forEach { key ->
+        require(!System.getenv(key).isNullOrBlank()) { "Developer preview signing requires $key" }
+    }
+}
 // A bounded second test install avoids replacing the previously delivered preview.
 val previewCheckpoint = providers.gradleProperty("previewCheckpoint").orElse("1").get().also {
     require(it == "1" || it == "2") { "previewCheckpoint must be 1 or 2" }
@@ -31,7 +53,7 @@ fun resolveVersionTag(): String {
     val refName = System.getenv("GITHUB_REF_NAME")
     if (System.getenv("GITHUB_REF_TYPE") == "tag" && refName != null) return refName
     val localTag = runCatching {
-        val process = ProcessBuilder("git", "describe", "--tags", "--abbrev=0")
+        val process = ProcessBuilder("git", "describe", "--tags", "--abbrev=0", "--match", "v[0-9]*")
             .redirectErrorStream(true)
             .start()
         val output = process.inputStream.bufferedReader().readText().trim()
@@ -73,6 +95,10 @@ android {
 
     buildTypes {
         release {
+            if (developerPreview) {
+                applicationIdSuffix = ".devpreview"
+                manifestPlaceholders["appDisplayName"] = "GearBox Dev Preview"
+            }
             if (releaseKeystorePath != null) {
                 signingConfig = signingConfigs.getByName("release")
             }
@@ -98,6 +124,18 @@ android {
     }
     buildFeatures {
         compose = true
+    }
+}
+
+// Only release outputs receive the preview version; debug identities and versions are unchanged.
+androidComponents {
+    onVariants(selector().withBuildType("release")) { variant ->
+        developerPreviewVersion?.let { version ->
+            variant.outputs.forEach { output ->
+                output.versionCode.set(version.code)
+                output.versionName.set(version.name)
+            }
+        }
     }
 }
 

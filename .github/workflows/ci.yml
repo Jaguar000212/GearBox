@@ -96,40 +96,18 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
-      - name: Build isolated preview app and instrumentation
-        run: >-
-          bash ./gradlew --no-daemon --stacktrace -PisolatedPreview=true -PpreviewCheckpoint=2
-          :app:assembleDebug :app:assembleDebugAndroidTest :app:testDebugUnitTest :app:lintDebug
-
-      - name: Upload preview diagnostic reports
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: android-preview-check-reports
-          path: |
-            app/build/reports/
-            app/build/test-results/
-          if-no-files-found: warn
-          retention-days: 14
-
-      - name: Verify and package isolated preview
+      - name: Validate unsigned developer-preview release
+        env:
+          DEVELOPER_PREVIEW_RUN_NUMBER: ${{ github.run_number }}
+          DEVELOPER_PREVIEW_SHA: ${{ github.sha }}
         run: |
-          mkdir -p app/build/outputs/preview-testing
-          python3 scripts/check_apk_identity.py \
-            --aapt "$ANDROID_HOME/build-tools/35.0.0/aapt" \
-            --app app/build/outputs/apk/debug/app-debug.apk \
-            --test app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk \
-            --expected com.jaguar.gearbox.preview2 --preview --preview-label "GearBox Preview 2" \
-            --release app/build/outputs/apk/release/app-release-unsigned.apk \
-            | tee app/build/outputs/preview-testing/identity.json
-          cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/preview-testing/GearBox-Preview-2.apk
-          cp app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk app/build/outputs/preview-testing/GearBox-Preview-2-androidTest.apk
-          (cd app/build/outputs/preview-testing && sha256sum *.apk > checksums.sha256)
-
-      - name: Upload isolated preview testing APKs
-        uses: actions/upload-artifact@v4
-        with:
-          name: gearbox-preview-${{ github.event.pull_request.head.sha || github.sha }}
-          path: app/build/outputs/preview-testing/
-          if-no-files-found: error
-          retention-days: 7
+          bash ./gradlew --no-daemon --stacktrace -PdeveloperPreview=true :app:assembleRelease :app:testReleaseUnitTest :app:lintRelease
+          python3 - <<'PYCODE'
+          import os, subprocess
+          from scripts.preview_artifact import preview_metadata, validate_package
+          tool = os.environ["ANDROID_HOME"] + "/build-tools/35.0.0/aapt"
+          apk = "app/build/outputs/apk/release/app-release-unsigned.apk"
+          metadata = preview_metadata(os.environ["DEVELOPER_PREVIEW_RUN_NUMBER"], os.environ["DEVELOPER_PREVIEW_SHA"])
+          validate_package(subprocess.check_output([tool, "dump", "badging", apk], text=True),
+                           subprocess.check_output([tool, "dump", "xmltree", apk, "AndroidManifest.xml"], text=True), metadata)
+          PYCODE

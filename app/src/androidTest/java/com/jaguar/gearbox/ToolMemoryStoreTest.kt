@@ -16,6 +16,44 @@ class ToolMemoryStoreTest {
     private val route = "tool/percentage"
     @After fun cleanup() { directory.deleteRecursively() }
 
+    @Test fun individualHistoryDeletionPreservesMalformedCollectionsByteForByte() {
+        directory.mkdirs()
+        val valid = org.json.JSONObject().put("id", "valid").put("timestampMillis", 1L)
+            .put("inputs", org.json.JSONObject().put("amount", "10")).put("output", "10")
+        val malformed = org.json.JSONObject(valid.toString()).put("id", "broken").put("inputs", "wrong type")
+        val scenarios = listOf(
+            org.json.JSONArray().put(valid).put(malformed),
+            org.json.JSONArray().put(valid).put(org.json.JSONObject(valid.toString()).put("id", "future").put("extra", "keep")),
+            org.json.JSONArray().put(valid).put(valid),
+            org.json.JSONArray().also { a -> repeat(101) { a.put(org.json.JSONObject(valid.toString()).put("id", "$it")) } },
+        )
+        val file = File(directory, "percentage.history.json")
+        for (entries in scenarios) {
+            val bytes = org.json.JSONObject().put("version", 1).put("entries", entries).toString().toByteArray()
+            file.writeBytes(bytes)
+            val generation = store.historyGeneration(route)
+            assertFalse(store.remove(route, "valid"))
+            assertArrayEquals(bytes, file.readBytes())
+            assertEquals(generation, store.historyGeneration(route))
+        }
+        // An explicit clear retains its intentional whole-file semantics, including corrupt rows.
+        assertTrue(store.clearHistory(route))
+        assertFalse(file.exists())
+    }
+
+    @Test fun individualHistoryDeletionKeepsAllOtherValidRowsAndInvalidatesPendingWrites() {
+        store.saveSettings(ToolMemorySettings(historyEnabled = true))
+        store.record(route, mapOf("amount" to "10"), "10")
+        store.record(route, mapOf("amount" to "20"), "20")
+        val before = store.history(route)
+        val generation = store.historyGeneration(route)
+        assertTrue(store.remove(route, before.first().id))
+        assertEquals(listOf(before.last()), ToolMemoryStore.inDirectory(directory).history(route))
+        assertFalse(store.record(route, mapOf("amount" to "30"), "30", expectedGeneration = generation))
+        assertTrue(store.remove(route, "stale"))
+        assertEquals(listOf(before.last()), store.history(route))
+    }
+
     @Test fun selectedMutationsRejectUnreadableCollectionWithoutRewritingBytes() {
         for (collection in listOf("workbench.json", "presets.json")) {
             directory.mkdirs()

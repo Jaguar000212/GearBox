@@ -310,3 +310,10 @@ This is local date arithmetic with user-selected weekend days and explicit exclu
 - Test custom weekend sets, duplicate exclusions, invalid ISO dates, empty fields, bounds and an all-days-excluded weekend configuration. Reject excessive work rather than freezing or silently changing dates. No network holiday calendar or timezone conversion should occur.
 - Edits invalidate stale output. Explicit imports/examples/presets require Calculate; remembered-result hydration follows settings without history replay. Mode retention must not silently preserve date/exclusion content under a mode-only preference.
 - Check keyboard/TalkBack weekday selection and error messages, large fonts, adaptive layout and copy/share endpoint explanations. Device UI testing remains separate from pure date arithmetic tests.
+
+## Scientific Calculator
+
+- Verify operator precedence, parentheses, unary signs, right-associative powers and scientific notation. Test `-2^2`, `(-2)^2`, `2^3^2`, division by zero and malformed expressions. The parser must never evaluate arbitrary code or access files/network.
+- Check DEG/RAD for trigonometric and inverse functions, constants, square roots and logarithms. Domain and nonfinite results must be errors, not misleading numeric output. Floating-point calculations are approximate and do not provide symbolic algebra or a proof of exactness.
+- Exercise expression length/nesting/token limits and repeated operators. Reject excessive work safely. Editing expression or angle mode clears the prior result; explicit imports/examples require Calculate. Remembered-result hydration honors settings without replaying history; mode retention stores angle mode only.
+- Test accessible syntax instructions, keyboard input, copy/share, narrow/wide layouts and large fonts. Existing basic calculator behavior must remain unchanged. JVM tests cover the parser; physical-device UI/accessibility tests remain user-owned.

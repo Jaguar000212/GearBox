@@ -74,6 +74,7 @@ object ToolMemoryPolicy {
         "tool/color_blend" -> parseColorBlendSnapshot(values) != null
         "tool/bill_splitter" -> validBillSplitterMode(values)
         "tool/business_day_planner" -> validBusinessDayMode(values)
+        "tool/scientific_calculator" -> validScientificMode(values)
         else -> permitsRoute(route)
     }
 

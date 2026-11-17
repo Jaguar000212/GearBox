@@ -9,6 +9,8 @@ import androidx.compose.material.icons.filled.Balance
 import androidx.compose.material.icons.filled.Cake
 import androidx.compose.material.icons.filled.Calculate
 import androidx.compose.material.icons.filled.Casino
+import androidx.compose.material.icons.filled.Science
+import com.jaguar.gearbox.ui.tools.ScientificCalculatorScreen
 import androidx.compose.material.icons.filled.EventAvailable
 import com.jaguar.gearbox.ui.tools.BusinessDaysScreen
 import androidx.compose.material.icons.filled.RequestQuote
@@ -107,6 +109,7 @@ object Tools {
     const val ROUTE_SCOREBOARD = "tool/scoreboard"
     const val ROUTE_RANDOM = "tool/random"
     const val ROUTE_BASE_CONVERTER = "tool/base_converter"
+    const val ROUTE_SCIENTIFIC_CALCULATOR = "tool/scientific_calculator"
     const val ROUTE_BUSINESS_DAY_PLANNER = "tool/business_day_planner"
     const val ROUTE_BILL_SPLITTER = "tool/bill_splitter"
     const val ROUTE_COLOR_BLEND = "tool/color_blend"
@@ -410,6 +413,15 @@ object Tools {
             route = ROUTE_CHESS_SCOREBOARD,
             category = ToolCategory.GAMES_AND_RANDOM,
             content = { onNavigateBack -> ChessScoreboardScreen(onNavigateBack) },
+        ),
+        Tool(
+            name = "Scientific Calculator",
+            description = "Evaluate expressions with powers, roots, logarithms and trigonometry.",
+            icon = Icons.Filled.Science,
+            route = ROUTE_SCIENTIFIC_CALCULATOR,
+            category = ToolCategory.CALCULATORS,
+            content = { onNavigateBack -> ScientificCalculatorScreen(onNavigateBack) },
+            keywords = listOf("scientific calculator", "trigonometry", "sine", "cosine", "logarithm", "square root", "expression"),
         ),
         Tool(
             name = "Business-day Planner",

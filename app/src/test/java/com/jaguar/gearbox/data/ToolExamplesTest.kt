@@ -6,7 +6,7 @@ import org.junit.Test
 
 class ToolExamplesTest {
     @Test fun examplesAreBoundedInputOnlyAndHaveHelp() {
-        assertEquals(26, ToolExampleCatalog.routes.size)
+        assertEquals(27, ToolExampleCatalog.routes.size)
         ToolExampleCatalog.routes.forEach { route ->
             val example = ToolExampleCatalog.forRoute(route)!!
             assertTrue(ToolMemoryPolicy.permitsRoute(route))
@@ -49,5 +49,10 @@ class ToolExamplesTest {
         val inputs = requireNotNull(ToolExampleCatalog.forRoute(Tools.ROUTE_BUSINESS_DAY_PLANNER)).inputs
         assertEquals(setOf("mode", "start", "end", "offset", "weekendMask", "excludedDates"), inputs.keys)
         assertNotNull(parseBusinessDaySnapshot(inputs))
+    }
+    @Test fun scientificExampleContainsOnlyValidatedExpressionInputs() {
+        val inputs = requireNotNull(ToolExampleCatalog.forRoute(Tools.ROUTE_SCIENTIFIC_CALCULATOR)).inputs
+        assertEquals(mapOf("expression" to "sqrt(16)+2^3", "angleMode" to "DEG"), inputs)
+        assertNotNull(parseScientificSnapshot(inputs))
     }
 }

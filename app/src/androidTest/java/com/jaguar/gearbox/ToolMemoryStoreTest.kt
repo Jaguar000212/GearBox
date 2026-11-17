@@ -16,6 +16,26 @@ class ToolMemoryStoreTest {
     private val route = "tool/percentage"
     @After fun cleanup() { directory.deleteRecursively() }
 
+    @Test fun scientificModeRetentionNeverIncludesExpressionText() {
+        val scientificRoute = "tool/scientific_calculator"
+        val inputs = mapOf("expression" to "sqrt(16)+2^3", "angleMode" to "DEG")
+        assertFalse(store.record(scientificRoute, inputs, "12.0"))
+        assertFalse(store.saveResult(scientificRoute, inputs, "12.0"))
+        store.saveSettings(ToolMemorySettings(rememberModes = true))
+        assertTrue(store.saveMode(scientificRoute, mapOf("angleMode" to "RAD")))
+        assertFalse(store.saveMode(scientificRoute, inputs))
+        assertEquals(mapOf("angleMode" to "RAD"), store.loadMode(scientificRoute))
+        store.saveSettings(ToolMemorySettings(historyEnabled = true, rememberResults = true))
+        assertTrue(store.record(scientificRoute, inputs, "12.0"))
+        assertTrue(store.saveResult(scientificRoute, inputs, "12.0"))
+        assertEquals(inputs, store.loadResult(scientificRoute)?.inputs)
+        assertTrue(store.savePreset("Radians", scientificRoute, mapOf("angleMode" to "RAD")))
+        assertEquals(mapOf("angleMode" to "RAD"), store.presets().single().inputs)
+        store.saveSettings(ToolMemorySettings())
+        assertNull(store.loadResult(scientificRoute))
+        assertEquals(inputs, store.history(scientificRoute).single().inputs)
+    }
+
     @Test fun businessDayModesExcludeDatesWhileFullResultsRequireConsent() {
         val businessRoute = "tool/business_day_planner"
         val inputs = mapOf("mode" to "ADD", "start" to "2026-11-16", "end" to "2026-11-23",

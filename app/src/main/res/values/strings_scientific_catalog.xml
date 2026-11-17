@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="scientific_catalog_name">Scientific Calculator</string>
+    <string name="scientific_catalog_description">Evaluate expressions with powers, roots, logarithms and trigonometry.</string>
+    <string name="scientific_catalog_instructions">Enter an expression with explicit multiplication, choose degrees or radians for trigonometry, then calculate. Use parentheses for grouping and functions such as sqrt(16), sin(30), ln(e) or log(100).</string>
+    <string name="scientific_catalog_example">Load sqrt(16)+2^3, then calculate 12. The example does not calculate until you request it.</string>
+    <string name="scientific_catalog_limitation">Finite-precision real-number arithmetic only, not symbolic algebra or complex numbers. Multiplication must be explicit, such as 2*pi. Powers associate right to left; -2^2 means -(2^2).</string>
+    <string-array name="scientific_catalog_keywords"><item>scientific calculator</item><item>trigonometry</item><item>sine</item><item>cosine</item><item>logarithm</item><item>square root</item><item>expression</item></string-array>
+    <string-array name="scientific_catalog_tasks"><item>scientific calculator</item><item>calculate sine</item><item>calculate cosine</item><item>calculate logarithm</item><item>evaluate expression</item><item>calculate square root</item></string-array>
+</resources>

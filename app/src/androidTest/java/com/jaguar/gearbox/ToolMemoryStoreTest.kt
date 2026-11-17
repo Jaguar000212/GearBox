@@ -16,6 +16,25 @@ class ToolMemoryStoreTest {
     private val route = "tool/percentage"
     @After fun cleanup() { directory.deleteRecursively() }
 
+    @Test fun timeZoneModeRetentionExcludesEventTimeAndOverlapChoice() {
+        val zoneRoute = "tool/time_zone_converter"
+        val modes = mapOf("sourceZone" to "UTC", "targetZone" to "Asia/Kolkata")
+        val inputs = modes + mapOf("date" to "2026-11-17", "time" to "12:00", "sourceOffset" to "AUTO")
+        assertFalse(store.record(zoneRoute, inputs, "2026-11-17 17:30"))
+        assertFalse(store.saveResult(zoneRoute, inputs, "2026-11-17 17:30"))
+        store.saveSettings(ToolMemorySettings(rememberModes = true))
+        assertTrue(store.saveMode(zoneRoute, modes))
+        assertFalse(store.saveMode(zoneRoute, inputs))
+        assertEquals(modes, store.loadMode(zoneRoute))
+        store.saveSettings(ToolMemorySettings(historyEnabled = true, rememberResults = true))
+        assertTrue(store.record(zoneRoute, inputs, "2026-11-17 17:30"))
+        assertTrue(store.saveResult(zoneRoute, inputs, "2026-11-17 17:30"))
+        assertEquals(inputs, store.loadResult(zoneRoute)?.inputs)
+        store.saveSettings(ToolMemorySettings())
+        assertNull(store.loadResult(zoneRoute))
+        assertEquals(inputs, store.history(zoneRoute).single().inputs)
+    }
+
     @Test fun scientificModeRetentionNeverIncludesExpressionText() {
         val scientificRoute = "tool/scientific_calculator"
         val inputs = mapOf("expression" to "sqrt(16)+2^3", "angleMode" to "DEG")

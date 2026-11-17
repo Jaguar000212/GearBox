@@ -10,6 +10,7 @@ object ToolExampleCatalog {
         ToolExample(description, mapOf(*inputs)).also { require(ToolMemoryPolicy.validInputs(it.inputs)) }
 
     private val fixed = mapOf(
+        Tools.ROUTE_TIME_ZONE_CONVERTER to example("Load 15 January 2026 at 12:00 UTC and Asia/Kolkata, then convert to 17:30 on the same day.", "date" to "2026-01-15", "time" to "12:00", "sourceZone" to "UTC", "targetZone" to "Asia/Kolkata", "sourceOffset" to "AUTO"),
         Tools.ROUTE_TEXT_DIFF to example("Load Hello followed by world, and Hello followed by GearBox, then tap Compare to inspect the changed second line.", "firstText" to "Hello\nworld", "secondText" to "Hello\nGearBox"),
         Tools.ROUTE_SCIENTIFIC_CALCULATOR to example("Load sqrt(16)+2^3, then calculate 12. The example does not calculate until you request it.", "expression" to "sqrt(16)+2^3", "angleMode" to "DEG"),
         Tools.ROUTE_BUSINESS_DAY_PLANNER to example("Load five business days after 16 November 2026 with Saturday and Sunday excluded, then calculate 23 November.", "mode" to "ADD", "start" to "2026-11-16", "end" to "2026-11-23", "offset" to "5", "weekendMask" to "96", "excludedDates" to ""),

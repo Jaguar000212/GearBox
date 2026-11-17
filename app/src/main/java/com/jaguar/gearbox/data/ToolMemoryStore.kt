@@ -114,13 +114,13 @@ class ToolMemoryStore private constructor(private val directory: File) {
 
     fun saveMode(route: String, values: Map<String, String>, expectedGeneration: Long? = null): Boolean = synchronized(lock) {
         if (expectedGeneration != null && expectedGeneration != modeGeneration(route)) return@synchronized false
-        if (!readSettings().rememberModes || !ToolMemoryPolicy.permitsRoute(route) ||
+        if (!readSettings().rememberModes || !ToolMemoryPolicy.permitsModeRoute(route) ||
             !ToolMemoryPolicy.validMode(route, values)) false
         else write(fileName(route, "mode"), JSONObject().put("version", 1).put("values", JSONObject(values)))
     }
 
     fun loadMode(route: String): Map<String, String> = synchronized(lock) {
-        if (!readSettings().rememberModes || !ToolMemoryPolicy.permitsRoute(route)) emptyMap()
+        if (!readSettings().rememberModes || !ToolMemoryPolicy.permitsModeRoute(route)) emptyMap()
         else parseInputs(read(fileName(route, "mode"))?.optJSONObject("values"))
             ?.takeIf { ToolMemoryPolicy.validMode(route, it) } ?: emptyMap()
     }

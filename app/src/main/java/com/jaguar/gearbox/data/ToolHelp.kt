@@ -40,6 +40,11 @@ object ToolHelpCatalog {
             "Decimal 10 is binary 1010 and hexadecimal A.",
             "This converter handles integers, not decimal fractions; binary only accepts 0 and 1.",
         ),
+        Tools.ROUTE_IMAGE_STUDIO to ToolHelp(
+            "Choose a local image, adjust crop, dimensions or compression, then explicitly export a new PNG, JPEG or WebP copy. Processing stays on the device; the source image is not overwritten.",
+            "Choose a non-private test image, try a smaller size and a crop, then export a new copy and inspect its dimensions and appearance.",
+            "Decoded images and outputs are limited to a 2048-pixel edge and 4 megapixels, so large originals are reduced. Re-encoding does not copy source metadata, but visible identifying content remains. This phase does not include markup, blur, mosaic, collage or enhancement.",
+        ),
         Tools.ROUTE_JSON_FORMATTER to ToolHelp(
             "Enter JSON, choose validation, pretty-printing or minification, then explicitly run the operation. Processing stays local; automatic history and result saving are off by default.",
             "Try a small object with a name string and an enabled boolean, then explicitly format or validate it.",

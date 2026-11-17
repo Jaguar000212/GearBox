@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="studio_title">Image Studio</string>
+    <string name="studio_choose">Choose local image</string>
+    <string name="studio_remove">Discard image and output</string>
+    <string name="studio_source">Decoded source: %1$d × %2$d pixels (reported original: %3$d × %4$d)</string>
+    <string name="studio_source_preview">Decoded source preview</string>
+    <string name="studio_output_preview">Generated encoded output preview</string>
+    <string name="studio_left">Crop left (inclusive pixel)</string>
+    <string name="studio_top">Crop top (inclusive pixel)</string>
+    <string name="studio_right">Crop right (exclusive pixel)</string>
+    <string name="studio_bottom">Crop bottom (exclusive pixel)</string>
+    <string name="studio_crop_note">Crop coordinates refer to the displayed, orientation-adjusted decoded image, not full-resolution original pixels. Left/top start at zero; right/bottom are excluded.</string>
+    <string name="studio_width">Output width (1–2,048 pixels)</string>
+    <string name="studio_height">Output height (1–2,048 pixels)</string>
+    <string name="studio_lock">Keep cropped aspect ratio</string>
+    <string name="studio_lock_note">With aspect ratio locked, output width determines height from the crop, rounded to nearest pixel. With it unlocked, width and height are independent and can stretch the image.</string>
+    <string name="studio_format">Output format</string>
+    <string name="studio_png">PNG (lossless)</string>
+    <string name="studio_jpeg">JPEG (lossy, white behind transparency)</string>
+    <string name="studio_webp">WebP (lossy)</string>
+    <string name="studio_quality">Quality (1–100; JPEG/WebP only)</string>
+    <string name="studio_generate">Generate output</string>
+    <string name="studio_cancel_work">Cancel processing</string>
+    <string name="studio_busy">Processing locally…</string>
+    <string name="studio_invalid">Use a nonempty crop within the decoded image, output dimensions from 1–2,048 with at most 4,000,000 pixels, and quality from 1–100. Nothing is clamped or truncated.</string>
+    <string name="studio_disclosure">Select one image using Android’s picker. GearBox does not request broad photo access, persist URI access or upload it. Decode limits: 20 MiB encoded, 40 million original pixels and 12,000 pixels per side. The working image is reduced to at most 2,048 pixels per side and 4 million pixels, converted to sRGB and orientation-adjusted. Animated inputs use their first frame.</string>
+    <string name="studio_encoding">Generate re-encodes the cropped/resized pixels. PNG keeps transparency; JPEG composites it on white; WebP uses lossy encoding. Quality is ignored for PNG and does not guarantee a particular file size. Source metadata is not copied, but visible content can still identify people or places. This is not anonymization.</string>
+    <string name="studio_lifetime">Source and generated preview are discarded when leaving or recreating this screen. Only format, quality and aspect-lock preferences may be remembered if enabled in Settings. Images are never History, presets or Workbench items. Temporary encoded copies can remain in app cache after leaving so receiving apps can read shared files; they are not permanently saved unless you explicitly save a copy.</string>
+    <string name="studio_save">Save new copy…</string>
+    <string name="studio_share">Share generated copy…</string>
+    <string name="studio_review_save">Review the new image copy</string>
+    <string name="studio_review_share">Review before sharing the image</string>
+    <string name="studio_review_info">%1$d × %2$d pixels · %3$s · %4$d bytes</string>
+    <string name="studio_save_note">Choose a destination for a new file. GearBox does not overwrite the selected original. Rotation, leaving this screen or changing the image cancels a pending export; select a destination again afterward. Cancelling after writing begins may leave an incomplete new file; the original is unchanged.</string>
+    <string name="studio_share_note">The app you choose will receive this encoded image, including any private information visible in its pixels. Cancel if you do not want to share it.</string>
+    <string name="studio_continue_save">Choose destination</string>
+    <string name="studio_continue_share">Choose sharing app</string>
+    <string name="studio_cancel">Cancel</string>
+    <string name="studio_failed">Could not complete this image operation. Try another supported image or smaller output. No successful export is confirmed.</string>
+    <string name="studio_stale">The image changed or this screen was recreated. The pending export was cancelled. If a destination file was created, it may be empty or incomplete.</string>
+    <string name="studio_saved">New image copy saved.</string>
+    <string name="studio_no_source">Choose an image to set crop, dimensions and format. Picking an image does not generate or export anything.</string>
+</resources>

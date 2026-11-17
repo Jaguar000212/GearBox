@@ -38,6 +38,7 @@ fun Tool.localizedName(context: Context): String = when (route) {
     Tools.ROUTE_COUNTER -> R.string.catalog_tool_counter_name
     Tools.ROUTE_SCOREBOARD -> R.string.catalog_tool_scoreboard_name
     Tools.ROUTE_CHESS_SCOREBOARD -> R.string.catalog_tool_chess_scoreboard_name
+    Tools.ROUTE_IMAGE_STUDIO -> R.string.studio_catalog_name
     Tools.ROUTE_JSON_FORMATTER -> R.string.json_catalog_name
     Tools.ROUTE_DEADLINE_PLANNER -> R.string.deadline_catalog_name
     Tools.ROUTE_ASPECT_RATIO -> R.string.aspect_catalog_name
@@ -94,6 +95,7 @@ fun Tool.localizedDescription(context: Context): String = when (route) {
     Tools.ROUTE_COUNTER -> R.string.catalog_tool_counter_description
     Tools.ROUTE_SCOREBOARD -> R.string.catalog_tool_scoreboard_description
     Tools.ROUTE_CHESS_SCOREBOARD -> R.string.catalog_tool_chess_scoreboard_description
+    Tools.ROUTE_IMAGE_STUDIO -> R.string.studio_catalog_description
     Tools.ROUTE_JSON_FORMATTER -> R.string.json_catalog_description
     Tools.ROUTE_DEADLINE_PLANNER -> R.string.deadline_catalog_description
     Tools.ROUTE_ASPECT_RATIO -> R.string.aspect_catalog_description
@@ -138,6 +140,7 @@ internal fun localizedToolHelp(context: Context, route: String?): ToolHelp? = wh
     Tools.ROUTE_SCOREBOARD -> ToolHelp(context.getString(R.string.catalog_help_scoreboard_instructions), context.getString(R.string.catalog_help_scoreboard_example), context.getString(R.string.catalog_help_scoreboard_limitation))
     Tools.ROUTE_RANDOM -> ToolHelp(context.getString(R.string.catalog_help_random_instructions), context.getString(R.string.catalog_help_random_example), context.getString(R.string.catalog_help_random_limitation))
     Tools.ROUTE_BASE_CONVERTER -> ToolHelp(context.getString(R.string.catalog_help_base_converter_instructions), context.getString(R.string.catalog_help_base_converter_example), context.getString(R.string.catalog_help_base_converter_limitation))
+    Tools.ROUTE_IMAGE_STUDIO -> ToolHelp(context.getString(R.string.studio_catalog_instructions), context.getString(R.string.studio_catalog_example), context.getString(R.string.studio_catalog_limitation))
     Tools.ROUTE_JSON_FORMATTER -> ToolHelp(context.getString(R.string.json_catalog_instructions), context.getString(R.string.json_catalog_example), context.getString(R.string.json_catalog_limitation))
     Tools.ROUTE_DEADLINE_PLANNER -> ToolHelp(context.getString(R.string.deadline_catalog_instructions), context.getString(R.string.deadline_catalog_example), context.getString(R.string.deadline_catalog_limitation))
     Tools.ROUTE_ASPECT_RATIO -> ToolHelp(context.getString(R.string.aspect_catalog_instructions), context.getString(R.string.aspect_catalog_example), context.getString(R.string.aspect_catalog_limitation))
@@ -231,6 +234,7 @@ internal fun localizedToolExample(context: Context, route: String?, today: Local
 /** Localized discovery terms plus stable English aliases keep existing search habits working. */
 fun Tool.localizedKeywords(context: Context): List<String> {
     val resource = when (route) {
+    Tools.ROUTE_IMAGE_STUDIO -> R.array.studio_catalog_keywords
     Tools.ROUTE_JSON_FORMATTER -> R.array.json_catalog_keywords
     Tools.ROUTE_DEADLINE_PLANNER -> R.array.deadline_catalog_keywords
     Tools.ROUTE_ASPECT_RATIO -> R.array.aspect_catalog_keywords

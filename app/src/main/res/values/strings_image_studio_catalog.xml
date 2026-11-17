@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="studio_catalog_name">Image Studio</string>
+    <string name="studio_catalog_description">Resize, crop and compress a local image, then export a new copy.</string>
+    <string name="studio_catalog_instructions">Choose a local image, adjust crop, dimensions or compression, then explicitly export a new PNG, JPEG or WebP copy. Processing stays on the device; the source image is not overwritten.</string>
+    <string name="studio_catalog_example">Choose a non-private test image, try a smaller size and a crop, then export a new copy and inspect its dimensions and appearance.</string>
+    <string name="studio_catalog_limitation">Decoded images and outputs are limited to a 2048-pixel edge and 4 megapixels, so large originals are reduced. Re-encoding does not copy source metadata, but visible identifying content remains. This phase does not include markup, blur, mosaic, collage or enhancement.</string>
+    <string-array name="studio_catalog_keywords"><item>image editor</item><item>resize image</item><item>crop image</item><item>compress image</item><item>PNG</item><item>JPEG</item><item>WebP</item></string-array>
+    <string-array name="studio_catalog_tasks"><item>resize image</item><item>crop image</item><item>compress image</item><item>export image copy</item><item>convert image format</item></string-array>
+</resources>

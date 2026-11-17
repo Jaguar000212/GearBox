@@ -9,6 +9,8 @@ import androidx.compose.material.icons.filled.Balance
 import androidx.compose.material.icons.filled.Cake
 import androidx.compose.material.icons.filled.Calculate
 import androidx.compose.material.icons.filled.Casino
+import androidx.compose.material.icons.filled.Image
+import com.jaguar.gearbox.ui.tools.ImageStudioScreen
 import androidx.compose.material.icons.filled.DataObject
 import com.jaguar.gearbox.ui.tools.JsonFormatterScreen
 import androidx.compose.material.icons.filled.AccountTree
@@ -121,6 +123,7 @@ object Tools {
     const val ROUTE_SCOREBOARD = "tool/scoreboard"
     const val ROUTE_RANDOM = "tool/random"
     const val ROUTE_BASE_CONVERTER = "tool/base_converter"
+    const val ROUTE_IMAGE_STUDIO = "tool/image_studio"
     const val ROUTE_JSON_FORMATTER = "tool/json_formatter"
     const val ROUTE_DEADLINE_PLANNER = "tool/deadline_planner"
     const val ROUTE_ASPECT_RATIO = "tool/aspect_ratio"
@@ -431,6 +434,15 @@ object Tools {
             route = ROUTE_CHESS_SCOREBOARD,
             category = ToolCategory.GAMES_AND_RANDOM,
             content = { onNavigateBack -> ChessScoreboardScreen(onNavigateBack) },
+        ),
+        Tool(
+            name = "Image Studio",
+            description = "Resize, crop and compress a local image, then export a new copy.",
+            icon = Icons.Filled.Image,
+            route = ROUTE_IMAGE_STUDIO,
+            category = ToolCategory.UTILITIES,
+            content = { onNavigateBack -> ImageStudioScreen(onNavigateBack) },
+            keywords = listOf("image editor", "resize image", "crop image", "compress image", "PNG", "JPEG", "WebP"),
         ),
         Tool(
             name = "JSON Formatter / Validator",

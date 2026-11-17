@@ -23,18 +23,22 @@ fun TextDiffScreen(onNavigateBack: () -> Unit) {
     val context = LocalContext.current
     var first by rememberSaveable { mutableStateOf("") }
     var second by rememberSaveable { mutableStateOf("") }
+    var mode by rememberSaveable { mutableStateOf(TextDiffMode.EXACT) }
+    var explicitExactMode by rememberSaveable { mutableStateOf(false) }
     var comparison by remember { mutableStateOf<TextDiffResult?>(null) }
     var restoreError by remember { mutableStateOf(false) }
     var shareReview by remember { mutableStateOf<Triple<String, String, String>?>(null) }
-    val inputs = mapOf("firstText" to first, "secondText" to second)
+    val inputs = mapOf("firstText" to first, "secondText" to second) +
+        if (mode != TextDiffMode.EXACT || explicitExactMode) mapOf("mode" to mode.name) else emptyMap()
     val firstError = validateTextDiffInput(first)
     val secondError = validateTextDiffInput(second)
     fun edited() { comparison = null; restoreError = false; shareReview = null }
     fun restore(values: Map<String, String>, completed: Boolean = false) {
         val saved = parseTextDiffSnapshot(values)
         if (saved == null) { restoreError = true; return }
-        first = values.getValue("firstText"); second = values.getValue("secondText"); edited()
-        if (completed) comparison = compareTextLines(first, second).takeIf { it.error == null }
+        first = saved.firstText; second = saved.secondText
+        mode = saved.mode; explicitExactMode = "mode" in values; edited()
+        if (completed) comparison = compareTextLines(first, second, mode).takeIf { it.error == null }
     }
     val rows = comparison?.lines.orEmpty()
     val counts = comparison?.let { context.getString(R.string.text_diff_counts, it.added, it.removed, it.equal) }
@@ -45,20 +49,38 @@ fun TextDiffScreen(onNavigateBack: () -> Unit) {
             TextDiffKind.REMOVED -> R.string.text_diff_removed
             TextDiffKind.EQUAL -> R.string.text_diff_equal
         })
+        if (line.ignoredWhitespace) return context.getString(R.string.text_diff_equivalent_line,
+            line.text.ifEmpty { context.getString(R.string.text_diff_empty_line) },
+            line.secondText.orEmpty().ifEmpty { context.getString(R.string.text_diff_empty_line) })
         return "$prefix " + context.getString(R.string.text_diff_line, label, line.text.ifEmpty { context.getString(R.string.text_diff_empty_line) })
     }
     val output = if (counts != null) context.getString(R.string.text_diff_export, counts,
-        context.getString(R.string.text_diff_legend), rows.joinToString("\n", transform = ::rowText)) else null
+        context.getString(if (mode == TextDiffMode.EXACT) R.string.text_diff_exact_export else R.string.text_diff_whitespace_export) + "\n" + context.getString(R.string.text_diff_legend), rows.joinToString("\n", transform = ::rowText)) else null
     val history = rememberToolHistory(route = Tools.ROUTE_TEXT_DIFF, inputs = inputs, output = output,
-        onRestore = { restore(it) }, onRestoreLastResult = { restore(it, completed = true) },
+        onRestore = { restore(it) },
+        modeInputs = if (mode == TextDiffMode.EXACT && !explicitExactMode) emptyMap() else mapOf("mode" to mode.name),
+        onRestoreMode = { saved ->
+            val restored = saved["mode"]?.let { runCatching { TextDiffMode.valueOf(it) }.getOrNull() }
+            if (saved.isEmpty()) {
+                mode = TextDiffMode.EXACT; explicitExactMode = false; edited()
+            } else if (restored != null && saved.keys == setOf("mode")) {
+                mode = restored; explicitExactMode = true; edited()
+            }
+        },
+        restoredModeInputs = { saved -> saved["mode"]?.let { mapOf("mode" to it) }.orEmpty() },
+        onRestoreLastResult = { restore(it, completed = true) },
         resultRequiresExplicitAction = true, restoredResultRequiresExplicitAction = { false })
     ToolScaffold(stringResource(R.string.text_diff_title), Tools.byRoute(Tools.ROUTE_TEXT_DIFF)!!.icon,
         onNavigateBack, history = history) {
         AdaptiveToolLayout(input = {
+            CompactChoiceSelector(label = stringResource(R.string.text_diff_mode), selected = mode,
+                choices = TextDiffMode.entries, choiceLabel = { context.getString(if (it == TextDiffMode.EXACT)
+                    R.string.text_diff_exact else R.string.text_diff_ignore_ascii) },
+                onSelect = { if (mode != it) { mode = it; explicitExactMode = true; edited() } })
             DiffInput(first, { first = it; edited() }, R.string.text_diff_first, firstError)
             DiffInput(second, { second = it; edited() }, R.string.text_diff_second, secondError)
             Button(enabled = firstError == null && secondError == null,
-                onClick = { comparison = compareTextLines(first, second).takeIf { it.error == null }; restoreError = false },
+                onClick = { comparison = compareTextLines(first, second, mode).takeIf { it.error == null }; restoreError = false },
                 modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.text_diff_compare)) }
             if (restoreError) Text(stringResource(R.string.text_diff_restore_error), color = MaterialTheme.colorScheme.error)
             Text(stringResource(R.string.text_diff_rules), style = MaterialTheme.typography.bodySmall)

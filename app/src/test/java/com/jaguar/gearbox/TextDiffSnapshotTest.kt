@@ -1,6 +1,7 @@
 package com.jaguar.gearbox
 
 import com.jaguar.gearbox.data.*
+import com.jaguar.gearbox.logic.TextDiffMode
 import org.junit.Assert.*
 import org.junit.Test
 
@@ -18,6 +19,25 @@ class TextDiffSnapshotTest {
         assertNull(parseTextDiffSnapshot(valid + ("firstText" to "a".repeat(16001))))
         assertNotNull(parseTextDiffSnapshot(valid + ("secondText" to "\n".repeat(199))))
         assertNull(parseTextDiffSnapshot(valid + ("secondText" to "\n".repeat(200))))
+    }
+    @Test fun comparisonModesRoundTripRawInputsAndLegacyKeyPresence() {
+        val legacy = mapOf("firstText" to " a\r\n", "secondText" to "a\n")
+        val old = parseTextDiffSnapshot(legacy)!!
+        assertEquals(TextDiffMode.EXACT, old.mode)
+        assertFalse(old.includesMode)
+        assertEquals(legacy, old.toInputs())
+        TextDiffMode.entries.forEach { mode ->
+            val inputs = legacy + ("mode" to mode.name)
+            val snapshot = parseTextDiffSnapshot(inputs)!!
+            assertEquals(mode, snapshot.mode)
+            assertTrue(snapshot.includesMode)
+            assertEquals(inputs, snapshot.toInputs())
+        }
+        assertNull(parseTextDiffSnapshot(legacy + ("mode" to "exact")))
+        assertTrue(validTextDiffMode(mapOf("mode" to "IGNORE_ASCII_WHITESPACE")))
+        assertTrue(validTextDiffMode(emptyMap()))
+        assertFalse(validTextDiffMode(legacy + ("mode" to "EXACT")))
+        assertFalse(validTextDiffMode(mapOf("mode" to "unknown")))
     }
     @Test fun computationallyValidLongDiffDoesNotWeakenStorageLimits() {
         val inputs = mapOf("firstText" to "a".repeat(5000), "secondText" to "b")

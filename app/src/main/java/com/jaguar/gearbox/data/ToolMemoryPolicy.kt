@@ -73,7 +73,8 @@ object ToolMemoryPolicy {
         "tool/hash_generator" -> values.keys.all { it == "algorithm" } && values.values.all {
             value -> com.jaguar.gearbox.logic.TextHashAlgorithm.entries.any { it.name == value }
         }
-        "tool/qr_generator", "tool/text_diff", "tool/decision_matrix", "tool/deadline_planner" -> values.isEmpty()
+        "tool/qr_generator", "tool/decision_matrix", "tool/deadline_planner" -> values.isEmpty()
+        "tool/text_diff" -> validTextDiffMode(values)
         "tool/image_studio" -> validImageStudioMode(values)
         "tool/color_blend" -> parseColorBlendSnapshot(values) != null
         "tool/bill_splitter" -> validBillSplitterMode(values)

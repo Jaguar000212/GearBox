@@ -401,3 +401,10 @@ This tool must actually schedule backwards from the target date, not merely list
 - Test horizontal, vertical and grid layouts, uneven canvas dimensions and both placement modes. Contain preserves the full image with the selected opaque background; Cover explicitly center-crops to fill each cell. No unrestricted-resolution or AI enhancement is implied.
 - Brightness, contrast and saturation range from -100 to 100 with zero as identity. These are simple encoded-sRGB pixel adjustments, not calibrated photographic correction. Test neutral settings, extremes, alpha and source immutability. Changes require Generate and invalidate any older export review.
 - Single-image sources and added markup can remain transiently while switching modes; an unadded markup draft may be discarded as disclosed. Nothing enters History or Workbench. Verify mode switches, new selections, recreation, memory pressure, reviewed new-copy save/share and accessibility on-device.
+
+## Light Meter
+
+- Requires an Android ambient-light sensor. A missing sensor or failed listener registration must show an unavailable state, not zero lux or a camera-derived estimate. No camera, microphone, location or network permission is requested.
+- Observe lux while exposing/covering the sensor; values depend on sensor placement, range and manufacturer calibration and are not a certified photometer reading. Check sensor metadata, waiting state, invalid/nonfinite values and reported accuracy without promising a fixed accuracy percentage.
+- Readings are transient and foreground-only. Backgrounding, leaving the screen and recreation must unregister listeners and avoid showing an old value as a fresh reading. No History, Workbench or automatic result retention is provided.
+- Verify sensor-present/absent devices, TalkBack without rapid unsolicited announcements, large fonts and adaptive layouts. Hardware readings and lifecycle behavior require device testing; authored mocks/policy tests are not physical calibration.

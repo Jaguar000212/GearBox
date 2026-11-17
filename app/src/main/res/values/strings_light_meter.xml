@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+<string name="light_title">Light Meter</string>
+<string name="light_description">Read ambient illuminance from the device light sensor.</string>
+<string name="light_lux">%1$s lux</string>
+<string name="light_stopped">Readings paused while this screen is not active.</string>
+<string name="light_unavailable">This device has no ambient light sensor. No camera fallback is used.</string>
+<string name="light_failed">The light sensor could not be started.</string>
+<string name="light_waiting">Waiting for a valid light sensor reading…</string>
+<string name="light_reading">Ambient light sensor reading</string>
+<string name="light_accuracy">Sensor-reported accuracy: %1$s</string>
+<string name="light_unknown">Unknown</string>
+<string name="light_unreliable">Unreliable</string>
+<string name="light_low">Low</string>
+<string name="light_medium">Medium</string>
+<string name="light_high">High</string>
+<string name="light_range">Reported maximum range: %1$s lux</string>
+<string name="light_resolution">Reported resolution: %1$s lux</string>
+<string name="light_warning">An estimate from the phone sensor, not a calibrated light meter. Position, case, shadows, sensor saturation and device hardware affect readings. Sensor-reported accuracy is not a calibration certificate. Do not rely on this for exposure, workplace compliance or safety-critical lighting decisions.</string>
+<string name="light_local">Readings are live only, not saved to history or the workbench. No camera, location, network or extra permission is needed. Values are not announced automatically on every update; focus the reading to hear it.</string>
+<string name="light_help_instructions">Open Light Meter and leave the device light sensor unobstructed. Read ambient illuminance in lux while this screen is active.</string>
+<string name="light_help_example">Compare the reading in a shaded room with the reading nearer a window, without covering the sensor.</string>
+<string name="light_help_limitation">Requires an actual ambient light sensor. This is not a calibrated instrument; no camera fallback, saved measurement history or automatic lighting advice is provided.</string>
+<string-array name="light_keywords"><item>lux</item><item>ambient light</item><item>illuminance</item><item>brightness sensor</item></string-array>
+<string-array name="light_tasks"><item>measure ambient light</item><item>read lux</item><item>how bright is this room</item></string-array>
+</resources>

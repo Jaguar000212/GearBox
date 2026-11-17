@@ -18,7 +18,7 @@ class ToolExamplesTest {
     }
 
     @Test fun sideEffectToolsHaveNoLoadableExample() {
-        listOf(Tools.ROUTE_IMAGE_STUDIO, Tools.ROUTE_PASSWORD_GENERATOR, Tools.ROUTE_TIMER_STOPWATCH, Tools.ROUTE_DICE,
+        listOf(Tools.ROUTE_LIGHT_METER, Tools.ROUTE_IMAGE_STUDIO, Tools.ROUTE_PASSWORD_GENERATOR, Tools.ROUTE_TIMER_STOPWATCH, Tools.ROUTE_DICE,
             Tools.ROUTE_RANDOM, Tools.ROUTE_SCOREBOARD, Tools.ROUTE_TAMBOLA, Tools.ROUTE_TEAM_PICKER,
             Tools.ROUTE_TIC_TAC_TOE, Tools.ROUTE_COMPASS, Tools.ROUTE_FLASHLIGHT, "unknown", null)
             .forEach { assertNull(ToolExampleCatalog.forRoute(it)) }

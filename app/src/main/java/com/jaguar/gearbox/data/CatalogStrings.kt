@@ -57,6 +57,7 @@ fun Tool.localizedName(context: Context): String = when (route) {
     Tools.ROUTE_HASH_GENERATOR -> R.string.catalog_tool_hash_generator_name
     Tools.ROUTE_QR_GENERATOR -> R.string.catalog_tool_qr_generator_name
     Tools.ROUTE_BUBBLE_LEVEL -> R.string.catalog_tool_bubble_level_name
+    Tools.ROUTE_LIGHT_METER -> R.string.light_title
     Tools.ROUTE_COMPASS -> R.string.catalog_tool_compass_name
     Tools.ROUTE_FLASHLIGHT -> R.string.catalog_tool_flashlight_name
     Tools.ROUTE_SCREEN_RULER -> R.string.catalog_tool_screen_ruler_name
@@ -114,6 +115,7 @@ fun Tool.localizedDescription(context: Context): String = when (route) {
     Tools.ROUTE_HASH_GENERATOR -> R.string.catalog_tool_hash_generator_description
     Tools.ROUTE_QR_GENERATOR -> R.string.catalog_tool_qr_generator_description
     Tools.ROUTE_BUBBLE_LEVEL -> R.string.catalog_tool_bubble_level_description
+    Tools.ROUTE_LIGHT_METER -> R.string.light_description
     Tools.ROUTE_COMPASS -> R.string.catalog_tool_compass_description
     Tools.ROUTE_FLASHLIGHT -> R.string.catalog_tool_flashlight_description
     Tools.ROUTE_SCREEN_RULER -> R.string.catalog_tool_screen_ruler_description
@@ -183,6 +185,7 @@ internal fun localizedToolHelp(context: Context, route: String?): ToolHelp? = wh
     Tools.ROUTE_TIC_TAC_TOE -> ToolHelp(context.getString(R.string.catalog_help_tic_tac_toe_instructions), context.getString(R.string.catalog_help_tic_tac_toe_example), context.getString(R.string.catalog_help_tic_tac_toe_limitation))
     Tools.ROUTE_QR_GENERATOR -> ToolHelp(context.getString(R.string.catalog_help_qr_generator_instructions), context.getString(R.string.catalog_help_qr_generator_example), context.getString(R.string.catalog_help_qr_generator_limitation))
     Tools.ROUTE_BUBBLE_LEVEL -> ToolHelp(context.getString(R.string.catalog_help_bubble_level_instructions), context.getString(R.string.catalog_help_bubble_level_example), context.getString(R.string.catalog_help_bubble_level_limitation))
+    Tools.ROUTE_LIGHT_METER -> ToolHelp(context.getString(R.string.light_help_instructions), context.getString(R.string.light_help_example), context.getString(R.string.light_help_limitation))
     Tools.ROUTE_COMPASS -> ToolHelp(context.getString(R.string.catalog_help_compass_instructions), context.getString(R.string.catalog_help_compass_example), context.getString(R.string.catalog_help_compass_limitation))
     Tools.ROUTE_FLASHLIGHT -> ToolHelp(context.getString(R.string.catalog_help_flashlight_instructions), context.getString(R.string.catalog_help_flashlight_example), context.getString(R.string.catalog_help_flashlight_limitation))
     Tools.ROUTE_SCREEN_RULER -> ToolHelp(context.getString(R.string.catalog_help_screen_ruler_instructions), context.getString(R.string.catalog_help_screen_ruler_example), context.getString(R.string.catalog_help_screen_ruler_limitation))
@@ -264,6 +267,7 @@ fun Tool.localizedKeywords(context: Context): List<String> {
     Tools.ROUTE_HASH_GENERATOR -> R.array.catalog_keywords_hash_generator
     Tools.ROUTE_QR_GENERATOR -> R.array.catalog_keywords_qr_generator
     Tools.ROUTE_BUBBLE_LEVEL -> R.array.catalog_keywords_bubble_level
+    Tools.ROUTE_LIGHT_METER -> R.array.light_keywords
     Tools.ROUTE_COMPASS -> R.array.catalog_keywords_compass
     Tools.ROUTE_FLASHLIGHT -> R.array.catalog_keywords_flashlight
     Tools.ROUTE_SCREEN_RULER -> R.array.catalog_keywords_screen_ruler

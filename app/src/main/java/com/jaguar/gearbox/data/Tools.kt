@@ -73,6 +73,8 @@ import com.jaguar.gearbox.ui.tools.BmiCalculatorScreen
 import com.jaguar.gearbox.ui.tools.BubbleLevelScreen
 import com.jaguar.gearbox.ui.tools.ChessScoreboardScreen
 import com.jaguar.gearbox.ui.tools.ColorPickerScreen
+import com.jaguar.gearbox.ui.tools.LightMeterScreen
+import androidx.compose.material.icons.filled.LightMode
 import com.jaguar.gearbox.ui.tools.CompassScreen
 import com.jaguar.gearbox.ui.tools.CounterScreen
 import com.jaguar.gearbox.ui.tools.DateCalculatorScreen
@@ -166,6 +168,7 @@ object Tools {
     const val ROUTE_TIC_TAC_TOE = "tool/tic_tac_toe"
     const val ROUTE_QR_GENERATOR = "tool/qr_generator"
     const val ROUTE_BUBBLE_LEVEL = "tool/bubble_level"
+    const val ROUTE_LIGHT_METER = "tool/light_meter"
     const val ROUTE_COMPASS = "tool/compass"
     const val ROUTE_FLASHLIGHT = "tool/flashlight"
     const val ROUTE_SCREEN_RULER = "tool/screen_ruler"
@@ -602,6 +605,15 @@ object Tools {
             category = ToolCategory.DEVICE,
             content = { onNavigateBack -> BubbleLevelScreen(onNavigateBack) },
             keywords = listOf("spirit level", "tilt", "check if straight"),
+        ),
+        Tool(
+            name = "Light Meter",
+            description = "Read ambient illuminance from the device light sensor.",
+            icon = Icons.Filled.LightMode,
+            route = ROUTE_LIGHT_METER,
+            category = ToolCategory.DEVICE,
+            content = { onNavigateBack -> LightMeterScreen(onNavigateBack) },
+            keywords = listOf("lux", "ambient light", "illuminance", "brightness sensor"),
         ),
         Tool(
             name = "Compass",

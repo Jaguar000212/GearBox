@@ -255,6 +255,11 @@ object ToolHelpCatalog {
             "Compare the reading on a desk with the phone gently tilted.",
             "Accuracy depends on sensors and the device case. Do not use as a precision construction instrument.",
         ),
+        Tools.ROUTE_LIGHT_METER to ToolHelp(
+            "Open Light Meter and leave the device light sensor unobstructed. Read ambient illuminance in lux while this screen is active.",
+            "Compare a shaded room with a spot nearer a window, without covering the sensor.",
+            "Requires an actual ambient light sensor. Not a calibrated instrument; no camera fallback or saved measurement history.",
+        ),
         Tools.ROUTE_COMPASS to ToolHelp(
             "Hold the device steady and keep it away from magnets and metal while reading the heading.",
             "Turn slowly and watch the heading change.",

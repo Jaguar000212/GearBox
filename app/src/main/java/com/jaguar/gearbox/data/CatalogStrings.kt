@@ -40,6 +40,7 @@ fun Tool.localizedName(context: Context): String = when (route) {
     Tools.ROUTE_CHESS_SCOREBOARD -> R.string.catalog_tool_chess_scoreboard_name
     Tools.ROUTE_COLOR_PICKER -> R.string.catalog_tool_color_picker_name
     Tools.ROUTE_TEXT_TOOLS -> R.string.catalog_tool_text_tools_name
+    Tools.ROUTE_FOCUS_TIMER -> R.string.focus_catalog_name
     Tools.ROUTE_TIMER_STOPWATCH -> R.string.catalog_tool_timer_stopwatch_name
     Tools.ROUTE_PASSWORD_GENERATOR -> R.string.catalog_tool_password_generator_name
     Tools.ROUTE_HASH_GENERATOR -> R.string.catalog_tool_hash_generator_name
@@ -85,6 +86,7 @@ fun Tool.localizedDescription(context: Context): String = when (route) {
     Tools.ROUTE_CHESS_SCOREBOARD -> R.string.catalog_tool_chess_scoreboard_description
     Tools.ROUTE_COLOR_PICKER -> R.string.catalog_tool_color_picker_description
     Tools.ROUTE_TEXT_TOOLS -> R.string.catalog_tool_text_tools_description
+    Tools.ROUTE_FOCUS_TIMER -> R.string.focus_catalog_description
     Tools.ROUTE_TIMER_STOPWATCH -> R.string.catalog_tool_timer_stopwatch_description
     Tools.ROUTE_PASSWORD_GENERATOR -> R.string.catalog_tool_password_generator_description
     Tools.ROUTE_HASH_GENERATOR -> R.string.catalog_tool_hash_generator_description
@@ -132,6 +134,7 @@ internal fun localizedToolHelp(context: Context, route: String?): ToolHelp? = wh
     Tools.ROUTE_RATIOS -> ToolHelp(context.getString(R.string.catalog_help_ratios_instructions), context.getString(R.string.catalog_help_ratios_example), context.getString(R.string.catalog_help_ratios_limitation))
     Tools.ROUTE_DECIMAL_TO_FRACTION -> ToolHelp(context.getString(R.string.catalog_help_decimal_to_fraction_instructions), context.getString(R.string.catalog_help_decimal_to_fraction_example), context.getString(R.string.catalog_help_decimal_to_fraction_limitation))
     Tools.ROUTE_TEXT_TOOLS -> ToolHelp(context.getString(R.string.catalog_help_text_tools_instructions), context.getString(R.string.catalog_help_text_tools_example), context.getString(R.string.catalog_help_text_tools_limitation))
+    Tools.ROUTE_FOCUS_TIMER -> ToolHelp(context.getString(R.string.focus_catalog_instructions), context.getString(R.string.focus_catalog_example), context.getString(R.string.focus_catalog_limitation))
     Tools.ROUTE_TIMER_STOPWATCH -> ToolHelp(context.getString(R.string.catalog_help_timer_stopwatch_instructions), context.getString(R.string.catalog_help_timer_stopwatch_example), context.getString(R.string.catalog_help_timer_stopwatch_limitation))
     Tools.ROUTE_BMI -> ToolHelp(context.getString(R.string.catalog_help_bmi_instructions), context.getString(R.string.catalog_help_bmi_example), context.getString(R.string.catalog_help_bmi_limitation))
     Tools.ROUTE_TIP -> ToolHelp(context.getString(R.string.catalog_help_tip_instructions), context.getString(R.string.catalog_help_tip_example), context.getString(R.string.catalog_help_tip_limitation))
@@ -188,6 +191,7 @@ internal fun localizedToolExample(context: Context, route: String?, today: Local
 /** Localized discovery terms plus stable English aliases keep existing search habits working. */
 fun Tool.localizedKeywords(context: Context): List<String> {
     val resource = when (route) {
+    Tools.ROUTE_FOCUS_TIMER -> R.array.focus_catalog_keywords
     Tools.ROUTE_LOAN -> R.array.catalog_keywords_loan
     Tools.ROUTE_BMI -> R.array.catalog_keywords_bmi
     Tools.ROUTE_TIP -> R.array.catalog_keywords_tip

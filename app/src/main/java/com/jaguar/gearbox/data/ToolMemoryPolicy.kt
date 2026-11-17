@@ -57,7 +57,7 @@ object ToolMemoryPolicy {
     private val routePattern = Regex("tool/[a-z0-9_]{1,64}")
 
     fun permitsRoute(route: String): Boolean = routePattern.matches(route) &&
-        route != "tool/password_generator"
+        route != "tool/password_generator" && route != "tool/focus_timer"
 
     val sensitiveTextRoutes: Set<String> = setOf("tool/text_tools", "tool/qr_generator", "tool/hash_generator")
     fun isSensitiveTextRoute(route: String): Boolean = route in sensitiveTextRoutes

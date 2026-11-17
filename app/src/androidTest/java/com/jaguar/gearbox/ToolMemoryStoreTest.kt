@@ -16,6 +16,24 @@ class ToolMemoryStoreTest {
     private val route = "tool/percentage"
     @After fun cleanup() { directory.deleteRecursively() }
 
+    @Test fun aspectModesDoNotRetainDimensionsAndInactiveDraftsAreNotCaptured() {
+        val aspectRoute = "tool/aspect_ratio"
+        val inputs = com.jaguar.gearbox.data.aspectRatioInputs("WIDTH", "1920", "1080", "1280", "unused", "unused")
+        assertEquals("", inputs["targetHeight"])
+        assertEquals("", inputs["percent"])
+        assertFalse(store.record(aspectRoute, inputs, "1280 × 720"))
+        store.saveSettings(ToolMemorySettings(rememberModes = true))
+        assertTrue(store.saveMode(aspectRoute, mapOf("mode" to "WIDTH")))
+        assertFalse(store.saveMode(aspectRoute, inputs))
+        store.saveSettings(ToolMemorySettings(historyEnabled = true, rememberResults = true))
+        assertTrue(store.record(aspectRoute, inputs, "1280 × 720"))
+        assertTrue(store.saveResult(aspectRoute, inputs, "1280 × 720"))
+        assertEquals(inputs, store.loadResult(aspectRoute)?.inputs)
+        store.saveSettings(ToolMemorySettings())
+        assertNull(store.loadResult(aspectRoute))
+        assertEquals(inputs, store.history(aspectRoute).single().inputs)
+    }
+
     @Test fun timeZoneModeRetentionExcludesEventTimeAndOverlapChoice() {
         val zoneRoute = "tool/time_zone_converter"
         val modes = mapOf("sourceZone" to "UTC", "targetZone" to "Asia/Kolkata")

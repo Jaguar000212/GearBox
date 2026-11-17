@@ -348,3 +348,10 @@ The original draft covered only a single equally divided bill. The shared-expens
 - Editing/removing participants cannot silently transfer an expense to another person. Confirm destructive changes and test stale confirmations after newer edits. Switching simple/shared modes or restoring either schema must not import into the wrong editor or show stale results.
 - Names and expenses are private inputs. Bill Splitter's separate automatic-capture controls default off; existing history is not silently deleted. Mode retention excludes participant names and expense content. Explicit reviewed Share and sensitive Copy remain deliberate actions. Test legacy simple snapshots, shared snapshots, opted-in result restoration and no replay.
 - Check keyboard/TalkBack payer and beneficiary selection, indexed labels for duplicate names, large fonts, adaptive layouts and copy/share readability. No payment service or contact access is used; device UI tests remain user-owned.
+
+## Aspect Ratio & Image Size
+
+- Verify reduced ratios using integer GCD, equal dimensions, portrait/landscape, and prime dimensions. Resize by one dimension or percentage with the displayed pixel rounding rule; test tiny/large values and output bounds without overflow.
+- Fit must remain within both target-box dimensions; Fill must cover both dimensions. Check extreme ratios and fractional scale, plus displayed centered padding/crop assumptions. These are size calculations, not actual image edits, uploads or guarantees of image quality.
+- Reject zero, negative, malformed and out-of-range values. Only relevant active-mode inputs should control calculation; no hidden invalid field should block an unrelated mode. Edits clear stale results. Explicit imports/examples require Calculate; retained results honor preferences without replay.
+- Check copy/share includes source, mode, result dimensions and rounding assumptions. Verify accessible mode selectors, narrow/wide layouts and large fonts on-device. No image/storage/location permission is needed.

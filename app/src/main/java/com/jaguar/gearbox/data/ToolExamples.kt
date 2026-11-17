@@ -10,6 +10,7 @@ object ToolExampleCatalog {
         ToolExample(description, mapOf(*inputs)).also { require(ToolMemoryPolicy.validInputs(it.inputs)) }
 
     private val fixed = mapOf(
+        Tools.ROUTE_ASPECT_RATIO to example("Load a 1920 by 1080 source and target width 1280, then calculate height 720.", "mode" to "WIDTH", "sourceWidth" to "1920", "sourceHeight" to "1080", "targetWidth" to "1280", "targetHeight" to "", "percent" to ""),
         Tools.ROUTE_DECISION_MATRIX to example("Load two generic options with equal Value and Comfort weights, then tap Compare to see their tied scores.", "optionLabels" to "Option A\nOption B", "criterionLabels" to "Value\nComfort", "weights" to "1,1", "scores" to "4,3\n3,4"),
         Tools.ROUTE_TIME_ZONE_CONVERTER to example("Load 15 January 2026 at 12:00 UTC and Asia/Kolkata, then convert to 17:30 on the same day.", "date" to "2026-01-15", "time" to "12:00", "sourceZone" to "UTC", "targetZone" to "Asia/Kolkata", "sourceOffset" to "AUTO"),
         Tools.ROUTE_TEXT_DIFF to example("Load Hello followed by world, and Hello followed by GearBox, then tap Compare to inspect the changed second line.", "firstText" to "Hello\nworld", "secondText" to "Hello\nGearBox"),

@@ -6,7 +6,7 @@ import org.junit.Test
 
 class ToolExamplesTest {
     @Test fun examplesAreBoundedInputOnlyAndHaveHelp() {
-        assertEquals(30, ToolExampleCatalog.routes.size)
+        assertEquals(31, ToolExampleCatalog.routes.size)
         ToolExampleCatalog.routes.forEach { route ->
             val example = ToolExampleCatalog.forRoute(route)!!
             assertTrue(ToolMemoryPolicy.permitsRoute(route))
@@ -69,5 +69,10 @@ class ToolExamplesTest {
         val inputs = requireNotNull(ToolExampleCatalog.forRoute(Tools.ROUTE_DECISION_MATRIX)).inputs
         assertEquals(mapOf("optionLabels" to "Option A\nOption B", "criterionLabels" to "Value\nComfort", "weights" to "1,1", "scores" to "4,3\n3,4"), inputs)
         assertNotNull(parseDecisionMatrixSnapshot(inputs))
+    }
+    @Test fun aspectExampleContainsOnlyValidatedDimensions() {
+        val inputs = requireNotNull(ToolExampleCatalog.forRoute(Tools.ROUTE_ASPECT_RATIO)).inputs
+        assertEquals(mapOf("mode" to "WIDTH", "sourceWidth" to "1920", "sourceHeight" to "1080", "targetWidth" to "1280", "targetHeight" to "", "percent" to ""), inputs)
+        assertNotNull(parseAspectRatioSnapshot(inputs))
     }
 }

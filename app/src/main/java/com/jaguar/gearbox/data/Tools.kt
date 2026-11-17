@@ -9,6 +9,8 @@ import androidx.compose.material.icons.filled.Balance
 import androidx.compose.material.icons.filled.Cake
 import androidx.compose.material.icons.filled.Calculate
 import androidx.compose.material.icons.filled.Casino
+import androidx.compose.material.icons.filled.AspectRatio
+import com.jaguar.gearbox.ui.tools.AspectRatioScreen
 import androidx.compose.material.icons.filled.TableChart
 import com.jaguar.gearbox.ui.tools.DecisionMatrixScreen
 import androidx.compose.material.icons.filled.Public
@@ -115,6 +117,7 @@ object Tools {
     const val ROUTE_SCOREBOARD = "tool/scoreboard"
     const val ROUTE_RANDOM = "tool/random"
     const val ROUTE_BASE_CONVERTER = "tool/base_converter"
+    const val ROUTE_ASPECT_RATIO = "tool/aspect_ratio"
     const val ROUTE_DECISION_MATRIX = "tool/decision_matrix"
     const val ROUTE_TIME_ZONE_CONVERTER = "tool/time_zone_converter"
     const val ROUTE_TEXT_DIFF = "tool/text_diff"
@@ -422,6 +425,15 @@ object Tools {
             route = ROUTE_CHESS_SCOREBOARD,
             category = ToolCategory.GAMES_AND_RANDOM,
             content = { onNavigateBack -> ChessScoreboardScreen(onNavigateBack) },
+        ),
+        Tool(
+            name = "Aspect Ratio & Image Size",
+            description = "Calculate reduced ratios and resized dimensions, fit or fill a box.",
+            icon = Icons.Filled.AspectRatio,
+            route = ROUTE_ASPECT_RATIO,
+            category = ToolCategory.CALCULATORS,
+            content = { onNavigateBack -> AspectRatioScreen(onNavigateBack) },
+            keywords = listOf("aspect ratio", "image size", "resize dimensions", "fit", "fill", "crop", "padding"),
         ),
         Tool(
             name = "Decision Matrix",

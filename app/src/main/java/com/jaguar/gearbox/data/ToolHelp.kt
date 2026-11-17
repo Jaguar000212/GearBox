@@ -40,6 +40,11 @@ object ToolHelpCatalog {
             "Decimal 10 is binary 1010 and hexadecimal A.",
             "This converter handles integers, not decimal fractions; binary only accepts 0 and 1.",
         ),
+        Tools.ROUTE_ASPECT_RATIO to ToolHelp(
+            "Enter source width and height to reduce their ratio. Choose a target width, height, percentage, or a box to fit or fill, then calculate dimensions.",
+            "A 1920 by 1080 source has ratio 16:9. Resizing to width 1280 gives height 720.",
+            "Dimension calculations only: no image is uploaded, resized or edited. Integer rounding can slightly change the ratio. Fit rounds down to stay inside the box; Fill rounds up to cover it. Padding and cropping assume centered placement.",
+        ),
         Tools.ROUTE_DECISION_MATRIX to ToolHelp(
             "Enter 2 to 6 options and 1 to 6 criteria. Set whole-number weights from 0 to 100, with at least one positive weight, and ratings from 0 to 5. Higher ratings always mean better. Tap Compare to rank weighted scores and show ties.",
             "Compare two generic options using Value and Comfort ratings. Equal weighted totals remain tied rather than choosing a winner.",

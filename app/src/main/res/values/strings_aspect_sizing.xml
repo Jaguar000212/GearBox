@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="aspect_title">Aspect Ratio &amp; Image Size</string>
+    <string name="aspect_mode">Sizing method</string>
+    <string name="aspect_ratio_mode">Reduce ratio only</string>
+    <string name="aspect_width_mode">Resize to width</string>
+    <string name="aspect_height_mode">Resize to height</string>
+    <string name="aspect_percent_mode">Scale by percentage</string>
+    <string name="aspect_fit_mode">Fit inside box</string>
+    <string name="aspect_fill_mode">Fill box (crop)</string>
+    <string name="aspect_source_width">Source width (pixels)</string>
+    <string name="aspect_source_height">Source height (pixels)</string>
+    <string name="aspect_target_width">Target width / box width (pixels)</string>
+    <string name="aspect_target_height">Target height / box height (pixels)</string>
+    <string name="aspect_percent">Scale percentage (0.01–10,000)</string>
+    <string name="aspect_dimension_error">Enter a whole pixel dimension from 1 to 1,000,000, without separators.</string>
+    <string name="aspect_percent_error">Enter 0.01 to 10,000 with at most two decimal places, using a decimal point.</string>
+    <string name="aspect_calculate">Calculate size</string>
+    <string name="aspect_setup_note">Ratio-only needs just the source dimensions. Other methods show only their required inputs. Inactive target drafts are kept while switching methods, but are not included in saved snapshots.</string>
+    <string name="aspect_rounding">Calculates an ideal scale from the source ratio. Width, height and percentage modes round pixels to nearest, with halves up. Fit rounds down so it never exceeds the box; Fill rounds up so it covers the box. Integer rounding can slightly change the final pixel ratio. Zero-pixel or over-limit results are rejected.</string>
+    <string name="aspect_no_edit">Sizing arithmetic only: no image is opened, uploaded, resized or cropped. Fit assumes a padded canvas and Fill assumes a centered crop. An odd extra pixel is assigned to the right or bottom. No resampling quality, print DPI or physical size is calculated.</string>
+    <string name="aspect_restore">Explicit imports restore inputs only; press Calculate size. Remember results can reconstruct a completed sizing calculation. Saved modes retain only the sizing method.</string>
+    <string name="aspect_result_title">Calculated dimensions</string>
+    <string name="aspect_output">Reduced source ratio: %1$d:%2$d\nResized dimensions: %3$d × %4$d pixels\nIdeal scale: %5$s%% (%6$d ÷ %7$d)</string>
+    <string name="aspect_padding">Fit canvas: %1$d × %2$d pixels\nPadding: left %3$d, right %4$d, top %5$d, bottom %6$d pixels</string>
+    <string name="aspect_crop">Fill crop box: %1$d × %2$d pixels\nCrop from resized image: left %3$d, right %4$d, top %5$d, bottom %6$d pixels</string>
+    <string name="aspect_empty">Enter source dimensions and a sizing method, then calculate.</string>
+    <string name="aspect_range_error">Rounded output must be between 1 and 1,000,000 pixels on each side. Change the target dimensions or scale.</string>
+    <string name="aspect_restore_error">The saved sizing setup is invalid. Your current inputs were kept.</string>
+    <string name="aspect_ratio_output">Reduced source ratio: %1$d:%2$d\nSource dimensions: %3$d × %4$d pixels</string>
+</resources>

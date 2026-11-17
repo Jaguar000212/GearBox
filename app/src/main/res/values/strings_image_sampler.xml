@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="image_sampler_title">Sample an image</string>
+    <string name="image_sampler_choose">Choose image</string>
+    <string name="image_sampler_disclosure">Choose one image using Android’s picker. It is decoded locally, not uploaded or saved by GearBox. The preview is downsampled to at most 1,024 pixels per side and converted to sRGB; transparency is composited on white. Animated images use their first frame. Samples come from this displayed preview, not the original full-resolution image or a physical color measurement. An applied RGB color can enter your normal color history if enabled. The image is discarded on rotation or leaving this screen.</string>
+    <string name="image_sampler_error">Could not open this image. Choose a valid image up to 12 MiB, 40 million pixels and 12,000 pixels per side. No color was applied.</string>
+    <string name="image_sampler_size">Preview: %1$d × %2$d pixels. Tap a pixel or enter zero-based X/Y coordinates.</string>
+    <string name="image_sampler_preview">Selected image preview. To sample without touch, use the X and Y fields below.</string>
+    <string name="image_sampler_x">Pixel X (column)</string>
+    <string name="image_sampler_y">Pixel Y (row)</string>
+    <string name="image_sampler_sample">Apply sampled color</string>
+    <string name="image_sampler_applied">Applied pixel (%1$s, %2$s).</string>
+    <string name="image_sampler_remove">Remove image preview</string>
+</resources>

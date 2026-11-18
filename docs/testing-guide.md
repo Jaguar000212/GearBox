@@ -415,3 +415,9 @@ This tool must actually schedule backwards from the target date, not merely list
 - Reject empty/control/line-break text and unpaired UTF-16 surrogates. Check Unicode/device-font glyph support. Font metrics place the top edge at Y; text beyond image bounds is clipped as disclosed. Inspect preview and exported pixels, especially near edges and after crop/resize.
 - Text remains transient with image edits, not in History, Workbench or mode preferences. Export is an explicit new flattened image copy, without source metadata or editable text layers. Verify cancellation, generation invalidation, ordered overlap and original-file preservation on a device.
 - Policy and pixel tests are authored; Android runtime, font rendering, accessibility and export behavior have not been executed during reconstruction.
+
+
+### Reconstructed Sound-level Meter
+- Explicit Start requests microphone permission; a grant must not start capture until another Start. Denial, delayed permission result, background and navigation must never start/resume capture.
+- Verify RMS/peak relative dBFS, digital silence −∞, Stop/background/disposal clear readings and microphone indicator, no files/history, rapid stop/start and busy microphone failures. Not calibrated SPL or a hearing-safety instrument.
+- Authored JVM math/privacy fixtures and injected-source Android controller cleanup/permission tests. These are not executed here: local Gradle bootstrap cannot download its distribution. Real microphone/OEM and lifecycle behavior still require device testing.

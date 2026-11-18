@@ -73,6 +73,8 @@ import com.jaguar.gearbox.ui.tools.BmiCalculatorScreen
 import com.jaguar.gearbox.ui.tools.BubbleLevelScreen
 import com.jaguar.gearbox.ui.tools.ChessScoreboardScreen
 import com.jaguar.gearbox.ui.tools.ColorPickerScreen
+import com.jaguar.gearbox.ui.tools.SoundMeterScreen
+import androidx.compose.material.icons.filled.Mic
 import com.jaguar.gearbox.ui.tools.LightMeterScreen
 import androidx.compose.material.icons.filled.LightMode
 import com.jaguar.gearbox.ui.tools.CompassScreen
@@ -168,6 +170,7 @@ object Tools {
     const val ROUTE_TIC_TAC_TOE = "tool/tic_tac_toe"
     const val ROUTE_QR_GENERATOR = "tool/qr_generator"
     const val ROUTE_BUBBLE_LEVEL = "tool/bubble_level"
+    const val ROUTE_SOUND_METER = "tool/sound_level_meter"
     const val ROUTE_LIGHT_METER = "tool/light_meter"
     const val ROUTE_COMPASS = "tool/compass"
     const val ROUTE_FLASHLIGHT = "tool/flashlight"
@@ -606,6 +609,9 @@ object Tools {
             content = { onNavigateBack -> BubbleLevelScreen(onNavigateBack) },
             keywords = listOf("spirit level", "tilt", "check if straight"),
         ),
+        Tool(name = "Sound-level Meter", description = "Read relative microphone levels in dBFS.",
+            icon = Icons.Filled.Mic, route = ROUTE_SOUND_METER, category = ToolCategory.DEVICE,
+            content = { SoundMeterScreen(it) }, keywords = listOf("microphone", "audio", "dBFS", "RMS")),
         Tool(
             name = "Light Meter",
             description = "Read ambient illuminance from the device light sensor.",

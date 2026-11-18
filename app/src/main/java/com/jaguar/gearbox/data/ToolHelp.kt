@@ -255,6 +255,11 @@ object ToolHelpCatalog {
             "Compare the reading on a desk with the phone gently tilted.",
             "Accuracy depends on sensors and the device case. Do not use as a precision construction instrument.",
         ),
+        Tools.ROUTE_SOUND_METER to ToolHelp(
+            "Tap Start, grant microphone permission, then tap Start again. Stop or leave to end capture.",
+            "Digital silence shows negative infinity dBFS.",
+            "Relative digital levels only, not calibrated sound pressure. No saved audio or health assessment.",
+        ),
         Tools.ROUTE_LIGHT_METER to ToolHelp(
             "Open Light Meter and leave the device light sensor unobstructed. Read ambient illuminance in lux while this screen is active.",
             "Compare a shaded room with a spot nearer a window, without covering the sensor.",

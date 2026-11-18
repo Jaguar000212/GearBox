@@ -40,6 +40,11 @@ object ToolHelpCatalog {
             "Decimal 10 is binary 1010 and hexadecimal A.",
             "This converter handles integers, not decimal fractions; binary only accepts 0 and 1.",
         ),
+        Tools.ROUTE_SCIENTIFIC_CALCULATOR to ToolHelp(
+            "Enter an expression with explicit multiplication, choose degrees or radians for trigonometry, then calculate. Use parentheses for grouping and functions such as sqrt(16), sin(30), ln(e) or log(100).",
+            "Load sqrt(16)+2^3, then calculate 12. The example does not calculate until you request it.",
+            "Finite-precision real-number arithmetic only, not symbolic algebra or complex numbers. Multiplication must be explicit, such as 2*pi. Powers associate right to left; -2^2 means -(2^2).",
+        ),
         Tools.ROUTE_BUSINESS_DAY_PLANNER to ToolHelp(
             "Choose Add/subtract or Count between dates. Select your weekend days and enter excluded dates, then calculate. The start date is excluded; counting includes an eligible end date and reverses sign for earlier end dates.",
             "Five business days after Monday 16 November 2026 is Monday 23 November, excluding Saturday and Sunday with no other excluded dates.",

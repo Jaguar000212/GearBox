@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="scientific_title">Scientific Calculator</string>
+    <string name="scientific_expression">Expression</string>
+    <string name="scientific_angle_mode">Angle unit</string>
+    <string name="scientific_degrees">Degrees (DEG)</string>
+    <string name="scientific_radians">Radians (RAD)</string>
+    <string name="scientific_calculate">Calculate</string>
+    <string name="scientific_result_heading">Result</string>
+    <string name="scientific_empty">Enter an expression and press Calculate.</string>
+    <string name="scientific_syntax">Invalid expression. Check the supported names, numbers, operators and parentheses.</string>
+    <string name="scientific_limit">Expression exceeds a limit: 512 characters, 512 tokens or 32 nested operations.</string>
+    <string name="scientific_domain">The expression is outside the supported real-number domain. Zero to the power zero and tangent at or extremely near a pole are not defined here.</string>
+    <string name="scientific_zero">Division by zero is not allowed.</string>
+    <string name="scientific_nonfinite">The result or an intermediate value exceeds the finite numeric range.</string>
+    <string name="scientific_restore_error">The saved expression or angle mode is invalid. Your current inputs were kept.</string>
+    <string name="scientific_operators">Operators: +, -, *, /, ^ and parentheses. Use explicit multiplication: 2*pi, not 2pi. Powers associate right: 2^3^2 = 512. Unary minus follows powers: -2^2 = -4; (-2)^2 = 4.</string>
+    <string name="scientific_functions">Functions (lowercase, parentheses required): sin, cos, tan, asin, acos, atan, sqrt, ln, log, abs, exp. ln is natural log; log is base 10. Constants: pi and e. Example: sqrt(9)+sin(30).</string>
+    <string name="scientific_numbers">Use a decimal point and no digit separators. Scientific notation is supported: 1.5e3 or 2E-4. Write 2*e for twice the constant e; 2e alone is invalid.</string>
+    <string name="scientific_angles">The selected angle unit applies to sin/cos/tan inputs and asin/acos/atan outputs. Other functions are unaffected.</string>
+    <string name="scientific_precision">Uses finite double-precision arithmetic, not exact symbolic algebra. Rounding, underflow to zero and loss of accuracy for very large angles are possible. Complex numbers are not supported.</string>
+    <string name="scientific_retention">Editing or explicit imports clears the result; Calculate is required again. Remember results can reconstruct a completed calculation when reopening. Saved modes retain only DEG/RAD, not the expression.</string>
+    <string name="scientific_output">%1$s\nAngle unit: %2$s\nResult: %3$s</string>
+</resources>

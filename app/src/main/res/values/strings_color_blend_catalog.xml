@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="blend_catalog_name">Color Blend</string>
+    <string name="blend_catalog_description">Blend two opaque colors by interpolating encoded sRGB channels.</string>
+    <string name="blend_catalog_instructions">Enter two opaque HEX colors, choose the second color percentage from 0 to 100, then tap Blend.</string>
+    <string name="blend_catalog_example">Equal parts red #FF0000 and blue #0000FF give #800080 with encoded sRGB interpolation.</string>
+    <string name="blend_catalog_limitation">This interpolates encoded sRGB channels, not linear-light values or physical paint. Alpha transparency is not supported.</string>
+    <string-array name="blend_catalog_keywords"><item>color blend</item><item>colour blend</item><item>mix colors</item><item>mix colours</item><item>interpolate</item><item>sRGB</item></string-array>
+    <string-array name="blend_catalog_tasks"><item>blend two colors</item><item>blend two colours</item><item>mix colors</item><item>mix colours</item><item>interpolate color</item><item>color blend</item></string-array>
+    <string name="blend_catalog_load_example">Load black and white with an equal blend, then tap Blend to calculate #808080.</string>
+</resources>

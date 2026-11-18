@@ -73,6 +73,8 @@ import com.jaguar.gearbox.ui.tools.BmiCalculatorScreen
 import com.jaguar.gearbox.ui.tools.BubbleLevelScreen
 import com.jaguar.gearbox.ui.tools.ChessScoreboardScreen
 import com.jaguar.gearbox.ui.tools.ColorPickerScreen
+import com.jaguar.gearbox.ui.tools.BarcodeScannerScreen
+import androidx.compose.material.icons.filled.QrCodeScanner
 import com.jaguar.gearbox.ui.tools.MagnifierScreen
 import androidx.compose.material.icons.filled.ZoomIn
 import com.jaguar.gearbox.ui.tools.SensorCheckerScreen
@@ -177,6 +179,7 @@ object Tools {
     const val ROUTE_TIC_TAC_TOE = "tool/tic_tac_toe"
     const val ROUTE_QR_GENERATOR = "tool/qr_generator"
     const val ROUTE_BUBBLE_LEVEL = "tool/bubble_level"
+    const val ROUTE_BARCODE_SCANNER = "tool/barcode_scanner"
     const val ROUTE_MAGNIFIER = "tool/magnifier"
     const val ROUTE_SENSOR_CHECKER = "tool/sensor_checker"
     const val ROUTE_BATTERY_INFO = "tool/battery_information"
@@ -620,6 +623,9 @@ object Tools {
             content = { onNavigateBack -> BubbleLevelScreen(onNavigateBack) },
             keywords = listOf("spirit level", "tilt", "check if straight"),
         ),
+        Tool(name = "Barcode / QR Scanner", description = "Read supported codes locally with explicit camera access.",
+            icon = Icons.Filled.QrCodeScanner, route = ROUTE_BARCODE_SCANNER, category = ToolCategory.DEVICE,
+            content = { BarcodeScannerScreen(it) }, keywords = listOf("scanner", "QR", "barcode")),
         Tool(name = "Magnifier", description = "Magnify a live camera preview and optionally export a frozen frame.",
             icon = Icons.Filled.ZoomIn, route = ROUTE_MAGNIFIER, category = ToolCategory.DEVICE,
             content = { MagnifierScreen(it) }, keywords = listOf("magnifier", "camera zoom")),

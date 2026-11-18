@@ -15,7 +15,7 @@ class ToolTaxonomyTest {
             ToolCategory.CALCULATORS to 11, ToolCategory.MONEY to 6,
             ToolCategory.TIME to 9, ToolCategory.UTILITIES to 11,
             ToolCategory.GAMES_AND_RANDOM to 7, ToolCategory.RANDOM to 4,
-            ToolCategory.DEVICE to 5,
+            ToolCategory.DEVICE to 6,
         )
         assertEquals(expected, Tools.all.groupingBy { it.category }.eachCount())
         assertTrue(Tools.all.filter { it.name.contains("Scoreboard") }

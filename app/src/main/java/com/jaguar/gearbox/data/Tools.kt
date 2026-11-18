@@ -9,6 +9,8 @@ import androidx.compose.material.icons.filled.Balance
 import androidx.compose.material.icons.filled.Cake
 import androidx.compose.material.icons.filled.Calculate
 import androidx.compose.material.icons.filled.Casino
+import androidx.compose.material.icons.filled.Public
+import com.jaguar.gearbox.ui.tools.TimeZoneConverterScreen
 import androidx.compose.material.icons.filled.Difference
 import com.jaguar.gearbox.ui.tools.TextDiffScreen
 import androidx.compose.material.icons.filled.Science
@@ -111,6 +113,7 @@ object Tools {
     const val ROUTE_SCOREBOARD = "tool/scoreboard"
     const val ROUTE_RANDOM = "tool/random"
     const val ROUTE_BASE_CONVERTER = "tool/base_converter"
+    const val ROUTE_TIME_ZONE_CONVERTER = "tool/time_zone_converter"
     const val ROUTE_TEXT_DIFF = "tool/text_diff"
     const val ROUTE_SCIENTIFIC_CALCULATOR = "tool/scientific_calculator"
     const val ROUTE_BUSINESS_DAY_PLANNER = "tool/business_day_planner"
@@ -416,6 +419,15 @@ object Tools {
             route = ROUTE_CHESS_SCOREBOARD,
             category = ToolCategory.GAMES_AND_RANDOM,
             content = { onNavigateBack -> ChessScoreboardScreen(onNavigateBack) },
+        ),
+        Tool(
+            name = "Time Zone Converter",
+            description = "Convert a date and time between named time zones using device rules.",
+            icon = Icons.Filled.Public,
+            route = ROUTE_TIME_ZONE_CONVERTER,
+            category = ToolCategory.TIME,
+            content = { onNavigateBack -> TimeZoneConverterScreen(onNavigateBack) },
+            keywords = listOf("time zone", "timezone", "IANA", "UTC", "daylight saving", "world time"),
         ),
         Tool(
             name = "Text Diff",

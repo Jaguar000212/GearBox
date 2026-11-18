@@ -40,6 +40,11 @@ object ToolHelpCatalog {
             "Decimal 10 is binary 1010 and hexadecimal A.",
             "This converter handles integers, not decimal fractions; binary only accepts 0 and 1.",
         ),
+        Tools.ROUTE_TIME_ZONE_CONVERTER to ToolHelp(
+            "Enter a date and local time, choose source and destination IANA zones, then convert. A nonexistent daylight-saving time is rejected. For a repeated time, explicitly select the intended source offset.",
+            "Load 15 January 2026 at 12:00 UTC and Asia/Kolkata, then convert to 17:30 on the same day.",
+            "Uses time-zone rules installed on your device, which may become outdated. No network lookup or location permission is used. Check important future travel or meeting times against current official information.",
+        ),
         Tools.ROUTE_TEXT_DIFF to ToolHelp(
             "Enter the original and revised text, then tap Compare to inspect added, removed and unchanged lines. Comparison runs locally; automatic history and result saving are off by default.",
             "Load Hello followed by world, and Hello followed by GearBox, then tap Compare to inspect the changed second line.",

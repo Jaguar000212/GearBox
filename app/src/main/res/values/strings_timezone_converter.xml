@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="zone_converter_title">Time Zone Converter</string>
+    <string name="zone_date">Source date (YYYY-MM-DD)</string>
+    <string name="zone_time">Source local time (HH:mm, 24-hour)</string>
+    <string name="zone_source">Source zone ID</string>
+    <string name="zone_target">Target zone ID</string>
+    <string name="zone_convert">Convert</string>
+    <string name="zone_result_heading">Converted time</string>
+    <string name="zone_empty">Choose a source date, local time and both zone IDs, then convert.</string>
+    <string name="zone_date_error">Enter a valid ISO date from 1900-01-01 to 2100-12-31.</string>
+    <string name="zone_time_error">Enter a valid 24-hour time as HH:mm, from 00:00 to 23:59.</string>
+    <string name="zone_id_error">Choose an available IANA zone ID, such as America/New_York, Asia/Kolkata or UTC. IDs are case-sensitive.</string>
+    <string name="zone_gap_error">This source local time does not exist because the clock moves forward. Choose another time; it will not be shifted automatically.</string>
+    <string name="zone_overlap_error">This source local time occurs twice. Choose one of the actual source UTC offsets before converting.</string>
+    <string name="zone_offset_error">The saved offset does not match this source time. Select a valid overlap offset, or use Automatic for an unambiguous time.</string>
+    <string name="zone_range_error">The converted date falls outside 1900–2100. Choose a different source date or time.</string>
+    <string name="zone_offset">Source offset choice</string>
+    <string name="zone_automatic">Automatic (only one valid source offset)</string>
+    <string name="zone_choose_offset">Choose an offset</string>
+    <string name="zone_offset_value">UTC offset %1$s</string>
+    <string name="zone_output">Source: %1$s\nZone: %2$s\nSource UTC offset: %3$s\n\nTarget: %4$s\nZone: %5$s\nTarget UTC offset: %6$s\n\nUTC instant: %7$s</string>
+    <string name="zone_rules">Uses the time-zone database installed on this device. Historical rules and future changes may differ from current official rules. No network, location permission or device-zone inference is used. UTC is the explicit default for both zones. Output includes seconds because some historical offsets include seconds.</string>
+    <string name="zone_suggestions">Matching zone IDs (up to 8; type more to narrow)</string>
+    <string name="zone_restore">Explicit imports restore inputs only; press Convert. Remember results can reconstruct the last completed conversion. Saved modes retain only the two zone IDs.</string>
+    <string name="zone_restore_error">The saved conversion setup is invalid. Your current inputs were kept.</string>
+</resources>

@@ -6,7 +6,7 @@ import org.junit.Test
 
 class ToolExamplesTest {
     @Test fun examplesAreBoundedInputOnlyAndHaveHelp() {
-        assertEquals(28, ToolExampleCatalog.routes.size)
+        assertEquals(29, ToolExampleCatalog.routes.size)
         ToolExampleCatalog.routes.forEach { route ->
             val example = ToolExampleCatalog.forRoute(route)!!
             assertTrue(ToolMemoryPolicy.permitsRoute(route))
@@ -58,6 +58,11 @@ class ToolExamplesTest {
     @Test fun textDiffExampleContainsOnlyLiteralInputs() {
         val inputs = requireNotNull(ToolExampleCatalog.forRoute(Tools.ROUTE_TEXT_DIFF)).inputs
         assertEquals(mapOf("firstText" to "Hello\nworld", "secondText" to "Hello\nGearBox"), inputs)
+        assertTrue(ToolMemoryPolicy.validInputs(inputs))
+    }
+    @Test fun timeZoneExampleContainsOnlyUnambiguousInputs() {
+        val inputs = requireNotNull(ToolExampleCatalog.forRoute(Tools.ROUTE_TIME_ZONE_CONVERTER)).inputs
+        assertEquals(mapOf("date" to "2026-01-15", "time" to "12:00", "sourceZone" to "UTC", "targetZone" to "Asia/Kolkata", "sourceOffset" to "AUTO"), inputs)
         assertTrue(ToolMemoryPolicy.validInputs(inputs))
     }
 }

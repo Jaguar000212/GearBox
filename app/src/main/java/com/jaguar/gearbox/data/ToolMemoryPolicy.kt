@@ -75,6 +75,7 @@ object ToolMemoryPolicy {
         "tool/bill_splitter" -> validBillSplitterMode(values)
         "tool/business_day_planner" -> validBusinessDayMode(values)
         "tool/scientific_calculator" -> validScientificMode(values)
+        "tool/time_zone_converter" -> validTimeZoneMode(values)
         else -> permitsRoute(route)
     }
 

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="zone_catalog_name">Time Zone Converter</string>
+    <string name="zone_catalog_description">Convert a date and time between named time zones using device rules.</string>
+    <string name="zone_catalog_instructions">Enter a date and local time, choose source and destination IANA zones, then convert. A nonexistent daylight-saving time is rejected. For a repeated time, explicitly select the intended source offset.</string>
+    <string name="zone_catalog_example">Load 15 January 2026 at 12:00 UTC and Asia/Kolkata, then convert to 17:30 on the same day.</string>
+    <string name="zone_catalog_limitation">Uses time-zone rules installed on your device, which may become outdated. No network lookup or location permission is used. Check important future travel or meeting times against current official information.</string>
+    <string-array name="zone_catalog_keywords"><item>time zone</item><item>timezone</item><item>IANA</item><item>UTC</item><item>daylight saving</item><item>world time</item></string-array>
+    <string-array name="zone_catalog_tasks"><item>convert time zones</item><item>time zone converter</item><item>timezone converter</item><item>time in another zone</item><item>UTC to local time</item><item>daylight saving time</item></string-array>
+</resources>

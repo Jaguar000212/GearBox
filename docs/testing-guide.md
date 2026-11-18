@@ -331,3 +331,10 @@ This is local date arithmetic with user-selected weekend days and explicit exclu
 - A source time in a daylight-saving gap must be rejected rather than shifted silently. A repeated/overlap time must require an explicit valid offset choice; test both occurrences and verify distinct instants. Changing source date/time/zone must invalidate any stale overlap choice and result.
 - Test invalid dates/times/zones, range bounds, same-zone conversion and leap days. Display enough zone/date/offset detail in copy/share to avoid ambiguity. Rules can change with government decisions and device timezone database updates; future schedules should be rechecked before reliance.
 - Explicit imports/examples require Convert; remembered results follow settings and current validated local rules. Mode retention may save selected zones but must not save event date/time or an overlap choice as a generic mode. Verify no history replay, accessible zone entry/offset choices and large-font/adaptive layout on-device.
+
+## Decision Matrix
+
+- Enter bounded alternatives, criteria, nonnegative weights and 0–5 ratings where higher always means better. This is a transparent arithmetic aid using your judgments, not an objective recommendation, AI assessment or eligibility decision about people.
+- Verify weighted sums, normalization and ties using unrounded totals. Zero-weight criteria contribute nothing; all-zero weights are rejected. Test duplicate/empty/long labels, invalid scores, dimension changes, limits and exact shape validation. The sum/weight formula must be visible; rounding must not create or break rankings.
+- Adding/removing options or criteria invalidates the result; destructive removal should be deliberate. Import/example loads inputs only. Remembered results honor explicit opt-in without replay; no labels or ratings are stored under mode-only retention.
+- Labels may be private. Test separate default-off automatic history/result controls, exact reviewed sharing and sensitive clipboard handling. Existing storage limits remain unchanged. Verify accessible row/criterion labels, large fonts, keyboard, adaptive layouts and reset/remove confirmations on-device.

@@ -14,6 +14,29 @@ class SensitiveToolMemoryStoreTest {
     private fun consent() = ToolMemorySettings(historyEnabled = true, rememberResults = true,
         rememberModes = true, automaticMemory = routes.associateWith { ToolAutomaticMemory(true, true) })
 
+    @Test fun decisionMatrixHasIndependentConsentAndPreservesRejectedCaptureData() {
+        val route = "tool/decision_matrix"
+        val inputs = mapOf("optionLabels" to "Private A\nPrivate B", "criterionLabels" to "Cost",
+            "weights" to "1", "scores" to "4\n3")
+        val global = ToolMemorySettings(historyEnabled = true, rememberResults = true, rememberModes = true)
+        store.saveSettings(global)
+        assertFalse(store.record(route, inputs, "result"))
+        assertFalse(store.saveResult(route, inputs, "result"))
+        assertFalse(store.saveMode(route, inputs))
+        val allowed = global.copy(automaticMemory = mapOf(route to ToolAutomaticMemory(true, true)))
+        store.saveSettings(allowed)
+        assertTrue(store.record(route, inputs, "result"))
+        assertTrue(store.saveResult(route, inputs, "result"))
+        val token = store.resultGeneration(route)
+        store.saveSettings(global)
+        store.saveSettings(allowed)
+        assertFalse(store.saveResult(route, inputs, "late", token))
+        assertFalse(store.record(route, inputs + ("optionLabels" to "x".repeat(4097)), "too large"))
+        assertEquals(inputs, store.history(route).single().inputs)
+        assertEquals("result", store.loadResult(route)?.output)
+        assertFalse(store.settings().permitsResult("tool/text_diff"))
+    }
+
     @Test fun textDiffRequiresItsOwnConsentAndNeverTruncatesOversizedCaptures() {
         val route = "tool/text_diff"
         val inputs = mapOf("firstText" to "private first", "secondText" to "private second")

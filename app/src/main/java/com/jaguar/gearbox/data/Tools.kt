@@ -9,6 +9,8 @@ import androidx.compose.material.icons.filled.Balance
 import androidx.compose.material.icons.filled.Cake
 import androidx.compose.material.icons.filled.Calculate
 import androidx.compose.material.icons.filled.Casino
+import androidx.compose.material.icons.filled.TableChart
+import com.jaguar.gearbox.ui.tools.DecisionMatrixScreen
 import androidx.compose.material.icons.filled.Public
 import com.jaguar.gearbox.ui.tools.TimeZoneConverterScreen
 import androidx.compose.material.icons.filled.Difference
@@ -113,6 +115,7 @@ object Tools {
     const val ROUTE_SCOREBOARD = "tool/scoreboard"
     const val ROUTE_RANDOM = "tool/random"
     const val ROUTE_BASE_CONVERTER = "tool/base_converter"
+    const val ROUTE_DECISION_MATRIX = "tool/decision_matrix"
     const val ROUTE_TIME_ZONE_CONVERTER = "tool/time_zone_converter"
     const val ROUTE_TEXT_DIFF = "tool/text_diff"
     const val ROUTE_SCIENTIFIC_CALCULATOR = "tool/scientific_calculator"
@@ -419,6 +422,15 @@ object Tools {
             route = ROUTE_CHESS_SCOREBOARD,
             category = ToolCategory.GAMES_AND_RANDOM,
             content = { onNavigateBack -> ChessScoreboardScreen(onNavigateBack) },
+        ),
+        Tool(
+            name = "Decision Matrix",
+            description = "Compare options using your own criteria, weights and ratings.",
+            icon = Icons.Filled.TableChart,
+            route = ROUTE_DECISION_MATRIX,
+            category = ToolCategory.CALCULATORS,
+            content = { onNavigateBack -> DecisionMatrixScreen(onNavigateBack) },
+            keywords = listOf("decision matrix", "weighted scores", "compare options", "criteria", "ratings"),
         ),
         Tool(
             name = "Time Zone Converter",

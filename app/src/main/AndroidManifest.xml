@@ -13,6 +13,9 @@
     <!-- required="false" on all of these so the app still installs on devices lacking a flash,
          accelerometer, or magnetometer - only the Flashlight/Bubble Level/Compass tools degrade
          (they already show a "not available" message at runtime), nothing else is affected. -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />
     <uses-feature android:name="android.hardware.camera.flash" android:required="false" />
     <uses-feature android:name="android.hardware.sensor.accelerometer" android:required="false" />
     <uses-feature android:name="android.hardware.sensor.compass" android:required="false" />

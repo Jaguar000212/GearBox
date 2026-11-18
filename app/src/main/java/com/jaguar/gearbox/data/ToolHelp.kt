@@ -255,6 +255,7 @@ object ToolHelpCatalog {
             "Compare the reading on a desk with the phone gently tilted.",
             "Accuracy depends on sensors and the device case. Do not use as a precision construction instrument.",
         ),
+        Tools.ROUTE_MAGNIFIER to ToolHelp("Explicitly start the back camera; grant permission then Start again. Freeze and optionally export a reviewed PNG copy.", "Magnify non-private printed text.", "Preview quality depends on hardware. Backgrounding clears the camera and frozen frame, except a reviewed export frame while choosing its destination."),
         Tools.ROUTE_SENSOR_CHECKER to ToolHelp("Choose one sensor and explicitly Start. Changing selection or backgrounding stops readings.", "Tilt the device while observing accelerometer axes.", "Fixed permission-free inventory; readings are not calibration or hardware certification. No stored samples."),
         Tools.ROUTE_BATTERY_INFO to ToolHelp(
             "Open to view supported Android battery properties while this screen is active.",

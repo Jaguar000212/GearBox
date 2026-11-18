@@ -73,6 +73,8 @@ import com.jaguar.gearbox.ui.tools.BmiCalculatorScreen
 import com.jaguar.gearbox.ui.tools.BubbleLevelScreen
 import com.jaguar.gearbox.ui.tools.ChessScoreboardScreen
 import com.jaguar.gearbox.ui.tools.ColorPickerScreen
+import com.jaguar.gearbox.ui.tools.MagnifierScreen
+import androidx.compose.material.icons.filled.ZoomIn
 import com.jaguar.gearbox.ui.tools.SensorCheckerScreen
 import androidx.compose.material.icons.filled.Sensors
 import com.jaguar.gearbox.ui.tools.BatteryInfoScreen
@@ -175,6 +177,7 @@ object Tools {
     const val ROUTE_TIC_TAC_TOE = "tool/tic_tac_toe"
     const val ROUTE_QR_GENERATOR = "tool/qr_generator"
     const val ROUTE_BUBBLE_LEVEL = "tool/bubble_level"
+    const val ROUTE_MAGNIFIER = "tool/magnifier"
     const val ROUTE_SENSOR_CHECKER = "tool/sensor_checker"
     const val ROUTE_BATTERY_INFO = "tool/battery_information"
     const val ROUTE_PITCH_TUNER = "tool/pitch_tuner"
@@ -617,6 +620,9 @@ object Tools {
             content = { onNavigateBack -> BubbleLevelScreen(onNavigateBack) },
             keywords = listOf("spirit level", "tilt", "check if straight"),
         ),
+        Tool(name = "Magnifier", description = "Magnify a live camera preview and optionally export a frozen frame.",
+            icon = Icons.Filled.ZoomIn, route = ROUTE_MAGNIFIER, category = ToolCategory.DEVICE,
+            content = { MagnifierScreen(it) }, keywords = listOf("magnifier", "camera zoom")),
         Tool(name = "Sensor Checker", description = "Inspect selected foreground sensor readings and availability.",
             icon = Icons.Filled.Sensors, route = ROUTE_SENSOR_CHECKER, category = ToolCategory.DEVICE,
             content = { SensorCheckerScreen(it) }, keywords = listOf("sensor", "hardware", "accelerometer")),

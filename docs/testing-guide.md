@@ -301,3 +301,12 @@ Color Blend restoration distinction: explicit History/Workbench/preset/example i
 - Check the stated tip basis (pre-tax bill), supported decimal precision, zero amounts, maximum bounds, malformed/negative values and invalid diner counts. This tool does not process payments, convert currencies or determine tax obligations.
 - Editing inputs invalidates stale output. Explicit restore/example/preset imports require calculation again; remembered-result hydration follows the user's setting and must not replay history. Test lowercase/format normalization equivalents where relevant, opt-in retention and clearing results.
 - Verify copy/share conveys total, diner count and differing remainder shares rather than falsely promising one rounded amount for everyone. Check narrow/wide layouts, large fonts, TalkBack, keyboard input and share cancellation on-device.
+
+## Business-day Planner
+
+This is local date arithmetic with user-selected weekend days and explicit excluded dates, not a jurisdiction-aware holiday or legal-deadline service.
+
+- Verify the displayed counting convention: starting date excluded, destination included when it is a business day. Test Friday plus one business day with Saturday/Sunday weekends, subtraction, zero offset, leap day, reversed ranges and exclusion dates on weekends.
+- Test custom weekend sets, duplicate exclusions, invalid ISO dates, empty fields, bounds and an all-days-excluded weekend configuration. Reject excessive work rather than freezing or silently changing dates. No network holiday calendar or timezone conversion should occur.
+- Edits invalidate stale output. Explicit imports/examples/presets require Calculate; remembered-result hydration follows settings without history replay. Mode retention must not silently preserve date/exclusion content under a mode-only preference.
+- Check keyboard/TalkBack weekday selection and error messages, large fonts, adaptive layout and copy/share endpoint explanations. Device UI testing remains separate from pure date arithmetic tests.

@@ -16,6 +16,28 @@ class ToolMemoryStoreTest {
     private val route = "tool/percentage"
     @After fun cleanup() { directory.deleteRecursively() }
 
+    @Test fun businessDayModesExcludeDatesWhileFullResultsRequireConsent() {
+        val businessRoute = "tool/business_day_planner"
+        val inputs = mapOf("mode" to "ADD", "start" to "2026-11-16", "end" to "2026-11-23",
+            "offset" to "5", "weekendMask" to "96", "excludedDates" to "2026-11-17")
+        val modes = mapOf("mode" to "ADD", "weekendMask" to "96")
+        assertFalse(store.record(businessRoute, inputs, "2026-11-24"))
+        assertFalse(store.saveResult(businessRoute, inputs, "2026-11-24"))
+        store.saveSettings(ToolMemorySettings(rememberModes = true))
+        assertTrue(store.saveMode(businessRoute, modes))
+        assertFalse(store.saveMode(businessRoute, inputs))
+        assertEquals(modes, store.loadMode(businessRoute))
+        store.saveSettings(ToolMemorySettings(historyEnabled = true, rememberResults = true))
+        assertTrue(store.record(businessRoute, inputs, "2026-11-24"))
+        assertTrue(store.saveResult(businessRoute, inputs, "2026-11-24"))
+        assertEquals(inputs, store.loadResult(businessRoute)?.inputs)
+        assertTrue(store.savePreset("Weekdays", businessRoute, modes))
+        assertEquals(modes, store.presets().single().inputs)
+        store.saveSettings(ToolMemorySettings())
+        assertNull(store.loadResult(businessRoute))
+        assertEquals(inputs, store.history(businessRoute).single().inputs)
+    }
+
     @Test fun billSplitterModesCannotRetainBillAmountsAndResultsStayOptIn() {
         val billRoute = "tool/bill_splitter"
         val inputs = mapOf("bill" to "100.00", "tax" to "0", "tipPercent" to "10", "diners" to "3")

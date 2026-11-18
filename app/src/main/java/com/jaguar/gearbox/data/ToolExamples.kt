@@ -10,6 +10,7 @@ object ToolExampleCatalog {
         ToolExample(description, mapOf(*inputs)).also { require(ToolMemoryPolicy.validInputs(it.inputs)) }
 
     private val fixed = mapOf(
+        Tools.ROUTE_BUSINESS_DAY_PLANNER to example("Load five business days after 16 November 2026 with Saturday and Sunday excluded, then calculate 23 November.", "mode" to "ADD", "start" to "2026-11-16", "end" to "2026-11-23", "offset" to "5", "weekendMask" to "96", "excludedDates" to ""),
         Tools.ROUTE_BILL_SPLITTER to example("Load a bill of 100 with a tip of 10 percent and three diners, then calculate shares of 36.67, 36.67 and 36.66.", "bill" to "100", "tax" to "0", "tipPercent" to "10", "diners" to "3"),
         Tools.ROUTE_COLOR_BLEND to example("Load black and white with an equal blend, then tap Blend to calculate #808080.", "firstHex" to "#000000", "secondHex" to "#FFFFFF", "weight" to "50"),
         Tools.ROUTE_AVERAGE to example("2, 4, 6 has an average of 4.", "input" to "2, 4, 6"),

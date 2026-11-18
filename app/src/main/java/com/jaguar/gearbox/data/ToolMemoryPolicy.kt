@@ -73,6 +73,7 @@ object ToolMemoryPolicy {
         "tool/qr_generator" -> values.isEmpty()
         "tool/color_blend" -> parseColorBlendSnapshot(values) != null
         "tool/bill_splitter" -> validBillSplitterMode(values)
+        "tool/business_day_planner" -> validBusinessDayMode(values)
         else -> permitsRoute(route)
     }
 

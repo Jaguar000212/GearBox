@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="business_title">Business-day Planner</string>
+    <string name="business_mode">Calculation</string>
+    <string name="business_add">Add or subtract business days</string>
+    <string name="business_count">Count between dates</string>
+    <string name="business_start">Start date (YYYY-MM-DD)</string>
+    <string name="business_end">End date for count mode (YYYY-MM-DD)</string>
+    <string name="business_offset">Offset for add/subtract mode (−10,000 to 10,000)</string>
+    <string name="business_date_error">Enter a valid ISO date from 1900-01-01 to 2100-12-31.</string>
+    <string name="business_offset_error">Enter a whole number from −10,000 to 10,000, without separators or a plus sign.</string>
+    <string name="business_weekends">Non-working weekdays</string>
+    <string name="business_weekend_note">Select days to exclude every week. None is allowed; at least one weekday must remain working.</string>
+    <string name="business_all_weekdays_error">At least one weekday must remain working.</string>
+    <string name="business_exclusions">Additional excluded dates (YYYY-MM-DD)</string>
+    <string name="business_exclusions_note">Optional: up to 100 dates separated by commas or new lines (maximum 1,200 characters). Duplicate dates count once; dates already excluded by weekday are not subtracted twice. Do not add empty entries.</string>
+    <string name="business_exclusions_error">Use valid ISO dates in the supported range, with at most 100 entries and 1,200 characters.</string>
+    <string name="business_rules">The start date is not counted. An offset of zero returns the start unchanged, even on a non-working day. Negative offsets walk backward. Counts include the end date only if it is a working day; earlier end dates give a negative count, or zero when no working dates are traversed. Swapping endpoints can change the magnitude because a different endpoint is excluded.</string>
+    <string name="business_calendar_note">Calendar dates only: no time zones, regional holidays or official holiday calendar are inferred. Enter any holidays you want excluded. This is a planning calculation, not a guarantee about business opening days.</string>
+    <string name="business_restore_note">Explicit imports and saved setups restore inputs only; press Calculate. Remember results can restore a completed calculation when reopening.</string>
+    <string name="business_calculate">Calculate</string>
+    <string name="business_result_heading">Result</string>
+    <string name="business_result_date">Result date: %1$s\nStart (excluded): %2$s\nBusiness-day offset: %3$d</string>
+    <string name="business_result_count">Business-day count: %1$d\nStart (excluded): %2$s\nEnd (included if working): %3$s</string>
+    <string name="business_empty">Enter your dates and working-day rules, then calculate.</string>
+    <string name="business_range_error">The result would leave the supported date range. Reduce the offset or change the start date.</string>
+    <string name="business_restore_error">The saved setup is invalid. Your current inputs were kept.</string>
+    <string name="business_monday">Monday</string>
+    <string name="business_tuesday">Tuesday</string>
+    <string name="business_wednesday">Wednesday</string>
+    <string name="business_thursday">Thursday</string>
+    <string name="business_friday">Friday</string>
+    <string name="business_saturday">Saturday</string>
+    <string name="business_sunday">Sunday</string>
+    <string name="business_setup_note">Keep both dates and the offset valid when switching calculations. Add/subtract uses the start and offset; count uses the start and end.</string>
+</resources>

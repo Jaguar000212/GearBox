@@ -19,6 +19,7 @@ object ToolSearchCatalog {
         Tools.ROUTE_BARCODE_SCANNER to AliasSpec(R.array.scanner_tasks, listOf("scan a QR code", "read a barcode")),
         Tools.ROUTE_MAGNIFIER to AliasSpec(R.array.magnifier_tasks, listOf("magnify small text", "freeze camera preview")),
         Tools.ROUTE_SENSOR_CHECKER to AliasSpec(R.array.checker_tasks, listOf("check sensor availability", "inspect sensor readings")),
+        Tools.ROUTE_PROXIMITY to AliasSpec(R.array.proximity_tasks, listOf("check proximity sensor", "read near far")),
         Tools.ROUTE_BAROMETER to AliasSpec(R.array.barometer_tasks, listOf("read air pressure", "estimate pressure altitude")),
         Tools.ROUTE_BATTERY_INFO to AliasSpec(R.array.battery_tasks, listOf("view battery information", "check charging status")),
         Tools.ROUTE_PITCH_TUNER to AliasSpec(R.array.pitch_tasks, listOf("tune a note", "estimate pitch")),

@@ -460,3 +460,9 @@ This tool must actually schedule backwards from the target date, not merely list
 - Accept pressure 100–1200 hPa; explicit reference 800–1100 hPa, at most two decimal places. Default 1013.25 is standard atmosphere, not current weather. Equal pressure/reference gives zero, higher measured pressure can produce negative altitude.
 - Standard-atmosphere estimate only, not true elevation, navigation or safety-critical measurement. Reference and readings are transient, never history/results/modes.
 - JVM formula/reference/controller/privacy and fake-source Android lifecycle fixtures authored. Device pressure behavior and accuracy remain untested locally; Gradle distribution download remains unavailable.
+
+### Reconstructed Proximity Checker
+- Foreground TYPE_PROXIMITY only; missing sensor/registration failure must be explicit. Background/disposal unregisters and clears; queued callbacks from an old session must not restore readings.
+- Accept finite nonnegative reported values. Classify near only below a positive finite hardware maximum, far at/above it; unknown maximum must produce unknown rather than a guessed threshold.
+- Often binary, not precision distance, health assessment or device certification. No permissions/network/history/results retention.
+- JVM threshold/invalid/stale/failure/privacy and fake-source Compose lifecycle fixtures authored but unrun locally. Real hardware behavior still requires device testing; Gradle bootstrap unavailable.

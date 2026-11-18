@@ -51,7 +51,7 @@ class ConsolidationTest(unittest.TestCase):
         self.assertIn('uses: ./.github/actions/android-checks', preview)
         for source in (ci, preview):
             self.assertIn('name: Android build, tests and lint', source)
-        self.assertIn('cancel-in-progress: true', ci)
+        self.assertIn("cancel-in-progress: ${{ github.event_name == 'pull_request' }}", ci)
         self.assertIn('cancel-in-progress: false', preview)
         self.assertNotIn('classify_android_changes', preview)
         self.assertIn('DEVELOPER_PREVIEW_RUN_NUMBER: ${{ github.run_number }}', preview)

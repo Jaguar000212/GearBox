@@ -9,6 +9,8 @@ import androidx.compose.material.icons.filled.Balance
 import androidx.compose.material.icons.filled.Cake
 import androidx.compose.material.icons.filled.Calculate
 import androidx.compose.material.icons.filled.Casino
+import androidx.compose.material.icons.filled.Difference
+import com.jaguar.gearbox.ui.tools.TextDiffScreen
 import androidx.compose.material.icons.filled.Science
 import com.jaguar.gearbox.ui.tools.ScientificCalculatorScreen
 import androidx.compose.material.icons.filled.EventAvailable
@@ -109,6 +111,7 @@ object Tools {
     const val ROUTE_SCOREBOARD = "tool/scoreboard"
     const val ROUTE_RANDOM = "tool/random"
     const val ROUTE_BASE_CONVERTER = "tool/base_converter"
+    const val ROUTE_TEXT_DIFF = "tool/text_diff"
     const val ROUTE_SCIENTIFIC_CALCULATOR = "tool/scientific_calculator"
     const val ROUTE_BUSINESS_DAY_PLANNER = "tool/business_day_planner"
     const val ROUTE_BILL_SPLITTER = "tool/bill_splitter"
@@ -413,6 +416,15 @@ object Tools {
             route = ROUTE_CHESS_SCOREBOARD,
             category = ToolCategory.GAMES_AND_RANDOM,
             content = { onNavigateBack -> ChessScoreboardScreen(onNavigateBack) },
+        ),
+        Tool(
+            name = "Text Diff",
+            description = "Compare two texts locally and inspect line-by-line changes.",
+            icon = Icons.Filled.Difference,
+            route = ROUTE_TEXT_DIFF,
+            category = ToolCategory.UTILITIES,
+            content = { onNavigateBack -> TextDiffScreen(onNavigateBack) },
+            keywords = listOf("text diff", "compare text", "text differences", "line changes"),
         ),
         Tool(
             name = "Scientific Calculator",

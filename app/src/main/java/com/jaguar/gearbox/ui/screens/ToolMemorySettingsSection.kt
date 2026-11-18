@@ -29,6 +29,7 @@ private val privateInputTools = listOf(
     Tools.ROUTE_TEXT_TOOLS to R.string.screen_tool_text,
     Tools.ROUTE_QR_GENERATOR to R.string.screen_tool_qr,
     Tools.ROUTE_HASH_GENERATOR to R.string.screen_tool_hash,
+    "tool/text_diff" to R.string.screen_tool_text_diff,
 )
 
 /** Local retention choices are explicit and separate from recent-tool navigation. */

@@ -41,9 +41,9 @@ object ToolHelpCatalog {
             "This converter handles integers, not decimal fractions; binary only accepts 0 and 1.",
         ),
         Tools.ROUTE_IMAGE_STUDIO to ToolHelp(
-            "Choose a local image, adjust crop, dimensions or compression, then explicitly export a new PNG, JPEG or WebP copy. Processing stays on the device; the source image is not overwritten.",
+            "Choose a local image for crop, resize, markup, text, blur or mosaic, or choose 2–4 images for a collage. Add edits, adjust brightness, contrast or saturation, then Generate and review the encoded preview before exporting a new PNG, JPEG or lossy WebP copy. Processing stays on the device; originals are not overwritten.",
             "Choose a non-private test image, try a smaller size and a crop, then export a new copy and inspect its dimensions and appearance.",
-            "Decoded images and outputs are limited to a 2048-pixel edge and 4 megapixels, so large originals are reduced. Re-encoding does not copy source metadata, but visible identifying content remains. This phase does not include markup, blur, mosaic, collage or enhancement.",
+            "Working images and outputs are limited to a 2048-pixel edge and 4 million pixels; collage inputs are limited to 1 million pixels each. Text and edits are flattened, not editable layers. JPEG composites transparency on white. Blur and mosaic are not secure redaction; re-encoding omits source metadata but visible identifying content remains. Generated temporary exports may remain in the bounded app cache; no image is saved to History or Workbench.",
         ),
         Tools.ROUTE_JSON_FORMATTER to ToolHelp(
             "Choose JSON, XML, HTML or CSS, then explicitly run the supported operation. CSS inserts top-level rule separators only, not full beautification. HTML normalizes and repairs a full document, not validation or sanitization. XML supports conservative attribute layout only. Processing stays local; automatic history and result saving are off by default.",

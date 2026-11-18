@@ -10,6 +10,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -51,7 +54,7 @@ import kotlinx.coroutines.*
             }){Text(stringResource(R.string.magnifier_start))}
             OutlinedButton(onClick={review=null;camera.stop()},enabled=!saving){Text(stringResource(R.string.magnifier_stop))}
             if(camera.state.status==MagnifierStatus.LIVE){
-                if(camera.state.maxZoom>camera.state.minZoom)Slider(camera.state.zoom,onValueChange=camera.zoom,valueRange=camera.state.minZoom..camera.state.maxZoom)
+                if(camera.state.maxZoom>camera.state.minZoom) MagnifierZoomSlider(camera.state.zoom,camera.state.minZoom,camera.state.maxZoom,camera.zoom)
                 Text(stringResource(R.string.magnifier_zoom,camera.state.zoom))
                 if(camera.state.torchAvailable)TextButton(onClick=camera.torch){Text(stringResource(if(camera.state.torch)R.string.magnifier_torch_off else R.string.magnifier_torch_on))}
                 Button(onClick=camera.freeze){Text(stringResource(R.string.magnifier_freeze))}
@@ -80,4 +83,15 @@ import kotlinx.coroutines.*
                 if(valid && pending.select(frame))try{destination.launch(Intent(Intent.ACTION_CREATE_DOCUMENT).apply{addCategory(Intent.CATEGORY_OPENABLE);type="image/png";putExtra(Intent.EXTRA_TITLE,"magnifier.png")})}catch(_:Exception){pending.clear();failure=true}
             }){Text(stringResource(R.string.magnifier_export))}},dismissButton={TextButton(onClick={review=null}){Text(stringResource(android.R.string.cancel))}})
     }
+}
+
+/** Keeps the adjustable control named independently of its adjacent visual label. */
+@Composable
+internal fun MagnifierZoomSlider(zoom: Float, minimum: Float, maximum: Float, onZoom: (Float) -> Unit) {
+    val description = stringResource(R.string.magnifier_zoom, zoom)
+    Slider(zoom, onValueChange = onZoom, valueRange = minimum..maximum,
+        modifier = Modifier.semantics {
+            contentDescription = description
+            stateDescription = description
+        })
 }

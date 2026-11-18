@@ -78,6 +78,8 @@ import androidx.compose.material.icons.filled.QrCodeScanner
 import com.jaguar.gearbox.ui.tools.MagnifierScreen
 import androidx.compose.material.icons.filled.ZoomIn
 import com.jaguar.gearbox.ui.tools.SensorCheckerScreen
+import androidx.compose.material.icons.filled.GraphicEq
+import androidx.compose.material.icons.filled.TouchApp
 import androidx.compose.material.icons.filled.Sensors
 import com.jaguar.gearbox.ui.tools.ProximityScreen
 import com.jaguar.gearbox.ui.tools.BarometerScreen
@@ -638,7 +640,7 @@ object Tools {
             icon = Icons.Filled.Sensors, route = ROUTE_SENSOR_CHECKER, category = ToolCategory.DEVICE,
             content = { SensorCheckerScreen(it) }, keywords = listOf("sensor", "hardware", "accelerometer")),
         Tool(name = "Proximity Checker", description = "Read the device proximity sensor and near/far indication.",
-            icon = Icons.Filled.Sensors, route = ROUTE_PROXIMITY, category = ToolCategory.DEVICE,
+            icon = Icons.Filled.TouchApp, route = ROUTE_PROXIMITY, category = ToolCategory.DEVICE,
             content = { ProximityScreen(it) }, keywords = listOf("proximity", "near", "far", "distance sensor")),
         Tool(name = "Barometer / Altitude Estimate", description = "Read air pressure and estimate altitude with an explicit reference.",
             icon = Icons.Filled.Speed, route = ROUTE_BAROMETER, category = ToolCategory.DEVICE,
@@ -650,7 +652,7 @@ object Tools {
             icon = Icons.Filled.Mic, route = ROUTE_PITCH_TUNER, category = ToolCategory.DEVICE,
             content = { PitchTunerScreen(it) }, keywords = listOf("tuner", "pitch", "frequency", "note", "cents")),
         Tool(name = "Sound-level Meter", description = "Read relative microphone levels in dBFS.",
-            icon = Icons.Filled.Mic, route = ROUTE_SOUND_METER, category = ToolCategory.DEVICE,
+            icon = Icons.Filled.GraphicEq, route = ROUTE_SOUND_METER, category = ToolCategory.DEVICE,
             content = { SoundMeterScreen(it) }, keywords = listOf("microphone", "audio", "dBFS", "RMS")),
         Tool(
             name = "Light Meter",

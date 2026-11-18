@@ -408,3 +408,10 @@ This tool must actually schedule backwards from the target date, not merely list
 - Observe lux while exposing/covering the sensor; values depend on sensor placement, range and manufacturer calibration and are not a certified photometer reading. Check sensor metadata, waiting state, invalid/nonfinite values and reported accuracy without promising a fixed accuracy percentage.
 - Readings are transient and foreground-only. Backgrounding, leaving the screen and recreation must unregister listeners and avoid showing an old value as a fresh reading. No History, Workbench or automatic result retention is provided.
 - Verify sensor-present/absent devices, TalkBack without rapid unsolicited announcements, large fonts and adaptive layouts. Hardware readings and lifecycle behavior require device testing; authored mocks/policy tests are not physical calibration.
+
+## Image Studio: reconstructed text annotations
+
+- Text is an explicit markup operation: enter a single line (at most 120 Unicode code points), X/Y top-left font-area position, opaque RGB color and font size 8–128 working-image pixels. Add the operation, then Generate; edits are ordered before crop/resize and remain subject to the existing 20-operation bound.
+- Reject empty/control/line-break text and unpaired UTF-16 surrogates. Check Unicode/device-font glyph support. Font metrics place the top edge at Y; text beyond image bounds is clipped as disclosed. Inspect preview and exported pixels, especially near edges and after crop/resize.
+- Text remains transient with image edits, not in History, Workbench or mode preferences. Export is an explicit new flattened image copy, without source metadata or editable text layers. Verify cancellation, generation invalidation, ordered overlap and original-file preservation on a device.
+- Policy and pixel tests are authored; Android runtime, font rendering, accessibility and export behavior have not been executed during reconstruction.

@@ -5,7 +5,7 @@ import org.junit.Test
 class ImageStudioEditPolicyTest {
     private val region = ImageStudioCrop(0,0,10,10)
     @Test fun boundsAndOpaqueColorsAreEnforced() {
-        ImageStudioEditKind.entries.filter { it != ImageStudioEditKind.ARROW }.forEach { assertTrue(ImageStudioEdit(it,region).validFor(10,10)) }
+        ImageStudioEditKind.entries.filter { it != ImageStudioEditKind.ARROW }.forEach { assertTrue(ImageStudioEdit(it,region,text="A").validFor(10,10)) }
         assertFalse(ImageStudioEdit(ImageStudioEditKind.SOLID,region,color=0x00ffffff).validFor(10,10))
         assertFalse(ImageStudioEdit(ImageStudioEditKind.BLUR,region,strength=33).validFor(10,10))
         assertFalse(ImageStudioEdit(ImageStudioEditKind.MOSAIC,region,strength=1).validFor(10,10))

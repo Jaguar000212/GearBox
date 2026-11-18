@@ -29,6 +29,12 @@ private fun drawMarkup(bitmap: Bitmap, edit: ImageStudioEdit) {
         if (edit.kind != ImageStudioEditKind.ARROW) canvas.clipRect(r.left, r.top, r.right, r.bottom)
         val paint = Paint().apply { color = edit.color; strokeWidth = edit.strength.toFloat() }
         when (edit.kind) {
+            ImageStudioEditKind.TEXT -> {
+                paint.isAntiAlias = true
+                paint.textSize = edit.strength.toFloat()
+                // Input Y is the top of the font metrics, not the baseline. Canvas clipping is intentional.
+                canvas.drawText(edit.text, r.left.toFloat(), r.top - paint.fontMetrics.top, paint)
+            }
             ImageStudioEditKind.SOLID -> canvas.drawRect(r.left.toFloat(), r.top.toFloat(), r.right.toFloat(), r.bottom.toFloat(), paint)
             ImageStudioEditKind.RECTANGLE -> {
                 val thickness = edit.strength.toFloat()

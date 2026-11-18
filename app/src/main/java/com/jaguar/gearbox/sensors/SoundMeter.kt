@@ -34,14 +34,21 @@ internal val soundCaptureMutex = Mutex()
 class AndroidSoundMeterSource : SoundMeterSource {
     private var recorder: AudioRecord? = null
     override fun start() {
-        val minimum = AudioRecord.getMinBufferSize(16000, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT)
-        check(minimum > 0)
-        val audio = AudioRecord(MediaRecorder.AudioSource.MIC, 16000, AudioFormat.CHANNEL_IN_MONO,
-            AudioFormat.ENCODING_PCM_16BIT, max(minimum, SOUND_WINDOW_SAMPLES * 2))
-        recorder = audio
-        check(audio.state == AudioRecord.STATE_INITIALIZED)
-        audio.startRecording()
-        check(audio.recordingState == AudioRecord.RECORDSTATE_RECORDING)
+        try {
+            val minimum = AudioRecord.getMinBufferSize(16000, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT)
+            check(minimum > 0)
+            val audio = AudioRecord(MediaRecorder.AudioSource.MIC, 16000, AudioFormat.CHANNEL_IN_MONO,
+                AudioFormat.ENCODING_PCM_16BIT, max(minimum, SOUND_WINDOW_SAMPLES * 2))
+            recorder = audio
+            check(audio.state == AudioRecord.STATE_INITIALIZED)
+            audio.startRecording()
+            check(audio.recordingState == AudioRecord.RECORDSTATE_RECORDING)
+        } catch (denied: SecurityException) {
+            // Permission can be revoked between the UI check and native construction/start.
+            // Release any partially initialized recorder, preserving the permission failure.
+            try { close() } catch (_: Exception) { }
+            throw denied
+        }
     }
     override fun read(buffer: ShortArray, offset: Int, count: Int) =
         recorder?.read(buffer, offset, count, AudioRecord.READ_NON_BLOCKING) ?: -1

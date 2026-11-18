@@ -1,0 +1,5 @@
+<resources>
+<string name="css_format">Format CSS</string>
+<string name="css_unsupported">Unsupported or unfinished CSS structure, delimiter, string, comment, escape or Unicode input. Nothing was repaired.</string>
+<string name="css_rules">Conservative layout only: inserts line breaks between complete top-level rules or at-rule statements. Rule interiors, comments, strings, escapes, URLs, calc expressions and custom-property whitespace remain unchanged. Not a CSS validator, sanitizer, minifier or full beautifier. Unsupported or unfinished structures are rejected rather than repaired. Local text only; no URLs are fetched and nothing is executed. Limits: 64,000 input characters, nesting 64, 20,000 scanner steps and 256,000 output characters.</string>
+</resources>

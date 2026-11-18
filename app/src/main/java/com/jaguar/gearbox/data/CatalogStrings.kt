@@ -38,6 +38,10 @@ fun Tool.localizedName(context: Context): String = when (route) {
     Tools.ROUTE_COUNTER -> R.string.catalog_tool_counter_name
     Tools.ROUTE_SCOREBOARD -> R.string.catalog_tool_scoreboard_name
     Tools.ROUTE_CHESS_SCOREBOARD -> R.string.catalog_tool_chess_scoreboard_name
+    Tools.ROUTE_IMAGE_STUDIO -> R.string.studio_catalog_name
+    Tools.ROUTE_JSON_FORMATTER -> R.string.json_catalog_name
+    Tools.ROUTE_DEADLINE_PLANNER -> R.string.deadline_catalog_name
+    Tools.ROUTE_ASPECT_RATIO -> R.string.aspect_catalog_name
     Tools.ROUTE_DECISION_MATRIX -> R.string.decision_catalog_name
     Tools.ROUTE_TIME_ZONE_CONVERTER -> R.string.zone_catalog_name
     Tools.ROUTE_TEXT_DIFF -> R.string.diff_catalog_name
@@ -53,6 +57,15 @@ fun Tool.localizedName(context: Context): String = when (route) {
     Tools.ROUTE_HASH_GENERATOR -> R.string.catalog_tool_hash_generator_name
     Tools.ROUTE_QR_GENERATOR -> R.string.catalog_tool_qr_generator_name
     Tools.ROUTE_BUBBLE_LEVEL -> R.string.catalog_tool_bubble_level_name
+    Tools.ROUTE_BARCODE_SCANNER -> R.string.scanner_title
+    Tools.ROUTE_MAGNIFIER -> R.string.magnifier_title
+    Tools.ROUTE_SENSOR_CHECKER -> R.string.checker_title
+    Tools.ROUTE_PROXIMITY -> R.string.proximity_title
+    Tools.ROUTE_BAROMETER -> R.string.barometer_title
+    Tools.ROUTE_BATTERY_INFO -> R.string.battery_title
+    Tools.ROUTE_PITCH_TUNER -> R.string.pitch_title
+    Tools.ROUTE_SOUND_METER -> R.string.sound_title
+    Tools.ROUTE_LIGHT_METER -> R.string.light_title
     Tools.ROUTE_COMPASS -> R.string.catalog_tool_compass_name
     Tools.ROUTE_FLASHLIGHT -> R.string.catalog_tool_flashlight_name
     Tools.ROUTE_SCREEN_RULER -> R.string.catalog_tool_screen_ruler_name
@@ -91,6 +104,10 @@ fun Tool.localizedDescription(context: Context): String = when (route) {
     Tools.ROUTE_COUNTER -> R.string.catalog_tool_counter_description
     Tools.ROUTE_SCOREBOARD -> R.string.catalog_tool_scoreboard_description
     Tools.ROUTE_CHESS_SCOREBOARD -> R.string.catalog_tool_chess_scoreboard_description
+    Tools.ROUTE_IMAGE_STUDIO -> R.string.studio_catalog_description
+    Tools.ROUTE_JSON_FORMATTER -> R.string.json_catalog_description
+    Tools.ROUTE_DEADLINE_PLANNER -> R.string.deadline_catalog_description
+    Tools.ROUTE_ASPECT_RATIO -> R.string.aspect_catalog_description
     Tools.ROUTE_DECISION_MATRIX -> R.string.decision_catalog_description
     Tools.ROUTE_TIME_ZONE_CONVERTER -> R.string.zone_catalog_description
     Tools.ROUTE_TEXT_DIFF -> R.string.diff_catalog_description
@@ -106,6 +123,15 @@ fun Tool.localizedDescription(context: Context): String = when (route) {
     Tools.ROUTE_HASH_GENERATOR -> R.string.catalog_tool_hash_generator_description
     Tools.ROUTE_QR_GENERATOR -> R.string.catalog_tool_qr_generator_description
     Tools.ROUTE_BUBBLE_LEVEL -> R.string.catalog_tool_bubble_level_description
+    Tools.ROUTE_BARCODE_SCANNER -> R.string.scanner_description
+    Tools.ROUTE_MAGNIFIER -> R.string.magnifier_description
+    Tools.ROUTE_SENSOR_CHECKER -> R.string.checker_description
+    Tools.ROUTE_PROXIMITY -> R.string.proximity_description
+    Tools.ROUTE_BAROMETER -> R.string.barometer_description
+    Tools.ROUTE_BATTERY_INFO -> R.string.battery_description
+    Tools.ROUTE_PITCH_TUNER -> R.string.pitch_description
+    Tools.ROUTE_SOUND_METER -> R.string.sound_description
+    Tools.ROUTE_LIGHT_METER -> R.string.light_description
     Tools.ROUTE_COMPASS -> R.string.catalog_tool_compass_description
     Tools.ROUTE_FLASHLIGHT -> R.string.catalog_tool_flashlight_description
     Tools.ROUTE_SCREEN_RULER -> R.string.catalog_tool_screen_ruler_description
@@ -132,12 +158,16 @@ internal fun localizedToolHelp(context: Context, route: String?): ToolHelp? = wh
     Tools.ROUTE_SCOREBOARD -> ToolHelp(context.getString(R.string.catalog_help_scoreboard_instructions), context.getString(R.string.catalog_help_scoreboard_example), context.getString(R.string.catalog_help_scoreboard_limitation))
     Tools.ROUTE_RANDOM -> ToolHelp(context.getString(R.string.catalog_help_random_instructions), context.getString(R.string.catalog_help_random_example), context.getString(R.string.catalog_help_random_limitation))
     Tools.ROUTE_BASE_CONVERTER -> ToolHelp(context.getString(R.string.catalog_help_base_converter_instructions), context.getString(R.string.catalog_help_base_converter_example), context.getString(R.string.catalog_help_base_converter_limitation))
+    Tools.ROUTE_IMAGE_STUDIO -> ToolHelp(context.getString(R.string.studio_catalog_instructions), context.getString(R.string.studio_catalog_example), context.getString(R.string.studio_catalog_limitation))
+    Tools.ROUTE_JSON_FORMATTER -> ToolHelp(context.getString(R.string.json_catalog_instructions), context.getString(R.string.json_catalog_example), context.getString(R.string.json_catalog_limitation))
+    Tools.ROUTE_DEADLINE_PLANNER -> ToolHelp(context.getString(R.string.deadline_catalog_instructions), context.getString(R.string.deadline_catalog_example), context.getString(R.string.deadline_catalog_limitation))
+    Tools.ROUTE_ASPECT_RATIO -> ToolHelp(context.getString(R.string.aspect_catalog_instructions), context.getString(R.string.aspect_catalog_example), context.getString(R.string.aspect_catalog_limitation))
     Tools.ROUTE_DECISION_MATRIX -> ToolHelp(context.getString(R.string.decision_catalog_instructions), context.getString(R.string.decision_catalog_example), context.getString(R.string.decision_catalog_limitation))
     Tools.ROUTE_TIME_ZONE_CONVERTER -> ToolHelp(context.getString(R.string.zone_catalog_instructions), context.getString(R.string.zone_catalog_example), context.getString(R.string.zone_catalog_limitation))
     Tools.ROUTE_TEXT_DIFF -> ToolHelp(context.getString(R.string.diff_catalog_instructions), context.getString(R.string.diff_catalog_example), context.getString(R.string.diff_catalog_limitation))
     Tools.ROUTE_SCIENTIFIC_CALCULATOR -> ToolHelp(context.getString(R.string.scientific_catalog_instructions), context.getString(R.string.scientific_catalog_example), context.getString(R.string.scientific_catalog_limitation))
     Tools.ROUTE_BUSINESS_DAY_PLANNER -> ToolHelp(context.getString(R.string.business_catalog_instructions), context.getString(R.string.business_catalog_example), context.getString(R.string.business_catalog_limitation))
-    Tools.ROUTE_BILL_SPLITTER -> ToolHelp(context.getString(R.string.bill_catalog_instructions), context.getString(R.string.bill_catalog_example), context.getString(R.string.bill_catalog_limitation))
+    Tools.ROUTE_BILL_SPLITTER -> ToolHelp(context.getString(R.string.bill_catalog_instructions), context.getString(R.string.bill_catalog_reference_example), context.getString(R.string.bill_catalog_limitation))
     Tools.ROUTE_COLOR_BLEND -> ToolHelp(context.getString(R.string.blend_catalog_instructions), context.getString(R.string.blend_catalog_example), context.getString(R.string.blend_catalog_limitation))
     Tools.ROUTE_COLOR_PICKER -> ToolHelp(context.getString(R.string.catalog_help_color_picker_instructions), context.getString(R.string.catalog_help_color_picker_example), context.getString(R.string.catalog_help_color_picker_limitation))
     Tools.ROUTE_UNIT_CONVERTER -> ToolHelp(context.getString(R.string.catalog_help_unit_converter_instructions), context.getString(R.string.catalog_help_unit_converter_example), context.getString(R.string.catalog_help_unit_converter_limitation))
@@ -171,6 +201,15 @@ internal fun localizedToolHelp(context: Context, route: String?): ToolHelp? = wh
     Tools.ROUTE_TIC_TAC_TOE -> ToolHelp(context.getString(R.string.catalog_help_tic_tac_toe_instructions), context.getString(R.string.catalog_help_tic_tac_toe_example), context.getString(R.string.catalog_help_tic_tac_toe_limitation))
     Tools.ROUTE_QR_GENERATOR -> ToolHelp(context.getString(R.string.catalog_help_qr_generator_instructions), context.getString(R.string.catalog_help_qr_generator_example), context.getString(R.string.catalog_help_qr_generator_limitation))
     Tools.ROUTE_BUBBLE_LEVEL -> ToolHelp(context.getString(R.string.catalog_help_bubble_level_instructions), context.getString(R.string.catalog_help_bubble_level_example), context.getString(R.string.catalog_help_bubble_level_limitation))
+    Tools.ROUTE_BARCODE_SCANNER -> ToolHelp(context.getString(R.string.scanner_help_instructions), context.getString(R.string.scanner_help_example), context.getString(R.string.scanner_help_limitation))
+    Tools.ROUTE_MAGNIFIER -> ToolHelp(context.getString(R.string.magnifier_help_instructions), context.getString(R.string.magnifier_help_example), context.getString(R.string.magnifier_help_limitation))
+    Tools.ROUTE_SENSOR_CHECKER -> ToolHelp(context.getString(R.string.checker_help_instructions), context.getString(R.string.checker_help_example), context.getString(R.string.checker_help_limitation))
+    Tools.ROUTE_PROXIMITY -> ToolHelp(context.getString(R.string.proximity_help_instructions), context.getString(R.string.proximity_help_example), context.getString(R.string.proximity_help_limitation))
+    Tools.ROUTE_BAROMETER -> ToolHelp(context.getString(R.string.barometer_help_instructions), context.getString(R.string.barometer_help_example), context.getString(R.string.barometer_help_limitation))
+    Tools.ROUTE_BATTERY_INFO -> ToolHelp(context.getString(R.string.battery_help_instructions), context.getString(R.string.battery_help_example), context.getString(R.string.battery_help_limitation))
+    Tools.ROUTE_PITCH_TUNER -> ToolHelp(context.getString(R.string.pitch_help_instructions), context.getString(R.string.pitch_help_example), context.getString(R.string.pitch_help_limitation))
+    Tools.ROUTE_SOUND_METER -> ToolHelp(context.getString(R.string.sound_help_instructions), context.getString(R.string.sound_help_example), context.getString(R.string.sound_help_limitation))
+    Tools.ROUTE_LIGHT_METER -> ToolHelp(context.getString(R.string.light_help_instructions), context.getString(R.string.light_help_example), context.getString(R.string.light_help_limitation))
     Tools.ROUTE_COMPASS -> ToolHelp(context.getString(R.string.catalog_help_compass_instructions), context.getString(R.string.catalog_help_compass_example), context.getString(R.string.catalog_help_compass_limitation))
     Tools.ROUTE_FLASHLIGHT -> ToolHelp(context.getString(R.string.catalog_help_flashlight_instructions), context.getString(R.string.catalog_help_flashlight_example), context.getString(R.string.catalog_help_flashlight_limitation))
     Tools.ROUTE_SCREEN_RULER -> ToolHelp(context.getString(R.string.catalog_help_screen_ruler_instructions), context.getString(R.string.catalog_help_screen_ruler_example), context.getString(R.string.catalog_help_screen_ruler_limitation))
@@ -184,6 +223,9 @@ internal fun localizedToolExample(context: Context, route: String?, today: Local
     Tools.ROUTE_AGE -> context.getString(R.string.catalog_example_age)
     Tools.ROUTE_BASE_CONVERTER -> context.getString(R.string.catalog_example_base_converter)
     Tools.ROUTE_BMI -> context.getString(R.string.catalog_example_bmi)
+    Tools.ROUTE_JSON_FORMATTER -> context.getString(R.string.json_catalog_load_example)
+    Tools.ROUTE_DEADLINE_PLANNER -> context.getString(R.string.deadline_catalog_example)
+    Tools.ROUTE_ASPECT_RATIO -> context.getString(R.string.aspect_catalog_load_example)
     Tools.ROUTE_DECISION_MATRIX -> context.getString(R.string.decision_catalog_load_example)
     Tools.ROUTE_TIME_ZONE_CONVERTER -> context.getString(R.string.zone_catalog_example)
     Tools.ROUTE_TEXT_DIFF -> context.getString(R.string.diff_catalog_example)
@@ -219,6 +261,10 @@ internal fun localizedToolExample(context: Context, route: String?, today: Local
 /** Localized discovery terms plus stable English aliases keep existing search habits working. */
 fun Tool.localizedKeywords(context: Context): List<String> {
     val resource = when (route) {
+    Tools.ROUTE_IMAGE_STUDIO -> R.array.studio_catalog_keywords
+    Tools.ROUTE_JSON_FORMATTER -> R.array.json_catalog_keywords
+    Tools.ROUTE_DEADLINE_PLANNER -> R.array.deadline_catalog_keywords
+    Tools.ROUTE_ASPECT_RATIO -> R.array.aspect_catalog_keywords
     Tools.ROUTE_DECISION_MATRIX -> R.array.decision_catalog_keywords
     Tools.ROUTE_TIME_ZONE_CONVERTER -> R.array.zone_catalog_keywords
     Tools.ROUTE_TEXT_DIFF -> R.array.diff_catalog_keywords
@@ -245,6 +291,15 @@ fun Tool.localizedKeywords(context: Context): List<String> {
     Tools.ROUTE_HASH_GENERATOR -> R.array.catalog_keywords_hash_generator
     Tools.ROUTE_QR_GENERATOR -> R.array.catalog_keywords_qr_generator
     Tools.ROUTE_BUBBLE_LEVEL -> R.array.catalog_keywords_bubble_level
+    Tools.ROUTE_BARCODE_SCANNER -> R.array.scanner_keywords
+    Tools.ROUTE_MAGNIFIER -> R.array.magnifier_keywords
+    Tools.ROUTE_SENSOR_CHECKER -> R.array.checker_keywords
+    Tools.ROUTE_PROXIMITY -> R.array.proximity_keywords
+    Tools.ROUTE_BAROMETER -> R.array.barometer_keywords
+    Tools.ROUTE_BATTERY_INFO -> R.array.battery_keywords
+    Tools.ROUTE_PITCH_TUNER -> R.array.pitch_keywords
+    Tools.ROUTE_SOUND_METER -> R.array.sound_keywords
+    Tools.ROUTE_LIGHT_METER -> R.array.light_keywords
     Tools.ROUTE_COMPASS -> R.array.catalog_keywords_compass
     Tools.ROUTE_FLASHLIGHT -> R.array.catalog_keywords_flashlight
     Tools.ROUTE_SCREEN_RULER -> R.array.catalog_keywords_screen_ruler

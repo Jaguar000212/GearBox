@@ -40,6 +40,26 @@ object ToolHelpCatalog {
             "Decimal 10 is binary 1010 and hexadecimal A.",
             "This converter handles integers, not decimal fractions; binary only accepts 0 and 1.",
         ),
+        Tools.ROUTE_IMAGE_STUDIO to ToolHelp(
+            "Choose a local image for crop, resize, markup, text, blur or mosaic, or choose 2–4 images for a collage. Add edits, adjust brightness, contrast or saturation, then Generate and review the encoded preview before exporting a new PNG, JPEG or lossy WebP copy. Processing stays on the device; originals are not overwritten.",
+            "Choose a non-private test image, try a smaller size and a crop, then export a new copy and inspect its dimensions and appearance.",
+            "Working images and outputs are limited to a 2048-pixel edge and 4 million pixels; collage inputs are limited to 1 million pixels each. Text and edits are flattened, not editable layers. JPEG composites transparency on white. Blur and mosaic are not secure redaction; re-encoding omits source metadata but visible identifying content remains. Generated temporary exports may remain in the bounded app cache; no image is saved to History or Workbench.",
+        ),
+        Tools.ROUTE_JSON_FORMATTER to ToolHelp(
+            "Choose JSON, XML, HTML or CSS, then explicitly run the supported operation. CSS inserts top-level rule separators only, not full beautification. HTML normalizes and repairs a full document, not validation or sanitization. XML supports conservative attribute layout only. Processing stays local; automatic history and result saving are off by default.",
+            "Try a small object with a name string and an enabled boolean, then explicitly format or validate it.",
+            "JSON, XML 1.0, HTML normalization and conservative CSS layout. CSS is not validation or sanitization. HTML may change markup and wraps fragments; preview the output. XML rejects DTDs and external entities; no tree indentation, minification, schema validation or sanitization. Duplicate object keys are rejected rather than silently overwritten. Input and nesting limits apply. Valid syntax does not prove data is safe or matches a schema; review before copying or sharing private content.",
+        ),
+        Tools.ROUTE_DEADLINE_PLANNER to ToolHelp(
+            "Enter a target date, an as-of date, and ordered phase names with calendar-day durations. Tap Plan to schedule backward: the last phase ends on the target date and each earlier phase ends the day before the next begins. Both start and end dates count toward duration.",
+            "Load a 10 January 2027 target with Prepare for 2 days and Review for 3 days, then tap Plan. Prepare runs 6 to 7 January and Review runs 8 to 10 January.",
+            "Sequential calendar-day planning only, including weekends. No holiday calendar, parallel tasks, reminders or calendar events. The as-of date is a reference, not automatic progress tracking or a guarantee that the plan is feasible.",
+        ),
+        Tools.ROUTE_ASPECT_RATIO to ToolHelp(
+            "Enter source width and height to reduce their ratio. Choose a target width, height, percentage, or a box to fit or fill, then calculate dimensions.",
+            "A 1920 by 1080 source has ratio 16:9. Resizing to width 1280 gives height 720.",
+            "Dimension calculations only: no image is uploaded, resized or edited. Integer rounding can slightly change the ratio. Fit rounds down to stay inside the box; Fill rounds up to cover it. Padding and cropping assume centered placement.",
+        ),
         Tools.ROUTE_DECISION_MATRIX to ToolHelp(
             "Enter 2 to 6 options and 1 to 6 criteria. Set whole-number weights from 0 to 100, with at least one positive weight, and ratings from 0 to 5. Higher ratings always mean better. Tap Compare to rank weighted scores and show ties.",
             "Compare two generic options using Value and Comfort ratings. Equal weighted totals remain tied rather than choosing a winner.",
@@ -66,9 +86,9 @@ object ToolHelpCatalog {
             "Excluded dates are entered manually, not an official holiday calendar. This is a planning estimate, not a legal or contractual deadline calculation. Dates use no time zone.",
         ),
         Tools.ROUTE_BILL_SPLITTER to ToolHelp(
-            "Enter the bill and tax amounts, a tip percentage, and 1 to 1000 diners. The tip uses the original bill before tax. Calculate an equal split; remaining cents go to the first diners.",
-            "Load a bill of 100 with a tip of 10 percent and three diners, then calculate shares of 36.67, 36.67 and 36.66.",
-            "This is a draft with two decimal currency places, not a payment or currency conversion. It does not track who paid or split individual items.",
+            "For a simple bill, enter bill and tax amounts, tip percentage and diners; tip uses the original bill before tax. For shared expenses, enter participants, each amount, who paid and who benefited, then calculate balances and suggested settlements. For example, if A pays 30 for A and B equally, B owes A 15.",
+            "Simple bill: 100 plus a 10 percent tip split three ways gives 36.67, 36.67 and 36.66. Shared expenses: if A pays 30 for A and B equally, B owes A 15.",
+            "Draft calculations use two decimal currency places. Settlement suggestions do not send money, verify payments or guarantee the fewest transfers. Use one currency and review participant labels and amounts before sharing.",
         ),
         Tools.ROUTE_COLOR_BLEND to ToolHelp(
             "Enter two opaque HEX colors, choose the second color percentage from 0 to 100, then tap Blend.",
@@ -201,7 +221,7 @@ object ToolHelpCatalog {
             "This compares calendar dates, not exact hours or time zones for an event.",
         ),
         Tools.ROUTE_TEAM_PICKER to ToolHelp(
-            "Enter the names and choose whether to pick a name or divide them into teams.",
+            "Enter names and choose equal pick, weighted pick, or teams. Edit integer weights in Participants; each row has chance weight divided by total weight.",
             "Enter four names and choose two teams.",
             "Review duplicate names and team sizes; random groups do not balance ability automatically.",
         ),
@@ -231,9 +251,42 @@ object ToolHelpCatalog {
             "Anyone who scans can read the encoded content. A QR code does not make a link trustworthy or keep text secret.",
         ),
         Tools.ROUTE_BUBBLE_LEVEL to ToolHelp(
-            "Place the device on a stable surface and use the displayed tilt to check alignment.",
+            "Place the device on a stable surface. Angle Finder offers flat-plane and display X/Y edge angles with a temporary relative zero.",
             "Compare the reading on a desk with the phone gently tilted.",
             "Accuracy depends on sensors and the device case. Do not use as a precision construction instrument.",
+        ),
+        Tools.ROUTE_BARCODE_SCANNER to ToolHelp("Start explicitly, grant camera permission then Start again. Review untrusted decoded text before any action.", "Scan a non-private QR code without opening it.", "Local bounded decoding; no automatic navigation, saved results or network. Oversized payloads are rejected."),
+        Tools.ROUTE_MAGNIFIER to ToolHelp("Explicitly start the back camera; grant permission then Start again. Freeze and optionally export a reviewed PNG copy.", "Magnify non-private printed text.", "Preview quality depends on hardware. Backgrounding clears the camera and frozen frame, except a reviewed export frame while choosing its destination."),
+        Tools.ROUTE_SENSOR_CHECKER to ToolHelp("Choose one sensor and explicitly Start. Changing selection or backgrounding stops readings.", "Tilt the device while observing accelerometer axes.", "Fixed permission-free inventory; readings are not calibration or hardware certification. No stored samples."),
+        Tools.ROUTE_PROXIMITY to ToolHelp(
+            "Move an object toward and away from the device proximity sensor.",
+            "An uncovered sensor may report far; covering it may report near.",
+            "Often binary, not precise distance. No near/far guess when hardware maximum is unknown.",
+        ),
+        Tools.ROUTE_BAROMETER to ToolHelp(
+            "Read pressure and enter an explicit sea-level reference between 800 and 1100 hPa.",
+            "Equal measured and reference pressures give zero estimated altitude.",
+            "Standard-atmosphere approximation, not GPS or true elevation. No weather lookup or safety-critical use.",
+        ),
+        Tools.ROUTE_BATTERY_INFO to ToolHelp(
+            "Open to view supported Android battery properties while this screen is active.",
+            "Connect a charger and wait for the reported power source to update.",
+            "System health is not a capacity percentage. Device-reported values only, no remaining-time estimates or saved measurements.",
+        ),
+        Tools.ROUTE_PITCH_TUNER to ToolHelp(
+            "Tap Start, grant microphone permission, then tap Start again. Play one steady note.",
+            "A steady 440 Hz tone corresponds to A4 near zero cents.",
+            "Single sustained tones approximately 65–1000 Hz, A4=440. Not calibrated or polyphonic; no audio saved.",
+        ),
+        Tools.ROUTE_SOUND_METER to ToolHelp(
+            "Tap Start, grant microphone permission, then tap Start again. Stop or leave to end capture.",
+            "Digital silence shows negative infinity dBFS.",
+            "Relative digital levels only, not calibrated sound pressure. No saved audio or health assessment.",
+        ),
+        Tools.ROUTE_LIGHT_METER to ToolHelp(
+            "Open Light Meter and leave the device light sensor unobstructed. Read ambient illuminance in lux while this screen is active.",
+            "Compare a shaded room with a spot nearer a window, without covering the sensor.",
+            "Requires an actual ambient light sensor. Not a calibrated instrument; no camera fallback or saved measurement history.",
         ),
         Tools.ROUTE_COMPASS to ToolHelp(
             "Hold the device steady and keep it away from magnets and metal while reading the heading.",

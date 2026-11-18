@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="shared_bill_view">Bill mode</string>
+    <string name="shared_bill_simple">Single bill</string>
+    <string name="shared_bill_shared">Shared expenses</string>
+    <string name="shared_bill_participants">Participants (2–10)</string>
+    <string name="shared_bill_person">Participant #%1$d</string>
+    <string name="shared_bill_person_label">Participant #%1$d name</string>
+    <string name="shared_bill_person_display">#%1$d · %2$s</string>
+    <string name="shared_bill_add_person">Add participant</string>
+    <string name="shared_bill_remove_person">Remove participant #%1$d</string>
+    <string name="shared_bill_referenced">This participant is a payer or beneficiary in an expense. Edit or remove those references first; expenses will never be silently reassigned.</string>
+    <string name="shared_bill_expenses">Expenses (1–20)</string>
+    <string name="shared_bill_expense">Expense #%1$d</string>
+    <string name="shared_bill_amount">Expense #%1$d amount</string>
+    <string name="shared_bill_payer">Expense #%1$d paid by</string>
+    <string name="shared_bill_beneficiaries">Expense #%1$d shared by (select at least one)</string>
+    <string name="shared_bill_add_expense">Add expense</string>
+    <string name="shared_bill_remove_expense">Remove expense #%1$d</string>
+    <string name="shared_bill_calculate">Calculate balances</string>
+    <string name="shared_bill_invalid">Enter nonblank single-line participant names up to 60 UTF-16 code units, amounts from 0 to 1,000,000,000 with at most two decimal places, a payer and at least one beneficiary for every expense.</string>
+    <string name="shared_bill_rules">Each expense is divided equally among its selected beneficiaries only. Any leftover minor units go to the first selected participants in the displayed order. Paid minus owed is the net balance: positive means receive, negative means pay. Amounts use the same two-decimal currency units; no currency conversion is performed.</string>
+    <string name="shared_bill_settlement_note">Transfers below are deterministic suggestions to settle these balances, not payments, requests or a guarantee of the fewest transfers. Verify names, amounts and allocations before acting.</string>
+    <string name="shared_bill_privacy">Bill data and names may be private. Automatic history and remembered results are off by default for both modes. Saving manually or enabling them stores content locally. Sharing sends only the reviewed text to your chosen app.</string>
+    <string name="shared_bill_empty">Add who paid and who shared each expense, then calculate balances.</string>
+    <string name="shared_bill_total">Total expenses: %1$s</string>
+    <string name="shared_bill_balance">#%1$d · %2$s\nPaid: %3$s · Owed: %4$s · Net: %5$s</string>
+    <string name="shared_bill_transfer">#%1$d · %2$s pays #%3$d · %4$s: %5$s</string>
+    <string name="shared_bill_settled">No transfers are needed; all balances are zero.</string>
+    <string name="shared_bill_output">%1$s\n\n%2$s\n\n%3$s\n\n%4$s</string>
+    <string name="shared_bill_remove_title">Remove this item?</string>
+    <string name="shared_bill_remove_message">This removes the selected expense or unreferenced participant from this draft. It cannot be undone. Other references will not change.</string>
+    <string name="shared_bill_remove">Remove</string>
+    <string name="shared_bill_cancel">Cancel</string>
+    <string name="shared_bill_not_saved">This result exceeds local saved-record limits. You can still copy or share the complete result; it is not truncated.</string>
+</resources>

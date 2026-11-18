@@ -57,9 +57,12 @@ object ToolMemoryPolicy {
     private val routePattern = Regex("tool/[a-z0-9_]{1,64}")
 
     fun permitsRoute(route: String): Boolean = routePattern.matches(route) &&
-        route != "tool/password_generator" && route != "tool/focus_timer"
+        route != "tool/password_generator" && route != "tool/focus_timer" && route != "tool/image_studio" && route != "tool/light_meter" && route != "tool/sound_level_meter" && route != "tool/pitch_tuner" && route != "tool/battery_information" && route != "tool/barometer" && route != "tool/proximity_checker" && route != "tool/sensor_checker" && route != "tool/magnifier" && route != "tool/barcode_scanner"
 
-    val sensitiveTextRoutes: Set<String> = setOf("tool/text_tools", "tool/qr_generator", "tool/hash_generator", "tool/text_diff", "tool/decision_matrix")
+    /** Image Studio supports only safe output preferences, never capture or named saved items. */
+    fun permitsModeRoute(route: String): Boolean = permitsRoute(route) || route == "tool/image_studio"
+
+    val sensitiveTextRoutes: Set<String> = setOf("tool/text_tools", "tool/qr_generator", "tool/hash_generator", "tool/text_diff", "tool/decision_matrix", "tool/bill_splitter", "tool/deadline_planner", "tool/json_formatter")
     fun isSensitiveTextRoute(route: String): Boolean = route in sensitiveTextRoutes
 
     /** Sensitive tools may remember only enumerated non-content selectors, never text. */
@@ -70,12 +73,17 @@ object ToolMemoryPolicy {
         "tool/hash_generator" -> values.keys.all { it == "algorithm" } && values.values.all {
             value -> com.jaguar.gearbox.logic.TextHashAlgorithm.entries.any { it.name == value }
         }
-        "tool/qr_generator", "tool/text_diff", "tool/decision_matrix" -> values.isEmpty()
+        "tool/qr_generator", "tool/decision_matrix", "tool/deadline_planner" -> values.isEmpty()
+        "tool/team_picker" -> validTeamPickerMode(values)
+        "tool/text_diff" -> validTextDiffMode(values)
+        "tool/image_studio" -> validImageStudioMode(values)
         "tool/color_blend" -> parseColorBlendSnapshot(values) != null
         "tool/bill_splitter" -> validBillSplitterMode(values)
         "tool/business_day_planner" -> validBusinessDayMode(values)
         "tool/scientific_calculator" -> validScientificMode(values)
+        "tool/json_formatter" -> validJsonFormatterMode(values)
         "tool/time_zone_converter" -> validTimeZoneMode(values)
+        "tool/aspect_ratio" -> validAspectRatioMode(values)
         else -> permitsRoute(route)
     }
 

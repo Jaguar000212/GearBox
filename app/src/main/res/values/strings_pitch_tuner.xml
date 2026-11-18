@@ -1,0 +1,14 @@
+<resources>
+<string name="pitch_title">Pitch Tuner</string>
+<string name="pitch_description">Estimate a sustained single note from microphone input.</string>
+<string name="pitch_note">Nearest note: %1$s</string>
+<string name="pitch_frequency">Frequency: %1$s Hz</string>
+<string name="pitch_cents">Offset: %1$s cents (negative flat, positive sharp)</string>
+<string name="pitch_unstable">No stable in-range tone detected.</string>
+<string name="pitch_warning">Single sustained tones approximately 65–1000 Hz only. Fixed A4 = 440 Hz, 12-tone equal temperament. Noise, harmonics, microphone processing and device accuracy affect estimates; this is not calibrated or polyphonic analysis.</string>
+<string name="pitch_help_instructions">Tap Start, grant microphone permission, then tap Start again. Play one steady note. Stop or leave the screen to end capture.</string>
+<string name="pitch_help_example">A steady 440 Hz tone corresponds to A4 near zero cents.</string>
+<string name="pitch_help_limitation">No stable detection is shown for silence, weak or unsuitable signals. Confidence is only a periodicity heuristic, not an accuracy guarantee. No audio is saved.</string>
+<string-array name="pitch_keywords"><item>tuner</item><item>pitch</item><item>frequency</item><item>note</item><item>cents</item></string-array>
+<string-array name="pitch_tasks"><item>tune a note</item><item>estimate pitch</item></string-array>
+</resources>

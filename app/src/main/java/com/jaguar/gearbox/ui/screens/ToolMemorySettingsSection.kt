@@ -31,6 +31,9 @@ private val privateInputTools = listOf(
     Tools.ROUTE_HASH_GENERATOR to R.string.screen_tool_hash,
     "tool/text_diff" to R.string.screen_tool_text_diff,
     "tool/decision_matrix" to R.string.screen_tool_decision_matrix,
+    "tool/bill_splitter" to R.string.screen_tool_bill_splitter,
+    "tool/deadline_planner" to R.string.screen_tool_deadline_planner,
+    "tool/json_formatter" to R.string.screen_tool_json_formatter,
 )
 
 /** Local retention choices are explicit and separate from recent-tool navigation. */

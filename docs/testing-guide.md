@@ -338,3 +338,165 @@ This is local date arithmetic with user-selected weekend days and explicit exclu
 - Verify weighted sums, normalization and ties using unrounded totals. Zero-weight criteria contribute nothing; all-zero weights are rejected. Test duplicate/empty/long labels, invalid scores, dimension changes, limits and exact shape validation. The sum/weight formula must be visible; rounding must not create or break rankings.
 - Adding/removing options or criteria invalidates the result; destructive removal should be deliberate. Import/example loads inputs only. Remembered results honor explicit opt-in without replay; no labels or ratings are stored under mode-only retention.
 - Labels may be private. Test separate default-off automatic history/result controls, exact reviewed sharing and sensitive clipboard handling. Existing storage limits remain unchanged. Verify accessible row/criterion labels, large fonts, keyboard, adaptive layouts and reset/remove confirmations on-device.
+
+## Bill Splitter: shared expenses correction
+
+The original draft covered only a single equally divided bill. The shared-expenses follow-up completes the separate multi-payer workflow; both modes remain in the same tool.
+
+- Enter participants and several expenses, each with one payer and an explicit nonempty beneficiary subset. Verify each expense's exact cents are fully assigned, including a payer who is not a beneficiary and uneven-cent splits. Sum of paid equals sum of owed; net balances sum to zero.
+- Verify suggested transfers settle every net balance without inventing money. Transfers are deterministic suggestions, not executed payments and not a promise of the fewest possible transactions. Test zero expenses/amounts, ties, everyone already settled, maximum bounds and malformed references.
+- Editing/removing participants cannot silently transfer an expense to another person. Confirm destructive changes and test stale confirmations after newer edits. Switching simple/shared modes or restoring either schema must not import into the wrong editor or show stale results.
+- Names and expenses are private inputs. Bill Splitter's separate automatic-capture controls default off; existing history is not silently deleted. Mode retention excludes participant names and expense content. Explicit reviewed Share and sensitive Copy remain deliberate actions. Test legacy simple snapshots, shared snapshots, opted-in result restoration and no replay.
+- Check keyboard/TalkBack payer and beneficiary selection, indexed labels for duplicate names, large fonts, adaptive layouts and copy/share readability. No payment service or contact access is used; device UI tests remain user-owned.
+
+## Aspect Ratio & Image Size
+
+- Verify reduced ratios using integer GCD, equal dimensions, portrait/landscape, and prime dimensions. Resize by one dimension or percentage with the displayed pixel rounding rule; test tiny/large values and output bounds without overflow.
+- Fit must remain within both target-box dimensions; Fill must cover both dimensions. Check extreme ratios and fractional scale, plus displayed centered padding/crop assumptions. These are size calculations, not actual image edits, uploads or guarantees of image quality.
+- Reject zero, negative, malformed and out-of-range values. Only relevant active-mode inputs should control calculation; no hidden invalid field should block an unrelated mode. Edits clear stale results. Explicit imports/examples require Calculate; retained results honor preferences without replay.
+- Check copy/share includes source, mode, result dimensions and rounding assumptions. Verify accessible mode selectors, narrow/wide layouts and large fonts on-device. No image/storage/location permission is needed.
+
+## Deadline & Milestone Planner
+
+This tool must actually schedule backwards from the target date, not merely list manually entered dates. Ordered milestones/phases have calendar-day durations; each phase occupies an inclusive start/end date range, the last finishes on the target date, and the previous phase ends the day before the next starts. It assumes serial dependencies in the visible order, not parallel work or a regional workday calendar.
+
+- Verify one-day phases, multiple durations, leap days, month/year boundaries, exact earliest start and total duration. Reordering phases changes the backward schedule deterministically. Reject excessive durations/counts and any schedule outside supported dates rather than clipping.
+- Use the explicit as-of date to show days remaining/overdue. Restore must not silently substitute today's date. No background reminders, calendar events or notifications are created by calculating a plan.
+- Validate names, stable identities, empty/duplicate labels with indexed output, and removal/reorder confirmation behavior. Edits invalidate old output. Explicit imports/examples require Plan; remembered results follow private-input consent and do not replay history.
+- Names/dates may be private. Separate capture controls default off; mode-only memory excludes plan content. Verify reviewed sharing, sensitive copying, accessible ordering controls, large fonts and adaptive layout on-device.
+
+## JSON Formatter & Validator
+
+- Validate top-level objects, arrays and scalar JSON. Test escaped quotes/backslashes/control escapes, Unicode, exponent/negative-zero numbers, nested structures and whitespace. Pretty/minify must preserve number tokens, object member order and string meaning rather than converting through floating-point values.
+- Reject comments, trailing commas, malformed numbers/escapes, extra trailing values and excessive input/depth/work. Duplicate keys follow an explicit strict interoperability policy; do not present this choice as proof that every other parser will reject them. Errors identify line/column without logging private payloads.
+- Formatting/validation is explicit. Edits clear stale output. Test output-expansion bounds and storage-limit warnings without truncation. Explicit imports require processing again; remembered results require both global and tool-specific consent and must not replay history.
+- JSON can contain credentials or personal data. Automatic capture defaults off for this tool, mode memory contains formatting preferences only, Copy is marked sensitive and Share uses an exact review. No external validation or network request occurs. Test large-font/adaptive/TalkBack UI and share cancellation on-device.
+- CSS, XML and HTML are not supported by this JSON phase and must not be advertised as validated here.
+
+## Image Studio: resize, crop and format
+
+- Select a local image explicitly through Android's picker. No broad photo permission, network upload or persistent URI grant is requested. Test cancellation, malformed/oversized images, orientation and transparent images. The tool works on a bounded decoded image (maximum 2,048-pixel edge / roughly four megapixels), not unrestricted original-resolution data; original and working dimensions must be visible.
+- Set a valid crop rectangle in working-image pixels and bounded output dimensions, then explicitly generate. Test edges, empty/inverted/out-of-range crops, aspect lock, up/down sizing and invalid values. Choosing an image or changing controls must not silently export or reuse a stale output.
+- PNG preserves alpha; JPEG composites transparency onto white; WebP is explicitly lossy. Quality controls must not imply PNG quality/compression behaves like JPEG. Re-encoding omits source metadata but does not anonymize visible image content or guarantee a smaller file. Verify actual format, dimensions and alpha with known fixtures.
+- Save creates a user-selected new document; Share grants access only to the explicitly reviewed generated file. Originals are never overwritten/deleted. Test picker/export cancellation, edits/new image during processing, stale save callbacks, navigation and recreation. Do not claim device-provider behavior is tested by JVM checks.
+- Source and rendered bitmaps are transient; no image/URI/content enters History, Workbench or mode memory. Remembered modes contain only safe format/quality/aspect preferences. Explicit export/share may create bounded temporary cache files retained long enough for receivers; cleanup must never delete unrelated files or fresh shared outputs.
+- Verify accessibility of pixel controls and image descriptions, narrow/wide layouts, large fonts and error/status messages. Markup/redaction, collage and enhancement belong to later phases and are not implemented by this first image phase.
+
+## Text Diff: optional spacing comparison
+
+- Exact comparison remains the default, including for older saved inputs without a comparison-mode field. The optional spacing mode trims leading/trailing ASCII spaces and tabs and collapses internal runs to one space independently on each line. It does not ignore case, line boundaries, blank lines, non-breaking spaces or other Unicode whitespace.
+- Compare lines with leading/trailing spaces, repeated spaces and tabs. Preserve and display the original left/right text; spacing-equivalent lines must not be described as byte-identical. Copy/share must describe the selected comparison mode rather than silently presenting normalized text as the original.
+- Changing the comparison mode must invalidate an existing result and share review. Test old/new history, presets, Workbench restores and remembered-result behavior; raw text remains subject to the existing opt-in privacy and storage limits. Mode preferences must never retain source text.
+
+## Image Studio: markup and regional effects
+
+- Add ordered rectangle outlines, arrows, solid covers, blur or mosaic regions in working-image coordinates before crop/resize. Test all image edges, overlapping operations, invalid/empty regions, opaque color validation, bounded strengths and the 20-operation limit. Original source pixels must remain unmodified.
+- Operations are transient and applied only on Generate. Editing/removing/clearing an operation, choosing a new image or changing crop/format must invalidate the generated result and any pending export review. Verify original and generated previews, cancellation and recreation.
+- Blur and mosaic are visual effects, **not secure redaction**. A solid opaque cover may obscure a region in the rendered output, but the app cannot guarantee all sensitive content is covered. Inspect the final exported image; no source metadata or editable layers should be carried into the new image. The original is still present outside the app and is never deleted.
+- Verify arrow directions, text descriptions and numeric controls with TalkBack and large fonts. Pixel and policy tests are authored; Android rendering, actual export/share and memory-pressure checks remain device-owned.
+
+## Image Studio: collage and basic adjustments
+
+- Explicitly select two to four local images for a collage. Each collage source is limited to one megapixel; the final canvas remains bounded to 2,048 pixels per edge and four megapixels. Test oversized/malformed sources, partial selection failure and cancellation without stale images/output appearing.
+- Test horizontal, vertical and grid layouts, uneven canvas dimensions and both placement modes. Contain preserves the full image with the selected opaque background; Cover explicitly center-crops to fill each cell. No unrestricted-resolution or AI enhancement is implied.
+- Brightness, contrast and saturation range from -100 to 100 with zero as identity. These are simple encoded-sRGB pixel adjustments, not calibrated photographic correction. Test neutral settings, extremes, alpha and source immutability. Changes require Generate and invalidate any older export review.
+- Single-image sources and added markup can remain transiently while switching modes; an unadded markup draft may be discarded as disclosed. Nothing enters History or Workbench. Verify mode switches, new selections, recreation, memory pressure, reviewed new-copy save/share and accessibility on-device.
+
+## Light Meter
+
+- Requires an Android ambient-light sensor. A missing sensor or failed listener registration must show an unavailable state, not zero lux or a camera-derived estimate. No camera, microphone, location or network permission is requested.
+- Observe lux while exposing/covering the sensor; values depend on sensor placement, range and manufacturer calibration and are not a certified photometer reading. Check sensor metadata, waiting state, invalid/nonfinite values and reported accuracy without promising a fixed accuracy percentage.
+- Readings are transient and foreground-only. Backgrounding, leaving the screen and recreation must unregister listeners and avoid showing an old value as a fresh reading. No History, Workbench or automatic result retention is provided.
+- Verify sensor-present/absent devices, TalkBack without rapid unsolicited announcements, large fonts and adaptive layouts. Hardware readings and lifecycle behavior require device testing; authored mocks/policy tests are not physical calibration.
+
+## Image Studio: reconstructed text annotations
+
+- Text is an explicit markup operation: enter a single line (at most 120 Unicode code points), X/Y top-left font-area position, opaque RGB color and font size 8–128 working-image pixels. Add the operation, then Generate; edits are ordered before crop/resize and remain subject to the existing 20-operation bound.
+- Reject empty/control/line-break text and unpaired UTF-16 surrogates. Check Unicode/device-font glyph support. Font metrics place the top edge at Y; text beyond image bounds is clipped as disclosed. Inspect preview and exported pixels, especially near edges and after crop/resize.
+- Text remains transient with image edits, not in History, Workbench or mode preferences. Export is an explicit new flattened image copy, without source metadata or editable text layers. Verify cancellation, generation invalidation, ordered overlap and original-file preservation on a device.
+- Policy and pixel tests are authored; Android runtime, font rendering, accessibility and export behavior have not been executed during reconstruction.
+
+
+### Reconstructed Sound-level Meter
+- Explicit Start requests microphone permission; a grant must not start capture until another Start. Denial, delayed permission result, background and navigation must never start/resume capture.
+- Verify RMS/peak relative dBFS, digital silence −∞, Stop/background/disposal clear readings and microphone indicator, no files/history, rapid stop/start and busy microphone failures. Not calibrated SPL or a hearing-safety instrument.
+- Authored JVM math/privacy fixtures and injected-source Android controller cleanup/permission tests. These are not executed here: local Gradle bootstrap cannot download its distribution. Real microphone/OEM and lifecycle behavior still require device testing.
+
+### Reconstructed Pitch Tuner
+- One sustained note only, approximately 65–1000 Hz; fixed A4=440 Hz and 12-tone equal temperament. Estimates depend on microphone processing and periodicity, not calibrated accuracy.
+- Confirm permission grant needs a second Start; leaving/background/disposal clears estimates and stops capture with no automatic resume. Check rapid Stop/Start and mutual exclusion with Sound-level Meter.
+- Authored JVM synthetic-tone, numerical-endpoint, noise/silence/clipping, cancellation/privacy fixtures; Android fake-source cleanup/contention and Compose lifecycle fixtures. These have not run locally because the Gradle distribution is unavailable. Real microphone accuracy and OEM behavior require device testing.
+
+### Reconstructed Battery Information
+- Verify foreground-only updates, background/disposal unregister and clear, and stale callback rejection. Fake-source lifecycle tests do not establish actual OEM broadcast delivery.
+- Missing values must read unknown; EXTRA_PRESENT=false must suppress all readings, not show a fabricated empty battery. Check level/scale rounding, tenths °C, millivolts to V, microamps to mA and microamp-hours to mAh.
+- Device-reported current/charge availability and sign may vary. OS health is not degradation/capacity percentage; no remaining-time estimate or saved/shared measurements.
+- JVM policy/controller and Android Compose lifecycle fixtures authored, not executed locally because Gradle distribution download is blocked. Real battery devices and no-battery devices remain manual validation.
+
+## Reconstructed Sensor Checker
+
+- Fixed inventory: accelerometer, gyroscope, magnetometer, light, pressure, proximity, gravity, linear acceleration and rotation vector. No permission-sensitive sensor types or fingerprint sharing. Android-reported availability is not diagnostic certification.
+- Explicit Start registers only the selected sensor. Selection change, Stop, background and disposal unregister and clear samples; returning requires Start. Verify stale callbacks after stop/restart, unavailable hardware, registration failure and invalid finite values.
+- Check device-coordinate axes/units: m/s², rad/s, µT, lux, hPa, cm. Rotation vectors are three or four dimensionless components, never degrees; proximity is often binary. Reported metadata/accuracy may be unavailable and are not calibration guarantees.
+- No History, Workbench, mode retention, network or extra permissions. Policy/controller tests are authored, not hardware validation; device lifecycle, orientation, large-font and TalkBack checks remain pending.
+
+## Reconstructed Magnifier
+
+- Explicit Start and camera permission are required; permission response does not start capture. Use a back camera with supported zoom/torch; camera ownership, preview streaming, permission revocation, missing/busy hardware and repeated Start/Stop require physical-device checks.
+- Freeze requires a streaming preview and is bounded to two megapixels/4,096-pixel edges (preview view capped at 1,000×1,000 pixels). It is not a full-resolution photo. Freeze checks view dimensions before allocation, stops the owned camera and torch, and keeps only the bounded frame; Resume explicitly starts again subject to foreground/permission checks. Stop/background/disposal clear the frozen frame, disable torch and unbind only owned use cases; delayed callbacks must not revive camera state.
+- Optional Export reviews the exact frozen frame then uses a new PNG document destination. No writes occur merely on Start/Freeze. A one-shot reviewed frame survives the destination picker background only; cancellation/disposal/recreation clears it. Reject stale callbacks and non-content destinations. A provider may leave empty/partial files after interrupted writes; no silent deletion.
+- No metadata, History, Workbench, saved image state or network upload. Pixel/export tests are authored; hardware lifecycle, UI, camera privacy indicator, accessibility and document-provider behavior remain unrun locally.
+
+## Reconstructed Barcode / QR Scanner
+
+- Explicit Start and a second Start after permission grant. Only owned CameraX Preview/Analysis use cases; KEEP_ONLY_LATEST analysis targets 640×480 and rejects frames beyond 1,280 pixels per edge/one megapixel. Test actual hardware resolutions and unsupported/back-camera-busy states.
+- Copy Y-plane luminance with buffer position/limit and row/pixel strides. The shared nonblocking decode lock spans copy, decoding and byte wiping; epoch checks discard obsolete work, and every proxy closes in finally. Test cancellation, rotation, bad strides and queued frames after Stop/disposal.
+- QR, Data Matrix, Aztec, PDF417, Code128/39, EAN13/8, UPCA/E and ITF decoding is local; one bounded quarter-turn retry. A result stops the camera, and over-4,096-character payloads are rejected without truncation. No frame/result persistence or network decoding.
+- Payloads are plain untrusted text. Copy uses sensitive clipboard marking; Share requires review. Only strict HTTP(S) links offer explicit host/full-address review. No automatic URL, intent, Wi-Fi or phone actions; reject credentials, controls, whitespace, backslashes, percent-encoded control/space and invalid authorities/ports. Review must refer to the current result, and background/disposal clears it.
+- Python repository checks are not camera/device validation. Decoder/URL/stride tests are authored; hardware, lifecycle, accessibility and scanner recognition remain pending.
+
+### Reconstructed Barometer / Altitude Estimate
+- Pressure sensor only, foreground lifecycle registration with stop/disposal clearing and stale callback fencing. Missing sensor and registration failure must be honest; no location/weather/network fallback.
+- Accept pressure 100–1200 hPa; explicit reference 800–1100 hPa, at most two decimal places. Default 1013.25 is standard atmosphere, not current weather. Equal pressure/reference gives zero, higher measured pressure can produce negative altitude.
+- Standard-atmosphere estimate only, not true elevation, navigation or safety-critical measurement. Reference and readings are transient, never history/results/modes.
+- JVM formula/reference/controller/privacy and fake-source Android lifecycle fixtures authored. Device pressure behavior and accuracy remain untested locally; Gradle distribution download remains unavailable.
+
+### Reconstructed Proximity Checker
+- Foreground TYPE_PROXIMITY only; missing sensor/registration failure must be explicit. Background/disposal unregisters and clears; queued callbacks from an old session must not restore readings.
+- Accept finite nonnegative reported values. Classify near only below a positive finite hardware maximum, far at/above it; unknown maximum must produce unknown rather than a guessed threshold.
+- Often binary, not precision distance, health assessment or device certification. No permissions/network/history/results retention.
+- JVM threshold/invalid/stale/failure/privacy and fake-source Compose lifecycle fixtures authored but unrun locally. Real hardware behavior still requires device testing; Gradle bootstrap unavailable.
+
+### Reconstructed Angle Finder inside Bubble Level
+- Tool count stays 62. Flat angle is acos(abs(display-up Z)), 0–90°; screen Y/X edge angles are asin(display-up Y/X), signed −90–90°. Labels describe display axes, never a physical long side that changes in landscape.
+- Rotation-vector data is remapped for display rotations 0/90/180/270; Compass retains azimuth semantics but now follows display orientation. Check Compass headings in every display rotation on actual hardware. Smoothing resets on rotation or unreliable samples; listener epochs prevent stale callbacks after stop/restart.
+- Temporary relative zero resets on mode, display rotation, reliability and foreground changes. Explicit captures include selected mode, absolute angle, reference and displayed angle; existing source/_capture history keys and no hardware restore remain unchanged.
+- Pure geometry/wrap, Android matrix/heading and UI baseline-reset fixtures authored. Real orientation lifecycle and device calibration remain untested locally; Gradle distribution unavailable. This is not a precision instrument.
+
+### Reconstructed weighted Name Picker
+- Existing Team/Name Picker gains Weighted pick; no new tool. Equal-pick, weighted and team results remain separate across mode switches. Name edits clear all; weight edits clear only the weighted result; team count edits clear teams.
+- Weighted inputs require 1–200 rows, names at most 120 Unicode codepoints, integer weights 1–10000 (no leading zeros), total at most 2,000,000. Duplicate names are separate row identities. Random.nextInt(total) chooses exact half-open weighted intervals; displayed odds are weight/total.
+- New names get weight1; removal keeps remaining weights aligned. Existing game-session preference gates names/weights; exact participant-string ownership prevents stale saved weights binding to changed names. Settings clear includes both new keys. Legacy equal/team behavior remains; weighted restore validates exact schema and never rerolls. Mode preferences contain no names or weights.
+- Pure ticket/schema/Unicode/privacy and Android alignment/purge fixtures authored, not executed locally (Gradle distribution unavailable). Existing storage size caps still apply; no truncated history saves.
+
+### Reconstructed XML mode in Code Formatter
+- Existing JSON route/sensitive storage defaults remain; legacy three-key inputs and mode fingerprints remain unchanged unless language is explicit. Imports restore text only, never execute; opted-in remembered results use bounded deterministic reconstruction.
+- XML 1.0 validation uses the platform namespace-aware pull parser with DTD processing/validation disabled and checked. DTD/entity declarations and unresolved entities fail closed. Raw and decoded text/attributes must contain legal XML 1.0 codepoints; duplicate expanded attributes and non-1.0 declarations are rejected. No resolver/network or schema validation.
+- Format attributes only changes whitespace preceding start-tag attribute names, preserving quoted values/equals spacing, text, inter-element whitespace, mixed content, CDATA, comments and PI. No XML minify or tree indentation.
+- Bounds: 64k input, depth64, 20k tokens plus attributes, 256k output. Existing smaller persistence caps unchanged; no truncated saves.
+- Android parser security/formatting/limits fixtures and JVM schema compatibility fixtures authored. Actual platform parser tests not executed locally; Gradle distribution unavailable. Verify these on supported Android versions before relying on parser behavior.
+
+- XML security preflight deliberately also rejects DOCTYPE/ENTITY-looking declaration text inside otherwise inert comments, CDATA and processing instructions. Preservation promises apply only to accepted documents; dedicated Android fixtures cover all three rejected contexts.
+
+### Reconstructed HTML normalization
+- Code Formatter retains JSON/XML behavior and snapshot shape. HTML is explicit language with PRETTY compatibility mode labeled Normalize HTML, never Validate or Minify. Imports remain inert; only explicitly opted remembered results reconstruct output.
+- jsoup 1.24.1 parses a local String with empty base URI, no connect/URL fetching/rendering/execution. Full-document parsing repairs markup and wraps fragments; unsafe links/scripts/event attributes are retained, not sanitized. prettyPrint(false) avoids adding indentation but normalization is not byte preserving.
+- Input64k, parser stack guard128, accepted tree depth64 and nodes+attributes20k, bounded Appendable output256k. Existing private-text retention caps unchanged. Dependency requires Android NIO desugaring, enabled with desugar_jdk_libs_nio2.1.5.
+- Official dependency/API checks: https://jsoup.org/download ; https://jsoup.org/apidocs/org/jsoup/parser/Parser ; https://github.com/google/desugar_jdk_libs/blob/master/VERSION_JDK11_NIO.txt .
+- Authored JVM fragment-repair, inert pre/script/style/textarea/comment retention, limits and snapshot fixtures. Dependency build/runtime and tests remain unexecuted locally because Gradle bootstrap is unavailable; CI/device validation required.
+
+### Reconstructed CSS rule separation
+- CSS is explicit Code Formatter language, PRETTY compatibility mode labeled Format CSS; no Validate/Minify. JSON/XML/HTML envelopes and opted-private-memory behavior remain unchanged.
+- Bounded lexical scan inserts LF only after completed top-level brace rules or at-rule semicolons. Rule interiors, quoted strings/escapes, comments, URLs, calc and custom-property whitespace are copied exactly. This is not a CSS validator, sanitizer, minifier or full beautifier. Unsupported unfinished structures fail rather than repair.
+- Whole-source NUL and unpaired-surrogate rejection applies even inside opaque comments/strings/escapes. Input64k, nesting64, 20k scanner steps (conservative rather than a full CSS token grammar), output256k. No dependencies/network/evaluation.
+- Authored JVM boundary/idempotence, sensitive interiors, malformed/bounds/Unicode and language/schema regression fixtures. Local Gradle bootstrap unavailable; tests unrun.

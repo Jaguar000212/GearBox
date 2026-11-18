@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+<string name="studio_text_kind">Text annotation</string>
+<string name="studio_text_input">Text (1–120 Unicode characters)</string>
+<string name="studio_text_size">Font size (8–128 working-image pixels)</string>
+<string name="studio_text_value">Text: %1$s</string>
+<string name="studio_text_note">X and Y position the top-left font area in working-image pixels. Single-line text uses the device font; unsupported glyphs may appear as boxes. Text extending beyond the image is clipped. Add, then Generate and inspect the preview before exporting. Annotations are flattened pixels, not editable layers, and are not saved to History or mode preferences.</string>
+</resources>

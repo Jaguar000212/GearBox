@@ -1,0 +1,23 @@
+<resources>
+<string name="sound_title">Sound-level Meter</string>
+<string name="sound_description">Read relative microphone RMS and peak levels in dBFS.</string>
+<string name="sound_start">Start microphone</string>
+<string name="sound_stop">Stop</string>
+<string name="sound_stopped">Microphone stopped.</string>
+<string name="sound_starting">Starting microphone…</string>
+<string name="sound_reading">Relative digital microphone level</string>
+<string name="sound_busy">Another audio tool is using the microphone. Stop it and try again.</string>
+<string name="sound_error">Microphone capture failed or stopped delivering samples. Try again.</string>
+<string name="sound_permission">Microphone permission is required.</string>
+<string name="sound_permission_notice">Permission request finished. If granted, tap Start again to begin.</string>
+<string name="sound_rms">RMS: %1$s dBFS</string>
+<string name="sound_peak">Peak: %1$s dBFS</string>
+<string name="sound_silence">Digital silence: all samples in this window are zero.</string>
+<string name="sound_warning">dBFS measures digital signal level, not calibrated sound pressure (dB SPL). Microphone gain and device processing affect readings. Do not use this for hearing safety, legal compliance, or calibrated noise measurements.</string>
+<string name="sound_local">Capture runs only while this screen is active. Leaving stops it; returning does not restart it. Audio buffers are transient and cleared; no recordings, history, files, or network transmission.</string>
+<string name="sound_help_instructions">Tap Start, grant microphone permission if requested, then tap Start again. RMS and peak levels use short PCM windows. Stop or leave the screen to end capture.</string>
+<string name="sound_help_example">Digital silence shows −∞ dBFS. A larger digital signal moves closer to 0 dBFS.</string>
+<string name="sound_help_limitation">Relative dBFS only, not calibrated SPL. Device processing affects readings. No safety or health assessment.</string>
+<string-array name="sound_keywords"><item>microphone</item><item>audio level</item><item>dBFS</item><item>RMS</item></string-array>
+<string-array name="sound_tasks"><item>read microphone level</item><item>measure relative sound</item></string-array>
+</resources>

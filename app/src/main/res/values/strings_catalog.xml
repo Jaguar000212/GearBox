@@ -53,7 +53,7 @@
     <string name="catalog_tool_one_of_two_name">1 of 2</string>
     <string name="catalog_tool_one_of_two_description">Choose between two options.</string>
     <string name="catalog_tool_team_picker_name">Team / Name Picker</string>
-    <string name="catalog_tool_team_picker_description">Pick a random name, or split a list of names into teams.</string>
+    <string name="catalog_tool_team_picker_description">Pick equally or with weights, or split names into teams.</string>
     <string name="catalog_tool_tic_tac_toe_name">Tic-tac-toe</string>
     <string name="catalog_tool_tic_tac_toe_description">Play a two-player game of tic-tac-toe.</string>
     <string name="catalog_tool_counter_name">Counter</string>
@@ -182,7 +182,7 @@
     <string name="catalog_help_days_until_instructions">Choose an event date to see the calendar days until or since it.</string>
     <string name="catalog_help_days_until_example">Pick tomorrow to see a one-day countdown.</string>
     <string name="catalog_help_days_until_limitation">This compares calendar dates, not exact hours or time zones for an event.</string>
-    <string name="catalog_help_team_picker_instructions">Enter the names and choose whether to pick a name or divide them into teams.</string>
+    <string name="catalog_help_team_picker_instructions">Enter names and choose equal pick, weighted pick, or teams. Edit integer weights in Participants; each row has chance weight divided by total weight.</string>
     <string name="catalog_help_team_picker_example">Enter four names and choose two teams.</string>
     <string name="catalog_help_team_picker_limitation">Review duplicate names and team sizes; random groups do not balance ability automatically.</string>
     <string name="catalog_help_fuel_cost_instructions">Enter distance, fuel efficiency, and price using the selected units.</string>
@@ -200,7 +200,7 @@
     <string name="catalog_help_qr_generator_instructions">Enter text or a complete URL to create a QR code, then check it with a scanner.</string>
     <string name="catalog_help_qr_generator_example">Try https://example.com as a sample URL.</string>
     <string name="catalog_help_qr_generator_limitation">Anyone who scans can read the encoded content. A QR code does not make a link trustworthy or keep text secret.</string>
-    <string name="catalog_help_bubble_level_instructions">Place the device on a stable surface and use the displayed tilt to check alignment.</string>
+    <string name="catalog_help_bubble_level_instructions">Place the device on a stable surface. Use flat-plane or display X/Y edge Angle Finder modes; Set relative zero compares against a temporary baseline. Rotation, mode, reliability or foreground changes reset the baseline.</string>
     <string name="catalog_help_bubble_level_example">Compare the reading on a desk with the phone gently tilted.</string>
     <string name="catalog_help_bubble_level_limitation">Accuracy depends on sensors and the device case. Do not use as a precision construction instrument.</string>
     <string name="catalog_help_compass_instructions">Hold the device steady and keep it away from magnets and metal while reading the heading.</string>

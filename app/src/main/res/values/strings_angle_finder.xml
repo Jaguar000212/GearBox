@@ -1,0 +1,12 @@
+<resources>
+<string name="angle_heading">Angle Finder</string>
+<string name="angle_flat">Flat screen plane</string>
+<string name="angle_screen_y">Screen Y edge (toward top)</string>
+<string name="angle_screen_x">Screen X edge (toward right)</string>
+<string name="angle_reading">%1$s: %2$s°</string>
+<string name="angle_absolute_reference">Absolute: %1$s°; zero reference: %2$s</string>
+<string name="angle_no_reference">none (absolute reading)</string>
+<string name="angle_set_zero">Set relative zero</string>
+<string name="angle_clear_zero">Clear relative zero</string>
+<string name="angle_explanation">Flat measures the screen plane against horizontal (0–90°). Edge modes measure the selected display axis against horizontal (−90–90°), not a physical long or short side. Relative zero is temporary and resets when mode, screen rotation, reliability, or foreground session changes. Device-sensor estimate only; check a physical level for precision.</string>
+</resources>

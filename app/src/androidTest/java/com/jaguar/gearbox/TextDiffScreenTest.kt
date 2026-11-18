@@ -44,4 +44,30 @@ class TextDiffScreenTest {
         compose.onNodeWithText(isolated.getString(R.string.text_diff_first)).performScrollTo().performTextReplacement("\n".repeat(200))
         compose.onNodeWithText(isolated.getString(R.string.text_diff_compare)).performScrollTo().assertIsNotEnabled()
     }
+    @Test fun whitespaceModePreservesBothVersionsAndChangingModeClearsResult() {
+        val first = "  hello\tworld "
+        val second = "hello world"
+        val pending = mutableStateOf<ToolImport?>(ToolImport(Tools.ROUTE_TEXT_DIFF,
+            mapOf("firstText" to first, "secondText" to second, "mode" to "IGNORE_ASCII_WHITESPACE")))
+        compose.setContent { isolated.Provide { MaterialTheme {
+            CompositionLocalProvider(LocalToolImport provides pending.value,
+                LocalConsumeToolImport provides { pending.value = null }) { TextDiffScreen({}) }
+        } } }
+        val equivalent = isolated.getString(R.string.text_diff_equivalent_line, first, second)
+        compose.onNodeWithText(equivalent).assertDoesNotExist()
+        compose.onNodeWithText(isolated.getString(R.string.text_diff_compare)).performScrollTo().performClick()
+        compose.onNodeWithText(equivalent).assertExists()
+        compose.onNodeWithText(isolated.getString(R.string.shared_label_value,
+            isolated.getString(R.string.text_diff_mode), isolated.getString(R.string.text_diff_ignore_ascii)))
+            .performScrollTo().performClick()
+        compose.onNodeWithText(isolated.getString(R.string.text_diff_exact), useUnmergedTree = true).performClick()
+        compose.onNodeWithText(equivalent).assertDoesNotExist()
+        compose.onNodeWithText(isolated.getString(R.string.text_diff_compare)).performScrollTo().performClick()
+        compose.onNodeWithText(isolated.getString(R.string.text_diff_counts, 1, 1, 0)).assertExists()
+        // Legacy two-field imports explicitly restore Exact, not the remembered alternate mode.
+        compose.runOnIdle { pending.value = ToolImport(Tools.ROUTE_TEXT_DIFF,
+            mapOf("firstText" to first, "secondText" to second)) }
+        compose.onNodeWithText(isolated.getString(R.string.text_diff_counts, 1, 1, 0)).assertDoesNotExist()
+    }
+
 }

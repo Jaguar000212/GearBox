@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+<string name="studio_mode">Image mode</string>
+<string name="studio_single">Single image</string>
+<string name="studio_collage">Collage</string>
+<string name="studio_choose_collage">Choose 2–4 collage images</string>
+<string name="studio_collage_count">Collage images: %1$d</string>
+<string name="studio_collage_layout">Layout</string>
+<string name="studio_horizontal">Horizontal</string>
+<string name="studio_vertical">Vertical</string>
+<string name="studio_grid">Grid</string>
+<string name="studio_fit">Image fitting</string>
+<string name="studio_contain">Contain (padding)</string>
+<string name="studio_cover">Cover (crop)</string>
+<string name="studio_background">Opaque background (#RRGGBB)</string>
+<string name="studio_collage_note">Images follow picker order. Contain preserves each complete image with padding; Cover crops to fill its cell. Grid uses two columns. Collage inputs are decoded to at most 1 million pixels each; the canvas is limited to 2,048 pixels per edge and 4 million pixels. Switching modes clears generated output but keeps selected sources, added single-image edits and size settings until you leave or recreate this screen. An unadded markup draft is discarded on mode switch.</string>
+<string name="studio_collage_preview">Collage source %1$d</string>
+<string name="studio_brightness">Brightness (−100 to 100)</string>
+<string name="studio_contrast">Contrast (−100 to 100)</string>
+<string name="studio_saturation">Saturation (−100 to 100)</string>
+<string name="studio_enhancement_note">Basic encoded-sRGB adjustments, not AI enhancement or color-managed correction. Zero leaves that adjustment unchanged. Applied to the generated image; inspect the final encoded preview before exporting.</string>
+<string name="studio_collage_invalid">Choose 2–4 images and check canvas dimensions, opaque background and adjustment bounds.</string>
+</resources>

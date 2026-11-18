@@ -9,6 +9,14 @@ import androidx.compose.material.icons.filled.Balance
 import androidx.compose.material.icons.filled.Cake
 import androidx.compose.material.icons.filled.Calculate
 import androidx.compose.material.icons.filled.Casino
+import androidx.compose.material.icons.filled.Image
+import com.jaguar.gearbox.ui.tools.ImageStudioScreen
+import androidx.compose.material.icons.filled.DataObject
+import com.jaguar.gearbox.ui.tools.JsonFormatterScreen
+import androidx.compose.material.icons.filled.AccountTree
+import com.jaguar.gearbox.ui.tools.DeadlinePlannerScreen
+import androidx.compose.material.icons.filled.AspectRatio
+import com.jaguar.gearbox.ui.tools.AspectRatioScreen
 import androidx.compose.material.icons.filled.TableChart
 import com.jaguar.gearbox.ui.tools.DecisionMatrixScreen
 import androidx.compose.material.icons.filled.Public
@@ -65,6 +73,24 @@ import com.jaguar.gearbox.ui.tools.BmiCalculatorScreen
 import com.jaguar.gearbox.ui.tools.BubbleLevelScreen
 import com.jaguar.gearbox.ui.tools.ChessScoreboardScreen
 import com.jaguar.gearbox.ui.tools.ColorPickerScreen
+import com.jaguar.gearbox.ui.tools.BarcodeScannerScreen
+import androidx.compose.material.icons.filled.QrCodeScanner
+import com.jaguar.gearbox.ui.tools.MagnifierScreen
+import androidx.compose.material.icons.filled.ZoomIn
+import com.jaguar.gearbox.ui.tools.SensorCheckerScreen
+import androidx.compose.material.icons.filled.GraphicEq
+import androidx.compose.material.icons.filled.TouchApp
+import androidx.compose.material.icons.filled.Sensors
+import com.jaguar.gearbox.ui.tools.ProximityScreen
+import com.jaguar.gearbox.ui.tools.BarometerScreen
+import androidx.compose.material.icons.filled.Speed
+import com.jaguar.gearbox.ui.tools.BatteryInfoScreen
+import androidx.compose.material.icons.filled.BatteryFull
+import com.jaguar.gearbox.ui.tools.PitchTunerScreen
+import com.jaguar.gearbox.ui.tools.SoundMeterScreen
+import androidx.compose.material.icons.filled.Mic
+import com.jaguar.gearbox.ui.tools.LightMeterScreen
+import androidx.compose.material.icons.filled.LightMode
 import com.jaguar.gearbox.ui.tools.CompassScreen
 import com.jaguar.gearbox.ui.tools.CounterScreen
 import com.jaguar.gearbox.ui.tools.DateCalculatorScreen
@@ -115,6 +141,10 @@ object Tools {
     const val ROUTE_SCOREBOARD = "tool/scoreboard"
     const val ROUTE_RANDOM = "tool/random"
     const val ROUTE_BASE_CONVERTER = "tool/base_converter"
+    const val ROUTE_IMAGE_STUDIO = "tool/image_studio"
+    const val ROUTE_JSON_FORMATTER = "tool/json_formatter"
+    const val ROUTE_DEADLINE_PLANNER = "tool/deadline_planner"
+    const val ROUTE_ASPECT_RATIO = "tool/aspect_ratio"
     const val ROUTE_DECISION_MATRIX = "tool/decision_matrix"
     const val ROUTE_TIME_ZONE_CONVERTER = "tool/time_zone_converter"
     const val ROUTE_TEXT_DIFF = "tool/text_diff"
@@ -154,6 +184,15 @@ object Tools {
     const val ROUTE_TIC_TAC_TOE = "tool/tic_tac_toe"
     const val ROUTE_QR_GENERATOR = "tool/qr_generator"
     const val ROUTE_BUBBLE_LEVEL = "tool/bubble_level"
+    const val ROUTE_BARCODE_SCANNER = "tool/barcode_scanner"
+    const val ROUTE_MAGNIFIER = "tool/magnifier"
+    const val ROUTE_SENSOR_CHECKER = "tool/sensor_checker"
+    const val ROUTE_PROXIMITY = "tool/proximity_checker"
+    const val ROUTE_BAROMETER = "tool/barometer"
+    const val ROUTE_BATTERY_INFO = "tool/battery_information"
+    const val ROUTE_PITCH_TUNER = "tool/pitch_tuner"
+    const val ROUTE_SOUND_METER = "tool/sound_level_meter"
+    const val ROUTE_LIGHT_METER = "tool/light_meter"
     const val ROUTE_COMPASS = "tool/compass"
     const val ROUTE_FLASHLIGHT = "tool/flashlight"
     const val ROUTE_SCREEN_RULER = "tool/screen_ruler"
@@ -424,6 +463,42 @@ object Tools {
             content = { onNavigateBack -> ChessScoreboardScreen(onNavigateBack) },
         ),
         Tool(
+            name = "Image Studio",
+            description = "Resize, crop and compress a local image, then export a new copy.",
+            icon = Icons.Filled.Image,
+            route = ROUTE_IMAGE_STUDIO,
+            category = ToolCategory.UTILITIES,
+            content = { onNavigateBack -> ImageStudioScreen(onNavigateBack) },
+            keywords = listOf("image editor", "resize image", "crop image", "compress image", "PNG", "JPEG", "WebP"),
+        ),
+        Tool(
+            name = "Code Formatter",
+            description = "Validate, pretty-print or minify JSON locally.",
+            icon = Icons.Filled.DataObject,
+            route = ROUTE_JSON_FORMATTER,
+            category = ToolCategory.UTILITIES,
+            content = { onNavigateBack -> JsonFormatterScreen(onNavigateBack) },
+            keywords = listOf("JSON", "formatter", "validator", "pretty print", "minify"),
+        ),
+        Tool(
+            name = "Deadline & Milestone Planner",
+            description = "Plan sequential calendar-day phases backward from a target date.",
+            icon = Icons.Filled.AccountTree,
+            route = ROUTE_DEADLINE_PLANNER,
+            category = ToolCategory.TIME,
+            content = { onNavigateBack -> DeadlinePlannerScreen(onNavigateBack) },
+            keywords = listOf("deadline planner", "milestones", "backward planning", "phase durations", "project dates"),
+        ),
+        Tool(
+            name = "Aspect Ratio & Image Size",
+            description = "Calculate reduced ratios and resized dimensions, fit or fill a box.",
+            icon = Icons.Filled.AspectRatio,
+            route = ROUTE_ASPECT_RATIO,
+            category = ToolCategory.CALCULATORS,
+            content = { onNavigateBack -> AspectRatioScreen(onNavigateBack) },
+            keywords = listOf("aspect ratio", "image size", "resize dimensions", "fit", "fill", "crop", "padding"),
+        ),
+        Tool(
             name = "Decision Matrix",
             description = "Compare options using your own criteria, weights and ratings.",
             icon = Icons.Filled.TableChart,
@@ -470,12 +545,12 @@ object Tools {
         ),
         Tool(
             name = "Bill Splitter",
-            description = "Draft an equal bill split with tax, tip and exact cent remainders.",
+            description = "Draft a simple bill split or shared expenses with balances and settlement suggestions.",
             icon = Icons.Filled.RequestQuote,
             route = ROUTE_BILL_SPLITTER,
             category = ToolCategory.MONEY,
             content = { onNavigateBack -> BillSplitterScreen(onNavigateBack) },
-            keywords = listOf("split the bill", "split bill", "equal shares", "diners", "tax", "tip"),
+            keywords = listOf("split the bill", "split bill", "equal shares", "diners", "tax", "tip", "shared expenses", "payer", "beneficiaries", "settlement"),
         ),
         Tool(
             name = "Color Blend",
@@ -554,6 +629,39 @@ object Tools {
             category = ToolCategory.DEVICE,
             content = { onNavigateBack -> BubbleLevelScreen(onNavigateBack) },
             keywords = listOf("spirit level", "tilt", "check if straight"),
+        ),
+        Tool(name = "Barcode / QR Scanner", description = "Read supported codes locally with explicit camera access.",
+            icon = Icons.Filled.QrCodeScanner, route = ROUTE_BARCODE_SCANNER, category = ToolCategory.DEVICE,
+            content = { BarcodeScannerScreen(it) }, keywords = listOf("scanner", "QR", "barcode")),
+        Tool(name = "Magnifier", description = "Magnify a live camera preview and optionally export a frozen frame.",
+            icon = Icons.Filled.ZoomIn, route = ROUTE_MAGNIFIER, category = ToolCategory.DEVICE,
+            content = { MagnifierScreen(it) }, keywords = listOf("magnifier", "camera zoom")),
+        Tool(name = "Sensor Checker", description = "Inspect selected foreground sensor readings and availability.",
+            icon = Icons.Filled.Sensors, route = ROUTE_SENSOR_CHECKER, category = ToolCategory.DEVICE,
+            content = { SensorCheckerScreen(it) }, keywords = listOf("sensor", "hardware", "accelerometer")),
+        Tool(name = "Proximity Checker", description = "Read the device proximity sensor and near/far indication.",
+            icon = Icons.Filled.TouchApp, route = ROUTE_PROXIMITY, category = ToolCategory.DEVICE,
+            content = { ProximityScreen(it) }, keywords = listOf("proximity", "near", "far", "distance sensor")),
+        Tool(name = "Barometer / Altitude Estimate", description = "Read air pressure and estimate altitude with an explicit reference.",
+            icon = Icons.Filled.Speed, route = ROUTE_BAROMETER, category = ToolCategory.DEVICE,
+            content = { BarometerScreen(it) }, keywords = listOf("pressure", "barometer", "altitude estimate", "hPa")),
+        Tool(name = "Battery Information", description = "View battery readings reported by Android.",
+            icon = Icons.Filled.BatteryFull, route = ROUTE_BATTERY_INFO, category = ToolCategory.DEVICE,
+            content = { BatteryInfoScreen(it) }, keywords = listOf("battery", "charging", "voltage", "temperature", "current")),
+        Tool(name = "Pitch Tuner", description = "Estimate a sustained single note from microphone input.",
+            icon = Icons.Filled.Mic, route = ROUTE_PITCH_TUNER, category = ToolCategory.DEVICE,
+            content = { PitchTunerScreen(it) }, keywords = listOf("tuner", "pitch", "frequency", "note", "cents")),
+        Tool(name = "Sound-level Meter", description = "Read relative microphone levels in dBFS.",
+            icon = Icons.Filled.GraphicEq, route = ROUTE_SOUND_METER, category = ToolCategory.DEVICE,
+            content = { SoundMeterScreen(it) }, keywords = listOf("microphone", "audio", "dBFS", "RMS")),
+        Tool(
+            name = "Light Meter",
+            description = "Read ambient illuminance from the device light sensor.",
+            icon = Icons.Filled.LightMode,
+            route = ROUTE_LIGHT_METER,
+            category = ToolCategory.DEVICE,
+            content = { onNavigateBack -> LightMeterScreen(onNavigateBack) },
+            keywords = listOf("lux", "ambient light", "illuminance", "brightness sensor"),
         ),
         Tool(
             name = "Compass",

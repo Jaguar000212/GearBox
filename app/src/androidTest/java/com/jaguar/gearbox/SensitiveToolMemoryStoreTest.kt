@@ -14,6 +14,73 @@ class SensitiveToolMemoryStoreTest {
     private fun consent() = ToolMemorySettings(historyEnabled = true, rememberResults = true,
         rememberModes = true, automaticMemory = routes.associateWith { ToolAutomaticMemory(true, true) })
 
+    @Test fun jsonRequiresIndependentConsentAndRejectsOversizedCaptureWithoutTruncating() {
+        val route = "tool/json_formatter"
+        val inputs = mapOf("source" to " {\"private\":1.00} ", "mode" to "PRETTY", "indent" to "2")
+        val global = ToolMemorySettings(historyEnabled = true, rememberResults = true, rememberModes = true)
+        assertTrue(store.saveSettings(global))
+        assertFalse(store.record(route, inputs, "output"))
+        assertFalse(store.saveResult(route, inputs, "output"))
+        assertFalse(store.saveMode(route, inputs))
+        assertTrue(store.saveMode(route, inputs - "source"))
+        assertTrue(store.saveSettings(global.copy(automaticMemory = mapOf(route to ToolAutomaticMemory(true, true)))))
+        assertTrue(store.record(route, inputs, "output"))
+        assertTrue(store.saveResult(route, inputs, "output"))
+        val large = inputs + ("source" to "x".repeat(4097))
+        assertFalse(store.record(route, large, "output"))
+        assertFalse(store.saveResult(route, large, "output"))
+        assertFalse(store.record(route, inputs, "x".repeat(4097)))
+        assertEquals(inputs, store.history(route).single().inputs)
+        assertEquals(inputs, store.loadResult(route)?.inputs)
+        assertTrue(store.saveSettings(global))
+        assertNull(store.loadResult(route))
+        assertEquals(inputs, store.rememberedResult(route)?.inputs)
+    }
+
+    @Test fun deadlinePlanNeedsIndependentConsentAndSavedAsOfRemainsUnchanged() {
+        val route = "tool/deadline_planner"
+        val inputs = mapOf("deadline" to "2027-01-10", "asOf" to "2027-01-01", "ids" to "1",
+            "names" to "Private milestone", "durations" to "3")
+        val global = ToolMemorySettings(historyEnabled = true, rememberResults = true, rememberModes = true)
+        store.saveSettings(global)
+        assertFalse(store.record(route, inputs, "2027-01-08 through 2027-01-10"))
+        assertFalse(store.saveResult(route, inputs, "plan"))
+        assertFalse(store.saveMode(route, inputs))
+        val allowed = global.copy(automaticMemory = mapOf(route to ToolAutomaticMemory(true, true)))
+        store.saveSettings(allowed)
+        assertTrue(store.record(route, inputs, "plan"))
+        assertTrue(store.saveResult(route, inputs, "plan"))
+        val token = store.historyGeneration(route)
+        store.saveSettings(global)
+        assertNull(store.loadResult(route))
+        assertEquals("2027-01-01", store.rememberedResult(route)?.inputs?.get("asOf"))
+        assertEquals(inputs, store.history(route).single().inputs)
+        store.saveSettings(allowed)
+        assertFalse(store.record(route, inputs, "late", token))
+        assertEquals(inputs, store.loadResult(route)?.inputs)
+    }
+
+    @Test fun billUpgradeKeepsHistoricalDataButRequiresNewSeparateConsent() {
+        val route = "tool/bill_splitter"
+        val inputs = mapOf("bill" to "100", "tax" to "0", "tipPercent" to "10", "diners" to "3")
+        val global = ToolMemorySettings(historyEnabled = true, rememberResults = true)
+        val allowed = global.copy(automaticMemory = mapOf(route to ToolAutomaticMemory(true, true)))
+        store.saveSettings(allowed)
+        assertTrue(store.record(route, inputs, "110.00"))
+        assertTrue(store.saveResult(route, inputs, "110.00"))
+        // A pre-shared-expenses install had global switches only, with no bill-specific consent.
+        File(context.noBackupFilesDir, "tool_memory_v1/settings.json").writeText(
+            """{"version":1,"historyEnabled":true,"historyLimit":20,"rememberResults":true}""")
+        val upgraded = ToolMemoryStore(context)
+        assertFalse(upgraded.settings().permitsHistory(route))
+        assertNull(upgraded.loadResult(route))
+        assertEquals(inputs, upgraded.rememberedResult(route)?.inputs)
+        assertEquals(inputs, upgraded.history(route).single().inputs)
+        assertFalse(upgraded.record(route, inputs, "new"))
+        upgraded.saveSettings(allowed)
+        assertEquals(inputs, upgraded.loadResult(route)?.inputs)
+    }
+
     @Test fun decisionMatrixHasIndependentConsentAndPreservesRejectedCaptureData() {
         val route = "tool/decision_matrix"
         val inputs = mapOf("optionLabels" to "Private A\nPrivate B", "criterionLabels" to "Cost",

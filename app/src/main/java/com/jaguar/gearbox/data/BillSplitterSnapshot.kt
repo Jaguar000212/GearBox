@@ -25,5 +25,9 @@ fun parseBillSplitterSnapshot(values: Map<String, String>): BillSplitterSnapshot
 }
 
 /** Remembering modes/presets cannot quietly retain an old bill, tax or tip amount. */
-fun validBillSplitterMode(values: Map<String, String>): Boolean =
-    values.keys == setOf("diners") && parseBillSplitterDiners(values["diners"]) != null
+fun validBillSplitterMode(values: Map<String, String>): Boolean = when (values.keys) {
+    setOf("view") -> values["view"] == "SHARED"
+    setOf("diners") -> parseBillSplitterDiners(values["diners"]) != null
+    setOf("view", "diners") -> values["view"] == "SIMPLE" && parseBillSplitterDiners(values["diners"]) != null
+    else -> false
+}

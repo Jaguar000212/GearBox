@@ -1,0 +1,8 @@
+<resources>
+<string name="weighted_mode">Weighted pick</string>
+<string name="weighted_help">Each row has its own integer weight. Chance is weight divided by total weight; duplicate names remain separate entries. Edit weights in Participants. Equal pick and team results are kept when switching modes.</string>
+<string name="weighted_invalid">Weighted mode requires 1–200 names, each at most 120 Unicode characters on one line, and weights 1–10000 without leading zeros. Existing names are not truncated.</string>
+<string name="weighted_pick">Pick using weights</string>
+<string name="weighted_label">Weight for row %1$d: %2$s</string>
+<string name="weighted_result">Picked row %1$d: %2$s\nChance: %3$d / %4$d</string>
+</resources>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="studio_markup_title">Markup and regional effects</string>
+    <string name="studio_markup_show">Add markup or an effect</string>
+    <string name="studio_markup_kind">Edit type</string>
+    <string name="studio_markup_rectangle">Rectangle outline</string>
+    <string name="studio_markup_arrow">Arrow</string>
+    <string name="studio_markup_cover">Solid cover</string>
+    <string name="studio_markup_blur">Region blur</string>
+    <string name="studio_markup_mosaic">Pixelation</string>
+    <string name="studio_markup_x1">Start X / left</string>
+    <string name="studio_markup_y1">Start Y / top</string>
+    <string name="studio_markup_x2">End X / right</string>
+    <string name="studio_markup_y2">End Y / bottom</string>
+    <string name="studio_markup_color">Opaque color (#RRGGBB)</string>
+    <string name="studio_markup_size">Effect size (pixels)</string>
+    <string name="studio_markup_add">Add edit</string>
+    <string name="studio_markup_clear">Clear all edits</string>
+    <string name="studio_markup_delete">Remove edit %1$d</string>
+    <string name="studio_markup_item">%1$d. %2$s · (%3$d, %4$d) to (%5$d, %6$d)</string>
+    <string name="studio_markup_count">Applied edit list: %1$d / 20</string>
+    <string name="studio_markup_note">Coordinates use the working image shown above, before crop and resize. Edits apply in list order. Press Add edit to include the draft, then Generate output to review the result. Unadded draft fields are not applied. Edits are temporary and are cleared when choosing or removing an image, leaving this tool, or recreating this screen.</string>
+    <string name="studio_markup_privacy">Blur and pixelation are not secure redaction. Prefer an opaque solid cover to obscure content, then inspect the final exported image carefully. No method here guarantees privacy; the original image remains unchanged.</string>
+    <string name="studio_markup_invalid">Check coordinates, color and effect size. Regions must be nonempty and within the working image; arrows need distinct endpoints. The list is limited to 20 edits.</string>
+    <string name="studio_markup_bounds">For regions, right and bottom are exclusive edges. For arrows, all four values are pixel coordinates: start X/Y to end X/Y in any direction, within 0 to image width/height minus 1. Endpoints must differ. Outline/arrow thickness: 1–32 pixels; blur radius: 1–32; pixelation block: 2–128. Color is opaque; alpha is unsupported.</string>
+    <string name="studio_markup_parameters">Color: %1$s (outline, arrow or cover only) · Size: %2$d px (ignored for cover)</string>
+</resources>

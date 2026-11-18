@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+<string name="checker_title">Sensor Checker</string>
+<string name="checker_description">Inspect selected foreground sensor readings and availability.</string>
+<string name="checker_select">Sensor</string><string name="checker_start">Start selected sensor</string><string name="checker_stop">Stop</string>
+<string name="checker_available">Android reports this sensor available.</string><string name="checker_unavailable">This sensor is unavailable.</string><string name="checker_unknown">Unknown</string>
+<string name="checker_metadata">Reported range: %1$s; resolution: %2$s (%3$s)</string><string name="checker_accuracy">Reported accuracy: %1$s</string><string name="checker_value">%1$s: %2$s %3$s</string><string name="checker_scalar">Value</string>
+<string name="checker_axes_note">Vector axes use the device sensor coordinate system, not automatically the current screen rotation. Proximity values are often binary, not precise distance.</string>
+<string name="checker_rotation">Rotation vector X/Y/Z and optional W are dimensionless quaternion components, not angles in degrees. Three-component sensors may omit W.</string>
+<string name="checker_warning">Availability and reported accuracy do not certify hardware health or calibration. Missing, waiting or invalid readings are not zero. This fixed inventory excludes permission-sensitive sensors.</string>
+<string name="checker_privacy">Start is explicit. Selecting another sensor or leaving/backgrounding stops sensing and clears readings. No samples, device fingerprint, History or Workbench entries are saved or shared; no network or extra permission is used.</string>
+<string name="checker_help_instructions">Choose one supported sensor and tap Start. Stop or change selection to clear readings; return from background requires Start again.</string><string name="checker_help_example">Choose Accelerometer and gently tilt the device to observe X/Y/Z components.</string><string name="checker_help_limitation">Hardware-dependent readings are not diagnostic certification. Rotation vectors are dimensionless; proximity may be binary. No persistent samples or fingerprint sharing.</string>
+<string-array name="checker_names"><item>Accelerometer</item><item>Gyroscope</item><item>Magnetometer</item><item>Light</item><item>Pressure</item><item>Proximity</item><item>Gravity</item><item>Linear acceleration</item><item>Rotation vector</item></string-array>
+<string-array name="checker_units"><item>m/s²</item><item>rad/s</item><item>µT</item><item>lx</item><item>hPa</item><item>cm</item><item>m/s²</item><item>m/s²</item><item>dimensionless</item></string-array>
+<string-array name="checker_axes"><item>X</item><item>Y</item><item>Z</item><item>W</item></string-array>
+<string-array name="checker_statuses"><item>Stopped</item><item>Unavailable</item><item>Waiting for a valid sample</item><item>Receiving readings</item><item>Sensor registration failed</item></string-array>
+<string-array name="checker_accuracies"><item>Unknown</item><item>Unreliable</item><item>Low</item><item>Medium</item><item>High</item></string-array>
+<string-array name="checker_keywords"><item>sensor</item><item>hardware</item><item>accelerometer</item><item>gyroscope</item></string-array><string-array name="checker_tasks"><item>check sensor availability</item><item>inspect sensor readings</item></string-array>
+</resources>

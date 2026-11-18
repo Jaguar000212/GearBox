@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="aspect_catalog_name">Aspect Ratio &amp; Image Size</string>
+    <string name="aspect_catalog_description">Calculate reduced ratios and resized dimensions, fit or fill a box.</string>
+    <string name="aspect_catalog_instructions">Enter source width and height to reduce their ratio. Choose a target width, height, percentage, or a box to fit or fill, then calculate dimensions.</string>
+    <string name="aspect_catalog_example">A 1920 by 1080 source has ratio 16:9. Resizing to width 1280 gives height 720.</string>
+    <string name="aspect_catalog_limitation">Dimension calculations only: no image is uploaded, resized or edited. Integer rounding can slightly change the ratio. Fit rounds down to stay inside the box; Fill rounds up to cover it. Padding and cropping assume centered placement.</string>
+    <string-array name="aspect_catalog_keywords"><item>aspect ratio</item><item>image size</item><item>resize dimensions</item><item>fit</item><item>fill</item><item>crop</item><item>padding</item></string-array>
+    <string-array name="aspect_catalog_tasks"><item>aspect ratio</item><item>calculate image dimensions</item><item>image size calculator</item><item>fit dimensions</item><item>fill box dimensions</item><item>maintain aspect ratio</item></string-array>
+    <string name="aspect_catalog_load_example">Load a 1920 by 1080 source and target width 1280, then calculate height 720.</string>
+</resources>

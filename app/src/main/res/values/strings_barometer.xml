@@ -1,0 +1,22 @@
+<resources>
+<string name="barometer_title">Barometer / Altitude Estimate</string>
+<string name="barometer_description">Read air pressure and estimate altitude using an explicit reference.</string>
+<string name="barometer_stopped">Pressure readings paused.</string>
+<string name="barometer_unavailable">This device has no pressure sensor. No network or location fallback is used.</string>
+<string name="barometer_failed">The pressure sensor could not be started.</string>
+<string name="barometer_waiting">Waiting for a valid pressure reading (100–1200 hPa)…</string>
+<string name="barometer_reading">Device pressure sensor</string>
+<string name="barometer_reference">Sea-level reference pressure (hPa)</string>
+<string name="barometer_reference_help">1013.25 hPa is the standard-atmosphere default, NOT current weather. Enter a known reference if available; no weather or location is fetched.</string>
+<string name="barometer_reference_error">Enter 800–1100 using a decimal point and at most two decimal places, without leading zeros.</string>
+<string name="barometer_accuracy">Sensor-reported accuracy: %1$s</string>
+<string name="barometer_pressure">Pressure: %1$s hPa</string>
+<string name="barometer_altitude">Approximate pressure altitude: %1$s m</string>
+<string name="barometer_warning">Standard-atmosphere estimate, not GPS altitude or guaranteed true elevation. Weather, reference pressure and sensor error affect it. Negative estimates are possible. Not for navigation, aviation, or safety-critical use.</string>
+<string name="barometer_local">Foreground sensor readings and reference are transient. No permissions, location, network, saved results, or measurement history.</string>
+<string name="barometer_help_instructions">Open the tool to read pressure. Keep the standard reference or enter a known sea-level pressure between 800 and 1100 hPa. The estimate updates from valid sensor readings.</string>
+<string name="barometer_help_example">At 1013.25 hPa with a 1013.25 hPa reference, the pressure-altitude estimate is zero.</string>
+<string name="barometer_help_limitation">Requires a pressure sensor. Standard-atmosphere approximation only, not measured true elevation. No automatic weather correction.</string>
+<string-array name="barometer_keywords"><item>pressure</item><item>barometer</item><item>altitude estimate</item><item>hPa</item></string-array>
+<string-array name="barometer_tasks"><item>read air pressure</item><item>estimate pressure altitude</item></string-array>
+</resources>

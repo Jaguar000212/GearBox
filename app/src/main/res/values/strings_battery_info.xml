@@ -1,0 +1,29 @@
+<resources>
+<string name="battery_title">Battery Information</string>
+<string name="battery_description">View battery readings reported by Android.</string>
+<string name="battery_unknown">Unknown / unsupported</string>
+<string name="battery_stopped">Battery readings paused.</string>
+<string name="battery_waiting">Waiting for battery information…</string>
+<string name="battery_unavailable">Battery information is unavailable.</string>
+<string name="battery_reading">Android-reported battery information</string>
+<string name="battery_absent">Android reports no battery present. No battery readings are shown.</string>
+<string name="battery_presence_unknown">Battery presence was not reported.</string>
+<string name="battery_percent">Charge level: %1$s %%</string>
+<string name="battery_temperature">Temperature: %1$s °C</string>
+<string name="battery_voltage">Voltage: %1$s V</string>
+<string name="battery_current">Current: %1$s mA</string>
+<string name="battery_charge">Reported charge counter: %1$s mAh</string>
+<string name="battery_status">Status: %1$s</string>
+<string name="battery_power">Power source: %1$s</string>
+<string name="battery_health">System health status: %1$s</string>
+<string name="battery_warning">Values are device-reported, not calibrated. Current sign and property availability depend on the device; readings update with system battery broadcasts, not continuously. The charge counter is not design capacity. System health status is not a battery capacity or degradation percentage. No remaining-time or health-percentage estimates are made.</string>
+<string name="battery_local">Readings are shown only while this screen is active and cleared on leaving. No permissions, saved measurements, network access, or sharing.</string>
+<string name="battery_help_instructions">Open the tool to view supported battery properties while this screen is active. Unknown means Android did not provide a supported value.</string>
+<string name="battery_help_example">Connect or disconnect a charger and wait for Android to report the changed power source.</string>
+<string name="battery_help_limitation">Not a calibrated diagnostic or capacity test. Reported health is a system status, not health percentage. No remaining-time estimate.</string>
+<string-array name="battery_statuses"><item>Unknown</item><item>Charging</item><item>Discharging</item><item>Not charging</item><item>Full</item></string-array>
+<string-array name="battery_powers"><item>Unknown</item><item>Battery</item><item>AC</item><item>USB</item><item>Wireless</item><item>Dock</item></string-array>
+<string-array name="battery_healths"><item>Unknown</item><item>Good</item><item>Overheating</item><item>Dead</item><item>Over-voltage</item><item>Unspecified failure</item><item>Cold</item></string-array>
+<string-array name="battery_keywords"><item>battery</item><item>charging</item><item>voltage</item><item>temperature</item><item>current</item></string-array>
+<string-array name="battery_tasks"><item>view battery information</item><item>check charging status</item></string-array>
+</resources>

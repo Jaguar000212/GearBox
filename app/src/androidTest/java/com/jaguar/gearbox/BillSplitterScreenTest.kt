@@ -41,7 +41,8 @@ class BillSplitterScreenTest {
     }
     @Test fun rememberedOutputReconstructsWithoutHistoryReplay() {
         val store = ToolMemoryStore(isolated)
-        assertTrue(store.saveSettings(ToolMemorySettings(rememberResults = true, historyEnabled = true)))
+        assertTrue(store.saveSettings(ToolMemorySettings(rememberResults = true, historyEnabled = true,
+            automaticMemory = mapOf("tool/bill_splitter" to com.jaguar.gearbox.data.ToolAutomaticMemory(true, true)))))
         assertTrue(store.saveResult(Tools.ROUTE_BILL_SPLITTER, inputs, "old formatted output"))
         compose.setContent { isolated.Provide { MaterialTheme { BillSplitterScreen({}) } } }
         compose.waitUntil(5_000) { compose.onAllNodesWithText(output()).fetchSemanticsNodes().isNotEmpty() }

@@ -1,0 +1,23 @@
+<resources>
+<string name="proximity_title">Proximity Checker</string>
+<string name="proximity_description">Read the device proximity sensor and its near/far indication.</string>
+<string name="proximity_stopped">Proximity readings paused.</string>
+<string name="proximity_unavailable">This device has no proximity sensor.</string>
+<string name="proximity_failed">The proximity sensor could not be started.</string>
+<string name="proximity_waiting">Waiting for a valid proximity reading…</string>
+<string name="proximity_reading">Device proximity sensor</string>
+<string name="proximity_unknown">Near/far unknown: no valid hardware maximum range.</string>
+<string name="proximity_near">Near</string>
+<string name="proximity_far">Far</string>
+<string name="proximity_distance">Reported value: %1$s cm</string>
+<string name="proximity_accuracy">Sensor-reported accuracy: %1$s</string>
+<string name="proximity_maximum">Hardware-reported maximum range: %1$s cm</string>
+<string name="proximity_resolution">Hardware-reported resolution: %1$s cm</string>
+<string name="proximity_warning">Many proximity sensors report only two states, not precise distance. Near means the value is below the hardware maximum; far means at or above it. Device behavior varies. This is not a precision rangefinder, health assessment, or device certification.</string>
+<string name="proximity_local">Only the foreground sensor is used. Readings clear on leaving; no permissions, network, history, saved results, or sharing.</string>
+<string name="proximity_help_instructions">Open the tool and move an object toward and away from the device proximity sensor without pressing on the screen.</string>
+<string name="proximity_help_example">An uncovered sensor may report its maximum value as far; covering it may report a lower value as near.</string>
+<string name="proximity_help_limitation">Often binary and hardware-dependent. Reported centimetres do not guarantee precise distance. Unknown maximum means no near/far classification.</string>
+<string-array name="proximity_keywords"><item>proximity</item><item>near</item><item>far</item><item>distance sensor</item></string-array>
+<string-array name="proximity_tasks"><item>check proximity sensor</item><item>read near far</item></string-array>
+</resources>

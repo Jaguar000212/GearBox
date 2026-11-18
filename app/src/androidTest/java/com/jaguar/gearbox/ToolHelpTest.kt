@@ -23,7 +23,7 @@ class ToolHelpTest {
 
     @Test fun everyCatalogToolHasSpecificGuidanceAndUniqueFallbackIcon() {
         assertEquals(Tools.all.map { it.route }.toSet(), ToolHelpCatalog.all.keys)
-        assertEquals(43, ToolHelpCatalog.all.size)
+        assertEquals(44, ToolHelpCatalog.all.size)
         assertEquals(Tools.all.size, Tools.all.map { it.icon }.distinct().size)
         ToolHelpCatalog.all.values.forEach {
             assertTrue(it.instructions.isNotBlank())

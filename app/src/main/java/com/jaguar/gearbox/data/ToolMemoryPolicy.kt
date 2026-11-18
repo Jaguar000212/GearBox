@@ -72,6 +72,7 @@ object ToolMemoryPolicy {
         }
         "tool/qr_generator" -> values.isEmpty()
         "tool/color_blend" -> parseColorBlendSnapshot(values) != null
+        "tool/bill_splitter" -> validBillSplitterMode(values)
         else -> permitsRoute(route)
     }
 

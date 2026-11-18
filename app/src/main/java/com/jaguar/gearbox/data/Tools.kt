@@ -9,6 +9,8 @@ import androidx.compose.material.icons.filled.Balance
 import androidx.compose.material.icons.filled.Cake
 import androidx.compose.material.icons.filled.Calculate
 import androidx.compose.material.icons.filled.Casino
+import androidx.compose.material.icons.filled.RequestQuote
+import com.jaguar.gearbox.ui.tools.BillSplitterScreen
 import androidx.compose.material.icons.filled.Palette
 import com.jaguar.gearbox.ui.tools.ColorBlendScreen
 import androidx.compose.material.icons.filled.Colorize
@@ -103,6 +105,7 @@ object Tools {
     const val ROUTE_SCOREBOARD = "tool/scoreboard"
     const val ROUTE_RANDOM = "tool/random"
     const val ROUTE_BASE_CONVERTER = "tool/base_converter"
+    const val ROUTE_BILL_SPLITTER = "tool/bill_splitter"
     const val ROUTE_COLOR_BLEND = "tool/color_blend"
     const val ROUTE_COLOR_PICKER = "tool/color_picker"
     const val ROUTE_UNIT_CONVERTER = "tool/unit_converter"
@@ -208,7 +211,7 @@ object Tools {
             route = ROUTE_TIP,
             category = ToolCategory.MONEY,
             content = { onNavigateBack -> TipCalculatorScreen(onNavigateBack) },
-            keywords = listOf("gratuity", "bill split", "split the bill"),
+            keywords = listOf("gratuity", "bill split", "tip and split"),
         ),
         Tool(
             name = "Date Calculator",
@@ -404,6 +407,15 @@ object Tools {
             route = ROUTE_CHESS_SCOREBOARD,
             category = ToolCategory.GAMES_AND_RANDOM,
             content = { onNavigateBack -> ChessScoreboardScreen(onNavigateBack) },
+        ),
+        Tool(
+            name = "Bill Splitter",
+            description = "Draft an equal bill split with tax, tip and exact cent remainders.",
+            icon = Icons.Filled.RequestQuote,
+            route = ROUTE_BILL_SPLITTER,
+            category = ToolCategory.MONEY,
+            content = { onNavigateBack -> BillSplitterScreen(onNavigateBack) },
+            keywords = listOf("split the bill", "split bill", "equal shares", "diners", "tax", "tip"),
         ),
         Tool(
             name = "Color Blend",

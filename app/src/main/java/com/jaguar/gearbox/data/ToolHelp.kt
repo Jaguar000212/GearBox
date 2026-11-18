@@ -40,6 +40,11 @@ object ToolHelpCatalog {
             "Decimal 10 is binary 1010 and hexadecimal A.",
             "This converter handles integers, not decimal fractions; binary only accepts 0 and 1.",
         ),
+        Tools.ROUTE_BILL_SPLITTER to ToolHelp(
+            "Enter the bill and tax amounts, a tip percentage, and 1 to 1000 diners. The tip uses the original bill before tax. Calculate an equal split; remaining cents go to the first diners.",
+            "Load a bill of 100 with a tip of 10 percent and three diners, then calculate shares of 36.67, 36.67 and 36.66.",
+            "This is a draft with two decimal currency places, not a payment or currency conversion. It does not track who paid or split individual items.",
+        ),
         Tools.ROUTE_COLOR_BLEND to ToolHelp(
             "Enter two opaque HEX colors, choose the second color percentage from 0 to 100, then tap Blend.",
             "Equal parts red #FF0000 and blue #0000FF give #800080 with encoded sRGB interpolation.",

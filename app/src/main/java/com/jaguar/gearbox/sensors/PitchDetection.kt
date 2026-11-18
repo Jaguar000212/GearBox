@@ -47,8 +47,8 @@ fun detectPitch(samples: ShortArray, checkActive: () -> Unit = {}): PitchEstimat
     val denominator = left - 2 * center + right
     val offset = if (abs(denominator) > 1e-12) (0.5 * (left - right) / denominator).coerceIn(-0.5, 0.5) else 0.0
     val interpolated = 16000.0 / (lag + offset)
-    // Numerical endpoint tolerance only; the reported range is never extended.
-    if (!interpolated.isFinite() || interpolated < 65.0 - 0.001 || interpolated > 1000.0 + 0.001) return null
+    // Allow 0.01 Hz for quantization/interpolation at the endpoints; clamp reported range.
+    if (!interpolated.isFinite() || interpolated < 65.0 - 0.01 || interpolated > 1000.0 + 0.01) return null
     val frequency = interpolated.coerceIn(65.0, 1000.0)
     val note = 69 + 12 * log2(frequency / 440)
     val nearest = round(note).toInt()

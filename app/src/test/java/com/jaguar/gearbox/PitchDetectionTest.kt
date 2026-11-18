@@ -6,8 +6,8 @@ import org.junit.Test
 import kotlin.math.*
 import java.util.Random
 class PitchDetectionTest {
-    private fun tone(f:Double, amplitude:Double=12000.0)=ShortArray(PITCH_WINDOW_SAMPLES) {
-        (sin(2*PI*f*it/16000)*amplitude).roundToInt().toShort()
+    private fun tone(f:Double, amplitude:Double=12000.0, phase:Double=0.0)=ShortArray(PITCH_WINDOW_SAMPLES) {
+        (sin(2*PI*f*it/16000 + phase)*amplitude).roundToInt().toShort()
     }
     @Test fun tonesAndNumericalEndpoints() {
         for(f in listOf(65.0,80.0,110.0,220.0,440.0,880.0,1000.0)) {
@@ -21,6 +21,18 @@ class PitchDetectionTest {
         assertEquals(1000.0,detectPitch(tone(1000.0))!!.frequencyHz,0.001)
         assertEquals(69,detectPitch(tone(440.0))!!.noteNumber)
         assertEquals(25.0,detectPitch(tone(440.0*2.0.pow(25.0/1200)))!!.cents,1.0)
+    }
+    @Test fun endpointQuantizationAcrossPhasesAndAmplitudes() {
+        for (amplitude in listOf(250.0, 12000.0, 20000.0)) for (step in 0 until 16) {
+            val phase = step * 2 * PI / 16
+            for (frequency in listOf(65.0, 1000.0)) {
+                val estimate = detectPitch(tone(frequency, amplitude, phase))
+                assertNotNull("Missing $frequency amplitude=$amplitude phase=$phase", estimate)
+                assertTrue(estimate!!.frequencyHz in 65.0..1000.0)
+                assertEquals(frequency, estimate.frequencyHz, 0.01)
+            }
+            assertNull(detectPitch(tone(1001.0, amplitude, phase)))
+        }
     }
     @Test fun unsuitableInputAndOutOfRange() {
         for(f in listOf(40.0,64.0,1001.0,1500.0,2000.0)) assertNull("Accepted $f",detectPitch(tone(f)))

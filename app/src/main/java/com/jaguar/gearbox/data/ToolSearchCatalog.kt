@@ -51,7 +51,7 @@ object ToolSearchCatalog {
         Tools.ROUTE_QR_GENERATOR to AliasSpec(R.array.search_tasks_qr_generator, listOf("make a qr code", "text to qr", "link to qr code")),
         Tools.ROUTE_MORSE_BINARY to AliasSpec(R.array.search_tasks_morse_binary, listOf("translate morse code", "text in binary", "decode binary text")),
         Tools.ROUTE_IMAGE_STUDIO to AliasSpec(R.array.studio_catalog_tasks, listOf("resize image", "crop image", "compress image", "export image copy", "convert image format")),
-        Tools.ROUTE_JSON_FORMATTER to AliasSpec(R.array.json_catalog_tasks, listOf("format JSON", "validate JSON", "pretty print JSON", "minify JSON", "check JSON syntax", "validate XML", "format XML attributes", "normalize HTML")),
+        Tools.ROUTE_JSON_FORMATTER to AliasSpec(R.array.json_catalog_tasks, listOf("format JSON", "validate JSON", "pretty print JSON", "minify JSON", "check JSON syntax", "validate XML", "format XML attributes", "normalize HTML", "format CSS")),
         Tools.ROUTE_DEADLINE_PLANNER to AliasSpec(R.array.deadline_catalog_tasks, listOf("plan backward from deadline", "deadline planner", "milestone planner", "schedule project phases", "backward scheduling")),
         Tools.ROUTE_ASPECT_RATIO to AliasSpec(R.array.aspect_catalog_tasks, listOf("aspect ratio", "calculate image dimensions", "image size calculator", "fit dimensions", "fill box dimensions", "maintain aspect ratio")),
         Tools.ROUTE_DECISION_MATRIX to AliasSpec(R.array.decision_catalog_tasks, listOf("decision matrix", "compare options", "weighted decision", "rank options by criteria", "weighted scores")),

@@ -60,6 +60,22 @@ class JsonFormatterScreenTest {
         compose.onNodeWithText(isolated.getString(R.string.json_minify),useUnmergedTree=true).assertDoesNotExist()
         compose.onNodeWithText(isolated.getString(R.string.html_normalize),useUnmergedTree=true).assertDoesNotExist()
     }
+    @Test fun cssImportIsInertAndLanguageSwitchClearsFormattedOutput() {
+        val css=mapOf("source" to "a{}b{}","language" to "CSS","mode" to "PRETTY","indent" to "2")
+        val pending=mutableStateOf<ToolImport?>(ToolImport(Tools.ROUTE_JSON_FORMATTER,css))
+        compose.setContent {isolated.Provide {MaterialTheme {
+            CompositionLocalProvider(LocalToolImport provides pending.value,
+                LocalConsumeToolImport provides {pending.value=null}) {JsonFormatterScreen({})}
+        }}}
+        compose.onNodeWithText(isolated.getString(R.string.shared_share)).assertIsNotEnabled()
+        compose.onNodeWithText(isolated.getString(R.string.json_run)).performScrollTo().performClick()
+        compose.onNodeWithText("a{}").assertExists()
+        val languageSelector=isolated.getString(R.string.shared_label_value,isolated.getString(R.string.code_language),"CSS")
+        compose.onNodeWithText(languageSelector).performScrollTo().performClick()
+        compose.onNodeWithText("JSON",useUnmergedTree=true).performClick()
+        compose.onNodeWithText("a{}").assertDoesNotExist()
+        compose.onNodeWithText(isolated.getString(R.string.shared_share)).assertIsNotEnabled()
+    }
     @Test fun privateDefaultDoesNotSaveAndInvalidInputDoesNotProduceOutput() {
         val store = ToolMemoryStore(isolated)
         assertTrue(store.saveSettings(ToolMemorySettings(historyEnabled = true, rememberResults = true)))

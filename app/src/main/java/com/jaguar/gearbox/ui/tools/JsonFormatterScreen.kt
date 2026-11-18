@@ -26,6 +26,7 @@ fun JsonFormatterScreen(onNavigateBack: () -> Unit) {
     val context = LocalContext.current
     var language by rememberSaveable { mutableStateOf("JSON") }
     var explicitLanguage by rememberSaveable { mutableStateOf(false) }
+    var cssEvaluation by remember { mutableStateOf<CssFormatResult?>(null) }
     var htmlEvaluation by remember { mutableStateOf<HtmlFormatResult?>(null) }
     var xmlEvaluation by remember { mutableStateOf<XmlFormatResult?>(null) }
     var source by rememberSaveable { mutableStateOf("") }
@@ -37,10 +38,11 @@ fun JsonFormatterScreen(onNavigateBack: () -> Unit) {
     val mode = JsonFormatMode.valueOf(modeName)
     fun currentInputs() = JsonFormatterSnapshot(source,modeName,indent,language,explicitLanguage).toInputs()
     val inputs = currentInputs()
-    fun edited() { evaluation = null; xmlEvaluation = null; htmlEvaluation = null; restoreError = false; shareReview = null }
+    fun edited() { evaluation = null; xmlEvaluation = null; htmlEvaluation = null; cssEvaluation = null; restoreError = false; shareReview = null }
     fun run() {
-        evaluation = null; xmlEvaluation = null; htmlEvaluation = null
-        if(language=="HTML") htmlEvaluation=evaluateHtml(source,JsonFormatMode.valueOf(modeName))
+        evaluation = null; xmlEvaluation = null; htmlEvaluation = null; cssEvaluation = null
+        if(language=="CSS") cssEvaluation=evaluateCss(source,JsonFormatMode.valueOf(modeName))
+        else if(language=="HTML") htmlEvaluation=evaluateHtml(source,JsonFormatMode.valueOf(modeName))
         else if(language=="XML") xmlEvaluation=evaluateXml(source,JsonFormatMode.valueOf(modeName),indent)
         else evaluation=evaluateJson(source,JsonFormatMode.valueOf(modeName),indent)
         restoreError=false;shareReview=null
@@ -51,7 +53,7 @@ fun JsonFormatterScreen(onNavigateBack: () -> Unit) {
         source = saved.source; modeName = saved.mode; indent = saved.indent; language=saved.language;explicitLanguage=saved.includesLanguage; edited()
         if (completed) run()
     }
-    val successfulOutput = if(language=="HTML") htmlEvaluation?.takeIf {it.error==null}?.output else if(language=="XML") xmlEvaluation?.takeIf {it.error==null}?.output else evaluation?.takeIf {it.error==null}?.output
+    val successfulOutput = if(language=="CSS") cssEvaluation?.takeIf {it.error==null}?.output else if(language=="HTML") htmlEvaluation?.takeIf {it.error==null}?.output else if(language=="XML") xmlEvaluation?.takeIf {it.error==null}?.output else evaluation?.takeIf {it.error==null}?.output
     val output = successfulOutput?.let { if(mode==JsonFormatMode.VALIDATE) context.getString(if(language=="XML") R.string.xml_valid else R.string.json_valid) else it }
     val history = rememberToolHistory(route = Tools.ROUTE_JSON_FORMATTER, inputs = inputs, output = output,
         modeInputs = inputs - "source",
@@ -62,18 +64,18 @@ fun JsonFormatterScreen(onNavigateBack: () -> Unit) {
         }, resultRequiresExplicitAction = true, restoredResultRequiresExplicitAction = { false })
     ToolScaffold(stringResource(R.string.json_title), Tools.byRoute(Tools.ROUTE_JSON_FORMATTER)!!.icon, onNavigateBack, history = history) {
         AdaptiveToolLayout(input = {
-            CompactChoiceSelector(stringResource(R.string.code_language),language,listOf("JSON","XML","HTML"),{it},{
+            CompactChoiceSelector(stringResource(R.string.code_language),language,listOf("JSON","XML","HTML","CSS"),{it},{
                 language=it;explicitLanguage=true
-                if(language=="HTML") modeName="PRETTY"
+                if(language in setOf("HTML","CSS")) modeName="PRETTY"
                 if(language=="XML" && modeName=="MINIFY") modeName="PRETTY"
                 edited()
             })
             OutlinedTextField(source, { source = it; edited() }, label = { Text(stringResource(R.string.code_source)) },
                 minLines = 5, maxLines = 12, isError = source.length > JSON_INPUT_LIMIT,
                 supportingText = { if (source.length > JSON_INPUT_LIMIT) Text(stringResource(R.string.json_error_input_limit)) }, modifier = Modifier.fillMaxWidth())
-            CompactChoiceSelector(stringResource(R.string.json_mode), mode, if(language=="HTML") listOf(JsonFormatMode.PRETTY) else if(language=="XML") listOf(JsonFormatMode.VALIDATE,JsonFormatMode.PRETTY) else JsonFormatMode.entries,
-                { context.getString(if(language=="HTML") R.string.html_normalize else if(language=="XML" && it==JsonFormatMode.PRETTY) R.string.xml_attributes else jsonModeLabel(it)) }, { modeName = it.name; edited() })
-            if (mode == JsonFormatMode.PRETTY && language!="HTML") CompactChoiceSelector(stringResource(R.string.json_indent), indent, listOf(2,4),
+            CompactChoiceSelector(stringResource(R.string.json_mode), mode, if(language in setOf("HTML","CSS")) listOf(JsonFormatMode.PRETTY) else if(language=="XML") listOf(JsonFormatMode.VALIDATE,JsonFormatMode.PRETTY) else JsonFormatMode.entries,
+                { context.getString(if(language=="CSS") R.string.css_format else if(language=="HTML") R.string.html_normalize else if(language=="XML" && it==JsonFormatMode.PRETTY) R.string.xml_attributes else jsonModeLabel(it)) }, { modeName = it.name; edited() })
+            if (mode == JsonFormatMode.PRETTY && language !in setOf("HTML","CSS")) CompactChoiceSelector(stringResource(R.string.json_indent), indent, listOf(2,4),
                 { context.getString(R.string.json_spaces, it) }, { indent = it; edited() })
             Button(enabled = source.length <= JSON_INPUT_LIMIT, onClick = { run() }, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.json_run)) }
             evaluation?.error?.let { error ->
@@ -106,6 +108,14 @@ fun JsonFormatterScreen(onNavigateBack: () -> Unit) {
                 HtmlFormatErrorKind.PARSE_ERROR -> R.string.html_parse_error
             }),color=MaterialTheme.colorScheme.error) }
             if(language=="HTML") Text(stringResource(R.string.html_rules),style=MaterialTheme.typography.bodySmall)
+            cssEvaluation?.error?.let { error -> Text(stringResource(when(error) {
+                CssFormatErrorKind.INPUT_LIMIT -> R.string.json_error_input_limit
+                CssFormatErrorKind.DEPTH_LIMIT -> R.string.json_error_depth_limit
+                CssFormatErrorKind.TOKEN_LIMIT -> R.string.json_error_token_limit
+                CssFormatErrorKind.OUTPUT_LIMIT -> R.string.json_error_output_limit
+                CssFormatErrorKind.UNSUPPORTED -> R.string.css_unsupported
+            }),color=MaterialTheme.colorScheme.error) }
+            if(language=="CSS") Text(stringResource(R.string.css_rules),style=MaterialTheme.typography.bodySmall)
             if (restoreError) Text(stringResource(R.string.json_restore_error), color = MaterialTheme.colorScheme.error)
             if(language=="XML") Text(stringResource(R.string.xml_rules),style=MaterialTheme.typography.bodySmall)
             if(language=="JSON") Text(stringResource(R.string.json_rules), style = MaterialTheme.typography.bodySmall)
@@ -126,7 +136,7 @@ fun JsonFormatterScreen(onNavigateBack: () -> Unit) {
             } else Text(stringResource(R.string.json_empty))
             ToolActions(onCopy = { output?.let { context.copyToClipboard(context.getString(R.string.json_title), it, sensitive = true) } },
                 onShare = { output?.let { shareReview = inputs to it } }, onClear = { source = ""; edited() },
-                resultEnabled = output != null, clearEnabled = source.isNotEmpty() || evaluation != null || xmlEvaluation != null || htmlEvaluation != null)
+                resultEnabled = output != null, clearEnabled = source.isNotEmpty() || evaluation != null || xmlEvaluation != null || htmlEvaluation != null || cssEvaluation != null)
         })
     }
     shareReview?.let { snapshot ->

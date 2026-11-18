@@ -494,3 +494,9 @@ This tool must actually schedule backwards from the target date, not merely list
 - Input64k, parser stack guard128, accepted tree depth64 and nodes+attributes20k, bounded Appendable output256k. Existing private-text retention caps unchanged. Dependency requires Android NIO desugaring, enabled with desugar_jdk_libs_nio2.1.5.
 - Official dependency/API checks: https://jsoup.org/download ; https://jsoup.org/apidocs/org/jsoup/parser/Parser ; https://github.com/google/desugar_jdk_libs/blob/master/VERSION_JDK11_NIO.txt .
 - Authored JVM fragment-repair, inert pre/script/style/textarea/comment retention, limits and snapshot fixtures. Dependency build/runtime and tests remain unexecuted locally because Gradle bootstrap is unavailable; CI/device validation required.
+
+### Reconstructed CSS rule separation
+- CSS is explicit Code Formatter language, PRETTY compatibility mode labeled Format CSS; no Validate/Minify. JSON/XML/HTML envelopes and opted-private-memory behavior remain unchanged.
+- Bounded lexical scan inserts LF only after completed top-level brace rules or at-rule semicolons. Rule interiors, quoted strings/escapes, comments, URLs, calc and custom-property whitespace are copied exactly. This is not a CSS validator, sanitizer, minifier or full beautifier. Unsupported unfinished structures fail rather than repair.
+- Whole-source NUL and unpaired-surrogate rejection applies even inside opaque comments/strings/escapes. Input64k, nesting64, 20k scanner steps (conservative rather than a full CSS token grammar), output256k. No dependencies/network/evaluation.
+- Authored JVM boundary/idempotence, sensitive interiors, malformed/bounds/Unicode and language/schema regression fixtures. Local Gradle bootstrap unavailable; tests unrun.

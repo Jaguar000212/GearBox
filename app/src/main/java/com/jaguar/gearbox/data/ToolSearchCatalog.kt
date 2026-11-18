@@ -16,6 +16,7 @@ object ToolSearchCatalog {
         val englishLabel: String, val englishAliases: List<String>, val inputs: Map<String, String>)
     private val taskAliases = mapOf(
         Tools.ROUTE_BUBBLE_LEVEL to AliasSpec(R.array.search_tasks_bubble_level, listOf("is this straight", "is this level", "level a surface", "hang a picture", "check a slope")),
+        Tools.ROUTE_BATTERY_INFO to AliasSpec(R.array.battery_tasks, listOf("view battery information", "check charging status")),
         Tools.ROUTE_PITCH_TUNER to AliasSpec(R.array.pitch_tasks, listOf("tune a note", "estimate pitch")),
         Tools.ROUTE_SOUND_METER to AliasSpec(R.array.sound_tasks, listOf("read microphone level", "measure relative sound")),
         Tools.ROUTE_LIGHT_METER to AliasSpec(R.array.light_tasks, listOf("measure ambient light", "read lux", "how bright is this room")),

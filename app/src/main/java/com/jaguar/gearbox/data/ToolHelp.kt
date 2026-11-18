@@ -255,6 +255,11 @@ object ToolHelpCatalog {
             "Compare the reading on a desk with the phone gently tilted.",
             "Accuracy depends on sensors and the device case. Do not use as a precision construction instrument.",
         ),
+        Tools.ROUTE_BATTERY_INFO to ToolHelp(
+            "Open to view supported Android battery properties while this screen is active.",
+            "Connect a charger and wait for the reported power source to update.",
+            "System health is not a capacity percentage. Device-reported values only, no remaining-time estimates or saved measurements.",
+        ),
         Tools.ROUTE_PITCH_TUNER to ToolHelp(
             "Tap Start, grant microphone permission, then tap Start again. Play one steady note.",
             "A steady 440 Hz tone corresponds to A4 near zero cents.",

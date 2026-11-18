@@ -426,3 +426,9 @@ This tool must actually schedule backwards from the target date, not merely list
 - One sustained note only, approximately 65–1000 Hz; fixed A4=440 Hz and 12-tone equal temperament. Estimates depend on microphone processing and periodicity, not calibrated accuracy.
 - Confirm permission grant needs a second Start; leaving/background/disposal clears estimates and stops capture with no automatic resume. Check rapid Stop/Start and mutual exclusion with Sound-level Meter.
 - Authored JVM synthetic-tone, numerical-endpoint, noise/silence/clipping, cancellation/privacy fixtures; Android fake-source cleanup/contention and Compose lifecycle fixtures. These have not run locally because the Gradle distribution is unavailable. Real microphone accuracy and OEM behavior require device testing.
+
+### Reconstructed Battery Information
+- Verify foreground-only updates, background/disposal unregister and clear, and stale callback rejection. Fake-source lifecycle tests do not establish actual OEM broadcast delivery.
+- Missing values must read unknown; EXTRA_PRESENT=false must suppress all readings, not show a fabricated empty battery. Check level/scale rounding, tenths °C, millivolts to V, microamps to mA and microamp-hours to mAh.
+- Device-reported current/charge availability and sign may vary. OS health is not degradation/capacity percentage; no remaining-time estimate or saved/shared measurements.
+- JVM policy/controller and Android Compose lifecycle fixtures authored, not executed locally because Gradle distribution download is blocked. Real battery devices and no-battery devices remain manual validation.

@@ -74,6 +74,7 @@ object ToolMemoryPolicy {
             value -> com.jaguar.gearbox.logic.TextHashAlgorithm.entries.any { it.name == value }
         }
         "tool/qr_generator", "tool/decision_matrix", "tool/deadline_planner" -> values.isEmpty()
+        "tool/team_picker" -> validTeamPickerMode(values)
         "tool/text_diff" -> validTextDiffMode(values)
         "tool/image_studio" -> validImageStudioMode(values)
         "tool/color_blend" -> parseColorBlendSnapshot(values) != null

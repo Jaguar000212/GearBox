@@ -25,7 +25,7 @@ class GameSessionPolicy(
         private val SESSION_KEYS = listOf(
             "tambola.called", "tambola.last_called", "rps.wins", "rps.losses", "rps.draws",
             "tic_tac_toe.x_wins", "tic_tac_toe.o_wins", "tic_tac_toe.draws",
-            "team_picker.names", "scoreboard_players", "scoreboard_players_v2",
+            "team_picker.names", "team_picker.weights", "team_picker.weight_names", "scoreboard_players", "scoreboard_players_v2",
             "chess_white_name", "chess_black_name", "chess_white_score", "chess_black_score", "chess_games_played",
         )
     }

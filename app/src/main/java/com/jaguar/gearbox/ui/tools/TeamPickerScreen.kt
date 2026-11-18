@@ -1,6 +1,9 @@
 package com.jaguar.gearbox.ui.tools
 
 import com.jaguar.gearbox.R
+import com.jaguar.gearbox.logic.*
+import com.jaguar.gearbox.data.parseWeightedPickerSnapshot
+import com.jaguar.gearbox.data.validTeamPickerMode
 
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -68,6 +71,13 @@ fun TeamPickerScreen(onNavigateBack: () -> Unit) {
         val saved = store.getString(KEY_NAMES, "")
         mutableStateOf(if (saved.isEmpty()) emptyList() else saved.split(NAME_DELIMITER))
     }
+    var weights by rememberSaveable(stateSaver = StringListSaver) {
+        val saved = store.getString("team_picker.weights", "").split("\n")
+        val owner = store.getString("team_picker.weight_names", "")
+        mutableStateOf(if(owner==names.joinToString("\n") && saved.size==names.size && saved.all {parsePickerWeight(it)!=null}) saved else List(names.size){"1"})
+    }
+    var weightedWinner by rememberSaveable { mutableStateOf<String?>(null) }
+    var includeWeights by rememberSaveable { mutableStateOf(true) }
     var newName by rememberSaveable { mutableStateOf("") }
     var mode by rememberSaveable { mutableStateOf("pick") }
     var editing by rememberSaveable { mutableStateOf(false) }
@@ -75,12 +85,19 @@ fun TeamPickerScreen(onNavigateBack: () -> Unit) {
     var winner by rememberSaveable { mutableStateOf<String?>(null) }
     var teams by rememberSaveable(stateSaver = StringListSaver) { mutableStateOf(emptyList()) }
 
-    fun persistNames(updated: List<String>) {
+    fun persistNames(updated: List<String>, updatedWeights: List<String> = List(updated.size) { weights.getOrNull(it) ?: "1" }) {
+        weights = updatedWeights
+        includeWeights = true
+        weightedWinner = null
         names = updated
         winner = null
         teams = emptyList()
         teamCount = teamCount.coerceIn(2, updated.size.coerceAtLeast(2))
-        store.putString(KEY_NAMES, updated.joinToString(NAME_DELIMITER))
+        store.edit {
+            putString(KEY_NAMES, updated.joinToString(NAME_DELIMITER))
+            putString("team_picker.weights", weights.joinToString("\n"))
+            putString("team_picker.weight_names", updated.joinToString(NAME_DELIMITER))
+        }
     }
 
     fun addName() {
@@ -103,20 +120,38 @@ fun TeamPickerScreen(onNavigateBack: () -> Unit) {
         )
     }
 
+    val weightedInputs = buildMap {
+        put("participants",names.joinToString(NAME_DELIMITER));put("mode",mode);put("teams",teamCount.toString())
+        if(mode=="weighted" && includeWeights) put("weights",weights.joinToString("\n"))
+    }
+    val weightedValid = names.size in 1..200 && names.all(::validWeightedName) && weights.size==names.size && weights.all {parsePickerWeight(it)!=null}
     val history = rememberToolHistory(Tools.ROUTE_TEAM_PICKER,
-        mapOf("participants" to names.joinToString(NAME_DELIMITER), "mode" to mode, "teams" to teamCount.toString()),
-        if (mode == "pick") winner?.let { context.getString(R.string.game_picked_1_s, it) } else teams.takeIf { it.isNotEmpty() }?.joinToString("\n"),
+        weightedInputs,
+        if(mode=="weighted") weightedWinner else if (mode == "pick") winner?.let { context.getString(R.string.game_picked_1_s, it) } else teams.takeIf { it.isNotEmpty() }?.joinToString("\n"),
         restoreLastResult = false,
         onRestore = { saved ->
-            persistNames(saved["participants"].orEmpty().split(NAME_DELIMITER).filter { it.isNotBlank() })
+            if(saved["mode"]=="weighted") {
+                parseWeightedPickerSnapshot(saved)?.let { value ->
+                    persistNames(value.participants,value.weights.map(Int::toString))
+                    includeWeights=value.includesWeights
+                    mode="weighted";teamCount=value.teams
+                }
+            } else {
+            val restoredNames=saved["participants"].orEmpty().split(NAME_DELIMITER).filter { it.isNotBlank() }
+            persistNames(restoredNames,List(restoredNames.size){"1"})
             mode = if (saved["mode"] == "teams") "teams" else "pick"
             teamCount = (saved["teams"]?.toIntOrNull() ?: 2).coerceIn(2, names.size.coerceAtLeast(2))
+            }
         }, modeInputs = mapOf("mode" to mode, "teams" to teamCount.toString()),
         onRestoreMode = { saved ->
-            mode = if (saved["mode"] == "teams") "teams" else "pick"
-            teamCount = (saved["teams"]?.toIntOrNull() ?: 2).coerceIn(2, names.size.coerceAtLeast(2))
+            if(validTeamPickerMode(saved)) {
+                mode=saved.getValue("mode")
+                val restoredCount=saved.getValue("teams").toInt().coerceIn(2,names.size.coerceAtLeast(2))
+                if(restoredCount!=teamCount) teams=emptyList()
+                teamCount=restoredCount
+            }
         })
-    val presentationPages = if (mode == "pick") winner?.let { listOf(context.getString(R.string.game_picked_1_s, it)) }.orEmpty() else teams
+    val presentationPages = if(mode=="weighted") weightedWinner?.let {listOf(it)}.orEmpty() else if (mode == "pick") winner?.let { listOf(context.getString(R.string.game_picked_1_s, it)) }.orEmpty() else teams
     if (presenting && presentationPages.isNotEmpty()) {
         GroupPresentation(presentationPages, onClose = { presenting = false })
         return // Do not leave participant/result semantics beneath the hidden presentation.
@@ -135,11 +170,22 @@ fun TeamPickerScreen(onNavigateBack: () -> Unit) {
             FilterChip(mode == "pick", { mode = "pick" }, label = { Text(context.getString(R.string.game_pick_a_name)) })
             FilterChip(mode == "teams", { mode = "teams" }, label = { Text(context.getString(R.string.game_make_teams)) })
         }
+        FilterChip(mode=="weighted", {mode="weighted"}, label={Text(context.getString(R.string.weighted_mode))})
+        if(mode=="weighted") {
+            Text(context.getString(R.string.weighted_help))
+            if(!weightedValid) Text(context.getString(R.string.weighted_invalid))
+            Button(onClick={
+                val parsed=weights.map {parsePickerWeight(it)!!}
+                val index=pickWeightedIndex(parsed)
+                weightedWinner=context.getString(R.string.weighted_result,index+1,names[index],parsed[index],weightedTotal(parsed)!!)
+            },enabled=weightedValid) {Text(context.getString(R.string.weighted_pick))}
+            weightedWinner?.let {result -> ResultCard(text=result,onCopy={context.copyToClipboard(context.getString(R.string.weighted_mode),result)},onShare={context.shareText(result)})}
+        }
         OutlinedButton(onClick = { editing = true }, modifier = Modifier.fillMaxWidth()) {
             Text(context.getString(R.string.game_participants_1_s_edit, names.size))
         }
 
-        if (names.isNotEmpty()) {
+        if (names.isNotEmpty() && mode!="weighted") {
             if (mode == "pick") {
             Spacer(Modifier.height(20.dp))
             Button(
@@ -212,7 +258,7 @@ fun TeamPickerScreen(onNavigateBack: () -> Unit) {
                 )
             }
             }
-        } else {
+        } else if(names.isEmpty()) {
             Spacer(Modifier.height(12.dp))
             Text(
                 context.getString(R.string.game_add_one_name_to_pick_or_at_least_two_to_split_into_teams_n),
@@ -263,8 +309,17 @@ fun TeamPickerScreen(onNavigateBack: () -> Unit) {
                                 )
                                 Text(name, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f).padding(start = 8.dp))
                             }
+                            if(mode=="weighted") OutlinedTextField(
+                                value=weights.getOrElse(index){"1"},
+                                onValueChange={value -> if(value.length<=5) {
+                                    weights=weights.toMutableList().also {it[index]=value}
+                                    includeWeights=true;weightedWinner=null
+                                    store.edit {putString("team_picker.weights",weights.joinToString("\n"));putString("team_picker.weight_names",names.joinToString(NAME_DELIMITER))}
+                                }}, singleLine=true, modifier=Modifier.weight(1f),
+                                label={Text(context.getString(R.string.weighted_label,index+1,name))},
+                                isError=parsePickerWeight(weights.getOrElse(index){""})==null)
                             IconButton(onClick = {
-                                persistNames(names.toMutableList().also { it.removeAt(index) })
+                                persistNames(names.toMutableList().also { it.removeAt(index) },weights.toMutableList().also {it.removeAt(index)})
                                 winner = null
                                 teams = emptyList()
                             }) {

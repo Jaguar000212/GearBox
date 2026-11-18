@@ -221,7 +221,7 @@ object ToolHelpCatalog {
             "This compares calendar dates, not exact hours or time zones for an event.",
         ),
         Tools.ROUTE_TEAM_PICKER to ToolHelp(
-            "Enter the names and choose whether to pick a name or divide them into teams.",
+            "Enter names and choose equal pick, weighted pick, or teams. Edit integer weights in Participants; each row has chance weight divided by total weight.",
             "Enter four names and choose two teams.",
             "Review duplicate names and team sizes; random groups do not balance ability automatically.",
         ),

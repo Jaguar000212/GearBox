@@ -73,7 +73,7 @@ object ToolSearchCatalog {
         Tools.ROUTE_RANDOM to AliasSpec(R.array.search_tasks_random, listOf("random number", "pick a number in a range")),
         Tools.ROUTE_RPS to AliasSpec(R.array.search_tasks_rps, listOf("rock paper scissors", "play against the computer")),
         Tools.ROUTE_TAMBOLA to AliasSpec(R.array.search_tasks_tambola, listOf("tambola number caller", "housie caller")),
-        Tools.ROUTE_TEAM_PICKER to AliasSpec(R.array.search_tasks_team_picker, listOf("pick a name", "make random teams", "choose from names")),
+        Tools.ROUTE_TEAM_PICKER to AliasSpec(R.array.search_tasks_team_picker, listOf("pick a name", "make random teams", "choose from names", "weighted picker", "weighted name")),
         Tools.ROUTE_TIC_TAC_TOE to AliasSpec(R.array.search_tasks_tic_tac_toe, listOf("noughts and crosses", "tic tac toe game")),
         Tools.ROUTE_SCOREBOARD to AliasSpec(R.array.search_tasks_scoreboard, listOf("keep score", "two team score")),
         Tools.ROUTE_CHESS_SCOREBOARD to AliasSpec(R.array.search_tasks_chess_scoreboard, listOf("chess score", "track chess match score")),

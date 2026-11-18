@@ -57,7 +57,7 @@ object ToolMemoryPolicy {
     private val routePattern = Regex("tool/[a-z0-9_]{1,64}")
 
     fun permitsRoute(route: String): Boolean = routePattern.matches(route) &&
-        route != "tool/password_generator" && route != "tool/focus_timer" && route != "tool/image_studio" && route != "tool/light_meter" && route != "tool/sound_level_meter"
+        route != "tool/password_generator" && route != "tool/focus_timer" && route != "tool/image_studio" && route != "tool/light_meter" && route != "tool/sound_level_meter" && route != "tool/pitch_tuner"
 
     /** Image Studio supports only safe output preferences, never capture or named saved items. */
     fun permitsModeRoute(route: String): Boolean = permitsRoute(route) || route == "tool/image_studio"

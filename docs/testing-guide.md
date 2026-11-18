@@ -421,3 +421,8 @@ This tool must actually schedule backwards from the target date, not merely list
 - Explicit Start requests microphone permission; a grant must not start capture until another Start. Denial, delayed permission result, background and navigation must never start/resume capture.
 - Verify RMS/peak relative dBFS, digital silence −∞, Stop/background/disposal clear readings and microphone indicator, no files/history, rapid stop/start and busy microphone failures. Not calibrated SPL or a hearing-safety instrument.
 - Authored JVM math/privacy fixtures and injected-source Android controller cleanup/permission tests. These are not executed here: local Gradle bootstrap cannot download its distribution. Real microphone/OEM and lifecycle behavior still require device testing.
+
+### Reconstructed Pitch Tuner
+- One sustained note only, approximately 65–1000 Hz; fixed A4=440 Hz and 12-tone equal temperament. Estimates depend on microphone processing and periodicity, not calibrated accuracy.
+- Confirm permission grant needs a second Start; leaving/background/disposal clears estimates and stops capture with no automatic resume. Check rapid Stop/Start and mutual exclusion with Sound-level Meter.
+- Authored JVM synthetic-tone, numerical-endpoint, noise/silence/clipping, cancellation/privacy fixtures; Android fake-source cleanup/contention and Compose lifecycle fixtures. These have not run locally because the Gradle distribution is unavailable. Real microphone accuracy and OEM behavior require device testing.

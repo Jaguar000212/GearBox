@@ -255,6 +255,11 @@ object ToolHelpCatalog {
             "Compare the reading on a desk with the phone gently tilted.",
             "Accuracy depends on sensors and the device case. Do not use as a precision construction instrument.",
         ),
+        Tools.ROUTE_PITCH_TUNER to ToolHelp(
+            "Tap Start, grant microphone permission, then tap Start again. Play one steady note.",
+            "A steady 440 Hz tone corresponds to A4 near zero cents.",
+            "Single sustained tones approximately 65–1000 Hz, A4=440. Not calibrated or polyphonic; no audio saved.",
+        ),
         Tools.ROUTE_SOUND_METER to ToolHelp(
             "Tap Start, grant microphone permission, then tap Start again. Stop or leave to end capture.",
             "Digital silence shows negative infinity dBFS.",

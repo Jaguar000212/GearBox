@@ -487,3 +487,10 @@ This tool must actually schedule backwards from the target date, not merely list
 - Android parser security/formatting/limits fixtures and JVM schema compatibility fixtures authored. Actual platform parser tests not executed locally; Gradle distribution unavailable. Verify these on supported Android versions before relying on parser behavior.
 
 - XML security preflight deliberately also rejects DOCTYPE/ENTITY-looking declaration text inside otherwise inert comments, CDATA and processing instructions. Preservation promises apply only to accepted documents; dedicated Android fixtures cover all three rejected contexts.
+
+### Reconstructed HTML normalization
+- Code Formatter retains JSON/XML behavior and snapshot shape. HTML is explicit language with PRETTY compatibility mode labeled Normalize HTML, never Validate or Minify. Imports remain inert; only explicitly opted remembered results reconstruct output.
+- jsoup 1.24.1 parses a local String with empty base URI, no connect/URL fetching/rendering/execution. Full-document parsing repairs markup and wraps fragments; unsafe links/scripts/event attributes are retained, not sanitized. prettyPrint(false) avoids adding indentation but normalization is not byte preserving.
+- Input64k, parser stack guard128, accepted tree depth64 and nodes+attributes20k, bounded Appendable output256k. Existing private-text retention caps unchanged. Dependency requires Android NIO desugaring, enabled with desugar_jdk_libs_nio2.1.5.
+- Official dependency/API checks: https://jsoup.org/download ; https://jsoup.org/apidocs/org/jsoup/parser/Parser ; https://github.com/google/desugar_jdk_libs/blob/master/VERSION_JDK11_NIO.txt .
+- Authored JVM fragment-repair, inert pre/script/style/textarea/comment retention, limits and snapshot fixtures. Dependency build/runtime and tests remain unexecuted locally because Gradle bootstrap is unavailable; CI/device validation required.

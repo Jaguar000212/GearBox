@@ -1,0 +1,7 @@
+<resources>
+<string name="html_normalize">Normalize HTML</string>
+<string name="html_node_limit">HTML exceeds the 20,000 nodes-plus-attributes limit.</string>
+<string name="html_unsupported">HTML supports normalization only, not Validate or Minify.</string>
+<string name="html_parse_error">HTML could not be normalized within the supported parser behavior.</string>
+<string name="html_rules">Local full-document normalization, not strict validation or sanitization. The parser repairs malformed HTML and wraps fragments in html/head/body; markup, entities and structure may change. Automatic indentation is disabled to avoid adding text whitespace, but this is not a byte-preserving operation. Preview the result before copying or sharing. Scripts, styles, event handlers and unsafe links remain text: they are not fetched, rendered, executed or removed. Limits: 64,000 input characters, accepted tree depth 64, 20,000 nodes plus attributes and 256,000 output characters.</string>
+</resources>

@@ -15,5 +15,5 @@ fun parseJsonFormatterSnapshot(values: Map<String, String>): JsonFormatterSnapsh
 
 fun validJsonFormatterMode(values: Map<String, String>): Boolean =
     (values.keys == setOf("mode", "indent") || values.keys == setOf("mode", "indent", "language")) &&
-        (values["language"] ?: "JSON") in setOf("JSON","XML") &&
-        values["mode"] in (if(values["language"]=="XML") setOf("VALIDATE","PRETTY") else setOf("VALIDATE", "PRETTY", "MINIFY")) && values["indent"] in setOf("2", "4")
+        (values["language"] ?: "JSON") in setOf("JSON","XML","HTML") &&
+        values["mode"] in (if(values["language"]=="HTML") setOf("PRETTY") else if(values["language"]=="XML") setOf("VALIDATE","PRETTY") else setOf("VALIDATE", "PRETTY", "MINIFY")) && values["indent"] in setOf("2", "4")

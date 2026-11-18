@@ -46,9 +46,9 @@ object ToolHelpCatalog {
             "Decoded images and outputs are limited to a 2048-pixel edge and 4 megapixels, so large originals are reduced. Re-encoding does not copy source metadata, but visible identifying content remains. This phase does not include markup, blur, mosaic, collage or enhancement.",
         ),
         Tools.ROUTE_JSON_FORMATTER to ToolHelp(
-            "Choose JSON or XML, then explicitly run validation or formatting. XML supports conservative attribute layout only. Processing stays local; automatic history and result saving are off by default.",
+            "Choose JSON, XML or HTML, then explicitly run the supported operation. HTML normalizes and repairs a full document, not validation or sanitization. XML supports conservative attribute layout only. Processing stays local; automatic history and result saving are off by default.",
             "Try a small object with a name string and an enabled boolean, then explicitly format or validate it.",
-            "JSON and XML 1.0 only. XML rejects DTDs and external entities; no tree indentation, minification, schema validation or sanitization. Duplicate object keys are rejected rather than silently overwritten. Input and nesting limits apply. Valid syntax does not prove data is safe or matches a schema; review before copying or sharing private content.",
+            "JSON, XML 1.0 and HTML normalization. HTML may change markup and wraps fragments; preview the output. XML rejects DTDs and external entities; no tree indentation, minification, schema validation or sanitization. Duplicate object keys are rejected rather than silently overwritten. Input and nesting limits apply. Valid syntax does not prove data is safe or matches a schema; review before copying or sharing private content.",
         ),
         Tools.ROUTE_DEADLINE_PLANNER to ToolHelp(
             "Enter a target date, an as-of date, and ordered phase names with calendar-day durations. Tap Plan to schedule backward: the last phase ends on the target date and each earlier phase ends the day before the next begins. Both start and end dates count toward duration.",

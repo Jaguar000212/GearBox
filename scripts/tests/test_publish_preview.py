@@ -84,6 +84,36 @@ class PublisherTest(unittest.TestCase):
         self.assertEqual(6, len(self.api.assets))
         self.assertTrue(all(self.api.bytes[key] == data for key, data in old.items()))
         self.assertEqual(1000011, p.owned_state(self.api.release)['version_code'])
+    def test_notes_link_current_and_previous_without_renaming_or_deleting(self):
+        self.publish()
+        self.assertNotIn('[Previous APK]', self.api.release['body'])
+        self.api.head = B
+        self.publish(B, 11, b'next apk')
+        body = self.api.release['body']
+        self.assertIn(f'[Current Preview APK](https://github.com/{self.api.repository}/releases/download/preview/gearbox-devpreview-1000011-{B}.apk)', body)
+        self.assertIn(f'[Previous APK](https://github.com/{self.api.repository}/releases/download/preview/gearbox-devpreview-1000010-{A}.apk)', body)
+        self.assertEqual(6, len(self.api.assets))
+        self.assertFalse(any(method == 'DELETE' for method, _, _ in self.api.calls))
+
+    def test_cli_rejects_wrong_event_before_artifact_or_api(self):
+        from unittest.mock import patch
+        for event, ref in (('push', 'refs/heads/main'), ('workflow_dispatch', 'refs/heads/other'), ('workflow_dispatch', 'refs/tags/preview')):
+            with self.subTest(event=event, ref=ref), patch.dict(p.os.environ, {'GITHUB_EVENT_NAME': event, 'GITHUB_REF': ref}, clear=True), patch('sys.argv', ['publish_preview.py', '--repository', 'owner/repo', '--manifest', 'missing.json']), patch.object(p, 'GitHub') as api, patch.object(p, 'load_manifest') as artifact, patch('sys.stderr'):
+                with self.assertRaises(SystemExit) as raised:
+                    p.main()
+                self.assertEqual(1, raised.exception.code)
+                artifact.assert_not_called()
+                api.assert_not_called()
+
+    def test_manual_main_guard(self):
+        p.require_manual_main({'GITHUB_EVENT_NAME': 'workflow_dispatch', 'GITHUB_REF': 'refs/heads/main'})
+        for event in ('push', 'pull_request', 'workflow_run', '', None):
+            with self.subTest(event=event), self.assertRaises(p.PublishError):
+                p.require_manual_main({'GITHUB_EVENT_NAME': event, 'GITHUB_REF': 'refs/heads/main'})
+        for ref in ('refs/heads/feature', 'refs/tags/preview', '', None):
+            with self.subTest(ref=ref), self.assertRaises(p.PublishError):
+                p.require_manual_main({'GITHUB_EVENT_NAME': 'workflow_dispatch', 'GITHUB_REF': ref})
+
     def test_same_commit_new_run_is_verified_noop(self):
         self.publish()
         self.api.calls.clear()

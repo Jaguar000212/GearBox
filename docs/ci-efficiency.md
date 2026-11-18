@@ -15,7 +15,7 @@ Branch-protection settings could not be read through the available integration. 
 
 Only changes entirely within `docs/**/*.md`, root `README.md` or root `CONTRIBUTING.md` qualify. Empty or failed diffs, malformed commit IDs, workflows, actions, scripts, build files, manifests, resources, source code and mixed changes take the full path. Git diff disables rename detection so a renamed/deleted source path cannot disappear behind a Markdown destination. Fixed classifier outputs never interpolate filenames into shell commands or workflow output.
 
-The same status job still runs Python guardrails and explicitly records that Android tasks were not run. Main pushes and manual runs always use full validation, including documentation-only main pushes: every main push remains eligible for a new Preview.
+The same status job still runs Python guardrails and explicitly records that Android tasks were not run. Main pushes and manual runs always use full validation, including documentation-only main pushes: Preview publication now requires a separate explicit manual run on main.
 
 ## Artifacts on demand
 

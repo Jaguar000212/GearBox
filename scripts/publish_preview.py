@@ -118,10 +118,18 @@ def validate_date(value):
     datetime.fromisoformat(value.replace("Z", "+00:00"))
 
 
-def notes(state, repository):
+def notes(state, repository, previous=None):
     run = state["version_code"] - 1_000_000
     prefix = f"gearbox-devpreview-{state['version_code']}-{state['sha']}"
     download = f"https://github.com/{repository}/releases/download/preview/"
+
+    previous_links = ""
+    if previous is not None and previous["sha"] != state["sha"]:
+        old_run = previous["version_code"] - 1_000_000
+        old_prefix = f"gearbox-devpreview-{previous['version_code']}-{previous['sha']}"
+        previous_links = (f"Previous Preview: `preview.{old_run}+{previous['sha'][:7]}`\n\n"
+            f"[Previous APK]({download}{old_prefix}.apk) · [Previous checksum]({download}{old_prefix}.sha256) · "
+            f"[Previous metadata]({download}{old_prefix}.json)\n\n")
 
     return ("## GearBox Developer Preview\n\n"
         "Unstable, public developer build from main. Separate app installation; not a beta or stable release.\n\n"
@@ -129,8 +137,8 @@ def notes(state, repository):
         f"Source commit date: `{state['source_date']}`\n"
         f"Commit: `{state['sha']}`\nVersion code: `{state['version_code']}`\n"
         f"Signing certificate SHA-256: `{state['fingerprint']}`\n\n"
-        f"[Download current APK]({download}{prefix}.apk) · [SHA-256 checksum]({download}{prefix}.sha256) · [Build metadata]({download}{prefix}.json)\n\n"
-        "Install this APK over your existing GearBox Dev Preview to upgrade. The package and signing certificate stay fixed. Previous versioned assets are retained below.\n\n"
+        f"[Current Preview APK]({download}{prefix}.apk) · [SHA-256 checksum]({download}{prefix}.sha256) · [Build metadata]({download}{prefix}.json)\n\n"
+        + previous_links + "Install this APK over your existing GearBox Dev Preview to upgrade. The package and signing certificate stay fixed. Current and previous builds are linked above. Older assets may remain until separately approved cleanup; this publisher never deletes assets.\n\n"
         + MARKER + json.dumps(state, sort_keys=True, separators=(",", ":")) + " -->\n")
 
 
@@ -232,6 +240,7 @@ def publish(api, apk, sha, run_number, fingerprint, source_date):
     tag = api.request("GET", "/git/ref/tags/preview")
     latest = api.request("GET", "/releases/latest")
     same_commit = False
+    previous = None
     if release:
         if release.get("tag_name") != "preview" or release.get("prerelease") is not True or release.get("immutable") is not False:
             raise PublishError("Preview must be an explicitly mutable prerelease")
@@ -291,7 +300,7 @@ def publish(api, apk, sha, run_number, fingerprint, source_date):
     else:
         api.request("POST", "/git/refs", {"ref": "refs/tags/preview", "sha": sha})
     api.request("PATCH", f"/releases/{release['id']}", {"tag_name": "preview", "target_commitish": sha,
-        "name": "Preview", "body": notes(state, api.repository), "draft": False,
+        "name": "Preview", "body": notes(state, api.repository, previous), "draft": False,
         "prerelease": True, "make_latest": "false"})
     final = api.request("GET", "/releases/tags/preview")
     final_tag = api.request("GET", "/git/ref/tags/preview")
@@ -344,12 +353,19 @@ def load_manifest(path, expected_sha, expected_run):
         raise PublishError("Build artifact manifest or checksum does not match this workflow run") from None
 
 
+def require_manual_main(environ):
+    """Fail before reading artifacts or contacting GitHub on any other trigger/ref."""
+    if environ.get("GITHUB_EVENT_NAME") != "workflow_dispatch" or environ.get("GITHUB_REF") != "refs/heads/main":
+        raise PublishError("Preview publication requires manual workflow_dispatch on main")
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repository", required=True)
     parser.add_argument("--manifest", required=True, type=Path)
     args = parser.parse_args()
     try:
+        require_manual_main(os.environ)
         artifact = load_manifest(args.manifest, os.environ.get("GITHUB_SHA"), os.environ.get("GITHUB_RUN_NUMBER"))
         api = GitHub(args.repository, os.environ.get("GITHUB_TOKEN", ""))
         print(publish(api, *artifact))

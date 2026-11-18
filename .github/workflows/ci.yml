@@ -1,6 +1,8 @@
 name: CI
 
 on:
+  push:
+    branches: [main]
   pull_request:
   workflow_dispatch:
     inputs:
@@ -16,10 +18,10 @@ on:
 permissions:
   contents: read
 
-# Only unsigned PR/manual jobs live here; cancelling an obsolete PR cannot interrupt publication.
+# Cancel only superseded PR checks. Each main/manual run keeps its requested validation and artifacts.
 concurrency:
-  group: ci-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  group: ci-${{ github.workflow }}-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || format('run-{0}-{1}', github.run_id, github.run_attempt) }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   android-checks:

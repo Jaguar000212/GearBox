@@ -251,7 +251,7 @@ object ToolHelpCatalog {
             "Anyone who scans can read the encoded content. A QR code does not make a link trustworthy or keep text secret.",
         ),
         Tools.ROUTE_BUBBLE_LEVEL to ToolHelp(
-            "Place the device on a stable surface and use the displayed tilt to check alignment.",
+            "Place the device on a stable surface. Angle Finder offers flat-plane and display X/Y edge angles with a temporary relative zero.",
             "Compare the reading on a desk with the phone gently tilted.",
             "Accuracy depends on sensors and the device case. Do not use as a precision construction instrument.",
         ),

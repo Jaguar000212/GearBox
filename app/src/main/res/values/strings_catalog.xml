@@ -200,7 +200,7 @@
     <string name="catalog_help_qr_generator_instructions">Enter text or a complete URL to create a QR code, then check it with a scanner.</string>
     <string name="catalog_help_qr_generator_example">Try https://example.com as a sample URL.</string>
     <string name="catalog_help_qr_generator_limitation">Anyone who scans can read the encoded content. A QR code does not make a link trustworthy or keep text secret.</string>
-    <string name="catalog_help_bubble_level_instructions">Place the device on a stable surface and use the displayed tilt to check alignment.</string>
+    <string name="catalog_help_bubble_level_instructions">Place the device on a stable surface. Use flat-plane or display X/Y edge Angle Finder modes; Set relative zero compares against a temporary baseline. Rotation, mode, reliability or foreground changes reset the baseline.</string>
     <string name="catalog_help_bubble_level_example">Compare the reading on a desk with the phone gently tilted.</string>
     <string name="catalog_help_bubble_level_limitation">Accuracy depends on sensors and the device case. Do not use as a precision construction instrument.</string>
     <string name="catalog_help_compass_instructions">Hold the device steady and keep it away from magnets and metal while reading the heading.</string>

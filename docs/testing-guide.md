@@ -466,3 +466,9 @@ This tool must actually schedule backwards from the target date, not merely list
 - Accept finite nonnegative reported values. Classify near only below a positive finite hardware maximum, far at/above it; unknown maximum must produce unknown rather than a guessed threshold.
 - Often binary, not precision distance, health assessment or device certification. No permissions/network/history/results retention.
 - JVM threshold/invalid/stale/failure/privacy and fake-source Compose lifecycle fixtures authored but unrun locally. Real hardware behavior still requires device testing; Gradle bootstrap unavailable.
+
+### Reconstructed Angle Finder inside Bubble Level
+- Tool count stays 62. Flat angle is acos(abs(display-up Z)), 0–90°; screen Y/X edge angles are asin(display-up Y/X), signed −90–90°. Labels describe display axes, never a physical long side that changes in landscape.
+- Rotation-vector data is remapped for display rotations 0/90/180/270; Compass retains azimuth semantics but now follows display orientation. Check Compass headings in every display rotation on actual hardware. Smoothing resets on rotation or unreliable samples; listener epochs prevent stale callbacks after stop/restart.
+- Temporary relative zero resets on mode, display rotation, reliability and foreground changes. Explicit captures include selected mode, absolute angle, reference and displayed angle; existing source/_capture history keys and no hardware restore remain unchanged.
+- Pure geometry/wrap, Android matrix/heading and UI baseline-reset fixtures authored. Real orientation lifecycle and device calibration remain untested locally; Gradle distribution unavailable. This is not a precision instrument.

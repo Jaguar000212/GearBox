@@ -1,5 +1,8 @@
 package com.jaguar.gearbox.ui.tools
 
+import com.jaguar.gearbox.logic.AngleFinderAxis
+import com.jaguar.gearbox.logic.angleFinderDegrees
+import com.jaguar.gearbox.logic.shortestAngleDelta
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.saveable.rememberSaveable
 import com.jaguar.gearbox.ui.components.ToolFocusView
@@ -48,6 +51,20 @@ fun BubbleLevelScreen(
     sensorState: OrientationState = rememberOrientationState(),
 ) {
     val snapshot = sensorState.snapshot
+    var angleAxis by remember { mutableStateOf(AngleFinderAxis.FLAT) }
+    var zero by remember(angleAxis, sensorState.displayRotation, sensorState.status, sensorState.continuity) { mutableStateOf<Double?>(null) }
+    val absoluteAngle = if(sensorState.status == OrientationStatus.READY) sensorState.gravity?.let { angleFinderDegrees(it,angleAxis) } else null
+    val shownAngle = absoluteAngle?.let { value -> zero?.let { shortestAngleDelta(value,it) } ?: value }
+    val axisLabel = stringResource(when(angleAxis) {
+        AngleFinderAxis.FLAT -> R.string.angle_flat
+        AngleFinderAxis.SCREEN_Y -> R.string.angle_screen_y
+        AngleFinderAxis.SCREEN_X -> R.string.angle_screen_x
+    })
+    val angleSummary = shownAngle?.let {
+        stringResource(R.string.angle_reading,axisLabel,"%.1f".format(it)) + "\n" +
+            stringResource(R.string.angle_absolute_reference,"%.1f".format(absoluteAngle),zero?.let { z -> "%.1f".format(z) } ?: stringResource(R.string.angle_no_reference))
+    }
+
     val context = LocalContext.current
     val historyStore = remember(context) { ToolMemoryStore(context) }
     var captureGeneration by remember { mutableStateOf<Long?>(null) }
@@ -64,6 +81,7 @@ fun BubbleLevelScreen(
     var focusView by rememberSaveable { mutableStateOf(false) }
     if (focusView) ToolFocusView(context.getString(R.string.special_bubble_level), onExit = { focusView = false }) {
         OrientationStatusMessage(sensorState.status)
+        angleSummary?.let { Text(it,style=MaterialTheme.typography.headlineMedium) }
         if (sensorState.status == OrientationStatus.READY) {
             if (snapshot != null) {
                 val pitch = Math.toDegrees(snapshot.pitchRad.toDouble())
@@ -86,6 +104,20 @@ fun BubbleLevelScreen(
         options = { TextButton(onClick = { focusView = true }) { Text(context.getString(R.string.special_focus_view)) } },
     ) {
         OrientationStatusMessage(sensorState.status)
+        Text(stringResource(R.string.angle_heading),style=MaterialTheme.typography.titleMedium)
+        AngleFinderAxis.entries.forEach { axis ->
+            TextButton(onClick={angleAxis=axis},enabled=angleAxis!=axis) {
+                Text(stringResource(when(axis) {
+                    AngleFinderAxis.FLAT -> R.string.angle_flat
+                    AngleFinderAxis.SCREEN_Y -> R.string.angle_screen_y
+                    AngleFinderAxis.SCREEN_X -> R.string.angle_screen_x
+                }))
+            }
+        }
+        angleSummary?.let { Text(it) }
+        TextButton(onClick={zero=absoluteAngle},enabled=absoluteAngle!=null) { Text(stringResource(R.string.angle_set_zero)) }
+        TextButton(onClick={zero=null},enabled=zero!=null) { Text(stringResource(R.string.angle_clear_zero)) }
+        Text(stringResource(R.string.angle_explanation))
         if (snapshot == null || sensorState.status != OrientationStatus.READY) {
             Text(stringResource(R.string.sensor_live_hidden), style = MaterialTheme.typography.bodyMedium)
             if (capturedOutput.isNotEmpty()) Text(stringResource(R.string.sensor_previous_capture), style = MaterialTheme.typography.bodySmall)
@@ -169,6 +201,7 @@ fun BubbleLevelScreen(
             onCapture = {
                 captureGeneration = historyStore.historyGeneration(Tools.ROUTE_BUBBLE_LEVEL)
                 capturedOutput = context.getString(R.string.special_bubble_capture, "%.1f".format(pitchDeg), "%.1f".format(rollDeg), context.getString(if (isLevel) R.string.special_within_1_level_tolerance else R.string.special_tilted))
+                angleSummary?.let { capturedOutput += "\n" + it }
                 captureId = UUID.randomUUID().toString()
             },
             onClear = { captureGeneration = null; capturedOutput = ""; captureId = "" },

@@ -1,6 +1,9 @@
 package com.jaguar.gearbox.ui.components
 
 import android.content.Context
+import android.view.Surface
+import com.jaguar.gearbox.logic.DisplayGravity
+import com.jaguar.gearbox.logic.normalizedDisplayGravity
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
@@ -22,6 +25,9 @@ enum class OrientationStatus { WAITING, UNAVAILABLE, FAILED, UNRELIABLE, READY }
 data class OrientationState(
     val snapshot: OrientationSnapshot? = null,
     val status: OrientationStatus = OrientationStatus.WAITING,
+    val gravity: DisplayGravity? = null,
+    val displayRotation: Int? = null,
+    val continuity: Long = 0L,
 )
 
 /** Distinguish missing hardware, a failed registration and an initial wait; stop sensors off-screen. */
@@ -30,68 +36,84 @@ fun rememberOrientationState(): OrientationState {
     val context = LocalContext.current
     val lifecycle = LocalLifecycleOwner.current.lifecycle
     var state by remember { mutableStateOf(OrientationState()) }
+    val continuityCounter = remember { java.util.concurrent.atomic.AtomicLong() }
     DisposableEffect(context, lifecycle) {
         val manager = context.getSystemService(Context.SENSOR_SERVICE) as? SensorManager
         val sensor = manager?.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
-        var registered = false
+        var listener: SensorEventListener? = null
+        var epoch = 0L
+        var continuity = continuityCounter.get()
         var smoothed: OrientationSnapshot? = null
-        var reliable = true
-        val listener = object : SensorEventListener {
-            override fun onSensorChanged(event: SensorEvent) {
-                try {
-                    reliable = isOrientationAccuracyUsable(event.accuracy)
-                    if (!reliable) {
-                        smoothed = null
-                        state = OrientationState(status = OrientationStatus.UNRELIABLE)
-                        return
-                    }
-                    val rotation = FloatArray(9)
-                    val angles = FloatArray(3)
-                    SensorManager.getRotationMatrixFromVector(rotation, event.values)
-                    SensorManager.getOrientation(rotation, angles)
-                    if (angles.any { !it.isFinite() }) {
-                        state = OrientationState(status = OrientationStatus.FAILED)
-                        return
-                    }
-                    val raw = OrientationSnapshot(angles[0], angles[1], angles[2])
-                    val previous = smoothed
-                    val next = if (previous == null) raw else smoothOrientation(previous, raw) ?: previous
-                    smoothed = next
-                    state = OrientationState(next, if (reliable) OrientationStatus.READY else OrientationStatus.UNRELIABLE)
-                } catch (_: IllegalArgumentException) {
-                    state = OrientationState(status = OrientationStatus.FAILED)
-                }
-            }
-            override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
-                reliable = isOrientationAccuracyUsable(accuracy)
-                // Accuracy recovery alone is not a fresh measurement. Wait for the next
-                // usable event, and do not smooth it against an unreliable sample.
-                if (!reliable) {
-                    smoothed = null
-                    state = OrientationState(status = OrientationStatus.UNRELIABLE)
-                } else if (state.status != OrientationStatus.READY) {
-                    smoothed = null
-                    state = OrientationState(status = OrientationStatus.WAITING)
-                }
-            }
+        var previousRotation: Int? = null
+        fun stop() {
+            ++epoch
+            continuity = continuityCounter.incrementAndGet()
+            val old = listener
+            listener = null
+            if (old != null) runCatching { manager?.unregisterListener(old) }
+            smoothed = null
+            previousRotation = null
+            state = OrientationState(continuity = continuity)
         }
         fun start() {
-            if (registered) return
+            if (listener != null) return
             if (manager == null || sensor == null) {
-                state = OrientationState(status = OrientationStatus.UNAVAILABLE)
+                continuity = continuityCounter.incrementAndGet()
+                state = OrientationState(status = OrientationStatus.UNAVAILABLE, continuity = continuity)
                 return
             }
-            state = OrientationState()
+            val token = ++epoch
+            continuity = continuityCounter.incrementAndGet()
+            state = OrientationState(continuity = continuity)
             smoothed = null
-            reliable = true
-            registered = runCatching {
-                manager.registerListener(listener, sensor, SensorManager.SENSOR_DELAY_UI)
-            }.getOrDefault(false)
-            if (!registered) state = OrientationState(status = OrientationStatus.FAILED)
-        }
-        fun stop() {
-            if (registered) manager?.unregisterListener(listener)
-            registered = false
+            previousRotation = null
+            val callback = object : SensorEventListener {
+                override fun onSensorChanged(event: SensorEvent) {
+                    if (token != epoch || listener !== this) return
+                    if (!isOrientationAccuracyUsable(event.accuracy)) {
+                        smoothed = null
+                        continuity = continuityCounter.incrementAndGet()
+                        state = OrientationState(status = OrientationStatus.UNRELIABLE, continuity = continuity)
+                        return
+                    }
+                    try {
+                        val displayRotation = context.display?.rotation ?: Surface.ROTATION_0
+                        if (previousRotation != displayRotation) { smoothed = null; continuity = continuityCounter.incrementAndGet() }
+                        previousRotation = displayRotation
+                        val matrix = FloatArray(9)
+                        SensorManager.getRotationMatrixFromVector(matrix, event.values)
+                        val remapped = remapDisplayRotation(matrix, displayRotation)
+                        val angles = FloatArray(3)
+                        SensorManager.getOrientation(remapped, angles)
+                        val gravity = normalizedDisplayGravity(remapped[6].toDouble(), remapped[7].toDouble(), remapped[8].toDouble())
+                        check(angles.all { it.isFinite() } && gravity != null)
+                        val raw = OrientationSnapshot(angles[0], angles[1], angles[2])
+                        val next = smoothed?.let { smoothOrientation(it,raw) } ?: raw
+                        smoothed = next
+                        state = OrientationState(next, OrientationStatus.READY, gravity, displayRotation, continuity)
+                    } catch (_: RuntimeException) {
+                        smoothed = null
+                        continuity = continuityCounter.incrementAndGet()
+                        state = OrientationState(status = OrientationStatus.FAILED, continuity = continuity)
+                    }
+                }
+                override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
+                    if (token != epoch || listener !== this) return
+                    if (!isOrientationAccuracyUsable(accuracy)) {
+                        smoothed = null
+                        continuity = continuityCounter.incrementAndGet()
+                        state = OrientationState(status = OrientationStatus.UNRELIABLE, continuity = continuity)
+                    } else if (state.status != OrientationStatus.READY) {
+                        smoothed = null
+                        state = OrientationState(continuity = continuity)
+                    }
+                }
+            }
+            listener = callback
+            if (!runCatching { manager.registerListener(callback,sensor,SensorManager.SENSOR_DELAY_UI) }.getOrDefault(false)) {
+                stop()
+                state = OrientationState(status = OrientationStatus.FAILED, continuity = continuity)
+            }
         }
         val observer = LifecycleEventObserver { _, event ->
             when (event) {
@@ -112,3 +134,16 @@ fun rememberOrientationState(): OrientationState {
  */
 internal fun isOrientationAccuracyUsable(accuracy: Int): Boolean =
     accuracy == SensorManager.SENSOR_STATUS_ACCURACY_MEDIUM || accuracy == SensorManager.SENSOR_STATUS_ACCURACY_HIGH
+
+/** Display X points right, display Y toward the top; Z points out of the screen. */
+internal fun remapDisplayRotation(matrix: FloatArray, rotation: Int): FloatArray {
+    require(matrix.size == 9 && matrix.all { it.isFinite() })
+    val axes = when(rotation) {
+        Surface.ROTATION_0 -> SensorManager.AXIS_X to SensorManager.AXIS_Y
+        Surface.ROTATION_90 -> SensorManager.AXIS_Y to SensorManager.AXIS_MINUS_X
+        Surface.ROTATION_180 -> SensorManager.AXIS_MINUS_X to SensorManager.AXIS_MINUS_Y
+        Surface.ROTATION_270 -> SensorManager.AXIS_MINUS_Y to SensorManager.AXIS_X
+        else -> error("Unsupported display rotation")
+    }
+    return FloatArray(9).also { check(SensorManager.remapCoordinateSystem(matrix, axes.first, axes.second, it)) }
+}

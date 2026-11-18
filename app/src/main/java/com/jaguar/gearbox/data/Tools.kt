@@ -470,7 +470,7 @@ object Tools {
             keywords = listOf("image editor", "resize image", "crop image", "compress image", "PNG", "JPEG", "WebP"),
         ),
         Tool(
-            name = "JSON Formatter / Validator",
+            name = "Code Formatter",
             description = "Validate, pretty-print or minify JSON locally.",
             icon = Icons.Filled.DataObject,
             route = ROUTE_JSON_FORMATTER,

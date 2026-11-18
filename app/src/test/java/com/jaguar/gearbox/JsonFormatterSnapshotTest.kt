@@ -16,6 +16,18 @@ class JsonFormatterSnapshotTest {
         }
     }
 
+    @Test fun optionalLanguagePreservesLegacyAndExplicitShape() {
+        assertEquals(inputs,parseJsonFormatterSnapshot(inputs)!!.toInputs())
+        for(language in listOf("JSON","XML")) {
+            val values=inputs+mapOf("language" to language)
+            assertEquals(values,parseJsonFormatterSnapshot(values)!!.toInputs())
+            assertTrue(validJsonFormatterMode(values-"source"))
+            assertFalse(validJsonFormatterMode(values))
+        }
+        assertNull(parseJsonFormatterSnapshot(inputs+mapOf("language" to "XML","mode" to "MINIFY")))
+        assertNull(parseJsonFormatterSnapshot(inputs+mapOf("language" to "SQL")))
+    }
+
     @Test fun exactEnvelopeModesAndBoundsFailClosed() {
         assertNull(parseJsonFormatterSnapshot(inputs - "source"))
         assertNull(parseJsonFormatterSnapshot(inputs + ("extra" to "value")))

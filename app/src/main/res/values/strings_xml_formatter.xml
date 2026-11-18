@@ -1,0 +1,11 @@
+<resources>
+<string name="code_language">Language</string>
+<string name="code_source">Source text</string>
+<string name="xml_attributes">Format attributes</string>
+<string name="xml_valid">Well-formed XML 1.0 within supported limits.</string>
+<string name="xml_error">XML error: %1$s (line %2$d, column %3$d)</string>
+<string name="xml_rules">XML 1.0 well-formedness only, not schema validation or sanitization. DTDs, entity declarations, unresolved entities and external resources are rejected; nothing is fetched. Format attributes only places each start-tag attribute on a new indented line. For accepted documents, text, quoted attribute values, comments, CDATA, processing instructions and inter-element whitespace are preserved. The conservative safety check rejects any DOCTYPE- or ENTITY-like declaration text, even when inert inside comments, CDATA or processing instructions. No tree indentation or minification.</string>
+<string name="xml_syntax">Malformed XML or invalid XML 1.0 characters</string>
+<string name="xml_unsafe">DTD, entity declaration or unresolved entity is not supported</string>
+<string name="xml_unsupported">Unsupported XML version, operation or secure parser configuration</string>
+</resources>

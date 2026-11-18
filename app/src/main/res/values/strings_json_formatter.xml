@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="json_title">JSON Formatter &amp; Validator</string>
+    <string name="json_title">Code Formatter</string>
     <string name="json_source">JSON source</string>
     <string name="json_mode">Operation</string>
     <string name="json_validate">Validate</string>

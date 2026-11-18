@@ -24,6 +24,9 @@ private fun jsonModeLabel(mode: JsonFormatMode): Int = when (mode) {
 @Composable
 fun JsonFormatterScreen(onNavigateBack: () -> Unit) {
     val context = LocalContext.current
+    var language by rememberSaveable { mutableStateOf("JSON") }
+    var explicitLanguage by rememberSaveable { mutableStateOf(false) }
+    var xmlEvaluation by remember { mutableStateOf<XmlFormatResult?>(null) }
     var source by rememberSaveable { mutableStateOf("") }
     var modeName by rememberSaveable { mutableStateOf(JsonFormatMode.PRETTY.name) }
     var indent by rememberSaveable { mutableIntStateOf(2) }
@@ -31,32 +34,42 @@ fun JsonFormatterScreen(onNavigateBack: () -> Unit) {
     var restoreError by remember { mutableStateOf(false) }
     var shareReview by remember { mutableStateOf<Pair<Map<String, String>, String>?>(null) }
     val mode = JsonFormatMode.valueOf(modeName)
-    fun currentInputs() = mapOf("source" to source, "mode" to modeName, "indent" to indent.toString())
+    fun currentInputs() = JsonFormatterSnapshot(source,modeName,indent,language,explicitLanguage).toInputs()
     val inputs = currentInputs()
-    fun edited() { evaluation = null; restoreError = false; shareReview = null }
-    fun run() { evaluation = evaluateJson(source, JsonFormatMode.valueOf(modeName), indent); restoreError = false; shareReview = null }
+    fun edited() { evaluation = null; xmlEvaluation = null; restoreError = false; shareReview = null }
+    fun run() {
+        evaluation = null; xmlEvaluation = null
+        if(language=="XML") xmlEvaluation=evaluateXml(source,JsonFormatMode.valueOf(modeName),indent)
+        else evaluation=evaluateJson(source,JsonFormatMode.valueOf(modeName),indent)
+        restoreError=false;shareReview=null
+    }
     fun restore(values: Map<String, String>, completed: Boolean = false) {
         val saved = parseJsonFormatterSnapshot(values)
         if (saved == null) { restoreError = true; return }
-        source = saved.source; modeName = saved.mode; indent = saved.indent; edited()
+        source = saved.source; modeName = saved.mode; indent = saved.indent; language=saved.language;explicitLanguage=saved.includesLanguage; edited()
         if (completed) run()
     }
-    val output = evaluation?.takeIf { it.error == null }?.output?.let {
-        if (mode == JsonFormatMode.VALIDATE) context.getString(R.string.json_valid) else it
-    }
+    val successfulOutput = if(language=="XML") xmlEvaluation?.takeIf {it.error==null}?.output else evaluation?.takeIf {it.error==null}?.output
+    val output = successfulOutput?.let { if(mode==JsonFormatMode.VALIDATE) context.getString(if(language=="XML") R.string.xml_valid else R.string.json_valid) else it }
     val history = rememberToolHistory(route = Tools.ROUTE_JSON_FORMATTER, inputs = inputs, output = output,
-        modeInputs = mapOf("mode" to modeName, "indent" to indent.toString()),
+        modeInputs = inputs - "source",
+        restoredModeInputs = {it - "source"},
         onRestore = { restore(it) }, onRestoreLastResult = { restore(it, completed = true) },
         onRestoreMode = { values ->
-            if (validJsonFormatterMode(values)) { modeName = values.getValue("mode"); indent = values.getValue("indent").toInt(); edited() }
+            if (validJsonFormatterMode(values)) { modeName = values.getValue("mode"); indent = values.getValue("indent").toInt(); language=values["language"] ?: "JSON";explicitLanguage=values.containsKey("language"); edited() }
         }, resultRequiresExplicitAction = true, restoredResultRequiresExplicitAction = { false })
     ToolScaffold(stringResource(R.string.json_title), Tools.byRoute(Tools.ROUTE_JSON_FORMATTER)!!.icon, onNavigateBack, history = history) {
         AdaptiveToolLayout(input = {
-            OutlinedTextField(source, { source = it; edited() }, label = { Text(stringResource(R.string.json_source)) },
+            CompactChoiceSelector(stringResource(R.string.code_language),language,listOf("JSON","XML"),{it},{
+                language=it;explicitLanguage=true
+                if(language=="XML" && modeName=="MINIFY") modeName="PRETTY"
+                edited()
+            })
+            OutlinedTextField(source, { source = it; edited() }, label = { Text(stringResource(R.string.code_source)) },
                 minLines = 5, maxLines = 12, isError = source.length > JSON_INPUT_LIMIT,
                 supportingText = { if (source.length > JSON_INPUT_LIMIT) Text(stringResource(R.string.json_error_input_limit)) }, modifier = Modifier.fillMaxWidth())
-            CompactChoiceSelector(stringResource(R.string.json_mode), mode, JsonFormatMode.entries,
-                { context.getString(jsonModeLabel(it)) }, { modeName = it.name; edited() })
+            CompactChoiceSelector(stringResource(R.string.json_mode), mode, if(language=="XML") listOf(JsonFormatMode.VALIDATE,JsonFormatMode.PRETTY) else JsonFormatMode.entries,
+                { context.getString(if(language=="XML" && it==JsonFormatMode.PRETTY) R.string.xml_attributes else jsonModeLabel(it)) }, { modeName = it.name; edited() })
             if (mode == JsonFormatMode.PRETTY) CompactChoiceSelector(stringResource(R.string.json_indent), indent, listOf(2,4),
                 { context.getString(R.string.json_spaces, it) }, { indent = it; edited() })
             Button(enabled = source.length <= JSON_INPUT_LIMIT, onClick = { run() }, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.json_run)) }
@@ -72,9 +85,19 @@ fun JsonFormatterScreen(onNavigateBack: () -> Unit) {
                 })
                 Text(stringResource(R.string.json_error_location, message, error.line, error.column), color = MaterialTheme.colorScheme.error)
             }
+            xmlEvaluation?.error?.let { error -> Text(stringResource(R.string.xml_error, context.getString(when(error.kind) {
+                XmlFormatErrorKind.SYNTAX -> R.string.xml_syntax
+                XmlFormatErrorKind.UNSAFE_DECLARATION -> R.string.xml_unsafe
+                XmlFormatErrorKind.UNSUPPORTED -> R.string.xml_unsupported
+                XmlFormatErrorKind.INPUT_LIMIT -> R.string.json_error_input_limit
+                XmlFormatErrorKind.DEPTH_LIMIT -> R.string.json_error_depth_limit
+                XmlFormatErrorKind.TOKEN_LIMIT -> R.string.json_error_token_limit
+                XmlFormatErrorKind.OUTPUT_LIMIT -> R.string.json_error_output_limit
+            }), error.line, error.column),color=MaterialTheme.colorScheme.error) }
             if (restoreError) Text(stringResource(R.string.json_restore_error), color = MaterialTheme.colorScheme.error)
-            Text(stringResource(R.string.json_rules), style = MaterialTheme.typography.bodySmall)
-            Text(stringResource(R.string.json_preservation), style = MaterialTheme.typography.bodySmall)
+            if(language=="XML") Text(stringResource(R.string.xml_rules),style=MaterialTheme.typography.bodySmall)
+            if(language=="JSON") Text(stringResource(R.string.json_rules), style = MaterialTheme.typography.bodySmall)
+            if(language=="JSON") Text(stringResource(R.string.json_preservation), style = MaterialTheme.typography.bodySmall)
             Text(stringResource(R.string.json_limits), style = MaterialTheme.typography.bodySmall)
             Text(stringResource(R.string.json_privacy), style = MaterialTheme.typography.bodySmall)
             Text(stringResource(R.string.json_retention), style = MaterialTheme.typography.bodySmall)
@@ -91,13 +114,13 @@ fun JsonFormatterScreen(onNavigateBack: () -> Unit) {
             } else Text(stringResource(R.string.json_empty))
             ToolActions(onCopy = { output?.let { context.copyToClipboard(context.getString(R.string.json_title), it, sensitive = true) } },
                 onShare = { output?.let { shareReview = inputs to it } }, onClear = { source = ""; edited() },
-                resultEnabled = output != null, clearEnabled = source.isNotEmpty() || evaluation != null)
+                resultEnabled = output != null, clearEnabled = source.isNotEmpty() || evaluation != null || xmlEvaluation != null)
         })
     }
     shareReview?.let { snapshot ->
         if (snapshot.first != inputs || snapshot.second != output) LaunchedEffect(snapshot) { shareReview = null }
         else SensitiveTextShareDialog(snapshot.second, onConfirm = {
-            val current = shareReview == snapshot && evaluation != null && evaluation?.error == null && snapshot.first == currentInputs() && snapshot.second == output
+            val current = shareReview == snapshot && successfulOutput != null && snapshot.first == currentInputs() && snapshot.second == output
             shareReview = null
             if (current) context.shareText(snapshot.second)
         }, onDismiss = { shareReview = null })

@@ -212,5 +212,5 @@
     <string name="screen_tool_decision_matrix">Decision Matrix</string>
     <string name="screen_tool_bill_splitter">Bill Splitter (Simple and Shared)</string>
     <string name="screen_tool_deadline_planner">Deadline Planner</string>
-    <string name="screen_tool_json_formatter">JSON Formatter</string>
+    <string name="screen_tool_json_formatter">Code Formatter</string>
 </resources>

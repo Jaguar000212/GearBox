@@ -478,3 +478,12 @@ This tool must actually schedule backwards from the target date, not merely list
 - Weighted inputs require 1–200 rows, names at most 120 Unicode codepoints, integer weights 1–10000 (no leading zeros), total at most 2,000,000. Duplicate names are separate row identities. Random.nextInt(total) chooses exact half-open weighted intervals; displayed odds are weight/total.
 - New names get weight1; removal keeps remaining weights aligned. Existing game-session preference gates names/weights; exact participant-string ownership prevents stale saved weights binding to changed names. Settings clear includes both new keys. Legacy equal/team behavior remains; weighted restore validates exact schema and never rerolls. Mode preferences contain no names or weights.
 - Pure ticket/schema/Unicode/privacy and Android alignment/purge fixtures authored, not executed locally (Gradle distribution unavailable). Existing storage size caps still apply; no truncated history saves.
+
+### Reconstructed XML mode in Code Formatter
+- Existing JSON route/sensitive storage defaults remain; legacy three-key inputs and mode fingerprints remain unchanged unless language is explicit. Imports restore text only, never execute; opted-in remembered results use bounded deterministic reconstruction.
+- XML 1.0 validation uses the platform namespace-aware pull parser with DTD processing/validation disabled and checked. DTD/entity declarations and unresolved entities fail closed. Raw and decoded text/attributes must contain legal XML 1.0 codepoints; duplicate expanded attributes and non-1.0 declarations are rejected. No resolver/network or schema validation.
+- Format attributes only changes whitespace preceding start-tag attribute names, preserving quoted values/equals spacing, text, inter-element whitespace, mixed content, CDATA, comments and PI. No XML minify or tree indentation.
+- Bounds: 64k input, depth64, 20k tokens plus attributes, 256k output. Existing smaller persistence caps unchanged; no truncated saves.
+- Android parser security/formatting/limits fixtures and JVM schema compatibility fixtures authored. Actual platform parser tests not executed locally; Gradle distribution unavailable. Verify these on supported Android versions before relying on parser behavior.
+
+- XML security preflight deliberately also rejects DOCTYPE/ENTITY-looking declaration text inside otherwise inert comments, CDATA and processing instructions. Preservation promises apply only to accepted documents; dedicated Android fixtures cover all three rejected contexts.

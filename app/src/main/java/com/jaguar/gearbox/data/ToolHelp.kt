@@ -255,6 +255,7 @@ object ToolHelpCatalog {
             "Compare the reading on a desk with the phone gently tilted.",
             "Accuracy depends on sensors and the device case. Do not use as a precision construction instrument.",
         ),
+        Tools.ROUTE_SENSOR_CHECKER to ToolHelp("Choose one sensor and explicitly Start. Changing selection or backgrounding stops readings.", "Tilt the device while observing accelerometer axes.", "Fixed permission-free inventory; readings are not calibration or hardware certification. No stored samples."),
         Tools.ROUTE_BATTERY_INFO to ToolHelp(
             "Open to view supported Android battery properties while this screen is active.",
             "Connect a charger and wait for the reported power source to update.",

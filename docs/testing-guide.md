@@ -432,3 +432,10 @@ This tool must actually schedule backwards from the target date, not merely list
 - Missing values must read unknown; EXTRA_PRESENT=false must suppress all readings, not show a fabricated empty battery. Check level/scale rounding, tenths °C, millivolts to V, microamps to mA and microamp-hours to mAh.
 - Device-reported current/charge availability and sign may vary. OS health is not degradation/capacity percentage; no remaining-time estimate or saved/shared measurements.
 - JVM policy/controller and Android Compose lifecycle fixtures authored, not executed locally because Gradle distribution download is blocked. Real battery devices and no-battery devices remain manual validation.
+
+## Reconstructed Sensor Checker
+
+- Fixed inventory: accelerometer, gyroscope, magnetometer, light, pressure, proximity, gravity, linear acceleration and rotation vector. No permission-sensitive sensor types or fingerprint sharing. Android-reported availability is not diagnostic certification.
+- Explicit Start registers only the selected sensor. Selection change, Stop, background and disposal unregister and clear samples; returning requires Start. Verify stale callbacks after stop/restart, unavailable hardware, registration failure and invalid finite values.
+- Check device-coordinate axes/units: m/s², rad/s, µT, lux, hPa, cm. Rotation vectors are three or four dimensionless components, never degrees; proximity is often binary. Reported metadata/accuracy may be unavailable and are not calibration guarantees.
+- No History, Workbench, mode retention, network or extra permissions. Policy/controller tests are authored, not hardware validation; device lifecycle, orientation, large-font and TalkBack checks remain pending.

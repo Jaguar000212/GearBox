@@ -57,6 +57,7 @@ fun Tool.localizedName(context: Context): String = when (route) {
     Tools.ROUTE_HASH_GENERATOR -> R.string.catalog_tool_hash_generator_name
     Tools.ROUTE_QR_GENERATOR -> R.string.catalog_tool_qr_generator_name
     Tools.ROUTE_BUBBLE_LEVEL -> R.string.catalog_tool_bubble_level_name
+    Tools.ROUTE_SENSOR_CHECKER -> R.string.checker_title
     Tools.ROUTE_BATTERY_INFO -> R.string.battery_title
     Tools.ROUTE_PITCH_TUNER -> R.string.pitch_title
     Tools.ROUTE_SOUND_METER -> R.string.sound_title
@@ -118,6 +119,7 @@ fun Tool.localizedDescription(context: Context): String = when (route) {
     Tools.ROUTE_HASH_GENERATOR -> R.string.catalog_tool_hash_generator_description
     Tools.ROUTE_QR_GENERATOR -> R.string.catalog_tool_qr_generator_description
     Tools.ROUTE_BUBBLE_LEVEL -> R.string.catalog_tool_bubble_level_description
+    Tools.ROUTE_SENSOR_CHECKER -> R.string.checker_description
     Tools.ROUTE_BATTERY_INFO -> R.string.battery_description
     Tools.ROUTE_PITCH_TUNER -> R.string.pitch_description
     Tools.ROUTE_SOUND_METER -> R.string.sound_description
@@ -191,6 +193,7 @@ internal fun localizedToolHelp(context: Context, route: String?): ToolHelp? = wh
     Tools.ROUTE_TIC_TAC_TOE -> ToolHelp(context.getString(R.string.catalog_help_tic_tac_toe_instructions), context.getString(R.string.catalog_help_tic_tac_toe_example), context.getString(R.string.catalog_help_tic_tac_toe_limitation))
     Tools.ROUTE_QR_GENERATOR -> ToolHelp(context.getString(R.string.catalog_help_qr_generator_instructions), context.getString(R.string.catalog_help_qr_generator_example), context.getString(R.string.catalog_help_qr_generator_limitation))
     Tools.ROUTE_BUBBLE_LEVEL -> ToolHelp(context.getString(R.string.catalog_help_bubble_level_instructions), context.getString(R.string.catalog_help_bubble_level_example), context.getString(R.string.catalog_help_bubble_level_limitation))
+    Tools.ROUTE_SENSOR_CHECKER -> ToolHelp(context.getString(R.string.checker_help_instructions), context.getString(R.string.checker_help_example), context.getString(R.string.checker_help_limitation))
     Tools.ROUTE_BATTERY_INFO -> ToolHelp(context.getString(R.string.battery_help_instructions), context.getString(R.string.battery_help_example), context.getString(R.string.battery_help_limitation))
     Tools.ROUTE_PITCH_TUNER -> ToolHelp(context.getString(R.string.pitch_help_instructions), context.getString(R.string.pitch_help_example), context.getString(R.string.pitch_help_limitation))
     Tools.ROUTE_SOUND_METER -> ToolHelp(context.getString(R.string.sound_help_instructions), context.getString(R.string.sound_help_example), context.getString(R.string.sound_help_limitation))
@@ -276,6 +279,7 @@ fun Tool.localizedKeywords(context: Context): List<String> {
     Tools.ROUTE_HASH_GENERATOR -> R.array.catalog_keywords_hash_generator
     Tools.ROUTE_QR_GENERATOR -> R.array.catalog_keywords_qr_generator
     Tools.ROUTE_BUBBLE_LEVEL -> R.array.catalog_keywords_bubble_level
+    Tools.ROUTE_SENSOR_CHECKER -> R.array.checker_keywords
     Tools.ROUTE_BATTERY_INFO -> R.array.battery_keywords
     Tools.ROUTE_PITCH_TUNER -> R.array.pitch_keywords
     Tools.ROUTE_SOUND_METER -> R.array.sound_keywords

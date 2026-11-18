@@ -258,6 +258,11 @@ object ToolHelpCatalog {
         Tools.ROUTE_BARCODE_SCANNER to ToolHelp("Start explicitly, grant camera permission then Start again. Review untrusted decoded text before any action.", "Scan a non-private QR code without opening it.", "Local bounded decoding; no automatic navigation, saved results or network. Oversized payloads are rejected."),
         Tools.ROUTE_MAGNIFIER to ToolHelp("Explicitly start the back camera; grant permission then Start again. Freeze and optionally export a reviewed PNG copy.", "Magnify non-private printed text.", "Preview quality depends on hardware. Backgrounding clears the camera and frozen frame, except a reviewed export frame while choosing its destination."),
         Tools.ROUTE_SENSOR_CHECKER to ToolHelp("Choose one sensor and explicitly Start. Changing selection or backgrounding stops readings.", "Tilt the device while observing accelerometer axes.", "Fixed permission-free inventory; readings are not calibration or hardware certification. No stored samples."),
+        Tools.ROUTE_BAROMETER to ToolHelp(
+            "Read pressure and enter an explicit sea-level reference between 800 and 1100 hPa.",
+            "Equal measured and reference pressures give zero estimated altitude.",
+            "Standard-atmosphere approximation, not GPS or true elevation. No weather lookup or safety-critical use.",
+        ),
         Tools.ROUTE_BATTERY_INFO to ToolHelp(
             "Open to view supported Android battery properties while this screen is active.",
             "Connect a charger and wait for the reported power source to update.",

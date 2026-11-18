@@ -454,3 +454,9 @@ This tool must actually schedule backwards from the target date, not merely list
 - QR, Data Matrix, Aztec, PDF417, Code128/39, EAN13/8, UPCA/E and ITF decoding is local; one bounded quarter-turn retry. A result stops the camera, and over-4,096-character payloads are rejected without truncation. No frame/result persistence or network decoding.
 - Payloads are plain untrusted text. Copy uses sensitive clipboard marking; Share requires review. Only strict HTTP(S) links offer explicit host/full-address review. No automatic URL, intent, Wi-Fi or phone actions; reject credentials, controls, whitespace, backslashes, percent-encoded control/space and invalid authorities/ports. Review must refer to the current result, and background/disposal clears it.
 - Python repository checks are not camera/device validation. Decoder/URL/stride tests are authored; hardware, lifecycle, accessibility and scanner recognition remain pending.
+
+### Reconstructed Barometer / Altitude Estimate
+- Pressure sensor only, foreground lifecycle registration with stop/disposal clearing and stale callback fencing. Missing sensor and registration failure must be honest; no location/weather/network fallback.
+- Accept pressure 100–1200 hPa; explicit reference 800–1100 hPa, at most two decimal places. Default 1013.25 is standard atmosphere, not current weather. Equal pressure/reference gives zero, higher measured pressure can produce negative altitude.
+- Standard-atmosphere estimate only, not true elevation, navigation or safety-critical measurement. Reference and readings are transient, never history/results/modes.
+- JVM formula/reference/controller/privacy and fake-source Android lifecycle fixtures authored. Device pressure behavior and accuracy remain untested locally; Gradle distribution download remains unavailable.

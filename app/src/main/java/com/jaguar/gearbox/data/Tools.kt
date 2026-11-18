@@ -79,6 +79,8 @@ import com.jaguar.gearbox.ui.tools.MagnifierScreen
 import androidx.compose.material.icons.filled.ZoomIn
 import com.jaguar.gearbox.ui.tools.SensorCheckerScreen
 import androidx.compose.material.icons.filled.Sensors
+import com.jaguar.gearbox.ui.tools.BarometerScreen
+import androidx.compose.material.icons.filled.Speed
 import com.jaguar.gearbox.ui.tools.BatteryInfoScreen
 import androidx.compose.material.icons.filled.BatteryFull
 import com.jaguar.gearbox.ui.tools.PitchTunerScreen
@@ -182,6 +184,7 @@ object Tools {
     const val ROUTE_BARCODE_SCANNER = "tool/barcode_scanner"
     const val ROUTE_MAGNIFIER = "tool/magnifier"
     const val ROUTE_SENSOR_CHECKER = "tool/sensor_checker"
+    const val ROUTE_BAROMETER = "tool/barometer"
     const val ROUTE_BATTERY_INFO = "tool/battery_information"
     const val ROUTE_PITCH_TUNER = "tool/pitch_tuner"
     const val ROUTE_SOUND_METER = "tool/sound_level_meter"
@@ -632,6 +635,9 @@ object Tools {
         Tool(name = "Sensor Checker", description = "Inspect selected foreground sensor readings and availability.",
             icon = Icons.Filled.Sensors, route = ROUTE_SENSOR_CHECKER, category = ToolCategory.DEVICE,
             content = { SensorCheckerScreen(it) }, keywords = listOf("sensor", "hardware", "accelerometer")),
+        Tool(name = "Barometer / Altitude Estimate", description = "Read air pressure and estimate altitude with an explicit reference.",
+            icon = Icons.Filled.Speed, route = ROUTE_BAROMETER, category = ToolCategory.DEVICE,
+            content = { BarometerScreen(it) }, keywords = listOf("pressure", "barometer", "altitude estimate", "hPa")),
         Tool(name = "Battery Information", description = "View battery readings reported by Android.",
             icon = Icons.Filled.BatteryFull, route = ROUTE_BATTERY_INFO, category = ToolCategory.DEVICE,
             content = { BatteryInfoScreen(it) }, keywords = listOf("battery", "charging", "voltage", "temperature", "current")),

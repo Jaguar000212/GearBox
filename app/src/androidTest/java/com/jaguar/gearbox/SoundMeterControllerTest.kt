@@ -52,6 +52,25 @@ class SoundMeterControllerTest {
             withTimeout(3000) { while (closed.get() == 0) delay(10) }
         } finally { withContext(Dispatchers.Main) { first.stop(); second.stop() }; scope.cancel() }
     }
+    @Test fun securityFailureClosesSourceAndReportsPermissionRequired() = runBlocking {
+        val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+        val closes = AtomicInteger()
+        val state = java.util.concurrent.atomic.AtomicReference(SoundMeterState())
+        val source = object : SoundMeterSource {
+            override fun start() { throw SecurityException("permission revoked") }
+            override fun read(buffer: ShortArray, offset: Int, count: Int): Int = error("must not read")
+            override fun close() { closes.incrementAndGet() }
+        }
+        val controller = SoundMeterController(scope, { source }, state::set)
+        try {
+            withContext(Dispatchers.Main) { controller.start(true, true) }
+            withTimeout(3000) {
+                while (state.get().status != SoundMeterStatus.PERMISSION_REQUIRED || closes.get() == 0) delay(10)
+            }
+            assertNull(state.get().levels)
+            assertEquals(1, closes.get())
+        } finally { withContext(Dispatchers.Main) { controller.stop() }; scope.cancel() }
+    }
     @Test fun permissionAndBackgroundNeverStartSource() = runBlocking {
         val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
         var starts = 0

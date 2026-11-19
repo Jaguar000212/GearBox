@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="studio_replacement_loading">Loading replacement. Your current image and preview stay until it succeeds. Editing inputs or Cancel work cancels the replacement.</string>
+</resources>

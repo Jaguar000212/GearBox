@@ -40,7 +40,8 @@ private fun studioFormatLabel(format: ImageStudioFormat): Int = when (format) {
 
 /** initialImage is an internal test seam; normal navigation always starts without an image. */
 @Composable
-fun ImageStudioScreen(onNavigateBack: () -> Unit, initialImage: ImageStudioImage? = null, initialCollage: List<ImageStudioImage> = emptyList()) {
+fun ImageStudioScreen(onNavigateBack: () -> Unit, initialImage: ImageStudioImage? = null, initialCollage: List<ImageStudioImage> = emptyList(),
+    replacementLoader: (suspend (android.net.Uri, Long) -> ImageStudioImage)? = null) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var active by remember { mutableStateOf(true) }
@@ -62,7 +63,11 @@ fun ImageStudioScreen(onNavigateBack: () -> Unit, initialImage: ImageStudioImage
     var busy by remember { mutableStateOf(false) }
     var saving by remember { mutableStateOf(false) }
     var picking by remember { mutableStateOf(false) }
-    var pickGeneration by remember { mutableLongStateOf(0) }
+    val replacements = remember { StudioReplacementGate() }
+    var singleRequest by remember { mutableStateOf<StudioReplacementRequest?>(null) }
+    var collageRequest by remember { mutableStateOf<StudioReplacementRequest?>(null) }
+    var replacementJob by remember { mutableStateOf<Job?>(null) }
+    var loadingReplacement by remember { mutableStateOf(false) }
     var review by remember { mutableStateOf<StudioReview?>(null) }
     var pendingSave by remember { mutableStateOf<StudioOutput?>(null) }
     var message by remember { mutableStateOf<Int?>(null) }
@@ -75,58 +80,77 @@ fun ImageStudioScreen(onNavigateBack: () -> Unit, initialImage: ImageStudioImage
     var format by remember { mutableStateOf(ImageStudioFormat.PNG) }
     var quality by remember { mutableStateOf("90") }
     var aspectLock by remember { mutableStateOf(true) }
+    fun cancelReplacement() {
+        replacements.cancel(); replacementJob?.cancel(); replacementJob = null; loadingReplacement = false
+    }
     fun invalidate() {
+        cancelReplacement()
         generation++; job?.cancel(); job = null; busy = false
         output = null; review = null; pendingSave = null; message = null
     }
-    fun install(image: ImageStudioImage) {
-        edits = emptyList(); source = image; left = "0"; top = "0"; right = image.bitmap.width.toString(); bottom = image.bitmap.height.toString()
-        width = image.bitmap.width.toString(); height = image.bitmap.height.toString()
+    fun install(image: ImageStudioImage, imageWidth: String, imageHeight: String) {
+        edits = emptyList(); source = image; left = "0"; top = "0"; right = imageWidth; bottom = imageHeight
+        width = imageWidth; height = imageHeight
     }
     rememberImageStudioModes(mapOf("format" to if (format == ImageStudioFormat.WEBP) "WEBP_LOSSY" else format.name,
         "quality" to quality, "aspectLock" to aspectLock.toString()), onRestoreMode = { saved ->
         // A late preference read must not cancel a pick, transform or export already requested.
-        if (generation == 0L) {
+        if (generation == 0L && !picking && !loadingReplacement) {
             format = if (saved["format"] == "WEBP_LOSSY") ImageStudioFormat.WEBP else ImageStudioFormat.valueOf(saved.getValue("format"))
             quality = saved.getValue("quality"); aspectLock = saved.getValue("aspectLock").toBooleanStrict()
         }
     })
-    val picker = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
-        val wasPicking = picking
+    fun receiveReplacement(request: StudioReplacementRequest?, uris: List<android.net.Uri>, collage: Boolean) {
+        if (request == null) return
+        // The launcher owns this request until its one result returns. A canceled request cannot
+        // borrow a later editor session or become valid again after switching modes.
         picking = false
-        if (uri != null && wasPicking && active && generation == pickGeneration) {
-            val token = generation; busy = true
-            job = scope.launch {
-                try {
-                    val loaded = loadStudioImage(context.contentResolver, uri)
-                    if (active && token == generation) install(loaded) else loaded.bitmap.recycle()
-                } catch (cancelled: CancellationException) { throw cancelled }
-                catch (_: Exception) { if (active && token == generation) message = R.string.studio_failed }
-                catch (_: OutOfMemoryError) { if (active && token == generation) message = R.string.studio_failed }
-                finally { if (active && token == generation) busy = false }
+        if (!active || !replacements.current(request, generation, collageMode) || request.collage != collage) return
+        if (uris.isEmpty()) { replacements.finish(request); return }
+        if (uris.size !in (if (collage) 2..4 else 1..1)) {
+            replacements.finish(request); message = R.string.studio_collage_invalid; return
+        }
+        loadingReplacement = true
+        replacementJob = scope.launch {
+            var replacement: List<ImageStudioImage>? = null
+            var installed = false
+            try {
+                replacement = loadStudioReplacement(uris, if (collage) 1_000_000L else ImageStudioLimits.MAX_PIXELS) { uri, limit ->
+                    replacementLoader?.invoke(uri, limit) ?: loadStudioImage(context.contentResolver, uri, limit)
+                }
+                val candidates = requireNotNull(replacement)
+                require(candidates.size == uris.size && candidates.all {
+                    !it.bitmap.isRecycled && ImageStudioLimits.validOutput(it.bitmap.width, it.bitmap.height)
+                })
+                val single = if (collage) null else candidates.single()
+                val imageWidth = single?.bitmap?.width?.toString().orEmpty()
+                val imageHeight = single?.bitmap?.height?.toString().orEmpty()
+                if (active && replacements.current(request, generation, collageMode)) {
+                    // Main-thread state changes without suspension: old state survives until every
+                    // replacement image is decoded. Never recycle old visible/worker-owned bitmaps.
+                    // Ownership transfers before publication; even a catastrophic state-write failure
+                    // must never make finally recycle a bitmap that the UI may already reference.
+                    installed = true
+                    generation++; job?.cancel(); job = null; busy = false
+                    output = null; review = null; pendingSave = null; message = null
+                    if (collage) collageImages = candidates else if (single != null) install(single, imageWidth, imageHeight)
+                }
+            } catch (cancelled: CancellationException) { throw cancelled }
+            catch (_: Exception) { if (active && replacements.current(request, generation, collageMode)) message = R.string.studio_failed }
+            catch (_: OutOfMemoryError) { if (active && replacements.current(request, generation, collageMode)) message = R.string.studio_failed }
+            finally {
+                if (!installed) replacement?.forEach { if (!it.bitmap.isRecycled) it.bitmap.recycle() }
+                if (replacements.finish(request)) { loadingReplacement = false; replacementJob = null }
             }
         }
     }
+    val picker = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+        val request = singleRequest; singleRequest = null
+        receiveReplacement(request, listOfNotNull(uri), false)
+    }
     val collagePicker = rememberLauncherForActivityResult(ActivityResultContracts.PickMultipleVisualMedia(4)) { uris ->
-        val wasPicking = picking; picking = false
-        if (wasPicking && active && generation == pickGeneration && collageMode && uris.isNotEmpty()) {
-            if (uris.size !in 2..4) message = R.string.studio_collage_invalid else {
-                val token = generation; busy = true
-                job = scope.launch {
-                    val loaded = mutableListOf<ImageStudioImage>()
-                    var published = false
-                    try {
-                        for (uri in uris) loaded += loadStudioImage(context.contentResolver, uri, maxWorkingPixels = 1_000_000L)
-                        if (active && token == generation && collageMode) {
-                            collageImages = loaded.toList(); published = true
-                        }
-                    } catch (cancelled: CancellationException) { throw cancelled }
-                    catch (_: Exception) { if (active && token == generation) message = R.string.studio_failed }
-                    catch (_: OutOfMemoryError) { if (active && token == generation) message = R.string.studio_failed }
-                    finally { if (!published) loaded.forEach { it.bitmap.recycle() }; if (active && token == generation) busy = false }
-                }
-            }
-        }
+        val request = collageRequest; collageRequest = null
+        receiveReplacement(request, uris, true)
     }
     val saveLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { response ->
         val snapshot = pendingSave; pendingSave = null
@@ -160,7 +184,7 @@ fun ImageStudioScreen(onNavigateBack: () -> Unit, initialImage: ImageStudioImage
         }
     }
     DisposableEffect(Unit) {
-        onDispose { active = false; generation++; job?.cancel(); pendingSave = null; review = null }
+        onDispose { active = false; cancelReplacement(); generation++; job?.cancel(); pendingSave = null; review = null }
     }
     fun parsedUnsigned(text: String): Int? = text.takeIf { Regex("0|[1-9][0-9]{0,4}").matches(it) }?.toIntOrNull()
     val crop = listOf(left, top, right, bottom).map(::parsedUnsigned).let { values ->
@@ -180,22 +204,22 @@ fun ImageStudioScreen(onNavigateBack: () -> Unit, initialImage: ImageStudioImage
     val collageSizeValid = targetWidth != null && targetHeight != null &&
         runCatching { studioCollageCells(collageImages.size,targetWidth,targetHeight,collageLayout) }.isSuccess
     val canGenerate = (if (collageMode) collageImages.size in 2..4 && backgroundColor != null && collageSizeValid else source != null && cropValid) && targetWidth != null && targetHeight != null &&
-        ImageStudioLimits.validOutput(targetWidth, targetHeight) && qualityValue != null && enhancement != null && !busy && !saving && !picking
+        ImageStudioLimits.validOutput(targetWidth, targetHeight) && qualityValue != null && enhancement != null && !busy && !saving && !picking && !loadingReplacement
     ToolScaffold(stringResource(R.string.studio_title), Tools.byRoute(Tools.ROUTE_IMAGE_STUDIO)!!.icon, onNavigateBack) {
         CompactChoiceSelector(stringResource(R.string.studio_mode), collageMode, listOf(false,true),
             { context.getString(if(it) R.string.studio_collage else R.string.studio_single) },
             { if (!saving && !picking && collageMode != it) { invalidate(); collageMode = it
 
             } })
-        if (collageMode) OutlinedButton(enabled = !saving && !picking, onClick = {
-            invalidate(); collageImages = emptyList(); picking = true; pickGeneration = generation
+        if (collageMode) OutlinedButton(enabled = !saving && !picking && !loadingReplacement, onClick = {
+            collageRequest = replacements.begin(generation, true); picking = true; message = null
             runCatching { collagePicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }
-                .onFailure { picking = false; message = R.string.studio_failed }
+                .onFailure { picking = false; cancelReplacement(); singleRequest = null; collageRequest = null; message = R.string.studio_failed }
         }) { Text(stringResource(R.string.studio_choose_collage)) }
-        else OutlinedButton(enabled = !saving && !picking, onClick = {
-            invalidate(); edits = emptyList(); source = null; picking = true; pickGeneration = generation
+        else OutlinedButton(enabled = !saving && !picking && !loadingReplacement, onClick = {
+            singleRequest = replacements.begin(generation, false); picking = true; message = null
             runCatching { picker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }
-                .onFailure { picking = false; message = R.string.studio_failed }
+                .onFailure { picking = false; cancelReplacement(); singleRequest = null; collageRequest = null; message = R.string.studio_failed }
         }) { Text(stringResource(R.string.studio_choose)) }
         Text(stringResource(R.string.studio_disclosure), style = MaterialTheme.typography.bodySmall)
         (if (collageMode) collageImages.firstOrNull() else source)?.let { image ->
@@ -265,7 +289,7 @@ fun ImageStudioScreen(onNavigateBack: () -> Unit, initialImage: ImageStudioImage
                         finally { transformed?.recycle(); preview?.recycle(); if (active && token == generation) busy = false }
                     }
                 }, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.studio_generate)) }
-                if (busy) TextButton(onClick = { invalidate() }) { Text(stringResource(R.string.studio_cancel_work)) }
+                if (busy || loadingReplacement) TextButton(onClick = { if (loadingReplacement) cancelReplacement() else invalidate() }) { Text(stringResource(R.string.studio_cancel_work)) }
                 TextButton(enabled = !saving, onClick = { invalidate(); if (collageMode) collageImages = emptyList() else { edits = emptyList(); source = null } }) { Text(stringResource(R.string.studio_remove)) }
             }, result = {
                 output?.let { generated ->
@@ -273,15 +297,16 @@ fun ImageStudioScreen(onNavigateBack: () -> Unit, initialImage: ImageStudioImage
                         contentScale = ContentScale.Fit, modifier = Modifier.fillMaxWidth().heightIn(max = 320.dp))
                     Text(stringResource(R.string.studio_review_info, generated.image.width, generated.image.height,
                         context.getString(studioFormatLabel(generated.format)), generated.encoded.file.length()))
-                    OutlinedButton(enabled = !saving && pendingSave == null, onClick = { review = StudioReview(generated, false) }) { Text(stringResource(R.string.studio_save)) }
-                    OutlinedButton(enabled = !saving && pendingSave == null, onClick = { review = StudioReview(generated, true) }) { Text(stringResource(R.string.studio_share)) }
+                    OutlinedButton(enabled = !saving && !picking && !loadingReplacement && pendingSave == null, onClick = { review = StudioReview(generated, false) }) { Text(stringResource(R.string.studio_save)) }
+                    OutlinedButton(enabled = !saving && !picking && !loadingReplacement && pendingSave == null, onClick = { review = StudioReview(generated, true) }) { Text(stringResource(R.string.studio_share)) }
                 }
                 Text(stringResource(R.string.studio_encoding), style = MaterialTheme.typography.bodySmall)
                 Text(stringResource(R.string.studio_lifetime), style = MaterialTheme.typography.bodySmall)
             })
         } ?: Text(stringResource(R.string.studio_no_source))
-        if (busy && (if (collageMode) collageImages.isEmpty() else source == null)) TextButton(onClick = { invalidate() }) { Text(stringResource(R.string.studio_cancel_work)) }
-        if (busy || saving) { LinearProgressIndicator(Modifier.fillMaxWidth()); Text(stringResource(R.string.studio_busy)) }
+        if ((busy || loadingReplacement) && (if (collageMode) collageImages.isEmpty() else source == null)) TextButton(onClick = { if (loadingReplacement) cancelReplacement() else invalidate() }) { Text(stringResource(R.string.studio_cancel_work)) }
+        if (loadingReplacement) Text(stringResource(R.string.studio_replacement_loading))
+        if (busy || saving || loadingReplacement) { LinearProgressIndicator(Modifier.fillMaxWidth()); Text(stringResource(R.string.studio_busy)) }
         message?.let { Text(stringResource(it)) }
     }
     review?.let { request ->
@@ -296,7 +321,7 @@ fun ImageStudioScreen(onNavigateBack: () -> Unit, initialImage: ImageStudioImage
                 Text(stringResource(if (request.share) R.string.studio_share_note else R.string.studio_save_note))
             } },
             confirmButton = { TextButton(onClick = {
-                val current = active && review === request && output === snapshot && generation == snapshot.generation && !saving
+                val current = active && review === request && output === snapshot && generation == snapshot.generation && !saving && !picking && !loadingReplacement
                 review = null
                 if (current) {
                     if (request.share) runCatching {
